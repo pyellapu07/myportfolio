@@ -13,25 +13,14 @@ app = Flask(__name__)
 
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3002")
 
-# Build allowed origins — include all localhost ports + production URL + any vercel preview URLs
-allowed_origins = [
+# Allow localhost dev ports + production Vercel URL + all *.vercel.app preview deployments
+CORS(app, origins=[
+    r"http://localhost:3000",
+    r"http://localhost:3001",
+    r"http://localhost:3002",
     FRONTEND_URL,
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:3002",
-]
-
-import re
-
-def origin_allowed(origin):
-    if origin in allowed_origins:
-        return True
-    # Allow any *.vercel.app subdomain (preview deployments)
-    if re.match(r"https://.*\.vercel\.app$", origin or ""):
-        return True
-    return False
-
-CORS(app, origins=origin_allowed, supports_credentials=True)
+    r"https://.*\.vercel\.app",
+], supports_credentials=True)
 
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
