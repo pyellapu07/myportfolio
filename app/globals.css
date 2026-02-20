@@ -1,26 +1,419 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Soothing, calm palette */
+  --color-primary: #6366F1;
+  --color-primary-light: #818CF8;
+  --color-primary-dark: #4F46E5;
+  --color-accent: #FF5210;
+  --color-accent-light: #FF7A45;
+  --color-warm: #8E60F0;
+  --color-success: #22C55E;
+  --color-success-light: #86EFAC;
+  --color-recruiter: #22C55E;
+
+  /* Light sections */
+  --color-bg: #FAFAFA;
+  --color-bg-alt: #F3F4F6;
+  --color-bg-card: #FFFFFF;
+  --color-surface: #FFFFFF;
+
+  /* Dark hero */
+  --color-dark: #0A0A0A;
+  --color-dark-surface: #141414;
+  --color-dark-border: rgba(255, 255, 255, 0.08);
+
+  /* Text */
+  --color-text: #111111;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-text-light: #E5E7EB;
+  --color-text-white: #FAFAFA;
+
+  /* Borders */
+  --color-border: #E5E7EB;
+  --color-border-light: #F3F4F6;
+
+  /* Fonts */
+  --font-heading: var(--font-manrope);
+  --font-display: var(--font-manrope);
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-dm-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--color-primary);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+}
+
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 0 0 8px 8px;
+  font-weight: 600;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Typing cursor blink */
+@keyframes blink {
+
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.typing-cursor {
+  animation: blink 1s step-end infinite;
+}
+
+/* Availability pulse */
+@keyframes pulse-dot {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(1.3);
+  }
+}
+
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Infinite scroll ticker */
+@keyframes ticker {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-scroll {
+  animation: ticker 25s linear infinite;
+}
+
+/* Rotating text slide up */
+@keyframes slideUp {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  20% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  25% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  25.01% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  30% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Chat modal backdrop */
+.chat-backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+/* Smooth multi-layer shadow utility */
+.shadow-smooth {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.02),
+    0 2px 4px rgba(0, 0, 0, 0.02),
+    0 4px 8px rgba(0, 0, 0, 0.02),
+    0 8px 16px rgba(0, 0, 0, 0.02),
+    0 16px 32px rgba(0, 0, 0, 0.02);
+}
+
+.shadow-smooth-lg {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 2px 4px rgba(0, 0, 0, 0.03),
+    0 4px 8px rgba(0, 0, 0, 0.03),
+    0 8px 16px rgba(0, 0, 0, 0.03),
+    0 16px 32px rgba(0, 0, 0, 0.03),
+    0 32px 64px rgba(0, 0, 0, 0.03);
+}
+
+.shadow-smooth-hover {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 4px 8px rgba(0, 0, 0, 0.04),
+    0 8px 16px rgba(0, 0, 0, 0.04),
+    0 16px 32px rgba(0, 0, 0, 0.04),
+    0 32px 64px rgba(0, 0, 0, 0.04),
+    0 64px 128px rgba(0, 0, 0, 0.02);
+}
+
+/* Hero fluid gradient */
+.hero-gradient {
+  background:
+    radial-gradient(ellipse at top left, #000000 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, #000000 0%, transparent 50%),
+    radial-gradient(ellipse at bottom left, #FF5210 0%, transparent 60%),
+    radial-gradient(ellipse at top right, #8E60F0 0%, transparent 60%),
+    #0A0A0A;
+}
+
+/* Thin background lines */
+.bg-lines {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* ── Chat ambient glow (behind chat bar, recruiter mode) ────────── */
+
+@keyframes chat-glow-wave {
+  0%   {
+    background-position: 0% 50%;
+    opacity: 0.85;
+    transform: scaleX(1)    scaleY(1);
+  }
+  20%  {
+    background-position: 40% 20%;
+    opacity: 0.95;
+    transform: scaleX(1.06) scaleY(0.94);
+  }
+  40%  {
+    background-position: 80% 60%;
+    opacity: 0.80;
+    transform: scaleX(0.96) scaleY(1.08);
+  }
+  60%  {
+    background-position: 100% 30%;
+    opacity: 1.00;
+    transform: scaleX(1.08) scaleY(0.96);
+  }
+  80%  {
+    background-position: 30% 80%;
+    opacity: 0.85;
+    transform: scaleX(0.97) scaleY(1.05);
+  }
+  100% {
+    background-position: 0% 50%;
+    opacity: 0.85;
+    transform: scaleX(1)    scaleY(1);
+  }
+}
+
+.chat-glow {
+  pointer-events: none;
+  position: absolute;
+  inset: -16px -20px;
+  border-radius: 36px;
+  z-index: -1;
+  filter: blur(52px);
+  background:
+    radial-gradient(ellipse 60% 65% at 15%  40%,  rgba(167, 139, 250, 0.90) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 60% at 75%  30%,  rgba(244, 114, 182, 0.80) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 55% at 50%  80%,  rgba(96,  165, 250, 0.75) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 50% at 85%  70%,  rgba(52,  211, 153, 0.65) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 45% at 25%  15%,  rgba(251, 191,  36, 0.55) 0%, transparent 65%);
+  background-size: 280% 280%;
+  animation: chat-glow-wave 10s ease-in-out infinite;
+}
+
+/* ── Fluid aurora gradient (recruiter chat) ──────────────────────── */
+
+@keyframes aurora-fill {
+  0%   { background-position: 0%   60%; }
+  25%  { background-position: 60%  30%; }
+  50%  { background-position: 100% 70%; }
+  75%  { background-position: 40%  10%; }
+  100% { background-position: 0%   60%; }
+}
+
+/* Light glassmorphism aurora — white base, soft color blooms */
+.aurora-fill {
+  background:
+    radial-gradient(ellipse 160% 120% at 0% 0%,
+      rgba(167, 139, 250, 0.28) 0%, transparent 50%),
+    radial-gradient(ellipse 140% 110% at 100% 100%,
+      rgba(244, 114, 182, 0.22) 0%, transparent 50%),
+    radial-gradient(ellipse 120% 100% at 100% 0%,
+      rgba(96, 165, 250, 0.18) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 90% at 0% 100%,
+      rgba(196, 181, 253, 0.20) 0%, transparent 50%),
+    rgba(255, 255, 255, 0.82);
+  background-size: 300% 300%;
+  animation: aurora-fill 14s ease infinite;
+  backdrop-filter: blur(48px);
+  -webkit-backdrop-filter: blur(48px);
+}
+
+/* ── San Francisco typeface stack ───────────────────────────── */
+.sf-display {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    "Helvetica Neue",
+    var(--font-manrope),
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Liquid Glass dynamic material ──────────────────────────── */
+/*
+  Inspired by Apple's visionOS / iOS 26 "liquid glass" material:
+  layered translucency, micro-blur, subtle inner highlight, and
+  a barely-visible specular shimmer on hover.
+*/
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(1.6) brightness(1.04);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6) brightness(1.04);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    /* outer depth */
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 4px 12px rgba(0, 0, 0, 0.04),
+    0 16px 40px rgba(0, 0, 0, 0.04),
+    /* inner top highlight — the "glass edge" */
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+  transition:
+    box-shadow 0.35s ease,
+    transform 0.35s ease,
+    background 0.35s ease;
+  will-change: transform;
+}
+
+.liquid-glass:hover {
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 24px 60px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.02);
+}
+
+/* Shimmer sweep on hover */
+.liquid-glass::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 40%,
+    rgba(255, 255, 255, 0.0) 60%,
+    transparent 100%
+  );
+  background-size: 300% 300%;
+  background-position: 120% 50%;
+  transition: background-position 0.6s ease;
+  z-index: 1;
+}
+
+.liquid-glass:hover::before {
+  background-position: -20% 50%;
+}
+
+/* Dark background variant — darker glass for use on bg-dark sections */
+.liquid-glass-dark {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
