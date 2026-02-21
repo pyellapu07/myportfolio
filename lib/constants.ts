@@ -58,7 +58,7 @@ export const PROJECTS: Project[] = [
       "Led a comprehensive UX audit across 20+ screens benchmarking against Robinhood, Yahoo Finance, and TradingView. Designed high-fidelity prototypes validated through moderated usability testing with 12 enterprise users. Built a scalable design system following atomic design principles, redesigned onboarding flow and dashboard information architecture resulting in dramatically improved conversion and feature adoption metrics.",
     techStack: ["Product Design", "UX Research", "Figma", "Design Systems", "Usability Testing", "Heuristic Evaluation"],
     image: "/marketcrunchaipreview.gif",
-    link: "#",
+    link: "/work/marketcrunch",
     featured: true,
   },
   {
