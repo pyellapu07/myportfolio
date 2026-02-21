@@ -332,16 +332,14 @@ function InsightCard({ label, children }: { label: string; children: React.React
 function ComponentSheet({ src, alt, caption }: { src: string; alt: string; caption?: string }) {
   return (
     <div>
-      <div className="overflow-x-auto rounded-xl border border-border/50 bg-[#F9FAFB]">
-        <div className="min-w-[640px]">
-          <Image
-            src={src}
-            alt={alt}
-            width={1200}
-            height={420}
-            className="h-auto max-h-[340px] w-full object-contain object-top"
-          />
-        </div>
+      <div className="rounded-xl border border-border/50 bg-[#F9FAFB] overflow-hidden">
+        <Image
+          src={src}
+          alt={alt}
+          width={1200}
+          height={420}
+          className="w-full h-auto object-contain object-top"
+        />
       </div>
       {caption && (
         <p className="mt-2.5 font-mono text-xs text-text-muted">{caption}</p>
@@ -994,7 +992,7 @@ export default function MarketCrunchPage() {
               alt="MarketCrunch AI - full component library"
               width={1200}
               height={500}
-              className="h-auto max-h-[420px] min-w-[640px] w-full object-contain object-top"
+              className="h-auto max-h-[420px] w-full object-contain object-top"
             />
           </div>
           <p className="mt-2.5 font-mono text-xs text-text-muted">
