@@ -681,34 +681,34 @@ export default function MarketCrunchPage() {
 
           {/* Key audit findings */}
           <div className="mt-10 grid gap-5 md:grid-cols-2">
-            <InsightCard label="🚨 P0 Violations — Critical">
+            <InsightCard label="🔴 P0 Violations — Critical">
               <ul className="mt-3 space-y-3 font-mono text-sm text-text-secondary">
                 <li className="flex gap-2.5">
-                  <span className="shrink-0 text-base leading-snug">🧭</span>
+                  <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-red-400" />
                   <span>No persistent bottom navigation on mobile, users had no recognition-based path to key features (Nielsen #6: Recognition over Recall)</span>
                 </li>
                 <li className="flex gap-2.5">
-                  <span className="shrink-0 text-base leading-snug">📉</span>
+                  <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-red-400" />
                   <span>Trust signal absence on analyze page, no model accuracy indicator for non-technical users; high bounce risk</span>
                 </li>
                 <li className="flex gap-2.5">
-                  <span className="shrink-0 text-base leading-snug">🔇</span>
+                  <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-red-400" />
                   <span>Ticker bar lacked action affordances, no CTA for Add Alert, Share, or Bookmark at the highest-visibility element on the page</span>
                 </li>
               </ul>
             </InsightCard>
-            <InsightCard label="⚠️ P1 Violations — Significant">
+            <InsightCard label="🟡 P1 Violations — Significant">
               <ul className="mt-3 space-y-3 font-mono text-sm text-text-secondary">
                 <li className="flex gap-2.5">
-                  <span className="shrink-0 text-base leading-snug">🗂️</span>
+                  <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-amber-400" />
                   <span>Left navigation used inconsistent iconography, no systematic icon library, poor visual hierarchy between nav items</span>
                 </li>
                 <li className="flex gap-2.5">
-                  <span className="shrink-0 text-base leading-snug">🏷️</span>
+                  <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-amber-400" />
                   <span>Model explanation ("Technical Analysis") mislabeled and misplaced, inaccurately described for legacy reasons, wrong location in information hierarchy</span>
                 </li>
                 <li className="flex gap-2.5">
-                  <span className="shrink-0 text-base leading-snug">🔁</span>
+                  <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-amber-400" />
                   <span>Search flow required users to recall exact ticker symbols on every session, no progressive disclosure or history pattern to reduce recall burden</span>
                 </li>
               </ul>
@@ -778,7 +778,7 @@ export default function MarketCrunchPage() {
           </div>
 
           <div className="mt-8 rounded-xl border border-primary/15 bg-primary/4 p-6">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-primary/60 mb-2">🔑 Central Audit Finding</p>
+            <p className="font-mono text-[10px] uppercase tracking-widest text-primary/60 mb-2">Central Audit Finding</p>
             <p className="font-mono text-sm leading-relaxed text-text">
               The platform had technically sound AI infrastructure, but the interface had a <strong className="font-medium">trust signal gap</strong>, nothing on the analyze page gave non-technical retail investors an immediate, legible signal that the model's predictions were reliable. This was the root cause of high bounce rate on the platform's most critical page.
             </p>
@@ -810,9 +810,9 @@ export default function MarketCrunchPage() {
             </div>
 
             <div className="flex flex-col gap-8 justify-center">
-              <StatItem value="📉" label="Bounce rate on analyze page post-launch" />
-              <StatItem value="📈" label="New user signups, attributed to trust signal" />
-              <StatItem value="5🔥" label="Trading sessions shown in accuracy streak" />
+              <StatItem value="↓" label="Bounce rate on analyze page post-launch" />
+              <StatItem value="↑" label="New user signups, attributed to trust signal" />
+              <StatItem value="5" label="Trading sessions shown in accuracy streak" />
             </div>
           </div>
 
@@ -870,11 +870,11 @@ export default function MarketCrunchPage() {
             </div>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <div className="rounded-lg bg-white/70 p-4">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-red-400 mb-1">😬 Before</p>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-red-400 mb-1">🔴 Before</p>
                 <p className="font-mono text-xs text-text-secondary">Flat dark blue surface, no action affordances, no secondary metadata hierarchy, dated typographic treatment</p>
               </div>
               <div className="rounded-lg bg-white/70 p-4">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-green-500 mb-1">✅ After</p>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-green-500 mb-1">🟢 After</p>
                 <p className="font-mono text-xs text-text-secondary">Clear typographic scale, contextual CTAs (Add Alert, Share, Bookmark), hit rate component integrated, modern visual language</p>
               </div>
             </div>
@@ -948,7 +948,7 @@ export default function MarketCrunchPage() {
               />
             </div>
             <p className="font-mono text-xs text-text-muted">
-              😬 <strong className="font-medium text-text-secondary">Before:</strong> No navigation scaffold, feature discovery requires prior platform knowledge. &nbsp;✅ <strong className="font-medium text-text-secondary">After:</strong> Persistent bottom tab bar, improved content hierarchy, and visual modernization.
+              🔴 <strong className="font-medium text-text-secondary">Before:</strong> No navigation scaffold, feature discovery requires prior platform knowledge. &nbsp;🟢 <strong className="font-medium text-text-secondary">After:</strong> Persistent bottom tab bar, improved content hierarchy, and visual modernization.
             </p>
           </div>
 
@@ -1362,12 +1362,12 @@ export default function MarketCrunchPage() {
 
           {/* User stories */}
           <div className="grid gap-5 md:grid-cols-2">
-            <InsightCard label="👤 User Story — Systematic Swing Trader">
+            <InsightCard label="🧑‍💼 User Story — Systematic Swing Trader">
               <p className="mt-3 font-mono text-sm leading-relaxed text-text-secondary">
                 "As a swing trader monitoring AAPL, TSLA, and NVDA across multiple sessions, I want to re-access analyzed tickers without re-entering symbols, eliminating the 15+ weekly manual inputs that interrupt my analysis workflow."
               </p>
             </InsightCard>
-            <InsightCard label="👤 User Story — Novice Retail Investor">
+            <InsightCard label="🧑‍💻 User Story — Novice Retail Investor">
               <p className="mt-3 font-mono text-sm leading-relaxed text-text-secondary">
                 "As a new user unfamiliar with ticker symbol notation, I want symbols I've previously searched to persist, reducing the risk of input errors and removing a barrier to regular platform engagement."
               </p>
@@ -1378,26 +1378,20 @@ export default function MarketCrunchPage() {
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {[
               {
-                emoji: "👆",
                 label: "Trigger",
                 desc: "Focus event on search input field, dropdown appears without requiring any query input"
               },
               {
-                emoji: "⚡️",
                 label: "Interaction Model",
                 desc: "Single tap on ticker → direct navigate to analyze page. Zero intermediate steps, zero confirmation dialogs"
               },
               {
-                emoji: "🗃️",
                 label: "State Management",
                 desc: "Chronological order (most recent first). 5–10 items. 'Clear all' accessible from dropdown and Settings"
               }
             ].map(item => (
               <div key={item.label} className="rounded-xl border border-border/50 bg-bg-alt p-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">{item.emoji}</span>
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">{item.label}</p>
-                </div>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted mb-2">{item.label}</p>
                 <p className="font-mono text-sm leading-relaxed text-text">{item.desc}</p>
               </div>
             ))}
@@ -1445,7 +1439,6 @@ export default function MarketCrunchPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                emoji: "🎯",
                 title: "Hit Rate Feature",
                 method: "Trust signal design / Data-ink ratio",
                 impact: "Reduced bounce rate · New user growth attributed to trust signal",
@@ -1453,7 +1446,6 @@ export default function MarketCrunchPage() {
                 tag: "Shipped",
               },
               {
-                emoji: "📱",
                 title: "Mobile Bottom Nav",
                 method: "Navigation architecture / Recognition over recall",
                 impact: "Persistent navigation scaffold · Direct feature discoverability improvement",
@@ -1461,7 +1453,6 @@ export default function MarketCrunchPage() {
                 tag: "Shipped",
               },
               {
-                emoji: "📊",
                 title: "Ticker Bar Redesign",
                 method: "Interaction design / Affordance mapping",
                 impact: "CTA integration at highest-visibility surface · Add Alert, Share, Bookmark",
@@ -1469,7 +1460,6 @@ export default function MarketCrunchPage() {
                 tag: "Shipped",
               },
               {
-                emoji: "🧩",
                 title: "Left Nav System",
                 method: "Design system / Material Design icons",
                 impact: "Systematic iconography · Typographic hierarchy · Upgrade CTA embedded",
@@ -1477,7 +1467,6 @@ export default function MarketCrunchPage() {
                 tag: "Shipped",
               },
               {
-                emoji: "🤖",
                 title: "Marc AI Persona",
                 method: "Conversational UI / AI trust design",
                 impact: "Improved perceived AI trustworthiness · Increased engagement with model explanations",
@@ -1485,7 +1474,6 @@ export default function MarketCrunchPage() {
                 tag: "Shipped",
               },
               {
-                emoji: "⚙️",
                 title: "React Implementation",
                 method: "Design-to-code / Figma Dev Mode",
                 impact: "Eliminated handoff lag · Faster iteration loops · Direct production deployment",
@@ -1495,10 +1483,7 @@ export default function MarketCrunchPage() {
             ].map((item) => (
               <div key={item.title} className={`rounded-xl border p-5 ${item.color}`}>
                 <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{item.emoji}</span>
-                    <h3 className="font-manrope text-sm font-medium text-text">{item.title}</h3>
-                  </div>
+                  <h3 className="font-manrope text-sm font-medium text-text">{item.title}</h3>
                   <span className="rounded-full bg-black/5 px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-text-muted">{item.tag}</span>
                 </div>
                 <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted mb-2">{item.method}</p>
