@@ -105,15 +105,15 @@ function SprintDivider({ number, label, weeks, positive = true }: {
    Drag up/down to scrub sections; ticks fire on each crossing
 ───────────────────────────────────────────────────────────── */
 const SECTION_NAV = [
-  { id: "methodology", label: "Methodology", ticks: 3 },
-  { id: "audit", label: "UX Audit", ticks: 4 },
-  { id: "hitrate", label: "Hit Rate", ticks: 3 },
-  { id: "analyze", label: "Analyze Page", ticks: 3 },
-  { id: "mobile", label: "Mobile UX", ticks: 4 },
-  { id: "designsystem", label: "Design System", ticks: 3 },
-  { id: "marcai", label: "Marc AI", ticks: 4 },
-  { id: "conversion", label: "Conversion", ticks: 3 },
-  { id: "featurespec", label: "Feature Spec", ticks: 4 },
+  { id: "background", label: "Background", ticks: 2 },
+  { id: "problem", label: "Problem", ticks: 2 },
+  { id: "personas", label: "Personas", ticks: 2 },
+  { id: "audit", label: "UX Audit", ticks: 3 },
+  { id: "process", label: "Process", ticks: 3 },
+  { id: "analyze", label: "Analyze Page", ticks: 4 },
+  { id: "mobile", label: "Mobile UX", ticks: 3 },
+  { id: "marcai", label: "Marc AI", ticks: 3 },
+  { id: "search", label: "Search History", ticks: 3 },
   { id: "outcomes", label: "Outcomes", ticks: 2 },
 ];
 
@@ -596,20 +596,19 @@ function ComponentSheet({ src, alt, caption }: { src: string; alt: string; capti
 /* ─────────────────────────────────────────────────────────────
    MAIN PAGE
 ───────────────────────────────────────────────────────────── */
+const GridBackground = () => (
+  <div className="pointer-events-none fixed inset-0 z-0">
+    <div
+      className="absolute inset-0 opacity-[0.04]"
+      style={{
+        backgroundImage: `linear-gradient(to right, #000 1px, transparent 1px)`,
+        backgroundSize: "160px 100%",
+      }}
+    />
+  </div>
+);
+
 export default function MarketCrunchPage() {
-
-  const GridBackground = () => (
-    <div className="pointer-events-none fixed inset-0 z-0">
-      <div
-        className="absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage: `linear-gradient(to right, #000 1px, transparent 1px)`,
-          backgroundSize: "160px 100%",
-        }}
-      />
-    </div>
-  );
-
   return (
     <div className="relative min-h-screen bg-[#FAFAFA] text-text selection:bg-primary/20">
       <CustomCursor />
@@ -619,9 +618,9 @@ export default function MarketCrunchPage() {
       <VerticalNav sections={SECTION_NAV} />
 
       {/* ══════════════════════════════════════════════
-          HERO
+          01: HERO & IMPACT
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 pt-32 pb-16 md:pt-48 md:pb-24">
+      <section id="background" className="relative z-10 pt-32 pb-24 md:pt-48 md:pb-32">
         <div className="mx-auto max-w-[1280px] px-6 md:px-12">
 
           {/* Breadcrumb */}
@@ -656,7 +655,7 @@ export default function MarketCrunchPage() {
                 <span className="text-primary">Personal Quant.</span>
               </h1>
               <p className="max-w-xl font-mono text-base leading-relaxed text-text-secondary md:text-lg">
-                Sole product designer at an angel-funded fintech AI startup ,owned the full design-to-deployment cycle across a live platform serving retail investors with 300M+ data points daily.
+                Sole product designer at an angel-funded fintech AI startup. I owned the full design-to-deployment cycle across a live platform serving retail investors with <strong className="font-medium text-text">300M+ data points daily.</strong>
               </p>
             </div>
 
@@ -681,13 +680,13 @@ export default function MarketCrunchPage() {
             <div>
               <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-muted">Responsibilities</p>
               <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                Heuristic evaluation · WCAG audit · IA redesign · Interaction design · Mobile UX · Design system · Usability testing · React JS development · Developer handoff
+                Acted as a hybrid PM, Researcher, and Designer. Heuristic evaluation · IA redesign · Interaction design · Usability testing · React JS development in Cursor.
               </p>
             </div>
             <div>
-              <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-muted">Cross-functional Collaborators</p>
+              <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-muted">Cross-functional Collabs</p>
               <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                Bhushan Suryavanshi (CEO) · Ashim Datta (CTO) · Sylvan (Research Lead) · Harsh Parikh (Engineering) · Raman Ebrahimi (Quant Research, PhD) · USC Research Team
+                Bhushan Suryavanshi (CEO, Wharton / Amazon) · Ashim Datta (CTO) · Sylvan (Research) · Harsh Parikh (Eng) · Raman Ebrahimi (Quant PhD).
               </p>
             </div>
             <div>
@@ -712,465 +711,504 @@ export default function MarketCrunchPage() {
                   <AsanaIcon size={15} />
                   <span className="font-mono text-sm text-text-secondary">Asana</span>
                 </div>
-                <span className="text-border">·</span>
-                <div className="flex items-center gap-1.5">
-                  <SlackIcon size={15} />
-                  <span className="font-mono text-sm text-text-secondary">Slack</span>
-                </div>
-                <span className="text-border">·</span>
-                <div className="flex items-center gap-1.5">
-                  <GoogleAnalyticsIcon size={15} />
-                  <span className="font-mono text-sm text-text-secondary">Google Analytics</span>
-                </div>
-                <span className="text-border">·</span>
-                <div className="flex items-center gap-1.5">
-                  <GoogleLighthouseIcon size={15} />
-                  <span className="font-mono text-sm text-text-secondary">Lighthouse</span>
-                </div>
               </div>
             </div>
           </div>
 
-          {/* Hero image ,latest analyze page screen recording */}
-          <MediaPop className="mt-8">
-            <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
-              <LoopGif
-                src="/Marketcrunchai/latest&currentanalyzepagedesignscreenrecording.gif"
-                alt="MarketCrunch AI - Live Analyze Page, Final Design"
-              />
+          {/* Impact at a Glance */}
+          <div className="mt-6 rounded-2xl border border-border/50 bg-white p-8 md:p-10 shadow-sm">
+            <p className="mb-8 font-mono text-[10px] uppercase tracking-widest text-text-muted">Quantified Impact & Business Growth</p>
+            <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+              <StatItem value="16×" label="MAU growth in 2025" />
+              <StatItem value="300M+" label="Data points analyzed daily" />
+              <StatItem value="$450K+" label="Raised in SAFEs post-stealth" />
+              <StatItem value="Bonus" label="Awarded for design impact" />
             </div>
-          </MediaPop>
-          <p className="mt-3 text-center font-mono text-xs text-text-muted">
-            Analyze page's final shipped design. Ticker bar, hit rate component, Marc AI, and redesigned left nav all visible.
-          </p>
-        </div>
-      </section>
-
-
-      {/* ══════════════════════════════════════════════
-          IMPACT AT A GLANCE
-      ══════════════════════════════════════════════ */}
-      <section className="relative z-10 border-t border-border/40 bg-white py-16 md:py-20">
-        <div className="mx-auto max-w-[1000px] px-6 md:px-12">
-          <p className="mb-10 font-mono text-[10px] uppercase tracking-widest text-text-muted">Quantified Impact</p>
-          <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
-            <StatItem value="16×" label="MAU growth across 2025" />
-            <StatItem value="300M+" label="Data points analyzed daily" />
-            <StatItem value="$450K+" label="Raised in SAFEs post-stealth" />
-            <StatItem value="20+" label="Screens audited & redesigned" />
-          </div>
-          <div className="mt-10 rounded-xl border border-primary/15 bg-primary/4 p-6">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-primary/60 mb-2">CEO · Post-Stealth Announcement</p>
-            <p className="font-mono text-sm leading-relaxed text-text">
-              "MAU grew ~16x, double-digit engagement growth, and retentive paying customers. That wouldn't be possible without our small-but-mighty team who combined <strong className="font-medium">delightful UX and quantitative research rigor.</strong>" - Bhushan Suryavanshi, Founder & CEO. Pradeep received a performance bonus in recognition of direct contribution to these outcomes.
-            </p>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ══════════════════════════════════════════════
-          00: DESIGN PROCESS & METHODOLOGY
-      ══════════════════════════════════════════════ */}
-      <section id="methodology" className="relative z-10 py-28 md:py-40">
-        <div className="mx-auto max-w-[1000px] px-6 md:px-12">
-          <SectionHeading number="00 / METHODOLOGY" title="How I structured the design process at a live, revenue-generating product." />
-
-          <div className="mb-12 space-y-5 max-w-2xl">
-            <p className="font-mono text-base leading-relaxed text-text-secondary">
-              Joining as the <strong className="font-medium text-text">sole designer on a live product with paying subscribers</strong> required a methodology that could balance continuous discovery with immediate delivery. The approach was a <strong className="font-medium text-text">Design Thinking × Lean UX × Agile hybrid</strong>, using Design Thinking to frame the problem space and build user empathy, Lean UX to run fast hypothesis-to-validation cycles, and Agile sprints to deliver and deploy incrementally without blocking engineering.
-            </p>
-            <p className="font-mono text-base leading-relaxed text-text-secondary">
-              Each sprint followed a tight feedback loop: daily standups with engineering, weekly 1:1s with CEO Bhushan for stakeholder alignment, and continuous input from Google Analytics behavioral data and qualitative user feedback sessions coordinated through the research lead, Sylvan.
-            </p>
-            <p className="font-mono text-base leading-relaxed text-text-secondary">
-              Design outputs, from wireframes to high-fidelity prototypes, were handed off via <strong className="font-medium text-text">Figma Dev Mode</strong>, with component specs, spacing tokens, and interactive state documentation. For several features, I <strong className="font-medium text-text">implemented the React components directly in the codebase</strong> using Cursor, closing the loop between design intent and shipped behavior.
-            </p>
-          </div>
-
-          {/* Process diagram */}
-          <div className="rounded-xl border border-border/50 bg-bg-alt p-8 md:p-10">
-            <p className="mb-6 font-mono text-[10px] uppercase tracking-widest text-text-muted">Design & Delivery Loop - Design Thinking · Lean UX · Agile</p>
-
-            <div className="relative">
-              <div className="absolute left-0 right-0 top-[22px] hidden h-px bg-border/60 md:block" />
-              <div className="grid gap-6 md:grid-cols-4 md:gap-0">
-                {[
-                  {
-                    phase: "Evaluate",
-                    items: ["Heuristic evaluation (Nielsen)", "WCAG AA compliance audit", "IA & affordance gaps", "Severity-ranked Asana backlog"],
-                    color: "text-primary",
-                    dot: "bg-primary",
-                    num: "01",
-                  },
-                  {
-                    phase: "Synthesize",
-                    items: ["Google Analytics behavioral data", "Qualitative user feedback", "Competitive benchmarking", "CEO / stakeholder alignment"],
-                    color: "text-[#8E60F0]",
-                    dot: "bg-[#8E60F0]",
-                    num: "02",
-                  },
-                  {
-                    phase: "Design",
-                    items: ["Hi-fi prototypes in Figma", "Component variants & states", "Figma Dev Mode handoff", "Iterative stakeholder review"],
-                    color: "text-[#FF5210]",
-                    dot: "bg-[#FF5210]",
-                    num: "03",
-                  },
-                  {
-                    phase: "Deploy",
-                    items: ["React JS implementation", "Production deployment", "Post-launch analytics", "Next iteration backlog"],
-                    color: "text-green-600",
-                    dot: "bg-green-500",
-                    num: "04",
-                  },
-                ].map((s) => (
-                  <div key={s.phase} className="relative flex flex-col md:items-center md:px-4">
-                    <div className={`relative z-10 mb-4 flex h-11 w-11 items-center justify-center rounded-full border-4 border-bg-alt font-mono text-xs font-bold text-white ${s.dot}`}>
-                      {s.num}
-                    </div>
-                    <span className={`mt-1 font-manrope text-base font-medium md:text-center ${s.color}`}>{s.phase}</span>
-                    <ul className="mt-3 space-y-1 md:text-center">
-                      {s.items.map((item) => (
-                        <li key={item} className="font-mono text-[11px] leading-snug text-text-muted">{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Process methodology diagram */}
-            <div className="mt-8 border-t border-border/40 pt-6">
-              <p className="mb-3 font-mono text-[10px] uppercase tracking-widest text-text-muted">Process Framework - Design Thinking × Lean UX × Agile</p>
-              <div className="overflow-hidden rounded-lg border border-border/40 bg-white">
-                <Image
-                  src="/Marketcrunchai/design-process-framework.png"
-                  alt="Design process framework - Design Thinking, Lean UX, and Agile integrated methodology"
-                  width={1200}
-                  height={600}
-                  className="w-full h-auto object-contain"
-                />
-              </div>
-              <p className="mt-2.5 font-mono text-xs text-text-muted">
-                The "Better Together" model, Design Thinking drives problem clarity and user insight, Lean UX accelerates hypothesis-to-validation loops, Agile delivers iterative deployment with daily sprint cadence
+            <div className="mt-8 rounded-xl border border-primary/15 bg-primary/4 p-6">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-primary/60 mb-2">CEO · Post-Stealth Excerpt</p>
+              <p className="font-mono text-sm leading-relaxed text-text">
+                &quot;MAU grew ~16x, double-digit engagement growth... That wouldn&apos;t be possible without our small-but-mighty team who combined <strong className="font-medium">delightful UX and quantitative research rigor.</strong>&quot; — Bhushan Suryavanshi, Founder & CEO
               </p>
             </div>
           </div>
         </div>
       </section>
 
-
-      <SprintDivider number="01" label="Discovery & Audit" weeks="Week 1–2 · Jun 2025" />
-
       {/* ══════════════════════════════════════════════
-          01: UX AUDIT - HEURISTIC & ACCESSIBILITY EVALUATION
+          02: PROBLEM & OBJECTIVES
       ══════════════════════════════════════════════ */}
-      <section id="audit" className="relative z-10 bg-white py-28 md:py-40">
+      <section id="problem" className="relative z-10 border-t border-border/40 bg-[#FAFAFA] py-24 md:py-32">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
-          <SectionHeading number="01 / UX AUDIT" title="A systematic heuristic evaluation across 20+ screens to establish a redesign baseline." />
+          <SectionHeading number="02 / THE CHALLENGE" title="Retail traders juggle too many tools and distrust hallucinating AI." />
 
-          <div className="mb-12 space-y-5 max-w-2xl">
-            <p className="font-mono text-base leading-relaxed text-text-secondary">
-              Before opening Figma, I conducted a structured <strong className="font-medium text-text">heuristic evaluation</strong> benchmarked against Nielsen's 10 Usability Heuristics, WCAG 2.1 AA compliance, and typographic readability standards. Each violation was logged, categorized by severity (P0–P2), and converted into actionable Asana tasks.
-            </p>
-            <p className="font-mono text-base leading-relaxed text-text-secondary">
-              Key categories evaluated: <strong className="font-medium text-text">visibility of system status, user control and freedom, recognition over recall, aesthetic and minimalist design,</strong> and accessibility, color contrast ratios, touch target sizing for mobile, and screen reader compatibility. Competitive benchmarking against TradingView, Robinhood, and Seeking Alpha established a baseline for expected interaction patterns in the fintech space.
-            </p>
-            <p className="font-mono text-base leading-relaxed text-text-secondary">
-              The audit surfaced two critical P0 violations: the <strong className="font-medium text-text">absence of a persistent mobile navigation structure</strong> (violating Nielsen's heuristic of recognition over recall), and a <strong className="font-medium text-text">trust signal gap</strong> on the analyze page, no readily legible indication of model accuracy for users without a quantitative finance background.
-            </p>
-          </div>
-
-          {/* UX Audit screenshots, 3 across */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="flex flex-col gap-2">
-              <div className="overflow-hidden rounded-xl border border-border/50 bg-white">
-                <Image
-                  src="/Marketcrunchai/UXaudit-sample1.png"
-                  alt="UX audit document, heuristic evaluation sample 1"
-                  width={500}
-                  height={360}
-                  className="w-full h-auto object-cover object-top"
-                />
+          <div className="mb-16 grid gap-10 md:grid-cols-2 lg:gap-16">
+            <Fade>
+              <div className="space-y-4">
+                <h3 className="font-manrope text-xl font-semibold text-text">The Problem</h3>
+                <p className="font-mono text-sm leading-relaxed text-text-secondary">
+                  Retail investors are burdened by fragmented workflows—jumping between screeners, watchlists, charts, news, and &quot;gut feeling.&quot; While MarketCrunch possessed incredibly robust, non-hallucinating quantitative models (analyzing Treasury data, sentiment, and historical prices), <strong className="font-medium text-text">the legacy interface lacked clarity and trust signals.</strong> Users bounded quickly from the Analyze page because the data felt overwhelming without proper Information Architecture.
+                </p>
               </div>
-              <p className="font-mono text-[10px] text-text-muted">Heuristic evaluation, visibility & feedback violations</p>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="overflow-hidden rounded-xl border border-border/50 bg-white">
-                <Image
-                  src="/Marketcrunchai/UXaudit-sample2.png"
-                  alt="UX audit document, heuristic evaluation sample 2"
-                  width={500}
-                  height={360}
-                  className="w-full h-auto object-cover object-top"
-                />
+            </Fade>
+            <Fade delay={0.1}>
+              <div className="space-y-4">
+                <h3 className="font-manrope text-xl font-semibold text-text">Project Objectives & KPIs</h3>
+                <ul className="space-y-3 font-mono text-sm text-text-secondary">
+                  <li className="flex gap-2.5">
+                    <span className="mt-0.5 shrink-0 text-primary">✓</span>
+                    <span><strong>Democratize Quant Research:</strong> Translate complex hedge-fund metrics into digestible, actionable UI.</span>
+                  </li>
+                  <li className="flex gap-2.5">
+                    <span className="mt-0.5 shrink-0 text-primary">✓</span>
+                    <span><strong>Reduce Friction:</strong> Eliminate repetitive tasks (like ticker input) for high-frequency users.</span>
+                  </li>
+                  <li className="flex gap-2.5">
+                    <span className="mt-0.5 shrink-0 text-primary">✓</span>
+                    <span><strong>Build Trust:</strong> Surface model accuracy clearly to mitigate AI skepticism.</span>
+                  </li>
+                  <li className="flex gap-2.5">
+                    <span className="mt-0.5 shrink-0 text-primary">✓</span>
+                    <span><strong>KPIs:</strong> Reduce bounce rate, increase MAU, and optimize mobile discoverability.</span>
+                  </li>
+                </ul>
               </div>
-              <p className="font-mono text-[10px] text-text-muted">IA audit, navigation structure & affordance gaps</p>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="overflow-hidden rounded-xl border border-border/50 bg-white">
-                <Image
-                  src="/Marketcrunchai/UXaudit-sample3.png"
-                  alt="UX audit document - heuristic evaluation sample 3"
-                  width={500}
-                  height={360}
-                  className="w-full h-auto object-cover object-top"
-                />
-              </div>
-              <p className="font-mono text-[10px] text-text-muted">WCAG AA compliance - color contrast & mobile targets</p>
-            </div>
-          </div>
-          <p className="mt-3 text-center font-mono text-xs text-text-muted">
-            UX audit documentation, findings logged across 20+ screens and triaged into severity-ranked Asana tasks
-          </p>
-
-          {/* Key audit findings */}
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
-            <InsightCard label="🔴 P0 Violations — Critical">
-              <ul className="mt-3 space-y-3 font-mono text-sm text-text-secondary">
-                <li className="flex gap-2.5">
-                  <span className="mt-1.5 shrink-0 text-[10px]">🔴</span>
-                  <span>No persistent bottom navigation on mobile, users had no recognition-based path to key features (Nielsen #6: Recognition over Recall)</span>
-                </li>
-                <li className="flex gap-2.5">
-                  <span className="mt-1.5 shrink-0 text-[10px]">🔴</span>
-                  <span>Trust signal absence on analyze page, no model accuracy indicator for non-technical users; high bounce risk</span>
-                </li>
-                <li className="flex gap-2.5">
-                  <span className="mt-1.5 shrink-0 text-[10px]">🔴</span>
-                  <span>Ticker bar lacked action affordances, no CTA for Add Alert, Share, or Bookmark at the highest-visibility element on the page</span>
-                </li>
-              </ul>
-            </InsightCard>
-            <InsightCard label="🟡 P1 Violations — Significant">
-              <ul className="mt-3 space-y-3 font-mono text-sm text-text-secondary">
-                <li className="flex gap-2.5">
-                  <span className="mt-1.5 shrink-0 text-[10px]">🟡</span>
-                  <span>Left navigation used inconsistent iconography, no systematic icon library, poor visual hierarchy between nav items</span>
-                </li>
-                <li className="flex gap-2.5">
-                  <span className="mt-1.5 shrink-0 text-[10px]">🟡</span>
-                  <span>Model explanation ("Technical Analysis") mislabeled and misplaced, inaccurately described for legacy reasons, wrong location in information hierarchy</span>
-                </li>
-                <li className="flex gap-2.5">
-                  <span className="mt-1.5 shrink-0 text-[10px]">🟡</span>
-                  <span>Search flow required users to recall exact ticker symbols on every session, no progressive disclosure or history pattern to reduce recall burden</span>
-                </li>
-              </ul>
-            </InsightCard>
-          </div>
-
-          {/* Competitor benchmarking */}
-          <div className="mt-10">
-            <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Competitive Benchmarking, Interaction Patterns in Fintech</p>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="flex flex-col gap-2">
-                <div className="overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB]">
-                  <Image
-                    src="/Marketcrunchai/competitiorrobinhoodwatchlistdesign.png"
-                    alt="Robinhood watchlist - UI pattern analysis"
-                    width={600}
-                    height={380}
-                    className="w-full h-auto object-contain max-h-[280px]"
-                  />
-                </div>
-                <p className="font-mono text-[10px] text-text-muted">Robinhood, strong watchlist affordances, clear information hierarchy on stock cards</p>
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB]">
-                  <Image
-                    src="/Marketcrunchai/competitiorstockwitswatchlistdesign.png"
-                    alt="StockWits watchlist - UI pattern analysis"
-                    width={600}
-                    height={380}
-                    className="w-full h-auto object-contain max-h-[280px]"
-                  />
-                </div>
-                <p className="font-mono text-[10px] text-text-muted">StockWits's social signal integration and community-driven ticker discovery</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Legacy baseline */}
-          <div className="mt-10">
-            <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Audit Baseline - Legacy Analyze Page</p>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="flex flex-col gap-2">
-                <div className="overflow-hidden rounded-xl border border-border/50 bg-white">
-                  <Image
-                    src="/Marketcrunchai/Legacyanalyzepagedesign.png"
-                    alt="Legacy analyze page - desktop audit baseline"
-                    width={700}
-                    height={460}
-                    className="w-full h-auto object-contain max-h-[300px] object-top"
-                  />
-                </div>
-                <p className="font-mono text-[10px] text-text-muted">Desktop - flat ticker bar, no action CTAs, dense information without progressive disclosure</p>
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="overflow-hidden rounded-xl border border-border/50 bg-white">
-                  <Image
-                    src="/Marketcrunchai/Legacyanalyzepagemobile.png"
-                    alt="Legacy analyze page - mobile audit baseline"
-                    width={700}
-                    height={460}
-                    className="w-full h-auto object-contain max-h-[300px] object-top"
-                  />
-                </div>
-                <p className="font-mono text-[10px] text-text-muted">Mobile - no persistent bottom nav, limited affordances, feature discoverability requires prior knowledge</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 rounded-xl border border-primary/15 bg-primary/4 p-6">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-primary/60 mb-2">Central Audit Finding</p>
-            <p className="font-mono text-sm leading-relaxed text-text">
-              The platform had technically sound AI infrastructure, but the interface had a <strong className="font-medium">trust signal gap</strong>, nothing on the analyze page gave non-technical retail investors an immediate, legible signal that the model's predictions were reliable. This was the root cause of high bounce rate on the platform's most critical page.
-            </p>
-          </div>
-        </div>
-      </section>
-
-
-      <SprintDivider number="02" label="Trust Signal & Analyze" weeks="Week 3–5 · Jun–Jul 2025" />
-
-      {/* ══════════════════════════════════════════════
-          02: HIT RATE - TRUST SIGNAL DESIGN
-      ══════════════════════════════════════════════ */}
-      <section id="hitrate" className="relative z-10 py-28 md:py-40">
-        <div className="mx-auto max-w-[1000px] px-6 md:px-12">
-          <SectionHeading number="02 / FEATURE" title="Designing a trust signal that communicates model accuracy without requiring financial literacy." />
-
-          <div className="mb-16 grid gap-10 md:grid-cols-2 lg:gap-20">
-            <div className="space-y-8">
-              <Fade>
-                <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #f19d9e33, #f1ece6)" }}>
-                  <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-red-500 mb-2">The Problem</p>
-                  <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                    Retail investors without a quant background couldn't evaluate a deep-learning model from RMSE values or backtested Sharpe ratios — the interface had <strong className="font-medium text-text">no trust signal</strong>. High bounce rate on the platform's most critical page.
-                  </p>
-                </div>
-              </Fade>
-              <Fade delay={0.1}>
-                <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #9ff09c33, #f0ebe6)" }}>
-                  <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-green-600 mb-2">The Solution</p>
-                  <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                    The <strong className="font-medium text-text">Hit Rate component</strong> — a color-coded accuracy streak across the last 5 sessions using <strong className="font-medium text-text">progressive disclosure</strong>: glanceable at surface level, expandable for detail. Designed with data-ink ratio principles, no jargon, color + shape encoded for accessibility.
-                  </p>
-                </div>
-              </Fade>
-            </div>
-
-            <Fade delay={0.15} className="flex flex-col gap-8 justify-center">
-              <StatItem value="↓ 35%" label="Bounce rate on analyze page post-launch" />
-              <StatItem value="↑ 14%" label="New user signups, attributed to trust signal" />
-              <StatItem value="5" label="Trading sessions shown in accuracy streak" />
             </Fade>
           </div>
+        </div>
+      </section>
 
-          {/* Hit rate GIF, looping */}
-          <MediaPop>
-            <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
-              <LoopGif
-                src="/Marketcrunchai/hitratecloseupview.gif"
-                alt="Hit rate component, looping live view showing prediction accuracy streak"
-              />
-            </div>
-          </MediaPop>
-          <p className="mt-3 text-center font-mono text-xs text-text-muted">
-            Hit rate component in production, color-coded accuracy streak across last 5 trading sessions
+      {/* ══════════════════════════════════════════════
+          03: USER PERSONAS
+      ══════════════════════════════════════════════ */}
+      <section id="personas" className="relative z-10 border-t border-border/40 bg-white py-24 md:py-32">
+        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+          <SectionHeading number="03 / AUDIENCE" title="Who are we building the personal quant for?" />
+
+          <p className="mb-12 max-w-2xl font-mono text-base leading-relaxed text-text-secondary">
+            Through stakeholder interviews and product alignment, we anchored our design decisions around three core target personas. The goal was to serve the power user without alienating the beginner.
           </p>
 
-          {/* Hit rate component sheet, constrained */}
-          <div className="mt-10">
-            <p className="mb-2.5 font-mono text-[10px] uppercase tracking-widest text-text-muted">Component Variants & States, Figma Design System</p>
-            <ComponentSheet
-              src="/Marketcrunchai/hitratecomponents.png"
-              alt="Hit rate component design system, all states and variants"
-              caption="All component states: hit, miss, no-data, loading, and expanded detail view, built as a reusable Figma component with auto-layout"
-            />
+          <div className="grid gap-6 md:grid-cols-3">
+            <Fade>
+              <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border/50 bg-[#F4F9FF]">
+                <div className="bg-[#E6F0FF] px-6 py-5">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-xl text-white shadow-sm">
+                      💼
+                    </div>
+                    <div>
+                      <p className="font-manrope text-sm font-bold text-text">Julian Vance</p>
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-blue-600">Systematic Swing Trader</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-col p-6">
+                  <p className="mb-4 font-mono text-[11px] italic text-text-secondary">
+                    &quot;I track AAPL and NVDA daily. I need to spot the trend confirmation before the market opens, and I hate retyping tickers.&quot;
+                  </p>
+                  <div className="mt-auto space-y-3 font-mono text-xs text-text-muted">
+                    <div className="flex justify-between border-b border-blue-500/10 pb-2">
+                      <span>Habits</span> <span className="text-text">Checks 5-15 stocks daily</span>
+                    </div>
+                    <div className="flex justify-between border-b border-blue-500/10 pb-2">
+                      <span>Pain Point</span> <span className="text-text">Repetitive navigation friction</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Goal</span> <span className="text-text">Rapid validation of trends</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Fade>
+
+            <Fade delay={0.1}>
+              <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border/50 bg-[#FFF5F2]">
+                <div className="bg-[#FFEBE5] px-6 py-5">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FF5210] text-xl text-white shadow-sm">
+                      ⏱️
+                    </div>
+                    <div>
+                      <p className="font-manrope text-sm font-bold text-text">Elena Rostova</p>
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-[#FF5210]">Time-Constrained Investor</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-col p-6">
+                  <p className="mb-4 font-mono text-[11px] italic text-text-secondary">
+                    &quot;I have a day job. I want a 60-second summary on whether the macros justify my long position in tech.&quot;
+                  </p>
+                  <div className="mt-auto space-y-3 font-mono text-xs text-text-muted">
+                    <div className="flex justify-between border-b border-[#FF5210]/10 pb-2">
+                      <span>Habits</span> <span className="text-text">Reads updates on commute</span>
+                    </div>
+                    <div className="flex justify-between border-b border-[#FF5210]/10 pb-2">
+                      <span>Pain Point</span> <span className="text-text">Information overload / jargon</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Goal</span> <span className="text-text">Glanceable, high-signal data</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Fade>
+
+            <Fade delay={0.2}>
+              <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border/50 bg-[#F6F2FF]">
+                <div className="bg-[#EDE6FF] px-6 py-5">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#8E60F0] text-xl text-white shadow-sm">
+                      🌱
+                    </div>
+                    <div>
+                      <p className="font-manrope text-sm font-bold text-text">Marcus Lee</p>
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-[#8E60F0]">Novice Retail Trader</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-col p-6">
+                  <p className="mb-4 font-mono text-[11px] italic text-text-secondary">
+                    &quot;These AI tools just guess. How do I know this bot is actually looking at real data and not just hallucinating?&quot;
+                  </p>
+                  <div className="mt-auto space-y-3 font-mono text-xs text-text-muted">
+                    <div className="flex justify-between border-b border-[#8E60F0]/10 pb-2">
+                      <span>Habits</span> <span className="text-text">Explores socially hyped stocks</span>
+                    </div>
+                    <div className="flex justify-between border-b border-[#8E60F0]/10 pb-2">
+                      <span>Pain Point</span> <span className="text-text">Skeptical of AI &quot;black boxes&quot;</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Goal</span> <span className="text-text">Transparent trust signals</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Fade>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════
+          JOURNEY MAP
+      ══════════════════════════════════════════════ */}
+      <section id="journeymap" className="relative z-10 bg-[#FAFAFA] pb-24 md:pb-32">
+        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+          <SectionHeading number="04 / USER JOURNEY MAP" title="Mapping the Systematic Swing Trader's workflow to identify friction points." />
+          <div className="overflow-x-auto pb-6 scrollbar-hide">
+            <div className="min-w-[800px] grid grid-cols-4 gap-4">
+              {/* Timeline Header */}
+              <div className="col-span-4 grid grid-cols-4 gap-4 border-b border-border/40 pb-4">
+                <div className="font-manrope font-bold text-text">1. Discover & Retrieve</div>
+                <div className="font-manrope font-bold text-text">2. Analyze & Synthesize</div>
+                <div className="font-manrope font-bold text-text">3. Decide & Execute</div>
+                <div className="font-manrope font-bold text-text">4. Monitor & Adjust</div>
+              </div>
+
+              {/* Doing */}
+              <div className="col-span-4 grid grid-cols-4 gap-4 border-b border-border/40 py-4">
+                <div className="text-sm font-mono text-text-muted mb-2 col-span-4 uppercase tracking-widest">Doing</div>
+                <div className="bg-white p-4 rounded-lg border border-border/50 shadow-sm text-sm text-text-secondary leading-relaxed">Opens app. Recalls tickers (AAPL, TSLA). Manually types each one into the search bar.</div>
+                <div className="bg-white p-4 rounded-lg border border-border/50 shadow-sm text-sm text-text-secondary leading-relaxed">Scans technicals. Attempts to parse MarketCrunch&apos;s AI price predictions. Cross-references News.</div>
+                <div className="bg-white p-4 rounded-lg border border-border/50 shadow-sm text-sm text-text-secondary leading-relaxed">Determines if the AI prediction aligns with their gut. Switches to brokerage app to execute trade.</div>
+                <div className="bg-white p-4 rounded-lg border border-border/50 shadow-sm text-sm text-text-secondary leading-relaxed">Checks back frequently to see if the prediction was accurate over a 5-day window.</div>
+              </div>
+
+              {/* Thinking / Feeling */}
+              <div className="col-span-4 grid grid-cols-4 gap-4 border-b border-border/40 py-4">
+                <div className="text-sm font-mono text-text-muted mb-2 col-span-4 uppercase tracking-widest">Thinking / Feeling</div>
+                <div className="bg-red-50 p-4 rounded-lg border border-red-100 text-sm text-red-700 leading-relaxed">😩 &quot;Why do I have to re-type the exact same tickers every morning?&quot;</div>
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-100 text-sm text-orange-700 leading-relaxed">🤔 &quot;There&apos;s so much data here. How confident is this AI model? Can I trust it?&quot;</div>
+                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-sm text-yellow-700 leading-relaxed">🤨 &quot;I&apos;ll trust my own technicals over this black-box number.&quot;</div>
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-blue-700 leading-relaxed">🧐 &quot;Did the model actually get it right? I can&apos;t easily see its track record.&quot;</div>
+              </div>
+
+              {/* Opportunities */}
+              <div className="col-span-4 grid grid-cols-4 gap-4 py-4">
+                <div className="text-sm font-mono text-text-muted mb-2 col-span-4 uppercase tracking-widest">Opportunities</div>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200 text-sm text-green-800 leading-relaxed">💡 Implement <strong className="font-medium">Recent Searches</strong> dropdown to eliminate typing friction.</div>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200 text-sm text-green-800 leading-relaxed">💡 Restructure Analyze page Information Architecture. Group technicals logically.</div>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200 text-sm text-green-800 leading-relaxed">💡 Introduce <strong className="font-medium">Hit Rate Trust Signal</strong> to visibly prove model accuracy.</div>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200 text-sm text-green-800 leading-relaxed">💡 Add alerts and notifications for tracked predictions to bring them back.</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
 
       {/* ══════════════════════════════════════════════
-          03: TICKER BAR & ANALYZE PAGE REDESIGN
+          05: UX AUDIT
       ══════════════════════════════════════════════ */}
-      <section id="analyze" className="relative z-10 border-t border-border/40 bg-white py-28 md:py-40">
+      <section id="audit" className="relative z-10 bg-[#FAFAFA] py-24 md:py-32">
+        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+          <SectionHeading number="05 / COMPREHENSIVE UX AUDIT" title="Rigorous heuristic evaluation across 20+ screens to establish a redesign baseline." />
+
+          <div className="mb-12 max-w-[1000px] space-y-5">
+            <p className="font-mono text-base leading-relaxed text-text-secondary">
+              Before touching any pixels in Figma, I conducted a structured <strong className="font-medium text-text">heuristic evaluation</strong> benchmarked against Nielsen&apos;s 10 Usability Heuristics, WCAG 2.1 AA compliance, color contrast ratios, and typographic readability standards. I audited every core flow in the legacy application.
+            </p>
+            <p className="font-mono text-base leading-relaxed text-text-secondary">
+              Competitor benchmarking (TradingView, Robinhood, Seeking Alpha) mapped out standard interaction patterns, highlighting where MarketCrunch&apos;s legacy platform suffered from &quot;friction via novelty.&quot;
+            </p>
+            <p className="font-mono text-base leading-relaxed text-text-secondary">
+              The audit surfaced critical P0 violations: <strong className="font-medium text-text">no persistent mobile navigation</strong> (violating Recognition over Recall), a <strong className="font-medium text-text">dead ticker bar</strong> (zero action affordances on the most visible element), and a <strong className="font-medium text-text">trust signal absence</strong> for the core quant models. All findings were ranked by severity, documented, and triaged into Asana sprints.
+            </p>
+          </div>
+
+          {/* Audit Image Carousel */}
+          <div className="mb-16">
+            <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Extracted Export of 10-Page Audit Document</p>
+            <div className="flex w-full gap-5 overflow-x-auto snap-x snap-mandatory pb-8 pt-2 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+              {[
+                "0.Guide.png",
+                "1. Navigation.png",
+                "2. Homepage.png",
+                "2.1 Homepage.png",
+                "3. Dashboard.png",
+                "4. Analyze.png",
+                "4.1 Analyze.png",
+                "5. Alerts.png",
+                "6. AI Picks.png",
+                "Recommendations.png"
+              ].map((img, i) => (
+                <div key={img} className="flex-none w-[85vw] md:w-[700px] snap-center shrink-0">
+                  <div className="overflow-hidden rounded-xl border border-border/50 bg-white shadow-sm h-full flex items-center justify-center p-2">
+                    <Image
+                      src={`/Marketcrunchai/${img}`}
+                      alt={`UX Audit Document - ${img}`}
+                      width={1000}
+                      height={700}
+                      className="w-full h-auto object-contain max-h-[500px]"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Scroll hint */}
+            <div className="flex items-center gap-2 justify-center text-text-muted font-mono text-[10px] uppercase tracking-widest">
+              <span>←</span>
+              <span>Scroll to view all 10 pages</span>
+              <span>→</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SprintDivider number="01" label="Strategy & Foundation" weeks="Week 1–2 · Jun 2025" />
+
+      {/* ══════════════════════════════════════════════
+          05: DESIGN PROCESS COLLABORATION
+      ══════════════════════════════════════════════ */}
+      <section id="process" className="relative z-10 py-24 md:py-32">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
-          <SectionHeading number="03 / ANALYZE PAGE" title="Redesigning the highest-visibility element: the ticker bar and analyze page header." />
+          <SectionHeading number="05 / DESIGN PROCESS" title="A hybrid methodology: Design Thinking × Lean UX × Agile." />
 
-          <div className="mb-12 space-y-5 max-w-2xl">
+          <div className="mb-12 space-y-6 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              The ticker bar is the first element a trader interacts with on the analyze page, it sets the visual register and communicates the platform's design quality within 300ms of page load. The legacy bar was a flat, dark surface with no <strong className="font-medium text-text">action affordances</strong>, high-value interactions like price alerts, sharing, and bookmarking were absent from the primary focal point.
+              Operating in a fast-paced, angel-funded startup meant we couldn&apos;t afford a bloated 3-month research phase. Instead, we adopted a <strong className="font-medium text-text">hybrid combo of Design Thinking, Lean UX, and Agile</strong>.
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              The redesign introduced a <strong className="font-medium text-text">modular header component</strong> with clear typographic hierarchy, contextual CTA placement (Add Alert near the price delta where alert intent is highest), a Share action for virality, and a Bookmark toggle for watchlist behavior, all within the existing screen real estate, without increasing visual density.
+              We used Design Thinking to empathize and frame the problem space, Lean UX to brainstorm and build rapid low-fidelity prototypes to validate assumptions, and daily Agile sprints to ship, gather Google Analytics feedback, and iterate endlessly.
+            </p>
+            <p className="font-mono text-base leading-relaxed text-text-secondary">
+              Our continuous loop: <code className="rounded bg-black/5 px-1.5 py-0.5 text-sm">Observe Needs → Brainstorm → Sprint Calls → Build (Low-fi) → Feedback → Refine (Hi-fi) → Code → Deploy</code>.
             </p>
           </div>
 
-          {/* Ticker bar comparison */}
-          <div className="rounded-xl border border-border/50 bg-bg-alt p-5">
-            <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Ticker Bar : Before / After Comparative Analysis</p>
-            <div className="overflow-hidden rounded-lg border border-border/40 bg-white">
+          <div className="rounded-xl border border-border/50 bg-bg-alt p-6 md:p-10 mb-16">
+            <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Process Framework Implementation</p>
+            <div className="overflow-hidden rounded-lg border border-border/40 bg-white shadow-sm">
               <Image
-                src="/Marketcrunchai/tickerbarcomparisionoldvsnew.png"
-                alt="Ticker bar redesign : before and after comparative"
-                width={1200}
-                height={500}
-                className="w-full h-auto object-contain"
-              />
-            </div>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div className="rounded-lg bg-white/70 p-4">
-                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-red-500 mb-1">
-                  🔴 Before
-                </div>
-                <p className="font-mono text-xs text-text-secondary">Flat dark blue surface, no action affordances, no secondary metadata hierarchy, dated typographic treatment</p>
-              </div>
-              <div className="rounded-lg bg-white/70 p-4">
-                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-green-500 mb-1">
-                  🟢 After
-                </div>
-                <p className="font-mono text-xs text-text-secondary">Clear typographic scale, contextual CTAs (Add Alert, Share, Bookmark), hit rate component integrated, modern visual language</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Proposed desktop analyze page */}
-          <div className="mt-10">
-            <p className="mb-3 font-mono text-[10px] uppercase tracking-widest text-text-muted">Analyze Page - Proposed Desktop Redesign v1</p>
-            <p className="mb-4 font-mono text-sm text-text-secondary max-w-2xl">
-              Full IA restructure of the analyze page based on stakeholder feedback: alert component visually anchored near the price delta, Share CTA repositioned to top-right for discoverability, and Subscribe CTA integrated into the left navigation as an active conversion surface rather than a passive link.
-            </p>
-            <div className="overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB]">
-              <Image
-                src="/Marketcrunchai/Analyzepage - Desktopproposeddesignv1.png"
-                alt="Analyze page desktop - proposed redesign v1"
-                width={1200}
-                height={700}
-                className="w-full h-auto object-contain"
-              />
-            </div>
-          </div>
-
-          {/* Legacy bottom half */}
-          <div className="mt-8">
-            <p className="mb-3 font-mono text-[10px] uppercase tracking-widest text-text-muted">Legacy Analyze Page - Bottom Section Audit</p>
-            <div className="overflow-hidden rounded-xl border border-border/50 bg-white">
-              <Image
-                src="/Marketcrunchai/Legacyanalyzepagedesignbottomhalf.png"
-                alt="Legacy analyze page - bottom section audit"
+                src="/Marketcrunchai/design-process-framework.png"
+                alt="Design process framework - Design Thinking, Lean UX, and Agile integrated methodology"
                 width={1200}
                 height={600}
                 className="w-full h-auto object-contain"
               />
             </div>
-            <p className="mt-2.5 font-mono text-xs text-text-muted">
-              Bottom section audit - Prior Accuracy, Technical Analysis, and Model Information were siloed across separate UI regions with no coherent grouping, violating proximity principles in information design.
+            <p className="mt-4 font-mono text-xs leading-relaxed text-text-muted">
+              We started with rapid ideation and low-fidelity wireframes, mapping out the Information Architecture before committing to visual polish. Pros/cons for each layout were evaluated with stakeholders before converting to high-fidelity utilizing the brand&apos;s design language.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════
+          INFORMATION ARCHITECTURE
+      ══════════════════════════════════════════════ */}
+      <section id="ia" className="relative z-10 bg-[#FAFAFA] py-24 md:py-32">
+        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+          <SectionHeading number="06 / INFORMATION ARCHITECTURE" title="Structuring the platform for intuitive wayfinding." />
+
+          <div className="mb-12 max-w-[1000px] space-y-5">
+            <p className="font-mono text-base leading-relaxed text-text-secondary">
+              The legacy architecture suffered from shallow navigation paths and dead ends. I restructured the core site map to centralize the <strong className="font-medium text-text">Analyze core loop</strong>, creating dedicated, persistent homes for AI Picks, Options, and Profile settings.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto pb-8 scrollbar-hide">
+            <div className="min-w-[900px] p-8 rounded-3xl border border-border/50 bg-[#F9FAFB] flex flex-col items-center">
+              {/* Main App Node */}
+              <div className="bg-[#0A0A12] text-white px-8 py-4 rounded-xl font-manrope font-bold shadow-lg mb-8 relative">
+                MarketCrunch Web App
+                <div className="absolute w-0.5 h-8 bg-border/80 left-1/2 -bottom-8 -translate-x-1/2"></div>
+              </div>
+
+              {/* Level 1 Connections */}
+              <div className="w-[800px] h-0.5 bg-border/80 mb-8 relative">
+                <div className="absolute w-0.5 h-8 bg-border/80 left-0 top-0"></div>
+                <div className="absolute w-0.5 h-8 bg-border/80 left-[266px] top-0"></div>
+                <div className="absolute w-0.5 h-8 bg-border/80 left-[533px] top-0"></div>
+                <div className="absolute w-0.5 h-8 bg-border/80 right-0 top-0"></div>
+              </div>
+
+              {/* Level 1 Nodes */}
+              <div className="flex w-[800px] justify-between items-start gap-4">
+                {/* Branch 1 */}
+                <div className="flex flex-col items-center w-48">
+                  <div className="bg-white border-2 border-primary/20 px-6 py-3 rounded-lg font-manrope font-semibold text-text shadow-sm w-full text-center z-10 flex flex-col items-center justify-center">
+                    <span className="text-xl mb-1">🏠</span>
+                    <span className="text-sm">Home</span>
+                  </div>
+                  <div className="w-0.5 h-6 bg-border/50 my-2"></div>
+                  <div className="bg-white border border-border/50 px-4 py-2 rounded mb-2 text-xs font-mono text-text-secondary w-full text-center shadow-sm">Market Pulse</div>
+                  <div className="bg-white border border-border/50 px-4 py-2 rounded mb-2 text-xs font-mono text-text-secondary w-full text-center shadow-sm">Trending Tickers</div>
+                  <div className="bg-white border border-border/50 px-4 py-2 rounded text-xs font-mono text-text-secondary w-full text-center shadow-sm">Watchlist</div>
+                </div>
+
+                {/* Branch 2 */}
+                <div className="flex flex-col items-center w-48 relative">
+                  <div className="bg-white border-2 border-blue-500/30 px-6 py-3 rounded-lg font-manrope font-semibold text-blue-900 shadow-sm w-full text-center z-10 flex flex-col items-center justify-center">
+                    <span className="text-xl mb-1">📈</span>
+                    <span className="text-sm">Analyze</span>
+                  </div>
+                  <div className="w-0.5 h-6 bg-border/50 my-2"></div>
+                  <div className="bg-blue-50 border border-blue-100 px-4 py-2 rounded mb-2 text-xs font-mono text-blue-800 w-full text-center font-medium shadow-sm">Search History</div>
+                  <div className="bg-blue-50 border border-blue-100 px-4 py-2 rounded mb-2 text-xs font-mono text-blue-800 w-full text-center font-medium shadow-sm">Hit Rate Indicator</div>
+                  <div className="bg-white border border-border/50 px-4 py-2 rounded mb-2 text-xs font-mono text-text-secondary w-full text-center shadow-sm">Technicals / Greeks</div>
+                  <div className="bg-white border border-border/50 px-4 py-2 rounded mb-2 text-xs font-mono text-text-secondary w-full text-center shadow-sm">Marc AI Tool</div>
+                </div>
+
+                {/* Branch 3 */}
+                <div className="flex flex-col items-center w-48">
+                  <div className="bg-white border-2 border-green-500/30 px-6 py-3 rounded-lg font-manrope font-semibold text-green-900 shadow-sm w-full text-center z-10 flex flex-col items-center justify-center">
+                    <span className="text-xl mb-1">🎯</span>
+                    <span className="text-sm">AI Picks</span>
+                  </div>
+                  <div className="w-0.5 h-6 bg-border/50 my-2"></div>
+                  <div className="bg-green-50 border border-green-100 px-4 py-2 rounded mb-2 text-xs font-mono text-green-800 w-full text-center font-medium shadow-sm">Progressive Gate</div>
+                  <div className="bg-green-50 border border-green-100 px-4 py-2 rounded mb-2 text-xs font-mono text-green-800 w-full text-center font-medium shadow-sm">Stripe Payments</div>
+                  <div className="bg-white border border-border/50 px-4 py-2 rounded text-xs font-mono text-text-secondary w-full text-center shadow-sm">Premium Listing</div>
+                </div>
+
+                {/* Branch 4 */}
+                <div className="flex flex-col items-center w-48">
+                  <div className="bg-white border-2 border-gray-300 px-6 py-3 rounded-lg font-manrope font-semibold text-text shadow-sm w-full text-center z-10 flex flex-col items-center justify-center">
+                    <span className="text-xl mb-1">⚙️</span>
+                    <span className="text-sm">Profile</span>
+                  </div>
+                  <div className="w-0.5 h-6 bg-border/50 my-2"></div>
+                  <div className="bg-white border border-border/50 px-4 py-2 rounded mb-2 text-xs font-mono text-text-secondary w-full text-center shadow-sm">Account Settings</div>
+                  <div className="bg-white border border-border/50 px-4 py-2 rounded text-xs font-mono text-text-secondary w-full text-center shadow-sm">Subscriptions</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SprintDivider number="02" label="Analyze Refactor" weeks="Week 3–5 · Jun–Jul 2025" />
+
+      {/* ══════════════════════════════════════════════
+          06: ANALYZE PAGE (Problem -> Approach -> Solution)
+      ══════════════════════════════════════════════ */}
+      <section id="analyze" className="relative z-10 border-t border-border/40 bg-white py-24 md:py-32">
+        <div className="mx-auto max-w-[1000px] px-6 md:px-12">
+          <SectionHeading number="06 / THE ANALYZE PAGE" title="Restructuring the core engine for clarity, action, and trust." />
+
+          {/* 1. THE PROBLEM */}
+          <div className="mb-16">
+            <div className="mb-6 flex items-center gap-3">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 font-mono text-[10px] font-bold text-red-600">1</span>
+              <h3 className="font-manrope text-xl font-bold text-text">The Problem: Fragmentation</h3>
+            </div>
+            <p className="font-mono text-sm leading-relaxed text-text-secondary mb-6 max-w-2xl">
+              The legacy layout suffered from severe cognitive overload. Prior Accuracy, Technical Analysis, and Model Information were siloed across disparate UI regions. The ticker bar—the highest visibility element—was a dead surface with <strong className="font-medium text-text">zero action affordances</strong>.
+            </p>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="overflow-hidden rounded-xl border border-red-500/20 bg-red-50/50 p-2">
+                <Image src="/Marketcrunchai/Legacyanalyzepagedesignbottomhalf.png" alt="Legacy Analyze Bottom Half" width={600} height={400} className="w-full h-auto rounded-lg border border-border/40 object-contain" />
+                <p className="mt-2 text-center font-mono text-[10px] text-red-500 uppercase tracking-wider">Legacy: Disjointed Layout</p>
+              </div>
+              <div className="overflow-hidden rounded-xl border border-red-500/20 bg-red-50/50 p-2">
+                <Image src="/Marketcrunchai/Legacyanalyzepagedesign.png" alt="Legacy Analyze Top Half" width={600} height={400} className="w-full h-auto rounded-lg border border-border/40 object-top object-contain max-h-[200px]" />
+                <p className="mt-2 text-center font-mono text-[10px] text-red-500 uppercase tracking-wider">Legacy: Dead Ticker Header</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. THE APPROACH (Trust Signal / Hit Rate) */}
+          <div className="mb-16">
+            <div className="mb-6 flex items-center gap-3">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-100 font-mono text-[10px] font-bold text-yellow-600">2</span>
+              <h3 className="font-manrope text-xl font-bold text-text">The Approach: Designing the &quot;Hit Rate&quot; Trust Signal</h3>
+            </div>
+            <p className="font-mono text-sm leading-relaxed text-text-secondary mb-6 max-w-2xl">
+              To mitigate &quot;AI skepticism,&quot; I designed the <strong className="font-medium text-text">Hit Rate component</strong>. Instead of raw RMSE values, we translated accuracy into a color-coded streak (90, 30, 7, and 5-day windows). Utilizing progressive disclosure, it provides a glanceable trust signal that expands for detail without overwhelming novice traders.
+            </p>
+            <div className="grid gap-6 md:grid-cols-[1fr_0.8fr] items-center">
+              <div className="overflow-hidden rounded-xl border border-border/50 bg-[#0A0A12] shadow-sm">
+                <LoopGif src="/Marketcrunchai/hitratecloseupview.gif" alt="Hit rate component live view" />
+              </div>
+              <div>
+                <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-muted">Design System Component</p>
+                <div className="overflow-hidden rounded-xl border border-border/50 bg-white p-2">
+                  <Image src="/Marketcrunchai/hitratecomponents.png" alt="Hit Rate Variants" width={400} height={300} className="w-full h-auto" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. THE SOLUTION (V1 Redesign) */}
+          <div>
+            <div className="mb-6 flex items-center gap-3">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 font-mono text-[10px] font-bold text-green-600">3</span>
+              <h3 className="font-manrope text-xl font-bold text-text">The Solution: Proposed Desktop v1</h3>
+            </div>
+            <p className="font-mono text-sm leading-relaxed text-text-secondary mb-8 max-w-[800px]">
+              The final architecture brought the Action CTAs (Add Alert, Share, Bookmark) directly into the newly modular Ticker Header. The Hit Rate, Sentiment, and Technicals were grouped sequentially in the primary eyeline, reducing cognitive load and creating a coherent narrative from Data-to-Decision.
+            </p>
+
+            <div className="rounded-xl border border-border/50 bg-bg-alt p-5 mb-8">
+              <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Ticker Bar Redesign: Before / After</p>
+              <div className="overflow-hidden rounded-lg border border-border/40 bg-white">
+                <Image src="/Marketcrunchai/tickerbarcomparisionoldvsnew.png" alt="Ticker bar before and after" width={1000} height={400} className="w-full h-auto object-contain" />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border/50 shadow-sm overflow-hidden bg-[#FAFAFA] p-2">
+              <Image
+                src="/Marketcrunchai/Analyzepage - Desktopproposeddesignv1.png"
+                alt="Analyze page desktop - proposed redesign v1"
+                width={1200}
+                height={800}
+                className="w-full h-auto rounded-xl border border-border/40 object-contain shadow-lg"
+              />
+            </div>
+            <div className="mt-6 flex justify-between gap-6 px-4">
+              <div>
+                <p className="font-manrope text-sm font-bold text-green-600">↓ 35% Bounce Rate</p>
+                <p className="font-mono text-xs text-text-muted mt-1">Due to improved trust signals.</p>
+              </div>
+              <div>
+                <p className="font-manrope text-sm font-bold text-blue-600">↑ Virality CTAs</p>
+                <p className="font-mono text-xs text-text-muted mt-1">Share/Alert added to header.</p>
+              </div>
+              <div>
+                <p className="font-manrope text-sm font-bold text-purple-600">Contextual Sidebar</p>
+                <p className="font-mono text-xs text-text-muted mt-1">Right rail isolated for macroeconomic News.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1190,7 +1228,7 @@ export default function MarketCrunchPage() {
               <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #f19d9e33, #f1ece6)" }}>
                 <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-red-500 mb-2">The Problem</p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                  MarketCrunch's primary use case is mobile, yet had <strong className="font-medium text-text">no persistent navigation scaffold</strong>. Switching between Analyze, AI Picks, Options, and Market Pulse required memory-dependent paths — violating Recognition over Recall (Nielsen #6).
+                  MarketCrunch&apos;s primary use case is mobile, yet had <strong className="font-medium text-text">no persistent navigation scaffold</strong>. Switching between Analyze, AI Picks, Options, and Market Pulse required memory-dependent paths — violating Recognition over Recall (Nielsen #6).
                 </p>
               </div>
             </Fade>
@@ -1204,21 +1242,41 @@ export default function MarketCrunchPage() {
             </Fade>
           </div>
 
-          {/* Mobile before vs after */}
-          <div className="flex flex-col gap-3">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Mobile Experience : Before / After Navigation Redesign</p>
-            <div className="overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB]">
+          {/* Bottom Nav before vs after */}
+          <div className="flex flex-col gap-3 mb-12">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Navigation Redesign : Introducing the Persistent Tab Bar</p>
+            <div className="overflow-hidden rounded-xl border border-border/50 bg-bg-alt pb-4">
+              <Image
+                src="/Marketcrunchai/oldtonewcomparisionofbottomnavmobileview.png"
+                alt="Mobile navigation redesign : before and after"
+                width={1200}
+                height={700}
+                className="w-full h-auto object-contain max-h-[600px] object-top"
+              />
+            </div>
+            <div className="font-mono text-xs text-text-muted flex flex-col gap-2 mt-1">
+              <span className="flex items-center gap-1.5">🔴 <strong className="font-medium text-text-secondary">Before:</strong> Disjointed experience with no reliable way to return home or switch core contexts.</span>
+              <span className="flex items-center gap-1.5">🟢 <strong className="font-medium text-text-secondary">After:</strong> A persistent bottom tab bar acting as a primary scaffold, anchored by the AI Picks gateway.</span>
+            </div>
+          </div>
+
+          {/* Most Viewed Table before vs after */}
+          <div className="flex flex-col gap-3 mt-8">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Data Table Redesign : The &quot;Most Viewed&quot; Feed</p>
+
+            <div className="font-mono text-sm leading-relaxed text-text-secondary mb-4 max-w-2xl flex flex-col gap-4">
+              <p><strong className="font-medium text-text">Refactoring for Density & Clarity:</strong> The legacy layout displayed long, obfuscated user strings (e.g., &quot;pr******ep&quot;) and repeated dates across rows, causing unnecessary horizontal overflow (<span className="text-red-500">Left Sidebar</span>).</p>
+              <p>I restructured the table to fit comfortably within a narrow mobile viewport (<span className="text-green-600">Right Sidebar</span>). Obfuscated names were replaced with clean, color-coded profile alphabet badges (e.g., <span className="inline-flex w-4 h-4 rounded-full bg-blue-100 text-[8px] items-center justify-center text-blue-700">PY</span>), and timestamps were moved inline below the metric view count to eliminate the redundant column.</p>
+            </div>
+
+            <div className="overflow-hidden rounded-xl border border-border/50 bg-[#FAFAFA]">
               <Image
                 src="/Marketcrunchai/oldtonewcomparisionofmostviewedmobileview.png"
-                alt="Mobile redesign : before and after navigation architecture"
+                alt="Most viewed data table redesign"
                 width={1200}
                 height={700}
                 className="w-full h-auto object-contain"
               />
-            </div>
-            <div className="font-mono text-xs text-text-muted flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mt-1">
-              <span className="flex items-center gap-1.5">🔴 <strong className="font-medium text-text-secondary">Before:</strong> No navigation scaffold.</span>
-              <span className="flex items-center gap-1.5">🟢 <strong className="font-medium text-text-secondary">After:</strong> Persistent bottom tab bar.</span>
             </div>
           </div>
 
@@ -1277,7 +1335,7 @@ export default function MarketCrunchPage() {
               With an active engineering team shipping features in parallel, design consistency requires more than style guidelines, it requires a <strong className="font-medium text-text">component-driven design system</strong> that maps directly to the React component architecture. I built out the Figma component library using <strong className="font-medium text-text">atomic design principles</strong>: atoms (icons, tokens, type styles) composed into molecules (cards, nav items, buttons) and organisms (navigation bars, modal shells, ticker headers).
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              Each component was documented with <strong className="font-medium text-text">variant properties, interactive states (default, hover, active, disabled, error), auto-layout constraints, and spacing tokens</strong>, all exported via Figma Dev Mode directly to the React codebase. The left navigation was fully rebuilt using <strong className="font-medium text-text">Google Material Design icons</strong> for systematic iconographic consistency, paired with an improved typographic scale and an "Upgrade to Pro" conversion card embedded as a permanent nav item.
+              Each component was documented with <strong className="font-medium text-text">variant properties, interactive states (default, hover, active, disabled, error), auto-layout constraints, and spacing tokens</strong>, all exported via Figma Dev Mode directly to the React codebase. The left navigation was fully rebuilt using <strong className="font-medium text-text">Google Material Design icons</strong> for systematic iconographic consistency, paired with an improved typographic scale and an &quot;Upgrade to Pro&quot; conversion card embedded as a permanent nav item.
             </p>
           </div>
 
@@ -1367,444 +1425,163 @@ export default function MarketCrunchPage() {
       </section>
 
 
-      <SprintDivider number="04" label="Marc AI & Conversion" weeks="Week 9–12 · Aug–Sep 2025" />
+      <SprintDivider number="04" label="AI Trust & Conversion" weeks="Week 9–10 · Aug 2025" />
 
       {/* ══════════════════════════════════════════════
-          06: MARC AI - AI PERSONA & CONVERSATIONAL UI
+          08: MARC AI & CONVERSION
       ══════════════════════════════════════════════ */}
-      <section id="marcai" className="relative z-10 py-28 md:py-40">
+      <section id="marcai" className="relative z-10 py-24 md:py-32">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
-          <SectionHeading number="06 / MARC AI" title="Designing a human-readable face for an AI financial advisor, the trust dimension of conversational UI." />
+          <SectionHeading number="08 / MARC AI & CONVERSION" title="Designing a conversational quant that users actually trust." />
 
-          {/* Marc AI closeup GIF with hand-drawn doodle annotation */}
-          <div className="mb-16 overflow-x-clip">
-            <div className="relative inline-block">
-              {/* GIF — fixed width, no border */}
-              <div className="w-[200px] md:w-[260px] overflow-hidden rounded-2xl">
-                <LoopGif
-                  src="/Marketcrunchai/marcaicloseup.gif"
-                  alt="Marc AI - animated closeup, the AI financial advisor persona"
-                  className="w-full h-auto object-contain"
-                />
+          <div className="mb-20 flex flex-col items-center md:flex-row md:items-start md:gap-12 relative max-w-4xl pl-0 md:pl-32">
+            <div className="relative w-48 md:w-56 shrink-0 mb-20 md:mb-0">
+              <div className="relative z-10 w-full">
+                <LoopGif src="/Marketcrunchai/marcaicloseup.gif" alt="Marc AI Avatar closeup" />
               </div>
 
-              {/* Doodle annotation — hidden on mobile, shown md+ so it never causes overflow */}
-              <div
-                className="pointer-events-none select-none hidden md:block"
-                aria-hidden="true"
-                style={{ position: "absolute", top: "-36px", left: "220px" }}
-              >
-                <svg
-                  width="260"
-                  height="160"
-                  viewBox="0 0 260 160"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  style={{ overflow: "visible" }}
-                >
-                  <text
-                    x="20"
-                    y="30"
-                    fontFamily="'Caveat', 'Segoe Script', 'Comic Sans MS', cursive"
-                    fontSize="26"
-                    fontWeight="700"
-                    fill="var(--color-accent, #FF5210)"
-                  >
-                    Meet Marc AI
-                  </text>
-                  <path
-                    d="M 50 44 C 40 75, 20 105, -10 128"
-                    stroke="var(--color-accent, #FF5210)"
-                    strokeWidth="2.8"
-                    strokeLinecap="round"
-                    fill="none"
-                    opacity="0.9"
-                  />
-                  <path
-                    d="M -10 128 L -4 115 M -10 128 L 5 122"
-                    stroke="var(--color-accent, #FF5210)"
-                    strokeWidth="2.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    fill="none"
-                    opacity="0.9"
-                  />
-                </svg>
+              <div className="absolute -left-4 -bottom-16 md:top-auto md:bottom-8 md:-left-44 md:translate-x-0 z-20 pointer-events-none">
+                <style>{`@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap');`}</style>
+                <div className="flex items-center gap-1 md:gap-2 rotate-[-4deg]">
+                  <span style={{ fontFamily: "'Caveat', cursive" }} className="text-[40px] leading-none text-[#8E60F0] whitespace-nowrap mb-1">Ask Marc</span>
+                  {/* Mobile Arrow: Points UP-RIGHT */}
+                  <svg width="40" height="50" viewBox="0 0 100 100" fill="none" stroke="#8E60F0" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="md:hidden -translate-y-6">
+                    <path d="M 20 90 Q 60 50 80 10" />
+                    <path d="M 50 15 L 80 10 L 85 45" />
+                  </svg>
+                  {/* Desktop Arrow: Points RIGHT */}
+                  <svg width="50" height="40" viewBox="0 0 100 100" fill="none" stroke="#8E60F0" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="hidden md:block -translate-y-2">
+                    <path d="M 10 70 Q 50 20 90 50" />
+                    <path d="M 70 35 L 90 50 L 70 65" />
+                  </svg>
+                </div>
               </div>
+            </div>
+
+            <div className="space-y-5 flex-1 relative z-10">
+              <p className="font-mono text-base leading-relaxed text-text-secondary">
+                Anthropomorphizing AI in fintech is risky. Users either over-trust or inherently distrust a conversational bot. We needed Marc AI to act as a translator for complex quant data, but it had to project <strong className="font-medium text-text">competence, neutrality, and approachability.</strong>
+              </p>
+              <p className="font-mono text-base leading-relaxed text-text-secondary">
+                I designed Marc&apos;s persona as a <strong className="font-medium text-text">warm, middle-aged, friendly financial advisor.</strong> By avoiding the hyper-slick &quot;hedge fund manager&quot; trope and the robotic &quot;cyborg&quot; trope, we hit the sweet spot of approachability.
+              </p>
             </div>
           </div>
 
-          <div className="mb-12 space-y-5 max-w-2xl">
-            <p className="font-mono text-base leading-relaxed text-text-secondary">
-              Marc AI is MarketCrunch's primary AI financial advisor, a conversational model that contextualizes market data and interprets prediction drivers for the user. The product challenge was a <strong className="font-medium text-text">UX trust problem</strong>: anthropomorphizing AI in fintech carries specific risks, users either over-trust or distrust AI personas. The design had to project <strong className="font-medium text-text">competence, neutrality, and approachability simultaneously</strong>.
-            </p>
-            <p className="font-mono text-base leading-relaxed text-text-secondary">
-              I designed Marc's visual identity as a <strong className="font-medium text-text">mid-40s professional</strong>, an age bracket that signals domain experience without projecting the inaccessible authority of a hedge fund manager. The facial expression was calibrated to be welcoming but not cartoonish, with visual design choices (color palette, framing) consistent with the platform's analytical brand register.
-            </p>
-            <p className="font-mono text-base leading-relaxed text-text-secondary">
-              Post-launch qualitative feedback indicated <strong className="font-medium text-text">improved perceived trustworthiness</strong> of the AI advisor, with users more likely to engage with Marc's explanations of model outputs, a key behavior for platform retention and the "explainability" value proposition MarketCrunch is built on.
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-[1fr_1.2fr] mb-16 items-start">
             <div className="flex flex-col gap-2.5">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Marc AI - Launch Announcement Modal</p>
-              <div className="overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB] flex-1">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Marc AI Interface Design</p>
+              <div className="overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB]">
                 <Image
                   src="/Marketcrunchai/marc_ai_announcementmodaldesign.png"
                   alt="Marc AI - announcement modal design"
                   width={600}
                   height={480}
-                  className="w-full h-auto object-contain max-h-[360px] object-top"
+                  className="w-full h-auto object-contain object-top max-h-[460px]"
                 />
               </div>
             </div>
             <div className="flex flex-col gap-2.5">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Marc Chat Interface - Design Iterations</p>
-              <div className="overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB] flex-1">
-                <Image
-                  src="/Marketcrunchai/marcchatdesigniteration.png"
-                  alt="Marc chat interface - design iterations exploring layout and interaction model"
-                  width={600}
-                  height={480}
-                  className="w-full h-auto object-contain max-h-[360px] object-top"
-                />
+              <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Chat Modal Interaction</p>
+              <div className="overflow-hidden rounded-xl border border-border/50 bg-[#0A0A12] h-full shadow-sm">
+                <LoopGif src="/Marketcrunchai/Marcwindowopenlatest&current.gif" alt="Marc AI Chat live interaction recording" />
               </div>
             </div>
           </div>
 
-          {/* Marc window GIF - looping */}
-          <MediaPop className="mt-8">
-            <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
-              <LoopGif
-                src="/Marketcrunchai/Marcwindowopenlatest&current.gif"
-                alt="Marc AI window - live interaction, open and close flow"
-              />
+          <div className="mt-16 border-t border-border/40 pt-16">
+            <h3 className="font-manrope text-2xl font-bold text-text mb-6">Optimizing the AI Picks & Payments Flow</h3>
+            <p className="font-mono text-base leading-relaxed text-text-secondary mb-10 max-w-2xl">
+              The AI Picks page is our primary acquisition hook. I applied progressive disclosure gating—blurring content subtly to generate curiosity while demonstrating the structure of the value. For authenticated users, we provided list vs. card views.
+            </p>
+            <div className="grid gap-6 md:grid-cols-3 items-stretch">
+              <div className="flex flex-col gap-2">
+                <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Picks V1 (Discovery)</p>
+                <div className="rounded-xl border border-border/50 bg-white p-2 flex-grow overflow-hidden">
+                  <Image src="/Marketcrunchai/AI Picks- Desktopproposeddesignv1.png" alt="AI Picks V1" width={400} height={300} className="w-full h-auto object-cover rounded-lg" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Picks V2 (Density)</p>
+                <div className="rounded-xl border border-border/50 bg-white p-2 flex-grow overflow-hidden">
+                  <Image src="/Marketcrunchai/AI Picks- Desktopproposeddesign2v1.png" alt="AI Picks V2" width={400} height={300} className="w-full h-auto object-cover rounded-lg" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Payments Modal</p>
+                <div className="rounded-xl border border-border/50 bg-white p-2 flex-grow overflow-hidden">
+                  <Image src="/Marketcrunchai/Paymentsdesignboard.png" alt="Payments Redesign" width={400} height={300} className="w-full h-auto object-cover rounded-lg" />
+                </div>
+              </div>
             </div>
-          </MediaPop>
-          <p className="mt-3 text-center font-mono text-xs text-text-muted">
-            Marc AI panel - live interaction recording showing the panel open / close flow and conversational UI
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════
+          09: SEARCH HISTORY SPEC
+      ══════════════════════════════════════════════ */}
+      <section id="search" className="relative z-10 border-t border-border/40 bg-[#FAFAFA] py-24 md:py-32">
+        <div className="mx-auto max-w-[1000px] px-6 md:px-12">
+          <SectionHeading number="09 / SEARCH SPECIFICATION" title="Search history dropdown: A low-implementation, high-yield feature." />
+
+          <p className="mb-10 font-mono text-sm leading-relaxed text-text-secondary max-w-2xl">
+            My research indicated that Swing Traders (Persona 1) return to the same handful of tickers daily. By forcing them to re-type tickers every session, we were inducing friction. I designed a Search History dropdown to drastically reduce this recall burden.
           </p>
 
-          {/* Feature: Backtest overlay */}
-          <div className="mt-14">
-            <p className="mb-1.5 font-mono text-[10px] uppercase tracking-widest text-text-muted">Feature: Backtest Overlay - Progressive Disclosure Pattern</p>
-            <p className="mb-4 font-mono text-sm text-text-secondary max-w-2xl">
-              The backtesting visualization was redesigned from a static full-width widget to an <strong className="font-medium text-text">on-demand overlay triggered inline</strong> next to the Predictive Confidence metric, applying progressive disclosure to reduce visual noise on initial load while preserving access to historical model performance for users who need it.
-            </p>
-            <MediaPop>
-              <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
-                <LoopGif
-                  src="/Marketcrunchai/backtestfeaturescreenrecording.gif"
-                  alt="Backtest overlay feature, progressive disclosure interaction pattern"
-                />
-              </div>
-            </MediaPop>
-          </div>
-
-          {/* Feature: Trending tab */}
-          <div className="mt-10">
-            <p className="mb-1.5 font-mono text-[10px] uppercase tracking-widest text-text-muted">Feature: Most Trending Tab - Ticker Discovery Surface</p>
-            <p className="mb-4 font-mono text-sm text-text-secondary max-w-2xl">
-              Designed the "Most Trending" tab as a passive discovery surface, giving users an ambient signal of market attention without requiring active search intent. Follows a scannability-optimized layout with ticker, momentum indicator, and directional signal in a compact card format.
-            </p>
-            <MediaPop>
-              <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
-                <LoopGif
-                  src="/Marketcrunchai/mostrendingtablatest&current.gif"
-                  alt="Most trending tab - ticker discovery interaction"
-                />
-              </div>
-            </MediaPop>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ══════════════════════════════════════════════
-          07: AI PICKS, PAYMENTS & CONVERSION FLOWS
-      ══════════════════════════════════════════════ */}
-      <section id="conversion" className="relative z-10 border-t border-border/40 bg-white py-28 md:py-40">
-        <div className="mx-auto max-w-[1000px] px-6 md:px-12">
-          <SectionHeading number="07 / CONVERSION DESIGN" title="Redesigning the AI Picks page and payments flow to support user acquisition and subscription conversion." />
-
-          <div className="mb-10 space-y-5 max-w-2xl">
-            <p className="font-mono text-base leading-relaxed text-text-secondary">
-              The AI Picks page is the primary feature differentiator for MarketCrunch, the destination that converts casual visitors into subscribers. The legacy design had a fragmented anonymous user experience: no clear content gating strategy, inconsistent navigation for non-authenticated users, and a payments modal that prioritized information density over conversion clarity.
-            </p>
-            <p className="font-mono text-base leading-relaxed text-text-secondary">
-              I designed two variations of the desktop AI Picks experience, one optimizing for <strong className="font-medium text-text">content preview with soft gates</strong> (blur-on-scroll, partial data visible), and one for <strong className="font-medium text-text">authenticated users with full data access</strong>. The payments modal was redesigned with a clear plan comparison layout, social proof elements, and a CTA hierarchy that reduced decision friction.
-            </p>
-          </div>
-
-          {/* AI Picks v1 and v2 */}
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="flex flex-col gap-2.5">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">AI Picks - Desktop Variation 1</p>
-              <div className="overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB] flex-1">
-                <Image
-                  src="/Marketcrunchai/AI Picks- Desktopproposeddesignv1.png"
-                  alt="AI Picks desktop - design variation 1"
-                  width={600}
-                  height={480}
-                  className="w-full h-auto object-contain max-h-[360px] object-top"
-                />
-              </div>
-              <p className="font-mono text-[10px] text-text-muted">Card-based layout with ticker cards, emphasis on scan-ability and momentum indicators</p>
-            </div>
-            <div className="flex flex-col gap-2.5">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">AI Picks - Desktop Variation 2</p>
-              <div className="overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB] flex-1">
-                <Image
-                  src="/Marketcrunchai/AI Picks- Desktopproposeddesign2v1.png"
-                  alt="AI Picks desktop - design variation 2"
-                  width={600}
-                  height={480}
-                  className="w-full h-auto object-contain max-h-[360px] object-top"
-                />
-              </div>
-              <p className="font-mono text-[10px] text-text-muted">List-based layout : denser information, optimized for power users monitoring multiple tickers</p>
-            </div>
-          </div>
-
-          {/* Legacy AI picks + payments */}
-          <div className="mt-6 grid gap-5 md:grid-cols-2">
-            <div className="flex flex-col gap-2.5">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Legacy AI Picks - Mobile Audit Baseline</p>
-              <div className="overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB]">
-                <Image
-                  src="/Marketcrunchai/Legacyaipickspagedesignmobile.png"
-                  alt="Legacy AI Picks mobile - audit baseline"
-                  width={600}
-                  height={460}
-                  className="w-full h-auto object-contain max-h-[300px] object-top"
-                />
-              </div>
-              <p className="font-mono text-[10px] text-text-muted">Legacy mobile - inconsistent card sizing, no hierarchy between daily picks and contextual data</p>
-            </div>
-            <div className="flex flex-col gap-2.5">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">Payments Modal : Redesigned Conversion Flow</p>
-              <div className="overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB]">
-                <Image
-                  src="/Marketcrunchai/Paymentsdesignboard.png"
-                  alt="Payments modal - redesigned conversion flow"
-                  width={600}
-                  height={460}
-                  className="w-full h-auto object-contain max-h-[300px] object-top"
-                />
-              </div>
-              <p className="font-mono text-[10px] text-text-muted">Redesigned payments modal for plan comparison, value anchoring, and reduced decision friction</p>
-            </div>
-          </div>
-
-          {/* Signup modal */}
-          <div className="mt-6">
-            <p className="mb-2.5 font-mono text-[10px] uppercase tracking-widest text-text-muted">Signup Modal - Onboarding Gate Design</p>
-            <div className="overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB]">
-              <Image
-                src="/Marketcrunchai/Signup Modaldesignframe.png"
-                alt="Signup modal - onboarding gate design"
-                width={1200}
-                height={560}
-                className="w-full h-auto object-contain max-h-[380px] object-top"
-              />
-            </div>
-            <p className="mt-2.5 font-mono text-xs text-text-muted">
-              Signup modal design - value proposition front-loaded above the form fields, social proof integrated, minimal friction entry for trial conversion
-            </p>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ══════════════════════════════════════════════
-          08: SEARCH HISTORY - FEATURE SPECIFICATION
-      ══════════════════════════════════════════════ */}
-      <section id="featurespec" className="relative z-10 py-28 md:py-40">
-        <div className="mx-auto max-w-[1000px] px-6 md:px-12">
-          <SectionHeading number="08 / FEATURE SPEC" title="Search history dropdown, reducing recall burden for high-frequency traders through persistent interaction state." />
-
-          <div className="mb-16 grid gap-6 md:grid-cols-2">
-            <Fade>
-              <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #f19d9e33, #f1ece6)" }}>
-                <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-red-500 mb-2">The Problem</p>
-                <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                  Core personas (Swing Traders, Active Growth Strategists) return to the same 5–15 tickers per day. The search flow required <strong className="font-medium text-text">full symbol recall and manual re-entry every session</strong> — violating Nielsen #6 and adding friction where speed directly correlates with user value.
+          <div className="grid gap-5 md:grid-cols-2 mb-12">
+            <div className="rounded-2xl bg-[#F0EEFF] border border-[#C9BFFF]/40 p-7 relative overflow-hidden">
+              <span className="absolute -top-4 -left-1 font-manrope text-[100px] font-bold text-[#8E60F0]/10 leading-none select-none">&ldquo;</span>
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="text-sm">🧑‍💼</p>
+                  <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-[#8E60F0] m-0">Julian (Swing Trader)</p>
+                </div>
+                <p className="font-mono text-sm leading-relaxed text-text mt-3">
+                  &quot;As a swing trader monitoring AAPL, TSLA, and NVDA, I want to re-access analyzed tickers without re-entering symbols — eliminating the 15+ weekly manual inputs that interrupt my analysis workflow.&quot;
                 </p>
               </div>
-            </Fade>
-            <Fade delay={0.1}>
-              <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #9ff09c33, #f0ebe6)" }}>
-                <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-green-600 mb-2">The Solution</p>
-                <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                  A <strong className="font-medium text-text">contextual search history dropdown</strong> triggered on focus — surfaces 5–10 recent tickers chronologically, one-tap to analyze. Aligns with MarketCrunch's "60-second analysis" positioning and compounds session habituation with every return visit.
-                </p>
-              </div>
-            </Fade>
-          </div>
-
-          {/* User stories */}
-          <Fade>
-            <div className="flex items-center gap-3 mb-5">
-              <p className="text-xl">📚</p>
-              <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted m-0">User Stories</p>
             </div>
-          </Fade>
-          <div className="grid gap-5 md:grid-cols-2">
-            <Fade delay={0.05}>
-              <div className="rounded-2xl bg-[#F0EEFF] border border-[#C9BFFF]/40 p-7 relative overflow-hidden h-full">
-                <span className="absolute -top-4 -left-1 font-manrope text-[100px] font-bold text-[#8E60F0]/10 leading-none select-none">&ldquo;</span>
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    <p className="text-sm">🧑‍💼</p>
-                    <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-[#8E60F0] m-0">Systematic Swing Trader</p>
-                  </div>
-                  <p className="font-mono text-sm leading-relaxed text-text mt-3">
-                    "As a swing trader monitoring AAPL, TSLA, and NVDA across multiple sessions, I want to re-access analyzed tickers without re-entering symbols — eliminating the 15+ weekly manual inputs that interrupt my analysis workflow."
-                  </p>
-                </div>
-              </div>
-            </Fade>
-            <Fade delay={0.1}>
-              <div className="rounded-2xl bg-[#FFF4EE] border border-[#FFCFB3]/40 p-7 relative overflow-hidden h-full">
-                <span className="absolute -top-4 -left-1 font-manrope text-[100px] font-bold text-[#FF5210]/10 leading-none select-none">&ldquo;</span>
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    <p className="text-sm">🧑‍💻</p>
-                    <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-[#FF5210] m-0">Novice Retail Investor</p>
-                  </div>
-                  <p className="font-mono text-sm leading-relaxed text-text mt-3">
-                    "As a new user unfamiliar with ticker symbol notation, I want symbols I've previously searched to persist — reducing input errors and removing a barrier to regular platform engagement."
-                  </p>
-                </div>
-              </div>
-            </Fade>
-          </div>
-
-          {/* Interaction spec */}
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {[
-              {
-                label: "Trigger",
-                desc: "Focus event on search input field, dropdown appears without requiring any query input"
-              },
-              {
-                label: "Interaction Model",
-                desc: "Single tap on ticker → direct navigate to analyze page. Zero intermediate steps, zero confirmation dialogs"
-              },
-              {
-                label: "State Management",
-                desc: "Chronological order (most recent first). 5–10 items. 'Clear all' accessible from dropdown and Settings"
-              }
-            ].map(item => (
-              <div key={item.label} className="rounded-xl border border-border/50 bg-bg-alt p-5">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted mb-2">{item.label}</p>
-                <p className="font-mono text-sm leading-relaxed text-text">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 rounded-xl border border-primary/15 bg-primary/4 p-6">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-primary/60 mb-2">Competitive Gap - Differentiation Opportunity</p>
-            <p className="font-mono text-sm leading-relaxed text-text">
-              Neither TradingView, Seeking Alpha, nor Robinhood surface a <strong className="font-medium">persistent search history as a primary search interaction pattern</strong>. This is a low-implementation, high-learnability improvement that creates a compounding habituation advantage, every return visit becomes faster, increasing session frequency and platform stickiness proportionally.
-            </p>
+            <div className="rounded-xl border border-border/50 bg-white p-7">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-primary/60 mb-2">Competitive Gap</p>
+              <p className="font-mono text-sm leading-relaxed text-text">
+                Neither TradingView nor Seeking Alpha surface a <strong className="font-medium text-text">persistent search history as a primary search interaction</strong>. This creates a compounding habituation advantage for MarketCrunch.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-
       {/* ══════════════════════════════════════════════
-          09: OUTCOMES & REFLECTION
+          10: OUTCOMES
       ══════════════════════════════════════════════ */}
       <section id="outcomes" className="relative z-10 border-t border-border/40 bg-white py-28 md:py-40">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
-          <SectionHeading number="09 / OUTCOMES" title="Platform growth, performance recognition, and what this internship shaped in my practice." />
+          <SectionHeading number="10 / OUTCOMES & REFLECTION" title="Platform growth, performance recognition, and closing the gap between design and code." />
 
           <div className="mb-12 grid gap-10 md:grid-cols-2 lg:gap-16">
             <div className="space-y-5">
               <p className="font-mono text-base leading-relaxed text-text-secondary">
-                During this engagement, MarketCrunch <strong className="font-medium text-text">exited stealth mode, completed UPenn's Venture Lab accelerator (VIPX), and secured $450K+ in SAFEs</strong>, with the CEO publicly citing "delightful UX" as a core driver of the platform's 16× MAU growth and double-digit engagement lift. The hit rate feature and mobile navigation redesign were among the most-cited improvements in post-launch user feedback.
+                During this engagement, MarketCrunch <strong className="font-medium text-text">exited stealth mode, completed UPenn&apos;s Venture Lab accelerator (VIPX), and secured $450K+ in SAFEs.</strong>
               </p>
               <p className="font-mono text-base leading-relaxed text-text-secondary">
-                I shipped multiple features end-to-end, from heuristic evaluation through Figma prototyping, React implementation, and production deployment, acting simultaneously as <strong className="font-medium text-text">designer, front-end developer, and product co-owner</strong>. Daily sprint cadence with CEO, CTO, engineering, and research leads gave me fluency in stakeholder communication at executive level.
-              </p>
-              <p className="font-mono text-base leading-relaxed text-text-secondary">
-                The internship closed with a <strong className="font-medium text-text">performance bonus from both CEO and CTO</strong>, direct recognition that design output had measurably moved platform metrics. This was the clearest validation that closing the design-to-deployment loop, rather than operating purely as a handoff designer, produces disproportionate product impact.
+                By bridging Product Management, UX Design, and React Development via Cursor, I was able to ship entire feature loops without blocking engineering. The hit rate feature and mobile redesign were the most-cited improvements in post-launch feedback.
               </p>
             </div>
 
-            <div className="flex flex-col gap-8 justify-center">
+            <div className="flex flex-col gap-6 justify-center">
               <StatItem value="16×" label="Monthly active user growth across 2025" />
-              <StatItem value="$450K+" label="Raised in SAFEs after stealth exit" />
-              <StatItem value="6+" label="Features designed & shipped end-to-end" />
+              <StatItem value="↓ 35%" label="Analyze page bounce rate reduction" />
               <StatItem value="Bonus" label="Performance recognition from CEO + CTO" />
             </div>
           </div>
 
-          {/* Impact summary cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: "Hit Rate Feature",
-                method: "Trust signal design / Data-ink ratio",
-                impact: "Reduced bounce rate · New user growth attributed to trust signal",
-                color: "border-primary/20 bg-primary/4",
-                tag: "Shipped",
-              },
-              {
-                title: "Mobile Bottom Nav",
-                method: "Navigation architecture / Recognition over recall",
-                impact: "Persistent navigation scaffold · Direct feature discoverability improvement",
-                color: "border-[#8E60F0]/20 bg-[#8E60F0]/4",
-                tag: "Shipped",
-              },
-              {
-                title: "Ticker Bar Redesign",
-                method: "Interaction design / Affordance mapping",
-                impact: "CTA integration at highest-visibility surface · Add Alert, Share, Bookmark",
-                color: "border-[#FF5210]/20 bg-[#FF5210]/4",
-                tag: "Shipped",
-              },
-              {
-                title: "Left Nav System",
-                method: "Design system / Material Design icons",
-                impact: "Systematic iconography · Typographic hierarchy · Upgrade CTA embedded",
-                color: "border-green-500/20 bg-green-500/4",
-                tag: "Shipped",
-              },
-              {
-                title: "Marc AI Persona",
-                method: "Conversational UI / AI trust design",
-                impact: "Improved perceived AI trustworthiness · Increased engagement with model explanations",
-                color: "border-amber-500/20 bg-amber-500/4",
-                tag: "Shipped",
-              },
-              {
-                title: "React Implementation",
-                method: "Design-to-code / Figma Dev Mode",
-                impact: "Eliminated handoff lag · Faster iteration loops · Direct production deployment",
-                color: "border-primary/20 bg-primary/4",
-                tag: "Code",
-              },
-            ].map((item) => (
-              <div key={item.title} className={`rounded-xl border p-5 ${item.color}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-manrope text-sm font-medium text-text">{item.title}</h3>
-                  <span className="rounded-full bg-black/5 px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-text-muted">{item.tag}</span>
-                </div>
-                <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted mb-2">{item.method}</p>
-                <p className="font-mono text-xs leading-relaxed text-text-secondary">{item.impact}</p>
-              </div>
-            ))}
-          </div>
-
           {/* CEO quote */}
-          <div className="mt-10 rounded-xl border border-border/50 bg-bg-alt p-8">
+          <div className="mt-10 mb-16 rounded-xl border border-border/50 bg-bg-alt p-8">
             <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted mb-4">CEO · LinkedIn · Post-Stealth Announcement</p>
             <blockquote className="border-l-2 border-primary/30 pl-6">
-              <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                "In 2025, MAU grew ~16x, double-digit engagement growth (validates our 'core loop'), and retentive paying customers. That wouldn't be possible without our small-but-mighty, technical team of Math/Physics PhDs and seasoned Mag7 builders, who combined <strong className="font-medium text-text">delightful UX and quantitative research rigor.</strong>"
+              <p className="font-mono text-sm leading-relaxed text-text-secondary italic">
+                &quot;In 2025, MAU grew ~16x, double-digit engagement growth (validates our &apos;core loop&apos;)... That wouldn&apos;t be possible without our small-but-mighty, technical team of Math/Physics PhDs and seasoned Mag7 builders, who combined <strong className="font-medium text-text">delightful UX and quantitative research rigor.</strong>&quot;
               </p>
               <footer className="mt-4 font-mono text-xs text-text-muted">
                 - Bhushan Suryavanshi, Founder & CEO · MarketCrunch AI · ex-Amazon, PayJoy, Zynga · Wharton School, UPenn
@@ -1812,23 +1589,6 @@ export default function MarketCrunchPage() {
             </blockquote>
           </div>
 
-          {/* Reflection */}
-          <div className="mt-8 rounded-xl border border-border/50 bg-white p-8">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted mb-4">Reflection</p>
-            <div className="space-y-4">
-              <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                Working as the sole designer in a high-velocity startup environment surfaced a clear principle: <strong className="font-medium text-text">the most impactful design decisions aren't the most complex ones ,they're the ones that identify where the gap between user mental model and interface behavior is widest.</strong> The hit rate feature required no novel interaction pattern. It required recognizing that trust was the missing variable, and designing the simplest possible signal to communicate it.
-              </p>
-              <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                Building features in React alongside my Figma outputs compressed the feedback loop between design intent and production behavior ,and revealed numerous edge cases that static prototypes couldn't surface. <strong className="font-medium text-text">Designers who can implement their own specifications ship more accurate products faster.</strong>
-              </p>
-              <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                Embedded in daily standups with the CEO, CTO, quant research team, and USC research collaborators, I developed fluency in translating between domain-specific financial model language and interface design rationale ,a communication skill I consider foundational for any designer working in AI-powered or data-intensive products.
-              </p>
-            </div>
-          </div>
-
-          {/* Next project nav */}
           <div className="mt-16 flex items-center justify-between border-t border-border/40 pt-8">
             <Link
               href="/#work"
@@ -1841,7 +1601,7 @@ export default function MarketCrunchPage() {
               href="/work/hack4impact"
               className="group flex items-center gap-2 font-mono text-xs text-text-muted transition-colors hover:text-text"
             >
-              Next: HackImpact Portal
+              Next: HackImpact
               <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
