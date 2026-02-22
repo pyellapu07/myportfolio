@@ -313,40 +313,9 @@ const SECTION_NAV = [
   { id: "h4i-outcome", label: "Outcome", ticks: 2 },
 ];
 
-function buildTicks(sections: typeof SECTION_NAV) {
-  const ticks: { sectionIdx: number; isMajor: boolean; subIdx: number }[] = [];
-  sections.forEach((s, si) => {
-    ticks.push({ sectionIdx: si, isMajor: true, subIdx: 0 });
-    for (let t = 1; t < s.ticks; t++) ticks.push({ sectionIdx: si, isMajor: false, subIdx: t });
-  });
-  return ticks;
-}
-
-function playTick() {
-  try {
-    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-    const bufLen = Math.floor(ctx.sampleRate * 0.008);
-    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufLen, 3);
-    const src = ctx.createBufferSource(); src.buffer = buf;
-    const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 4000;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.35, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.012);
-    src.connect(hp); hp.connect(gain); gain.connect(ctx.destination);
-    src.start(ctx.currentTime); src.onended = () => ctx.close();
-  } catch (_) { /* */ }
-}
-
 function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
   const [activeIdx, setActiveIdx] = useState(0);
-  const navRef = useRef<HTMLDivElement>(null);
-  const dragStartY = useRef<number | null>(null);
-  const isDragging = useRef(false);
-  const lastTickIdx = useRef(0);
-  const allTicks = buildTicks(sections);
-  const [tickPos, setTickPos] = useState(0);
+  const isScrollingRef = useRef(false);
 
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
@@ -354,80 +323,48 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
       const el = document.getElementById(id);
       if (!el) return;
       const obs = new IntersectionObserver(([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && !isScrollingRef.current) {
           setActiveIdx(i);
-          const t = allTicks.findIndex(tk => tk.sectionIdx === i && tk.isMajor);
-          if (t !== -1) setTickPos(t);
         }
       }, { rootMargin: "-35% 0px -35% 0px", threshold: 0 });
       obs.observe(el); observers.push(obs);
     });
     return () => observers.forEach(o => o.disconnect());
-  }, [sections]); // eslint-disable-line
-
-  const goToTick = (ti: number) => {
-    const clamped = Math.max(0, Math.min(allTicks.length - 1, ti));
-    playTick(); setTickPos(clamped);
-    const sIdx = allTicks[clamped].sectionIdx;
-    setActiveIdx(sIdx);
-    document.getElementById(sections[sIdx].id)?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const onPointerDown = (e: React.PointerEvent) => {
-    dragStartY.current = e.clientY; lastTickIdx.current = tickPos; isDragging.current = false;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (dragStartY.current === null) return;
-    const delta = e.clientY - dragStartY.current;
-    if (Math.abs(delta) > 4) isDragging.current = true;
-    if (!isDragging.current) return;
-    const rawTick = lastTickIdx.current + Math.round(delta / 18);
-    const clampedTick = Math.max(0, Math.min(allTicks.length - 1, rawTick));
-    if (clampedTick !== tickPos) {
-      playTick(); setTickPos(clampedTick);
-      const sIdx = allTicks[clampedTick].sectionIdx;
-      if (sIdx !== activeIdx) { setActiveIdx(sIdx); document.getElementById(sections[sIdx].id)?.scrollIntoView({ behavior: "smooth" }); }
-    }
-  };
-  const onPointerUp = () => { dragStartY.current = null; isDragging.current = false; };
+  }, [sections]);
 
   return (
-    <div ref={navRef} className="fixed top-1/2 z-50 hidden -translate-y-1/2 xl:flex"
-      style={{ right: "20px", userSelect: "none" }}
-      onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
-      <div className="relative flex flex-col items-end" style={{ cursor: "ns-resize", gap: 0 }}>
-        <div className="absolute right-[4px] top-0 bottom-0 rounded-full" style={{ background: "rgba(0,0,0,0.10)", width: "1px" }} />
-        {allTicks.map((tick, ti) => {
-          const isCurrent = ti === tickPos;
-          const isMajorActive = tick.isMajor && tick.sectionIdx === activeIdx;
-          const tickW = tick.isMajor ? (isMajorActive ? 14 : 10) : (isCurrent ? 8 : 5);
-          return (
-            <div key={ti} className="relative flex items-center justify-end"
-              style={{ height: tick.isMajor ? "22px" : "14px", paddingRight: "14px", minWidth: "120px", cursor: "pointer" }}
-              onPointerUp={(e) => { if (!isDragging.current) { e.stopPropagation(); goToTick(ti); } }}>
-              {tick.isMajor && (
-                <motion.span className="absolute right-[22px] font-mono text-[8.5px] uppercase tracking-widest whitespace-nowrap pointer-events-none"
-                  animate={{ opacity: isMajorActive ? 1 : 0.22, x: isMajorActive ? 0 : 3 }}
-                  whileHover={{ opacity: 0.7, x: 0 }} transition={{ duration: 0.2 }}
-                  style={{ color: "#111" }}>
-                  {sections[tick.sectionIdx].label}
-                </motion.span>
-              )}
-              <motion.span className="absolute right-0 rounded-full pointer-events-none"
-                animate={{ width: `${tickW}px`, height: tick.isMajor ? "2px" : "1px", backgroundColor: isMajorActive ? "#6366F1" : isCurrent ? "rgba(99,102,241,0.5)" : "#D1D5DB", boxShadow: isMajorActive ? "0 0 0 3px rgba(99,102,241,0.18)" : "none" }}
-                transition={{ duration: 0.18 }} />
-            </div>
-          );
-        })}
-        <motion.div className="pointer-events-none absolute right-[-3px]"
-          animate={{ top: `${(tickPos / Math.max(allTicks.length - 1, 1)) * 100}%` }}
-          transition={{ type: "spring", stiffness: 400, damping: 35 }} style={{ translateY: "-50%" }}>
-          <motion.span className="block rounded-full"
-            animate={{ width: 10, height: 10, backgroundColor: "#6366F1", boxShadow: "0 0 0 3px rgba(99,102,241,0.18)" }}
-            transition={{ duration: 0.2 }} />
-        </motion.div>
-      </div>
+    <div className="fixed top-1/2 z-50 hidden -translate-y-1/2 xl:flex flex-col gap-3"
+      style={{ right: "40px", userSelect: "none" }}>
+      {sections.map((section, i) => {
+        const isActive = i === activeIdx;
+        return (
+          <button
+            key={i}
+            onClick={() => {
+              setActiveIdx(i);
+              const targetEl = document.getElementById(section.id);
+              if (targetEl) {
+                isScrollingRef.current = true;
+                targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                setTimeout(() => { isScrollingRef.current = false; }, 1000);
+              }
+            }}
+            className="group relative flex items-center justify-end"
+            aria-label={`Scroll to ${section.label}`}
+          >
+            <span className={cn(
+              "absolute right-6 font-mono text-[10px] uppercase tracking-widest whitespace-nowrap opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-text",
+              isActive ? "opacity-100 translate-x-0 text-primary font-medium" : "translate-x-2 text-text-muted"
+            )}>
+              {section.label}
+            </span>
+            <span className={cn(
+              "block w-1.5 rounded-full transition-all duration-300",
+              isActive ? "h-6 bg-primary shadow-[0_0_12px_rgba(99,102,241,0.4)]" : "h-1.5 bg-border/50 group-hover:bg-border group-hover:h-3"
+            )} />
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -569,11 +506,11 @@ export default function HackImpactPage() {
       ══════════════════════════════════════════════ */}
       <section id="h4i-process" className="relative z-10 border-t border-border/40 bg-white py-24 md:py-32">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
-          <SectionHeading number="00 / PROCESS" title="How we worked , Agile UX" />
+          <SectionHeading number="00 / PROCESS" title="How we worked — Agile UX" />
 
           <div className="mb-12 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              This project followed an <strong className="font-medium text-text">Agile UX methodology</strong> , a hybrid of Lean UX thinking and Scrum sprint cadence. Rather than front-loading research before any design work, we ran <strong className="font-medium text-text">parallel discovery and delivery tracks</strong> within each sprint.
+              This project followed an <strong className="font-medium text-text">Agile UX methodology</strong> — a hybrid of Lean UX thinking and Scrum sprint cadence. Rather than front-loading research before any design work, we ran <strong className="font-medium text-text">parallel discovery and delivery tracks</strong> within each sprint.
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               Every Monday, the full cross-functional team convened for a structured sprint call: designers presented findings and prototypes, engineers flagged technical constraints, and the Microsoft Reston dev reviewer provided implementation-level feedback. <strong className="font-medium text-text">Stakeholder interviews with Aaryan Patel</strong> (Recruitment Manager) were embedded into Sprint 1 and 2, ensuring the applicant-side redesign stayed aligned with recruiter-side backend requirements.
@@ -582,7 +519,7 @@ export default function HackImpactPage() {
 
           {/* Agile UX sprint diagram placeholder */}
           <div className="rounded-xl border border-border/50 bg-bg-alt p-8 md:p-10">
-            <p className="mb-6 font-mono text-[10px] uppercase tracking-widest text-text-muted">Agile UX Framework , Sprint Structure</p>
+            <p className="mb-6 font-mono text-[10px] uppercase tracking-widest text-text-muted">Agile UX Framework — Sprint Structure</p>
 
             {/* Sprint timeline */}
             <div className="relative">
@@ -636,7 +573,7 @@ export default function HackImpactPage() {
             </div>
 
             <p className="mt-8 font-mono text-xs text-text-muted border-t border-border/40 pt-6">
-              <strong className="font-medium text-text">Why Agile UX?</strong> , The project had hard sprint deadlines, an active engineering team writing code in parallel, and a dev reviewer who needed to sign off before each sprint closed. Waterfall wasn't an option. Agile UX let us validate with users early and course-correct without losing velocity.
+              <strong className="font-medium text-text">Why Agile UX?</strong> — The project had hard sprint deadlines, an active engineering team writing code in parallel, and a dev reviewer who needed to sign off before each sprint closed. Waterfall wasn't an option. Agile UX let us validate with users early and course-correct without losing velocity.
             </p>
 
             {/* Agile UX framework diagram */}

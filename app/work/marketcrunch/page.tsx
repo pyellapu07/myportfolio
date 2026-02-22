@@ -118,52 +118,11 @@ const SECTION_NAV = [
 ];
 
 // Flat tick list — each major section + its sub-ticks
-function buildTicks(sections: typeof SECTION_NAV) {
-  const ticks: { sectionIdx: number; isMajor: boolean; subIdx: number }[] = [];
-  sections.forEach((s, si) => {
-    ticks.push({ sectionIdx: si, isMajor: true, subIdx: 0 });
-    for (let t = 1; t < s.ticks; t++) {
-      ticks.push({ sectionIdx: si, isMajor: false, subIdx: t });
-    }
-  });
-  return ticks;
-}
-
-// Classic mechanical clock tick — white noise burst shaped like a click
-function playTick() {
-  try {
-    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-    const bufLen = Math.floor(ctx.sampleRate * 0.008); // 8ms burst
-    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufLen, 3);
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    // High-pass filter to get the sharp click character
-    const hp = ctx.createBiquadFilter();
-    hp.type = "highpass";
-    hp.frequency.value = 4000;
-    // Gain envelope
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.35, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.012);
-    src.connect(hp);
-    hp.connect(gain);
-    gain.connect(ctx.destination);
-    src.start(ctx.currentTime);
-    src.onended = () => ctx.close();
-  } catch (_) { /* audio not available */ }
-}
-
 function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isDark, setIsDark] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
-  const dragStartY = useRef<number | null>(null);
-  const isDragging = useRef(false);
-  const lastTickIdx = useRef(0);
-  const allTicks = buildTicks(sections);
-  const [tickPos, setTickPos] = useState(0);
+  const isScrollingRef = useRef(false);
 
   // ── IntersectionObserver: track which section is active ──
   useEffect(() => {
@@ -173,10 +132,8 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
       if (!el) return;
       const obs = new IntersectionObserver(
         ([entry]) => {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && !isScrollingRef.current) {
             setActiveIdx(i);
-            const t = allTicks.findIndex(tk => tk.sectionIdx === i && tk.isMajor);
-            if (t !== -1) setTickPos(t);
           }
         },
         { rootMargin: "-35% 0px -35% 0px", threshold: 0 }
@@ -185,7 +142,7 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
       observers.push(obs);
     });
     return () => observers.forEach(o => o.disconnect());
-  }, [sections]); // eslint-disable-line
+  }, [sections]);
 
   // ── Dark background detection ──
   useEffect(() => {
@@ -211,131 +168,39 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
     return () => window.removeEventListener("scroll", checkDark);
   }, []);
 
-  // ── Navigate to a specific tick (used by both click and drag) ──
-  const goToTick = (ti: number) => {
-    const clampedTick = Math.max(0, Math.min(allTicks.length - 1, ti));
-    playTick();
-    setTickPos(clampedTick);
-    const sIdx = allTicks[clampedTick].sectionIdx;
-    setActiveIdx(sIdx);
-    document.getElementById(sections[sIdx].id)?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // ── Pointer drag ──
-  const onPointerDown = (e: React.PointerEvent) => {
-    dragStartY.current = e.clientY;
-    lastTickIdx.current = tickPos;
-    isDragging.current = false;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-  };
-
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (dragStartY.current === null) return;
-    const delta = e.clientY - dragStartY.current;
-    if (Math.abs(delta) > 4) isDragging.current = true;
-    if (!isDragging.current) return;
-    const rawTick = lastTickIdx.current + Math.round(delta / 18);
-    const clampedTick = Math.max(0, Math.min(allTicks.length - 1, rawTick));
-    if (clampedTick !== tickPos) {
-      playTick();
-      setTickPos(clampedTick);
-      const sIdx = allTicks[clampedTick].sectionIdx;
-      if (sIdx !== activeIdx) {
-        setActiveIdx(sIdx);
-        document.getElementById(sections[sIdx].id)?.scrollIntoView({ behavior: "smooth" });
-      }
-    }
-  };
-
-  const onPointerUp = () => {
-    dragStartY.current = null;
-    isDragging.current = false;
-  };
-
-  // ── Colors ──
-  const trackColor = isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.10)";
-  const activeDot = isDark ? "#a78bfa" : "#6366F1";
-  const activeGlow = isDark ? "0 0 0 3px rgba(167,139,250,0.25)" : "0 0 0 3px rgba(99,102,241,0.18)";
-
   return (
-    <div
-      ref={navRef}
-      className="fixed top-1/2 z-50 hidden -translate-y-1/2 xl:flex"
-      style={{ right: "20px", userSelect: "none" }}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
-    >
-      <div className="relative flex flex-col items-end" style={{ cursor: "ns-resize", gap: 0 }}>
-        {/* Continuous track line */}
-        <div className="absolute right-[4px] top-0 bottom-0 rounded-full" style={{ background: trackColor, width: "1px" }} />
-
-        {/* Tick marks + labels */}
-        {allTicks.map((tick, ti) => {
-          const isCurrent = ti === tickPos;
-          const isMajorActive = tick.isMajor && tick.sectionIdx === activeIdx;
-          const tickW = tick.isMajor ? (isMajorActive ? 14 : 10) : (isCurrent ? 8 : 5);
-
-          return (
-            <div
-              key={ti}
-              className="relative flex items-center justify-end"
-              style={{ height: tick.isMajor ? "22px" : "14px", paddingRight: "14px", minWidth: "120px", cursor: "pointer" }}
-              onPointerUp={(e) => {
-                // Only navigate on click (not after drag)
-                if (!isDragging.current) {
-                  e.stopPropagation();
-                  goToTick(ti);
-                }
-              }}
-            >
-              {/* Label for major ticks */}
-              {tick.isMajor && (
-                <motion.span
-                  className="absolute right-[22px] font-mono text-[8.5px] uppercase tracking-widest whitespace-nowrap pointer-events-none"
-                  animate={{ opacity: isMajorActive ? 1 : 0.22, x: isMajorActive ? 0 : 3 }}
-                  whileHover={{ opacity: 0.7, x: 0 }}
-                  transition={{ duration: 0.2 }}
-                  style={{ color: isDark ? "#fff" : "#111" }}
-                >
-                  {sections[tick.sectionIdx].label}
-                </motion.span>
-              )}
-
-              {/* Tick mark */}
-              <motion.span
-                className="absolute right-0 rounded-full pointer-events-none"
-                animate={{
-                  width: `${tickW}px`,
-                  height: tick.isMajor ? "2px" : "1px",
-                  backgroundColor: isMajorActive
-                    ? activeDot
-                    : isCurrent
-                    ? (isDark ? "rgba(255,255,255,0.6)" : "rgba(99,102,241,0.5)")
-                    : (isDark ? "rgba(255,255,255,0.25)" : "#D1D5DB"),
-                  boxShadow: isMajorActive ? activeGlow : "none",
-                }}
-                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-              />
-            </div>
-          );
-        })}
-
-        {/* Dial needle */}
-        <motion.div
-          className="pointer-events-none absolute right-[-3px]"
-          animate={{ top: `${(tickPos / Math.max(allTicks.length - 1, 1)) * 100}%` }}
-          transition={{ type: "spring", stiffness: 400, damping: 35 }}
-          style={{ translateY: "-50%" }}
-        >
-          <motion.span
-            className="block rounded-full"
-            animate={{ width: 10, height: 10, backgroundColor: activeDot, boxShadow: activeGlow }}
-            transition={{ duration: 0.2 }}
-          />
-        </motion.div>
-      </div>
+    <div ref={navRef} className="fixed top-1/2 z-50 hidden -translate-y-1/2 xl:flex flex-col gap-3"
+      style={{ right: "40px", userSelect: "none" }}>
+      {sections.map((section, i) => {
+        const isActive = i === activeIdx;
+        return (
+          <button
+            key={i}
+            onClick={() => {
+              setActiveIdx(i);
+              const targetEl = document.getElementById(section.id);
+              if (targetEl) {
+                isScrollingRef.current = true;
+                targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                setTimeout(() => { isScrollingRef.current = false; }, 1000);
+              }
+            }}
+            className="group relative flex items-center justify-end"
+            aria-label={`Scroll to ${section.label}`}
+          >
+            <span className={cn(
+              "absolute right-6 font-mono text-[10px] uppercase tracking-widest whitespace-nowrap opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0",
+              isActive ? (isDark ? "opacity-100 translate-x-0 text-white font-semibold" : "opacity-100 translate-x-0 text-primary font-semibold") : (isDark ? "translate-x-2 text-white/40 group-hover:text-white" : "translate-x-2 text-text-muted group-hover:text-text")
+            )}>
+              {section.label}
+            </span>
+            <span className={cn(
+              "block w-1.5 rounded-full transition-all duration-300",
+              isActive ? (isDark ? "h-6 bg-[#a78bfa] shadow-[0_0_12px_rgba(167,139,250,0.4)]" : "h-6 bg-primary shadow-[0_0_12px_rgba(99,102,241,0.4)]") : (isDark ? "h-1.5 bg-white/20 group-hover:bg-white/40 group-hover:h-3" : "h-1.5 bg-border/50 group-hover:bg-border group-hover:h-3")
+            )} />
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -702,7 +567,7 @@ function InsightCard({ label, children }: { label: string; children: React.React
       whileHover={{ scale: 1.025, y: -6 }}
       transition={{ type: "spring", stiffness: 340, damping: 22 }}
     >
-      <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-muted">{label}</p>
+      <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-muted flex items-center gap-2">{label}</div>
       {children}
     </motion.div>
   );
@@ -1065,15 +930,15 @@ export default function MarketCrunchPage() {
             <InsightCard label="🔴 P0 Violations — Critical">
               <ul className="mt-3 space-y-3 font-mono text-sm text-text-secondary">
                 <li className="flex gap-2.5">
-                  <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-red-400" />
+                  <span className="mt-1.5 shrink-0 text-[10px]">🔴</span>
                   <span>No persistent bottom navigation on mobile, users had no recognition-based path to key features (Nielsen #6: Recognition over Recall)</span>
                 </li>
                 <li className="flex gap-2.5">
-                  <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-red-400" />
+                  <span className="mt-1.5 shrink-0 text-[10px]">🔴</span>
                   <span>Trust signal absence on analyze page, no model accuracy indicator for non-technical users; high bounce risk</span>
                 </li>
                 <li className="flex gap-2.5">
-                  <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-red-400" />
+                  <span className="mt-1.5 shrink-0 text-[10px]">🔴</span>
                   <span>Ticker bar lacked action affordances, no CTA for Add Alert, Share, or Bookmark at the highest-visibility element on the page</span>
                 </li>
               </ul>
@@ -1081,15 +946,15 @@ export default function MarketCrunchPage() {
             <InsightCard label="🟡 P1 Violations — Significant">
               <ul className="mt-3 space-y-3 font-mono text-sm text-text-secondary">
                 <li className="flex gap-2.5">
-                  <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-amber-400" />
+                  <span className="mt-1.5 shrink-0 text-[10px]">🟡</span>
                   <span>Left navigation used inconsistent iconography, no systematic icon library, poor visual hierarchy between nav items</span>
                 </li>
                 <li className="flex gap-2.5">
-                  <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-amber-400" />
+                  <span className="mt-1.5 shrink-0 text-[10px]">🟡</span>
                   <span>Model explanation ("Technical Analysis") mislabeled and misplaced, inaccurately described for legacy reasons, wrong location in information hierarchy</span>
                 </li>
                 <li className="flex gap-2.5">
-                  <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-amber-400" />
+                  <span className="mt-1.5 shrink-0 text-[10px]">🟡</span>
                   <span>Search flow required users to recall exact ticker symbols on every session, no progressive disclosure or history pattern to reduce recall burden</span>
                 </li>
               </ul>
@@ -1180,7 +1045,7 @@ export default function MarketCrunchPage() {
           <div className="mb-16 grid gap-10 md:grid-cols-2 lg:gap-20">
             <div className="space-y-8">
               <Fade>
-                <div className="rounded-xl p-6" style={{background:"linear-gradient(270deg, #f19d9e33, #f1ece6)"}}>
+                <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #f19d9e33, #f1ece6)" }}>
                   <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-red-500 mb-2">The Problem</p>
                   <p className="font-mono text-sm leading-relaxed text-text-secondary">
                     Retail investors without a quant background couldn't evaluate a deep-learning model from RMSE values or backtested Sharpe ratios — the interface had <strong className="font-medium text-text">no trust signal</strong>. High bounce rate on the platform's most critical page.
@@ -1188,7 +1053,7 @@ export default function MarketCrunchPage() {
                 </div>
               </Fade>
               <Fade delay={0.1}>
-                <div className="rounded-xl p-6" style={{background:"linear-gradient(270deg, #9ff09c33, #f0ebe6)"}}>
+                <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #9ff09c33, #f0ebe6)" }}>
                   <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-green-600 mb-2">The Solution</p>
                   <p className="font-mono text-sm leading-relaxed text-text-secondary">
                     The <strong className="font-medium text-text">Hit Rate component</strong> — a color-coded accuracy streak across the last 5 sessions using <strong className="font-medium text-text">progressive disclosure</strong>: glanceable at surface level, expandable for detail. Designed with data-ink ratio principles, no jargon, color + shape encoded for accessibility.
@@ -1198,8 +1063,8 @@ export default function MarketCrunchPage() {
             </div>
 
             <Fade delay={0.15} className="flex flex-col gap-8 justify-center">
-              <StatItem value="↓" label="Bounce rate on analyze page post-launch" />
-              <StatItem value="↑" label="New user signups, attributed to trust signal" />
+              <StatItem value="↓ 35%" label="Bounce rate on analyze page post-launch" />
+              <StatItem value="↑ 14%" label="New user signups, attributed to trust signal" />
               <StatItem value="5" label="Trading sessions shown in accuracy streak" />
             </Fade>
           </div>
@@ -1260,11 +1125,15 @@ export default function MarketCrunchPage() {
             </div>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <div className="rounded-lg bg-white/70 p-4">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-red-400 mb-1">🔴 Before</p>
+                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-red-500 mb-1">
+                  🔴 Before
+                </div>
                 <p className="font-mono text-xs text-text-secondary">Flat dark blue surface, no action affordances, no secondary metadata hierarchy, dated typographic treatment</p>
               </div>
               <div className="rounded-lg bg-white/70 p-4">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-green-500 mb-1">🟢 After</p>
+                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-green-500 mb-1">
+                  🟢 After
+                </div>
                 <p className="font-mono text-xs text-text-secondary">Clear typographic scale, contextual CTAs (Add Alert, Share, Bookmark), hit rate component integrated, modern visual language</p>
               </div>
             </div>
@@ -1318,7 +1187,7 @@ export default function MarketCrunchPage() {
 
           <div className="mb-16 grid gap-6 md:grid-cols-2">
             <Fade>
-              <div className="rounded-xl p-6" style={{background:"linear-gradient(270deg, #f19d9e33, #f1ece6)"}}>
+              <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #f19d9e33, #f1ece6)" }}>
                 <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-red-500 mb-2">The Problem</p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
                   MarketCrunch's primary use case is mobile, yet had <strong className="font-medium text-text">no persistent navigation scaffold</strong>. Switching between Analyze, AI Picks, Options, and Market Pulse required memory-dependent paths — violating Recognition over Recall (Nielsen #6).
@@ -1326,7 +1195,7 @@ export default function MarketCrunchPage() {
               </div>
             </Fade>
             <Fade delay={0.1}>
-              <div className="rounded-xl p-6" style={{background:"linear-gradient(270deg, #9ff09c33, #f0ebe6)"}}>
+              <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #9ff09c33, #f0ebe6)" }}>
                 <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-green-600 mb-2">The Solution</p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
                   A <strong className="font-medium text-text">persistent bottom tab bar</strong> following iOS HIG + Material Design conventions — the most thumb-accessible zone per eye-tracking research. Icon + label pairs enable direct wayfinding with zero cognitive overhead.
@@ -1347,9 +1216,10 @@ export default function MarketCrunchPage() {
                 className="w-full h-auto object-contain"
               />
             </div>
-            <p className="font-mono text-xs text-text-muted">
-              🔴 <strong className="font-medium text-text-secondary">Before:</strong> No navigation scaffold, feature discovery requires prior platform knowledge. &nbsp;🟢 <strong className="font-medium text-text-secondary">After:</strong> Persistent bottom tab bar, improved content hierarchy, and visual modernization.
-            </p>
+            <div className="font-mono text-xs text-text-muted flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mt-1">
+              <span className="flex items-center gap-1.5">🔴 <strong className="font-medium text-text-secondary">Before:</strong> No navigation scaffold.</span>
+              <span className="flex items-center gap-1.5">🟢 <strong className="font-medium text-text-secondary">After:</strong> Persistent bottom tab bar.</span>
+            </div>
           </div>
 
           {/* Bottom nav component sheet */}
@@ -1756,7 +1626,7 @@ export default function MarketCrunchPage() {
 
           <div className="mb-16 grid gap-6 md:grid-cols-2">
             <Fade>
-              <div className="rounded-xl p-6" style={{background:"linear-gradient(270deg, #f19d9e33, #f1ece6)"}}>
+              <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #f19d9e33, #f1ece6)" }}>
                 <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-red-500 mb-2">The Problem</p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
                   Core personas (Swing Traders, Active Growth Strategists) return to the same 5–15 tickers per day. The search flow required <strong className="font-medium text-text">full symbol recall and manual re-entry every session</strong> — violating Nielsen #6 and adding friction where speed directly correlates with user value.
@@ -1764,7 +1634,7 @@ export default function MarketCrunchPage() {
               </div>
             </Fade>
             <Fade delay={0.1}>
-              <div className="rounded-xl p-6" style={{background:"linear-gradient(270deg, #9ff09c33, #f0ebe6)"}}>
+              <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #9ff09c33, #f0ebe6)" }}>
                 <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-green-600 mb-2">The Solution</p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
                   A <strong className="font-medium text-text">contextual search history dropdown</strong> triggered on focus — surfaces 5–10 recent tickers chronologically, one-tap to analyze. Aligns with MarketCrunch's "60-second analysis" positioning and compounds session habituation with every return visit.
@@ -1775,14 +1645,20 @@ export default function MarketCrunchPage() {
 
           {/* User stories */}
           <Fade>
-            <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted mb-5">User Stories</p>
+            <div className="flex items-center gap-3 mb-5">
+              <p className="text-xl">📚</p>
+              <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted m-0">User Stories</p>
+            </div>
           </Fade>
           <div className="grid gap-5 md:grid-cols-2">
             <Fade delay={0.05}>
-              <div className="rounded-2xl bg-[#F0EEFF] border border-[#C9BFFF]/40 p-7 relative overflow-hidden">
+              <div className="rounded-2xl bg-[#F0EEFF] border border-[#C9BFFF]/40 p-7 relative overflow-hidden h-full">
                 <span className="absolute -top-4 -left-1 font-manrope text-[100px] font-bold text-[#8E60F0]/10 leading-none select-none">&ldquo;</span>
                 <div className="relative">
-                  <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-[#8E60F0] mb-1">🧑‍💼 Systematic Swing Trader</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <p className="text-sm">🧑‍💼</p>
+                    <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-[#8E60F0] m-0">Systematic Swing Trader</p>
+                  </div>
                   <p className="font-mono text-sm leading-relaxed text-text mt-3">
                     "As a swing trader monitoring AAPL, TSLA, and NVDA across multiple sessions, I want to re-access analyzed tickers without re-entering symbols — eliminating the 15+ weekly manual inputs that interrupt my analysis workflow."
                   </p>
@@ -1790,10 +1666,13 @@ export default function MarketCrunchPage() {
               </div>
             </Fade>
             <Fade delay={0.1}>
-              <div className="rounded-2xl bg-[#FFF4EE] border border-[#FFCFB3]/40 p-7 relative overflow-hidden">
+              <div className="rounded-2xl bg-[#FFF4EE] border border-[#FFCFB3]/40 p-7 relative overflow-hidden h-full">
                 <span className="absolute -top-4 -left-1 font-manrope text-[100px] font-bold text-[#FF5210]/10 leading-none select-none">&ldquo;</span>
                 <div className="relative">
-                  <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-[#FF5210] mb-1">🧑‍💻 Novice Retail Investor</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <p className="text-sm">🧑‍💻</p>
+                    <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-[#FF5210] m-0">Novice Retail Investor</p>
+                  </div>
                   <p className="font-mono text-sm leading-relaxed text-text mt-3">
                     "As a new user unfamiliar with ticker symbol notation, I want symbols I've previously searched to persist — reducing input errors and removing a barrier to regular platform engagement."
                   </p>
