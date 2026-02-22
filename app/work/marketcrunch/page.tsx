@@ -129,21 +129,29 @@ function buildTicks(sections: typeof SECTION_NAV) {
   return ticks;
 }
 
-function playTick(isDark: boolean) {
+// Classic mechanical clock tick — white noise burst shaped like a click
+function playTick() {
   try {
     const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-    const osc = ctx.createOscillator();
+    const bufLen = Math.floor(ctx.sampleRate * 0.008); // 8ms burst
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufLen, 3);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    // High-pass filter to get the sharp click character
+    const hp = ctx.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = 4000;
+    // Gain envelope
     const gain = ctx.createGain();
-    osc.connect(gain);
+    gain.gain.setValueAtTime(0.35, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.012);
+    src.connect(hp);
+    hp.connect(gain);
     gain.connect(ctx.destination);
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(isDark ? 880 : 1100, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(isDark ? 440 : 600, ctx.currentTime + 0.04);
-    gain.gain.setValueAtTime(0.04, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.07);
-    osc.onended = () => ctx.close();
+    src.start(ctx.currentTime);
+    src.onended = () => ctx.close();
   } catch (_) { /* audio not available */ }
 }
 
@@ -152,10 +160,10 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
   const [isDark, setIsDark] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
   const dragStartY = useRef<number | null>(null);
+  const isDragging = useRef(false);
   const lastTickIdx = useRef(0);
   const allTicks = buildTicks(sections);
-  // Tick index = which overall tick the current scroll position maps to
-  const [tickPos, setTickPos] = useState(0); // 0..allTicks.length-1
+  const [tickPos, setTickPos] = useState(0);
 
   // ── IntersectionObserver: track which section is active ──
   useEffect(() => {
@@ -167,7 +175,6 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
         ([entry]) => {
           if (entry.isIntersecting) {
             setActiveIdx(i);
-            // Find first tick for this section
             const t = allTicks.findIndex(tk => tk.sectionIdx === i && tk.isMajor);
             if (t !== -1) setTickPos(t);
           }
@@ -180,22 +187,20 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
     return () => observers.forEach(o => o.disconnect());
   }, [sections]); // eslint-disable-line
 
-  // ── Dark background detection (sprint dividers are dark) ──
+  // ── Dark background detection ──
   useEffect(() => {
     const checkDark = () => {
       const nav = navRef.current;
       if (!nav) return;
       const { top, height } = nav.getBoundingClientRect();
       const midY = top + height / 2;
-      const el = document.elementFromPoint(window.innerWidth - 80, midY);
+      const el = document.elementFromPoint(window.innerWidth - 40, midY);
       if (!el) return;
-      // Walk up DOM to check background
       let node: HTMLElement | null = el as HTMLElement;
       while (node && node !== document.body) {
-        const bg = getComputedStyle(node).background || getComputedStyle(node).backgroundColor;
-        if (bg && (bg.includes("0a0a") || bg.includes("1a0a") || bg.includes("2d10") || bg.includes("3d15") || bg.includes("rgb(10") || bg.includes("rgb(26"))) {
-          setIsDark(true);
-          return;
+        const bg = getComputedStyle(node).backgroundColor;
+        if (/rgb\(1[0-5],|rgb\(10,|rgb\(26,|rgb\(45,/.test(bg)) {
+          setIsDark(true); return;
         }
         node = node.parentElement;
       }
@@ -206,21 +211,33 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
     return () => window.removeEventListener("scroll", checkDark);
   }, []);
 
-  // ── Pointer drag: scrub through sections like a physical dial ──
+  // ── Navigate to a specific tick (used by both click and drag) ──
+  const goToTick = (ti: number) => {
+    const clampedTick = Math.max(0, Math.min(allTicks.length - 1, ti));
+    playTick();
+    setTickPos(clampedTick);
+    const sIdx = allTicks[clampedTick].sectionIdx;
+    setActiveIdx(sIdx);
+    document.getElementById(sections[sIdx].id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // ── Pointer drag ──
   const onPointerDown = (e: React.PointerEvent) => {
     dragStartY.current = e.clientY;
     lastTickIdx.current = tickPos;
+    isDragging.current = false;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
     if (dragStartY.current === null) return;
     const delta = e.clientY - dragStartY.current;
-    const PX_PER_TICK = 18;
-    const rawTick = lastTickIdx.current + Math.round(delta / PX_PER_TICK);
+    if (Math.abs(delta) > 4) isDragging.current = true;
+    if (!isDragging.current) return;
+    const rawTick = lastTickIdx.current + Math.round(delta / 18);
     const clampedTick = Math.max(0, Math.min(allTicks.length - 1, rawTick));
     if (clampedTick !== tickPos) {
-      playTick(isDark);
+      playTick();
       setTickPos(clampedTick);
       const sIdx = allTicks[clampedTick].sectionIdx;
       if (sIdx !== activeIdx) {
@@ -230,79 +247,65 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
     }
   };
 
-  const onPointerUp = () => { dragStartY.current = null; };
+  const onPointerUp = () => {
+    dragStartY.current = null;
+    isDragging.current = false;
+  };
 
-  // ── Colors based on dark/light background ──
-  const trackColor = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)";
-  const labelColor = isDark ? "rgba(255,255,255,VAL)" : "rgba(17,17,17,VAL)";
+  // ── Colors ──
+  const trackColor = isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.10)";
   const activeDot = isDark ? "#a78bfa" : "#6366F1";
-  const inactiveDot = isDark ? "rgba(255,255,255,0.25)" : "#D1D5DB";
   const activeGlow = isDark ? "0 0 0 3px rgba(167,139,250,0.25)" : "0 0 0 3px rgba(99,102,241,0.18)";
 
   return (
     <div
       ref={navRef}
       className="fixed top-1/2 z-50 hidden -translate-y-1/2 xl:flex"
-      style={{ right: "max(20px, calc(50vw - 580px))", userSelect: "none" }}
+      style={{ right: "20px", userSelect: "none" }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      {/* Dial track — vertical line with all ticks */}
       <div className="relative flex flex-col items-end" style={{ cursor: "ns-resize", gap: 0 }}>
-
-        {/* The continuous track line */}
-        <div
-          className="absolute right-[4px] top-0 bottom-0 w-px rounded-full"
-          style={{ background: trackColor, width: "1px" }}
-        />
+        {/* Continuous track line */}
+        <div className="absolute right-[4px] top-0 bottom-0 rounded-full" style={{ background: trackColor, width: "1px" }} />
 
         {/* Tick marks + labels */}
         {allTicks.map((tick, ti) => {
           const isCurrent = ti === tickPos;
           const isMajorActive = tick.isMajor && tick.sectionIdx === activeIdx;
           const tickW = tick.isMajor ? (isMajorActive ? 14 : 10) : (isCurrent ? 8 : 5);
-          const label = tick.isMajor ? sections[tick.sectionIdx].label : null;
 
           return (
             <div
               key={ti}
               className="relative flex items-center justify-end"
-              style={{
-                height: tick.isMajor ? "22px" : "14px",
-                paddingRight: "14px",
-                minWidth: "120px",
-              }}
-              onClick={() => {
-                playTick(isDark);
-                setTickPos(ti);
-                setActiveIdx(tick.sectionIdx);
-                document.getElementById(sections[tick.sectionIdx].id)?.scrollIntoView({ behavior: "smooth" });
+              style={{ height: tick.isMajor ? "22px" : "14px", paddingRight: "14px", minWidth: "120px", cursor: "pointer" }}
+              onPointerUp={(e) => {
+                // Only navigate on click (not after drag)
+                if (!isDragging.current) {
+                  e.stopPropagation();
+                  goToTick(ti);
+                }
               }}
             >
               {/* Label for major ticks */}
-              {label && (
+              {tick.isMajor && (
                 <motion.span
-                  className="absolute right-[22px] font-mono text-[8.5px] uppercase tracking-widest whitespace-nowrap"
-                  animate={{
-                    opacity: isMajorActive ? 1 : 0.22,
-                    x: isMajorActive ? 0 : 3,
-                    color: isMajorActive
-                      ? labelColor.replace("VAL", "1")
-                      : labelColor.replace("VAL", "0.55"),
-                  }}
+                  className="absolute right-[22px] font-mono text-[8.5px] uppercase tracking-widest whitespace-nowrap pointer-events-none"
+                  animate={{ opacity: isMajorActive ? 1 : 0.22, x: isMajorActive ? 0 : 3 }}
                   whileHover={{ opacity: 0.7, x: 0 }}
                   transition={{ duration: 0.2 }}
                   style={{ color: isDark ? "#fff" : "#111" }}
                 >
-                  {label}
+                  {sections[tick.sectionIdx].label}
                 </motion.span>
               )}
 
               {/* Tick mark */}
               <motion.span
-                className="absolute right-0 rounded-full"
+                className="absolute right-0 rounded-full pointer-events-none"
                 animate={{
                   width: `${tickW}px`,
                   height: tick.isMajor ? "2px" : "1px",
@@ -311,7 +314,7 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
                     : isCurrent
                     ? (isDark ? "rgba(255,255,255,0.6)" : "rgba(99,102,241,0.5)")
                     : (isDark ? "rgba(255,255,255,0.25)" : "#D1D5DB"),
-                  boxShadow: isMajorActive ? activeGlow.replace("3px", "2px") : "none",
+                  boxShadow: isMajorActive ? activeGlow : "none",
                 }}
                 transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
               />
@@ -319,23 +322,16 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
           );
         })}
 
-        {/* Active section indicator — the "dial needle" */}
+        {/* Dial needle */}
         <motion.div
           className="pointer-events-none absolute right-[-3px]"
-          animate={{
-            top: `${(tickPos / Math.max(allTicks.length - 1, 1)) * 100}%`,
-          }}
+          animate={{ top: `${(tickPos / Math.max(allTicks.length - 1, 1)) * 100}%` }}
           transition={{ type: "spring", stiffness: 400, damping: 35 }}
           style={{ translateY: "-50%" }}
         >
           <motion.span
             className="block rounded-full"
-            animate={{
-              width: 10,
-              height: 10,
-              backgroundColor: activeDot,
-              boxShadow: activeGlow,
-            }}
+            animate={{ width: 10, height: 10, backgroundColor: activeDot, boxShadow: activeGlow }}
             transition={{ duration: 0.2 }}
           />
         </motion.div>

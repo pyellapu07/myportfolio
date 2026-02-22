@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Download } from "lucide-react";
 import RecruiterToggle from "./RecruiterToggle";
@@ -10,6 +11,8 @@ import { cn } from "@/lib/utils";
 export default function Header({ initialDark = false }: { initialDark?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -27,6 +30,7 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
   const isDarkText = initialDark || scrolled;
 
   return (
+    <>
     <header
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
@@ -95,7 +99,10 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
         </button>
       </nav>
 
-      {/* Mobile drawer */}
+    </header>
+
+    {/* Mobile drawer — rendered via portal so it's never clipped by the header stacking context */}
+    {mounted && createPortal(
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -103,8 +110,17 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 top-0 z-50 flex flex-col items-center justify-center gap-8 bg-dark md:hidden"
+            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-8 bg-dark md:hidden"
           >
+            {/* Close button inside drawer */}
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="absolute top-5 right-6 text-white/60 hover:text-white transition-colors"
+              aria-label="Close menu"
+            >
+              <X size={22} />
+            </button>
+
             {NAV_LINKS.map((link) => (
               <a
                 key={link.href}
@@ -127,7 +143,9 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
             </a>
           </motion.div>
         )}
-      </AnimatePresence>
-    </header>
+      </AnimatePresence>,
+      document.body
+    )}
+    </>
   );
 }
