@@ -1,4 +1,5 @@
 /* Inline SVG tool icons — no external deps needed */
+import Image from "next/image";
 
 export function FigmaIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
   return (
@@ -50,5 +51,83 @@ export function AgileIcon({ size = 20, className = "" }: { size?: number; classN
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="currentColor"/>
     </svg>
+  );
+}
+
+export function AsanaIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <Image
+      src="/asanalogo.svg"
+      alt="Asana"
+      width={size}
+      height={size}
+      className={className}
+      style={{ display: "inline-block" }}
+    />
+  );
+}
+
+export function SlackIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <Image
+      src="/Slack_icon_2019.svg"
+      alt="Slack"
+      width={size}
+      height={size}
+      className={className}
+      style={{ display: "inline-block" }}
+    />
+  );
+}
+
+export function GoogleAnalyticsIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <Image
+      src="/googleanalytics.svg"
+      alt="Google Analytics"
+      width={size}
+      height={size}
+      className={className}
+      style={{ display: "inline-block" }}
+    />
+  );
+}
+
+export function GoogleLighthouseIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <Image
+      src="/Google_Lighthouse_logo.svg"
+      alt="Google Lighthouse"
+      width={size}
+      height={size}
+      className={className}
+      style={{ display: "inline-block" }}
+    />
+  );
+}
+
+export function ReactIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <Image
+      src="/reactjs.svg"
+      alt="React JS"
+      width={size}
+      height={size}
+      className={className}
+      style={{ display: "inline-block" }}
+    />
+  );
+}
+
+export function CursorIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <Image
+      src="/cursorlogo.svg"
+      alt="Cursor"
+      width={size}
+      height={size}
+      className={className}
+      style={{ display: "inline-block" }}
+    />
   );
 }

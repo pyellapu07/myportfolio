@@ -103,7 +103,7 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 top-0 z-40 flex flex-col items-center justify-center gap-8 bg-dark md:hidden"
+            className="fixed inset-0 top-0 z-50 flex flex-col items-center justify-center gap-8 bg-dark md:hidden"
           >
             {NAV_LINKS.map((link) => (
               <a

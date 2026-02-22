@@ -302,129 +302,118 @@ function StatItem({ value, label }: { value: string; label: string }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   VERTICAL SECTION INDEX (sticky right rail)
+   RADIAL DIAL NAV
 ───────────────────────────────────────────────────────────── */
 const SECTION_NAV = [
-  { id: "h4i-process", label: "Process" },
-  { id: "h4i-discovery", label: "Discovery" },
-  { id: "h4i-research", label: "Research" },
-  { id: "h4i-design", label: "Design" },
-  { id: "h4i-solution", label: "Solution" },
-  { id: "h4i-outcome", label: "Outcome" },
+  { id: "h4i-process", label: "Process", ticks: 3 },
+  { id: "h4i-discovery", label: "Discovery", ticks: 3 },
+  { id: "h4i-research", label: "Research", ticks: 4 },
+  { id: "h4i-design", label: "Design", ticks: 3 },
+  { id: "h4i-solution", label: "Solution", ticks: 4 },
+  { id: "h4i-outcome", label: "Outcome", ticks: 2 },
 ];
 
-function VerticalNav({ sections }: { sections: { id: string; label: string }[] }) {
-  const [active, setActive] = useState("");
-  const [prevActiveIdx, setPrevActiveIdx] = useState(-1);
-  const [activeIdx, setActiveIdx] = useState(-1);
-  const dotRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const navRef = useRef<HTMLElement>(null);
-  const [arc, setArc] = useState<{ fromY: number; toY: number; visible: boolean }>({ fromY: 0, toY: 0, visible: false });
-  const arcTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+function buildTicks(sections: typeof SECTION_NAV) {
+  const ticks: { sectionIdx: number; isMajor: boolean; subIdx: number }[] = [];
+  sections.forEach((s, si) => {
+    ticks.push({ sectionIdx: si, isMajor: true, subIdx: 0 });
+    for (let t = 1; t < s.ticks; t++) ticks.push({ sectionIdx: si, isMajor: false, subIdx: t });
+  });
+  return ticks;
+}
+
+function playTick() {
+  try {
+    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = "sine"; osc.frequency.setValueAtTime(1100, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.04);
+    gain.gain.setValueAtTime(0.04, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.07);
+    osc.onended = () => ctx.close();
+  } catch (_) { /* */ }
+}
+
+function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const navRef = useRef<HTMLDivElement>(null);
+  const dragStartY = useRef<number | null>(null);
+  const lastTickIdx = useRef(0);
+  const allTicks = buildTicks(sections);
+  const [tickPos, setTickPos] = useState(0);
 
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
     sections.forEach(({ id }, i) => {
       const el = document.getElementById(id);
       if (!el) return;
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setActive(id);
-            setActiveIdx(i);
-          }
-        },
-        { rootMargin: "-35% 0px -35% 0px", threshold: 0 }
-      );
-      obs.observe(el);
-      observers.push(obs);
+      const obs = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) {
+          setActiveIdx(i);
+          const t = allTicks.findIndex(tk => tk.sectionIdx === i && tk.isMajor);
+          if (t !== -1) setTickPos(t);
+        }
+      }, { rootMargin: "-35% 0px -35% 0px", threshold: 0 });
+      obs.observe(el); observers.push(obs);
     });
-    return () => observers.forEach((o) => o.disconnect());
-  }, [sections]);
+    return () => observers.forEach(o => o.disconnect());
+  }, [sections]); // eslint-disable-line
 
-  useEffect(() => {
-    if (prevActiveIdx === -1 || prevActiveIdx === activeIdx) {
-      setPrevActiveIdx(activeIdx);
-      return;
+  const onPointerDown = (e: React.PointerEvent) => {
+    dragStartY.current = e.clientY; lastTickIdx.current = tickPos;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (dragStartY.current === null) return;
+    const rawTick = lastTickIdx.current + Math.round((e.clientY - dragStartY.current) / 18);
+    const clampedTick = Math.max(0, Math.min(allTicks.length - 1, rawTick));
+    if (clampedTick !== tickPos) {
+      playTick(); setTickPos(clampedTick);
+      const sIdx = allTicks[clampedTick].sectionIdx;
+      if (sIdx !== activeIdx) { setActiveIdx(sIdx); document.getElementById(sections[sIdx].id)?.scrollIntoView({ behavior: "smooth" }); }
     }
-    const fromDot = dotRefs.current[prevActiveIdx];
-    const toDot = dotRefs.current[activeIdx];
-    const nav = navRef.current;
-    if (!fromDot || !toDot || !nav) { setPrevActiveIdx(activeIdx); return; }
-    const navRect = nav.getBoundingClientRect();
-    const fromRect = fromDot.getBoundingClientRect();
-    const toRect = toDot.getBoundingClientRect();
-    const fromY = fromRect.top + fromRect.height / 2 - navRect.top;
-    const toY = toRect.top + toRect.height / 2 - navRect.top;
-    setArc({ fromY, toY, visible: true });
-    if (arcTimer.current) clearTimeout(arcTimer.current);
-    arcTimer.current = setTimeout(() => setArc(a => ({ ...a, visible: false })), 900);
-    setPrevActiveIdx(activeIdx);
-  }, [activeIdx, prevActiveIdx]);
-
-  const arcPath = (() => {
-    const x = 10;
-    const { fromY, toY } = arc;
-    const mid = (fromY + toY) / 2;
-    const curve = -28;
-    return `M ${x} ${fromY} Q ${x + curve} ${mid} ${x} ${toY}`;
-  })();
+  };
+  const onPointerUp = () => { dragStartY.current = null; };
 
   return (
-    <nav
-      ref={navRef}
-      aria-label="Section index"
-      className="fixed top-1/2 z-50 hidden -translate-y-1/2 flex-col gap-[14px] xl:flex"
-      style={{ right: "max(16px, calc(50vw - 540px))" }}
-    >
-      <svg className="pointer-events-none absolute inset-0 w-full h-full overflow-visible" style={{ left: 0, top: 0 }}>
-        <motion.path
-          d={arcPath}
-          fill="none"
-          stroke="#6366F1"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={arc.visible ? { pathLength: 1, opacity: 0.7 } : { pathLength: 0, opacity: 0 }}
-          transition={{
-            pathLength: { duration: 0.65, ease: [0.4, 0, 0.2, 1] },
-            opacity: { duration: 0.2 },
-          }}
-        />
-      </svg>
-      {sections.map(({ id, label }, i) => {
-        const isActive = active === id;
-        return (
-          <a
-            key={id}
-            href={`#${id}`}
-            className="group flex items-center justify-end gap-2.5"
-            onClick={() => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }}
-          >
-            <motion.span
-              className="font-mono text-[9px] uppercase tracking-widest"
-              animate={{ opacity: isActive ? 1 : 0.25, color: isActive ? "#111111" : "#9CA3AF", x: isActive ? 0 : 4 }}
-              whileHover={{ opacity: 0.75, x: 0 }}
-              transition={{ duration: 0.25 }}
-            >
-              {label}
-            </motion.span>
-            <motion.span
-              ref={(el) => { dotRefs.current[i] = el; }}
-              className="block rounded-full flex-shrink-0"
-              animate={{
-                width: isActive ? 10 : 6,
-                height: isActive ? 10 : 6,
-                backgroundColor: isActive ? "#6366F1" : "#D1D5DB",
-                boxShadow: isActive ? "0 0 0 3px rgba(99,102,241,0.18)" : "none",
-              }}
-              whileHover={{ backgroundColor: "#9CA3AF", scale: 1.2 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            />
-          </a>
-        );
-      })}
-    </nav>
+    <div ref={navRef} className="fixed top-1/2 z-50 hidden -translate-y-1/2 xl:flex"
+      style={{ right: "max(20px, calc(50vw - 580px))", userSelect: "none" }}
+      onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
+      <div className="relative flex flex-col items-end" style={{ cursor: "ns-resize", gap: 0 }}>
+        <div className="absolute right-[4px] top-0 bottom-0 rounded-full" style={{ background: "rgba(0,0,0,0.10)", width: "1px" }} />
+        {allTicks.map((tick, ti) => {
+          const isCurrent = ti === tickPos;
+          const isMajorActive = tick.isMajor && tick.sectionIdx === activeIdx;
+          const tickW = tick.isMajor ? (isMajorActive ? 14 : 10) : (isCurrent ? 8 : 5);
+          return (
+            <div key={ti} className="relative flex items-center justify-end"
+              style={{ height: tick.isMajor ? "22px" : "14px", paddingRight: "14px", minWidth: "120px" }}
+              onClick={() => { playTick(); setTickPos(ti); setActiveIdx(tick.sectionIdx); document.getElementById(sections[tick.sectionIdx].id)?.scrollIntoView({ behavior: "smooth" }); }}>
+              {tick.isMajor && (
+                <motion.span className="absolute right-[22px] font-mono text-[8.5px] uppercase tracking-widest whitespace-nowrap"
+                  animate={{ opacity: isMajorActive ? 1 : 0.22, x: isMajorActive ? 0 : 3 }}
+                  whileHover={{ opacity: 0.7, x: 0 }} transition={{ duration: 0.2 }}
+                  style={{ color: "#111" }}>
+                  {sections[tick.sectionIdx].label}
+                </motion.span>
+              )}
+              <motion.span className="absolute right-0 rounded-full"
+                animate={{ width: `${tickW}px`, height: tick.isMajor ? "2px" : "1px", backgroundColor: isMajorActive ? "#6366F1" : isCurrent ? "rgba(99,102,241,0.5)" : "#D1D5DB", boxShadow: isMajorActive ? "0 0 0 2px rgba(99,102,241,0.18)" : "none" }}
+                transition={{ duration: 0.18 }} />
+            </div>
+          );
+        })}
+        <motion.div className="pointer-events-none absolute right-[-3px]"
+          animate={{ top: `${(tickPos / Math.max(allTicks.length - 1, 1)) * 100}%` }}
+          transition={{ type: "spring", stiffness: 400, damping: 35 }} style={{ translateY: "-50%" }}>
+          <motion.span className="block rounded-full"
+            animate={{ width: 10, height: 10, backgroundColor: "#6366F1", boxShadow: "0 0 0 3px rgba(99,102,241,0.18)" }}
+            transition={{ duration: 0.2 }} />
+        </motion.div>
+      </div>
+    </div>
   );
 }
 
