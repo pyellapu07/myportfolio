@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -301,13 +301,144 @@ function StatItem({ value, label }: { value: string; label: string }) {
   );
 }
 
+/* ─────────────────────────────────────────────────────────────
+   VERTICAL SECTION INDEX (sticky right rail)
+───────────────────────────────────────────────────────────── */
+const SECTION_NAV = [
+  { id: "h4i-process", label: "Process" },
+  { id: "h4i-discovery", label: "Discovery" },
+  { id: "h4i-research", label: "Research" },
+  { id: "h4i-design", label: "Design" },
+  { id: "h4i-solution", label: "Solution" },
+  { id: "h4i-outcome", label: "Outcome" },
+];
+
+function VerticalNav({ sections }: { sections: { id: string; label: string }[] }) {
+  const [active, setActive] = useState("");
+  const [prevActiveIdx, setPrevActiveIdx] = useState(-1);
+  const [activeIdx, setActiveIdx] = useState(-1);
+  const dotRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const navRef = useRef<HTMLElement>(null);
+  const [arc, setArc] = useState<{ fromY: number; toY: number; visible: boolean }>({ fromY: 0, toY: 0, visible: false });
+  const arcTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+    sections.forEach(({ id }, i) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setActive(id);
+            setActiveIdx(i);
+          }
+        },
+        { rootMargin: "-35% 0px -35% 0px", threshold: 0 }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, [sections]);
+
+  useEffect(() => {
+    if (prevActiveIdx === -1 || prevActiveIdx === activeIdx) {
+      setPrevActiveIdx(activeIdx);
+      return;
+    }
+    const fromDot = dotRefs.current[prevActiveIdx];
+    const toDot = dotRefs.current[activeIdx];
+    const nav = navRef.current;
+    if (!fromDot || !toDot || !nav) { setPrevActiveIdx(activeIdx); return; }
+    const navRect = nav.getBoundingClientRect();
+    const fromRect = fromDot.getBoundingClientRect();
+    const toRect = toDot.getBoundingClientRect();
+    const fromY = fromRect.top + fromRect.height / 2 - navRect.top;
+    const toY = toRect.top + toRect.height / 2 - navRect.top;
+    setArc({ fromY, toY, visible: true });
+    if (arcTimer.current) clearTimeout(arcTimer.current);
+    arcTimer.current = setTimeout(() => setArc(a => ({ ...a, visible: false })), 900);
+    setPrevActiveIdx(activeIdx);
+  }, [activeIdx, prevActiveIdx]);
+
+  const arcPath = (() => {
+    const x = 10;
+    const { fromY, toY } = arc;
+    const mid = (fromY + toY) / 2;
+    const curve = -28;
+    return `M ${x} ${fromY} Q ${x + curve} ${mid} ${x} ${toY}`;
+  })();
+
+  return (
+    <nav
+      ref={navRef}
+      aria-label="Section index"
+      className="fixed top-1/2 z-50 hidden -translate-y-1/2 flex-col gap-[14px] xl:flex"
+      style={{ right: "max(16px, calc(50vw - 540px))" }}
+    >
+      <svg className="pointer-events-none absolute inset-0 w-full h-full overflow-visible" style={{ left: 0, top: 0 }}>
+        <motion.path
+          d={arcPath}
+          fill="none"
+          stroke="#6366F1"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={arc.visible ? { pathLength: 1, opacity: 0.7 } : { pathLength: 0, opacity: 0 }}
+          transition={{
+            pathLength: { duration: 0.65, ease: [0.4, 0, 0.2, 1] },
+            opacity: { duration: 0.2 },
+          }}
+        />
+      </svg>
+      {sections.map(({ id, label }, i) => {
+        const isActive = active === id;
+        return (
+          <a
+            key={id}
+            href={`#${id}`}
+            className="group flex items-center justify-end gap-2.5"
+            onClick={() => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }}
+          >
+            <motion.span
+              className="font-mono text-[9px] uppercase tracking-widest"
+              animate={{ opacity: isActive ? 1 : 0.25, color: isActive ? "#111111" : "#9CA3AF", x: isActive ? 0 : 4 }}
+              whileHover={{ opacity: 0.75, x: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              {label}
+            </motion.span>
+            <motion.span
+              ref={(el) => { dotRefs.current[i] = el; }}
+              className="block rounded-full flex-shrink-0"
+              animate={{
+                width: isActive ? 10 : 6,
+                height: isActive ? 10 : 6,
+                backgroundColor: isActive ? "#6366F1" : "#D1D5DB",
+                boxShadow: isActive ? "0 0 0 3px rgba(99,102,241,0.18)" : "none",
+              }}
+              whileHover={{ backgroundColor: "#9CA3AF", scale: 1.2 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            />
+          </a>
+        );
+      })}
+    </nav>
+  );
+}
+
 /* Insight card , used in research + decisions sections */
 function InsightCard({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-border/50 bg-white p-6">
+    <motion.div
+      className="rounded-xl border border-border/50 bg-white p-6 cursor-default"
+      whileHover={{ scale: 1.025, y: -6 }}
+      transition={{ type: "spring", stiffness: 340, damping: 22 }}
+    >
       <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-muted">{label}</p>
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -334,6 +465,7 @@ export default function HackImpactPage() {
       <Header initialDark={true} />
       <ProjectSmartBar />
       <GridBackground />
+      <VerticalNav sections={SECTION_NAV} />
 
       {/* ══════════════════════════════════════════════
           HERO
@@ -431,7 +563,7 @@ export default function HackImpactPage() {
       {/* ══════════════════════════════════════════════
           00: PROCESS FRAMEWORK
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 border-t border-border/40 bg-white py-24 md:py-32">
+      <section id="h4i-process" className="relative z-10 border-t border-border/40 bg-white py-24 md:py-32">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="00 / PROCESS" title="How we worked , Agile UX" />
 
@@ -521,7 +653,7 @@ export default function HackImpactPage() {
       {/* ══════════════════════════════════════════════
           01: DISCOVERY & CONTEXT
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 py-24 md:py-32">
+      <section id="h4i-discovery" className="relative z-10 py-24 md:py-32">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="01 / DISCOVERY" title="We audited a 33-page barrier." />
 
@@ -565,7 +697,7 @@ export default function HackImpactPage() {
       {/* ══════════════════════════════════════════════
           02: RESEARCH
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 border-t border-border/40 bg-white py-24 md:py-32">
+      <section id="h4i-research" className="relative z-10 border-t border-border/40 bg-white py-24 md:py-32">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="02 / RESEARCH" title="We mapped both sides of the system." />
 
@@ -625,7 +757,7 @@ export default function HackImpactPage() {
       {/* ══════════════════════════════════════════════
           03: DESIGN PROCESS
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 py-24 md:py-32">
+      <section id="h4i-design" className="relative z-10 py-24 md:py-32">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="03 / DESIGN PROCESS" title="From constraints to high-fidelity." />
 
@@ -679,7 +811,7 @@ export default function HackImpactPage() {
       {/* ══════════════════════════════════════════════
           04: THE SOLUTION
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 border-t border-border/40 bg-white py-24 md:py-32">
+      <section id="h4i-solution" className="relative z-10 border-t border-border/40 bg-white py-24 md:py-32">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="04 / SOLUTION" title="Six targeted design interventions." />
 
@@ -792,7 +924,7 @@ export default function HackImpactPage() {
       {/* ══════════════════════════════════════════════
           05: OUTCOMES
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 border-t border-border/40 py-24 md:py-32">
+      <section id="h4i-outcome" className="relative z-10 border-t border-border/40 py-24 md:py-32">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="05 / OUTCOME" title="Shipped. Live. Measurable." />
 
