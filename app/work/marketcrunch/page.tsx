@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -20,23 +20,146 @@ import { cn } from "@/lib/utils";
 import { FigmaIcon, NotionIcon } from "@/components/ToolIcons";
 
 /* ─────────────────────────────────────────────────────────────
-   SPRINT DIVIDER COMPONENT
-   Agile sprint labels between sections
+   CINEMATIC SPRINT INTERSTITIAL
+   Full-viewport gradient panel with NType82 headline + parallax
 ───────────────────────────────────────────────────────────── */
-function SprintDivider({ number, label, weeks, emoji }: { number: string; label: string; weeks: string; emoji: string }) {
+function SprintDivider({ number, label, weeks, positive = true }: {
+  number: string;
+  label: string;
+  weeks: string;
+  positive?: boolean;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], ["8%", "-8%"]);
+
+  const gradient = positive
+    ? "linear-gradient(160deg, #0a0a14 0%, #1a0a2e 40%, #2d1060 70%, #3d1580 100%)"
+    : "linear-gradient(160deg, #0a0a14 0%, #1a0a2e 40%, #2d1060 70%, #3d1580 100%)";
+
   return (
-    <div className="relative z-10 border-t border-border/40">
-      <div className="mx-auto max-w-[1000px] px-6 md:px-12 py-5 flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-3">
-          <span className="text-xl">{emoji}</span>
-          <div>
-            <p className="font-mono text-[9px] uppercase tracking-widest text-text-muted">Sprint {number}</p>
-            <p className="font-manrope text-sm font-medium text-text">{label}</p>
-          </div>
-        </div>
-        <span className="rounded-full border border-border/50 bg-bg-alt px-3 py-1 font-mono text-[10px] text-text-muted">{weeks}</span>
-      </div>
+    <div
+      ref={ref}
+      className="relative z-10 flex min-h-[70vh] items-center justify-center overflow-hidden"
+      style={{ background: gradient }}
+    >
+      {/* Fluid noise/grain overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+          backgroundSize: "256px",
+        }}
+      />
+      {/* Purple glow blob */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-[120px]"
+        style={{ width: "60vw", height: "60vw", background: "radial-gradient(circle, #7c3aed 0%, transparent 70%)" }}
+      />
+
+      {/* Parallax content */}
+      <motion.div style={{ y }} className="relative z-10 flex flex-col items-center gap-4 px-8 text-center">
+        <motion.p
+          className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/40"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          Sprint {number}
+        </motion.p>
+        <motion.h2
+          className="text-[clamp(3rem,10vw,7rem)] font-normal leading-none tracking-tight text-white"
+          style={{ fontFamily: "NType82, serif" }}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, margin: "-100px" }}
+          transition={{ duration: 0.75, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {label}
+        </motion.h2>
+        <motion.p
+          className="font-mono text-sm text-white/40"
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, margin: "-100px" }}
+          transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {weeks}
+        </motion.p>
+      </motion.div>
     </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   VERTICAL SECTION INDEX (sticky right rail)
+───────────────────────────────────────────────────────────── */
+const SECTION_NAV = [
+  { id: "methodology", label: "Methodology" },
+  { id: "audit", label: "UX Audit" },
+  { id: "hitrate", label: "Hit Rate" },
+  { id: "analyze", label: "Analyze Page" },
+  { id: "mobile", label: "Mobile UX" },
+  { id: "designsystem", label: "Design System" },
+  { id: "marcai", label: "Marc AI" },
+  { id: "conversion", label: "Conversion" },
+  { id: "featurespec", label: "Feature Spec" },
+  { id: "outcomes", label: "Outcomes" },
+];
+
+function VerticalNav() {
+  const [active, setActive] = useState("");
+
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+    SECTION_NAV.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActive(id); },
+        { rootMargin: "-40% 0px -40% 0px", threshold: 0 }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, []);
+
+  return (
+    <nav
+      aria-label="Section index"
+      className="fixed right-5 top-1/2 z-50 hidden -translate-y-1/2 flex-col gap-3 xl:flex"
+    >
+      {SECTION_NAV.map(({ id, label }) => {
+        const isActive = active === id;
+        return (
+          <a
+            key={id}
+            href={`#${id}`}
+            title={label}
+            className="group flex items-center justify-end gap-2"
+          >
+            {/* Label — appears on hover */}
+            <span
+              className={cn(
+                "font-mono text-[9px] uppercase tracking-widest transition-all duration-200",
+                isActive ? "opacity-100 text-text" : "opacity-0 group-hover:opacity-60 text-text-muted",
+              )}
+            >
+              {label}
+            </span>
+            {/* Dot */}
+            <span
+              className={cn(
+                "block rounded-full transition-all duration-300",
+                isActive ? "h-2.5 w-2.5 bg-primary" : "h-1.5 w-1.5 bg-border group-hover:bg-text-muted",
+              )}
+            />
+          </a>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -322,15 +445,30 @@ function DetailRow({ label, value }: { label: string; value: string | React.Reac
   );
 }
 
-/* Scroll-triggered fade+slide up */
+/* Scroll-triggered fade+slide — fires every time (once: false) */
 function Fade({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   return (
     <motion.div
       className={className}
       initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
+      viewport={{ once: false, margin: "-60px" }}
       transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* Media pop — bubbly scale+fade for GIFs and images */
+function MediaPop({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, scale: 0.92 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: false, margin: "-60px" }}
+      transition={{ duration: 0.6, delay, ease: [0.34, 1.3, 0.64, 1] }}
     >
       {children}
     </motion.div>
@@ -344,7 +482,7 @@ function SectionHeading({ number, title }: { number: string; title: string }) {
         className="mb-4 block font-mono text-[11px] text-primary/60"
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
+        viewport={{ once: false, margin: "-60px" }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       >
         {number}
@@ -353,7 +491,7 @@ function SectionHeading({ number, title }: { number: string; title: string }) {
         className="font-manrope text-3xl font-medium tracking-tight text-text md:text-5xl"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
+        viewport={{ once: false, margin: "-60px" }}
         transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
       >
         {title}
@@ -392,7 +530,7 @@ function InsightCard({ label, children }: { label: string; children: React.React
 /* Component sheet — constrained max height so wide Figma exports don't dominate the viewport */
 function ComponentSheet({ src, alt, caption }: { src: string; alt: string; caption?: string }) {
   return (
-    <Fade>
+    <MediaPop>
       <div className="rounded-xl border border-border/50 bg-[#F9FAFB] overflow-hidden">
         <Image
           src={src}
@@ -405,7 +543,7 @@ function ComponentSheet({ src, alt, caption }: { src: string; alt: string; capti
       {caption && (
         <p className="mt-2.5 font-mono text-xs text-text-muted">{caption}</p>
       )}
-    </Fade>
+    </MediaPop>
   );
 }
 
@@ -432,6 +570,7 @@ export default function MarketCrunchPage() {
       <Header initialDark={true} />
       <ProjectSmartBar />
       <GridBackground />
+      <VerticalNav />
 
       {/* ══════════════════════════════════════════════
           HERO
@@ -526,17 +665,17 @@ export default function MarketCrunchPage() {
           </div>
 
           {/* Hero image ,latest analyze page screen recording */}
-          <Fade className="mt-8">
+          <MediaPop className="mt-8">
             <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
               <LoopGif
                 src="/Marketcrunchai/latest&currentanalyzepagedesignscreenrecording.gif"
                 alt="MarketCrunch AI - Live Analyze Page, Final Design"
               />
             </div>
-            <p className="mt-3 text-center font-mono text-xs text-text-muted">
-              Analyze page's final shipped design. Ticker bar, hit rate component, Marc AI, and redesigned left nav all visible.
-            </p>
-          </Fade>
+          </MediaPop>
+          <p className="mt-3 text-center font-mono text-xs text-text-muted">
+            Analyze page's final shipped design. Ticker bar, hit rate component, Marc AI, and redesigned left nav all visible.
+          </p>
         </div>
       </section>
 
@@ -566,7 +705,7 @@ export default function MarketCrunchPage() {
       {/* ══════════════════════════════════════════════
           00: DESIGN PROCESS & METHODOLOGY
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 py-28 md:py-40">
+      <section id="methodology" className="relative z-10 py-28 md:py-40">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="00 / METHODOLOGY" title="How I structured the design process at a live, revenue-generating product." />
 
@@ -655,12 +794,12 @@ export default function MarketCrunchPage() {
       </section>
 
 
-      <SprintDivider number="01" label="Discovery & Audit" weeks="Week 1–2 · Jun 2025" emoji="🔍" />
+      <SprintDivider number="01" label="Discovery & Audit" weeks="Week 1–2 · Jun 2025" />
 
       {/* ══════════════════════════════════════════════
           01: UX AUDIT - HEURISTIC & ACCESSIBILITY EVALUATION
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 bg-white py-28 md:py-40">
+      <section id="audit" className="relative z-10 bg-white py-28 md:py-40">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="01 / UX AUDIT" title="A systematic heuristic evaluation across 20+ screens to establish a redesign baseline." />
 
@@ -827,19 +966,19 @@ export default function MarketCrunchPage() {
       </section>
 
 
-      <SprintDivider number="02" label="Trust Signal & Analyze Page" weeks="Week 3–5 · Jun–Jul 2025" emoji="📈" />
+      <SprintDivider number="02" label="Trust Signal & Analyze" weeks="Week 3–5 · Jun–Jul 2025" />
 
       {/* ══════════════════════════════════════════════
           02: HIT RATE - TRUST SIGNAL DESIGN
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 py-28 md:py-40">
+      <section id="hitrate" className="relative z-10 py-28 md:py-40">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="02 / FEATURE" title="Designing a trust signal that communicates model accuracy without requiring financial literacy." />
 
           <div className="mb-16 grid gap-10 md:grid-cols-2 lg:gap-20">
             <div className="space-y-8">
               <Fade>
-                <div className="rounded-xl border-l-4 border-red-400 bg-red-50/60 p-5">
+                <div className="rounded-xl p-6" style={{background:"linear-gradient(270deg, #f19d9e33, #f1ece6)"}}>
                   <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-red-500 mb-2">The Problem</p>
                   <p className="font-mono text-sm leading-relaxed text-text-secondary">
                     Retail investors without a quant background couldn't evaluate a deep-learning model from RMSE values or backtested Sharpe ratios — the interface had <strong className="font-medium text-text">no trust signal</strong>. High bounce rate on the platform's most critical page.
@@ -847,7 +986,7 @@ export default function MarketCrunchPage() {
                 </div>
               </Fade>
               <Fade delay={0.1}>
-                <div className="rounded-xl border-l-4 border-green-400 bg-green-50/60 p-5">
+                <div className="rounded-xl p-6" style={{background:"linear-gradient(270deg, #9ff09c33, #f0ebe6)"}}>
                   <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-green-600 mb-2">The Solution</p>
                   <p className="font-mono text-sm leading-relaxed text-text-secondary">
                     The <strong className="font-medium text-text">Hit Rate component</strong> — a color-coded accuracy streak across the last 5 sessions using <strong className="font-medium text-text">progressive disclosure</strong>: glanceable at surface level, expandable for detail. Designed with data-ink ratio principles, no jargon, color + shape encoded for accessibility.
@@ -864,17 +1003,17 @@ export default function MarketCrunchPage() {
           </div>
 
           {/* Hit rate GIF, looping */}
-          <Fade>
+          <MediaPop>
             <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
               <LoopGif
                 src="/Marketcrunchai/hitratecloseupview.gif"
                 alt="Hit rate component, looping live view showing prediction accuracy streak"
               />
             </div>
-            <p className="mt-3 text-center font-mono text-xs text-text-muted">
-              Hit rate component in production, color-coded accuracy streak across last 5 trading sessions
-            </p>
-          </Fade>
+          </MediaPop>
+          <p className="mt-3 text-center font-mono text-xs text-text-muted">
+            Hit rate component in production, color-coded accuracy streak across last 5 trading sessions
+          </p>
 
           {/* Hit rate component sheet, constrained */}
           <div className="mt-10">
@@ -892,7 +1031,7 @@ export default function MarketCrunchPage() {
       {/* ══════════════════════════════════════════════
           03: TICKER BAR & ANALYZE PAGE REDESIGN
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 border-t border-border/40 bg-white py-28 md:py-40">
+      <section id="analyze" className="relative z-10 border-t border-border/40 bg-white py-28 md:py-40">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="03 / ANALYZE PAGE" title="Redesigning the highest-visibility element: the ticker bar and analyze page header." />
 
@@ -966,18 +1105,18 @@ export default function MarketCrunchPage() {
       </section>
 
 
-      <SprintDivider number="03" label="Mobile UX & Design System" weeks="Week 6–8 · Jul 2025" emoji="📱" />
+      <SprintDivider number="03" label="Mobile UX & Design System" weeks="Week 6–8 · Jul 2025" />
 
       {/* ══════════════════════════════════════════════
           04: MOBILE UX - NAVIGATION ARCHITECTURE
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 py-28 md:py-40">
+      <section id="mobile" className="relative z-10 py-28 md:py-40">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="04 / MOBILE UX" title="Introducing a persistent navigation architecture for a mobile-first trading platform." />
 
           <div className="mb-16 grid gap-6 md:grid-cols-2">
             <Fade>
-              <div className="rounded-xl border-l-4 border-red-400 bg-red-50/60 p-5">
+              <div className="rounded-xl p-6" style={{background:"linear-gradient(270deg, #f19d9e33, #f1ece6)"}}>
                 <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-red-500 mb-2">The Problem</p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
                   MarketCrunch's primary use case is mobile, yet had <strong className="font-medium text-text">no persistent navigation scaffold</strong>. Switching between Analyze, AI Picks, Options, and Market Pulse required memory-dependent paths — violating Recognition over Recall (Nielsen #6).
@@ -985,7 +1124,7 @@ export default function MarketCrunchPage() {
               </div>
             </Fade>
             <Fade delay={0.1}>
-              <div className="rounded-xl border-l-4 border-green-400 bg-green-50/60 p-5">
+              <div className="rounded-xl p-6" style={{background:"linear-gradient(270deg, #9ff09c33, #f0ebe6)"}}>
                 <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-green-600 mb-2">The Solution</p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
                   A <strong className="font-medium text-text">persistent bottom tab bar</strong> following iOS HIG + Material Design conventions — the most thumb-accessible zone per eye-tracking research. Icon + label pairs enable direct wayfinding with zero cognitive overhead.
@@ -1022,12 +1161,14 @@ export default function MarketCrunchPage() {
           </div>
 
           {/* Mobile prototype GIF, looping */}
-          <div className="mt-10 overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
-            <LoopGif
-              src="/Marketcrunchai/latestviewanalyzepagemobileprototypevideo.gif"
-              alt="Mobile analyze page - live prototype interaction flow"
-            />
-          </div>
+          <MediaPop className="mt-10">
+            <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
+              <LoopGif
+                src="/Marketcrunchai/latestviewanalyzepagemobileprototypevideo.gif"
+                alt="Mobile analyze page - live prototype interaction flow"
+              />
+            </div>
+          </MediaPop>
           <p className="mt-3 text-center font-mono text-xs text-text-muted">
             Mobile prototype - looping live interaction flow showing bottom nav, hit rate component, and analyze page hierarchy
           </p>
@@ -1055,7 +1196,7 @@ export default function MarketCrunchPage() {
       {/* ══════════════════════════════════════════════
           05: DESIGN SYSTEM & COMPONENT ARCHITECTURE
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 border-t border-border/40 bg-white py-28 md:py-40">
+      <section id="designsystem" className="relative z-10 border-t border-border/40 bg-white py-28 md:py-40">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="05 / DESIGN SYSTEM" title="Building a shared component library to unify design–engineering handoff and enforce visual consistency." />
 
@@ -1138,12 +1279,14 @@ export default function MarketCrunchPage() {
           {/* Navbar live redesign */}
           <div className="mt-8">
             <p className="mb-2.5 font-mono text-[10px] uppercase tracking-widest text-text-muted">Left Nav Redesign - Live in Production</p>
-            <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
-              <LoopGif
-                src="/Marketcrunchai/navbarnewdesignlivescreenrecording.gif"
-                alt="Redesigned left nav - live production screen recording"
-              />
-            </div>
+            <MediaPop>
+              <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
+                <LoopGif
+                  src="/Marketcrunchai/navbarnewdesignlivescreenrecording.gif"
+                  alt="Redesigned left nav - live production screen recording"
+                />
+              </div>
+            </MediaPop>
             <p className="mt-3 text-center font-mono text-xs text-text-muted">
               Shipped nav redesign - Material Design icons, refined typographic hierarchy, and Upgrade to Pro card live in production
             </p>
@@ -1152,12 +1295,12 @@ export default function MarketCrunchPage() {
       </section>
 
 
-      <SprintDivider number="04" label="Marc AI, Conversion & Feature Spec" weeks="Week 9–12 · Aug–Sep 2025" emoji="🤖" />
+      <SprintDivider number="04" label="Marc AI & Conversion" weeks="Week 9–12 · Aug–Sep 2025" />
 
       {/* ══════════════════════════════════════════════
           06: MARC AI - AI PERSONA & CONVERSATIONAL UI
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 py-28 md:py-40">
+      <section id="marcai" className="relative z-10 py-28 md:py-40">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="06 / MARC AI" title="Designing a human-readable face for an AI financial advisor, the trust dimension of conversational UI." />
 
@@ -1259,12 +1402,14 @@ export default function MarketCrunchPage() {
           </div>
 
           {/* Marc window GIF - looping */}
-          <div className="mt-8 overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
-            <LoopGif
-              src="/Marketcrunchai/Marcwindowopenlatest&current.gif"
-              alt="Marc AI window - live interaction, open and close flow"
-            />
-          </div>
+          <MediaPop className="mt-8">
+            <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
+              <LoopGif
+                src="/Marketcrunchai/Marcwindowopenlatest&current.gif"
+                alt="Marc AI window - live interaction, open and close flow"
+              />
+            </div>
+          </MediaPop>
           <p className="mt-3 text-center font-mono text-xs text-text-muted">
             Marc AI panel - live interaction recording showing the panel open / close flow and conversational UI
           </p>
@@ -1275,12 +1420,14 @@ export default function MarketCrunchPage() {
             <p className="mb-4 font-mono text-sm text-text-secondary max-w-2xl">
               The backtesting visualization was redesigned from a static full-width widget to an <strong className="font-medium text-text">on-demand overlay triggered inline</strong> next to the Predictive Confidence metric, applying progressive disclosure to reduce visual noise on initial load while preserving access to historical model performance for users who need it.
             </p>
-            <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
-              <LoopGif
-                src="/Marketcrunchai/backtestfeaturescreenrecording.gif"
-                alt="Backtest overlay feature, progressive disclosure interaction pattern"
-              />
-            </div>
+            <MediaPop>
+              <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
+                <LoopGif
+                  src="/Marketcrunchai/backtestfeaturescreenrecording.gif"
+                  alt="Backtest overlay feature, progressive disclosure interaction pattern"
+                />
+              </div>
+            </MediaPop>
           </div>
 
           {/* Feature: Trending tab */}
@@ -1289,12 +1436,14 @@ export default function MarketCrunchPage() {
             <p className="mb-4 font-mono text-sm text-text-secondary max-w-2xl">
               Designed the "Most Trending" tab as a passive discovery surface, giving users an ambient signal of market attention without requiring active search intent. Follows a scannability-optimized layout with ticker, momentum indicator, and directional signal in a compact card format.
             </p>
-            <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
-              <LoopGif
-                src="/Marketcrunchai/mostrendingtablatest&current.gif"
-                alt="Most trending tab - ticker discovery interaction"
-              />
-            </div>
+            <MediaPop>
+              <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#0A0A12]">
+                <LoopGif
+                  src="/Marketcrunchai/mostrendingtablatest&current.gif"
+                  alt="Most trending tab - ticker discovery interaction"
+                />
+              </div>
+            </MediaPop>
           </div>
         </div>
       </section>
@@ -1303,7 +1452,7 @@ export default function MarketCrunchPage() {
       {/* ══════════════════════════════════════════════
           07: AI PICKS, PAYMENTS & CONVERSION FLOWS
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 border-t border-border/40 bg-white py-28 md:py-40">
+      <section id="conversion" className="relative z-10 border-t border-border/40 bg-white py-28 md:py-40">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="07 / CONVERSION DESIGN" title="Redesigning the AI Picks page and payments flow to support user acquisition and subscription conversion." />
 
@@ -1399,13 +1548,13 @@ export default function MarketCrunchPage() {
       {/* ══════════════════════════════════════════════
           08: SEARCH HISTORY - FEATURE SPECIFICATION
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 py-28 md:py-40">
+      <section id="featurespec" className="relative z-10 py-28 md:py-40">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="08 / FEATURE SPEC" title="Search history dropdown, reducing recall burden for high-frequency traders through persistent interaction state." />
 
           <div className="mb-16 grid gap-6 md:grid-cols-2">
             <Fade>
-              <div className="rounded-xl border-l-4 border-red-400 bg-red-50/60 p-5">
+              <div className="rounded-xl p-6" style={{background:"linear-gradient(270deg, #f19d9e33, #f1ece6)"}}>
                 <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-red-500 mb-2">The Problem</p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
                   Core personas (Swing Traders, Active Growth Strategists) return to the same 5–15 tickers per day. The search flow required <strong className="font-medium text-text">full symbol recall and manual re-entry every session</strong> — violating Nielsen #6 and adding friction where speed directly correlates with user value.
@@ -1413,7 +1562,7 @@ export default function MarketCrunchPage() {
               </div>
             </Fade>
             <Fade delay={0.1}>
-              <div className="rounded-xl border-l-4 border-green-400 bg-green-50/60 p-5">
+              <div className="rounded-xl p-6" style={{background:"linear-gradient(270deg, #9ff09c33, #f0ebe6)"}}>
                 <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-green-600 mb-2">The Solution</p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
                   A <strong className="font-medium text-text">contextual search history dropdown</strong> triggered on focus — surfaces 5–10 recent tickers chronologically, one-tap to analyze. Aligns with MarketCrunch's "60-second analysis" positioning and compounds session habituation with every return visit.
@@ -1487,7 +1636,7 @@ export default function MarketCrunchPage() {
       {/* ══════════════════════════════════════════════
           09: OUTCOMES & REFLECTION
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 border-t border-border/40 bg-white py-28 md:py-40">
+      <section id="outcomes" className="relative z-10 border-t border-border/40 bg-white py-28 md:py-40">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="09 / OUTCOMES" title="Platform growth, performance recognition, and what this internship shaped in my practice." />
 

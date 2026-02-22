@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "NType82";
+  src: url("/NType82-Headline.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme inline {
   /* Soothing, calm palette */
   --color-primary: #6366F1;
