@@ -1,15 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useRecruiter } from "@/lib/recruiter-context";
 import { ROTATING_WORDS, TICKER_ITEMS } from "@/lib/constants";
 import HeroParticles from "./HeroParticles";
+import UXAuditGame from "./UXAuditGame";
+import { Volume2, VolumeX } from "lucide-react";
 
 export default function Hero() {
   const { isRecruiterMode } = useRecruiter();
   const [wordIndex, setWordIndex] = useState(0);
+  const [gameActive, setGameActive] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -18,15 +23,76 @@ export default function Hero() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleGameStart = useCallback(() => setGameActive(true), []);
+  const handleGameExit = useCallback(() => setGameActive(false), []);
+
   const tickerDouble = [...TICKER_ITEMS, ...TICKER_ITEMS];
 
   return (
     <section id="hero-section" className="hero-gradient bg-lines relative flex min-h-screen flex-col justify-between overflow-hidden pt-16">
       {/* Physics particle field — floats behind content */}
-      <HeroParticles />
+      {!gameActive && <HeroParticles onGameStart={handleGameStart} />}
 
       {/* Main content — left aligned */}
-      <div className="relative z-10 mx-auto flex w-full max-w-[1080px] flex-1 flex-col justify-center px-8 py-24 md:px-16 lg:px-24">
+      <motion.div
+        animate={{ opacity: gameActive ? 0 : 1, scale: gameActive ? 0.97 : 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10 mx-auto flex w-full max-w-[1080px] flex-1 flex-col justify-center px-8 py-24 md:px-16 lg:px-24"
+        style={{ pointerEvents: gameActive ? "none" : "auto" }}
+      >
+        {/* Self emoticon video — mobile only (sticker version shows on desktop) */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.05 }}
+          className="mb-4 md:hidden"
+        >
+          <div className="relative inline-block">
+            <video
+              ref={videoRef}
+              src="/grok-video-202a19e2-8bfb-4c98-8ac7-c28be5820793.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="h-16 w-16 rounded-full object-cover"
+              aria-label="Pradeep's animated avatar introducing himself"
+              onEnded={() => {
+                // When audio play finishes, re-mute and resume silent loop
+                if (videoRef.current && !videoRef.current.muted) {
+                  videoRef.current.muted = true;
+                  videoRef.current.loop = true;
+                  videoRef.current.play();
+                  setIsMuted(true);
+                }
+              }}
+            />
+            <button
+              onClick={() => {
+                if (videoRef.current) {
+                  if (isMuted) {
+                    // One-shot audio play: restart from beginning, unmute, disable loop
+                    videoRef.current.currentTime = 0;
+                    videoRef.current.muted = false;
+                    videoRef.current.loop = false;
+                    videoRef.current.play();
+                    setIsMuted(false);
+                  } else {
+                    // Manual mute mid-play
+                    videoRef.current.muted = true;
+                    videoRef.current.loop = true;
+                    setIsMuted(true);
+                  }
+                }
+              }}
+              className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-black/70 text-white/60 backdrop-blur-sm transition-colors hover:bg-white/10 hover:text-white"
+              aria-label={isMuted ? "Listen to intro" : "Mute"}
+            >
+              {isMuted ? <Volume2 size={12} /> : <VolumeX size={12} />}
+            </button>
+          </div>
+        </motion.div>
+
         {/* Top row: greeting + availability */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -91,13 +157,13 @@ export default function Hero() {
           5+ years creating user-centered digital products. Reduced friction by 40%,
           boosted engagement by 167%. Currently at UMD.
         </motion.p>
-      </div>
+      </motion.div>
 
       {/* Infinite scrolling company ticker */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.8 }}
+        animate={{ opacity: gameActive ? 0 : 1 }}
+        transition={{ delay: gameActive ? 0 : 0.8, duration: 0.8 }}
         className="relative z-10 border-t border-white/[0.06] bg-black/20 backdrop-blur-sm"
       >
         <div className="overflow-hidden py-4">
@@ -125,6 +191,12 @@ export default function Hero() {
           </div>
         </div>
       </motion.div>
+
+      {/* UX Audit Game overlay */}
+      <AnimatePresence>
+        {gameActive && <UXAuditGame onExit={handleGameExit} />}
+      </AnimatePresence>
     </section>
   );
 }
+

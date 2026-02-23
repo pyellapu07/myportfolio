@@ -4,19 +4,13 @@ import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  MessageCircle,
-  Loader2,
-  ChevronDown,
-  Sparkles,
-  RefreshCw,
-} from "lucide-react";
+import { Menu, X, Download, ArrowRight, ArrowLeft, MessageCircle, RefreshCw, ChevronDown, Sparkles, Loader2, Briefcase, Copy, Check, Maximize2, Minimize2 } from "lucide-react";
+import { useRecruiter } from "@/lib/recruiter-context";
 import Header from "@/components/Header";
 import CustomCursor from "@/components/CustomCursor";
 import Footer from "@/components/Footer";
 import { cn } from "@/lib/utils";
+import SparkIcon from "@/components/SparkIcon";
 import {
   FigmaIcon,
   AsanaIcon,
@@ -247,9 +241,28 @@ const PROJECT_PILLS = [
   "Tell me about the mobile nav redesign",
 ];
 
+const RECRUITER_PILLS = [
+  "Ask about tradeoffs made in the hit-rate UX",
+  "How did he handle conflicting stakeholder feedback?",
+  "How were metrics validated and tracked?",
+  "What decisions drove the 16x MAU growth?",
+];
+
 function ProjectSmartBar() {
+  const { isRecruiterMode } = useRecruiter();
+  const pills = isRecruiterMode ? RECRUITER_PILLS : PROJECT_PILLS;
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const [input, setInput] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Expand automatically when recruiter mode is toggled on
+  useEffect(() => {
+    if (isRecruiterMode) {
+      setIsExpanded(true);
+      setIsMaximized(false);
+    }
+  }, [isRecruiterMode]);
   const [messages, setMessages] = useState<{ role: "user" | "ai"; text: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [phraseIdx, setPhraseIdx] = useState(0);
@@ -343,9 +356,13 @@ function ProjectSmartBar() {
         initial={{ y: 80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.8, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed bottom-6 left-1/2 z-40 w-[calc(100%-3rem)] max-w-[640px] -translate-x-1/2"
+        className={cn(
+          "fixed bottom-6 left-1/2 z-40 -translate-x-1/2 transition-all duration-300",
+          isExpanded ? (isMaximized ? "w-[calc(100%-3rem)] max-w-[1000px]" : "w-[calc(100%-3rem)] max-w-[800px]") : "w-[calc(100%-3rem)] max-w-[640px]"
+        )}
         data-no-cursor
       >
+        {isExpanded && <div className={cn("chat-glow transition-all duration-300", isMaximized ? "opacity-30" : "opacity-60")} style={{ borderRadius: isMaximized ? "48px" : "36px" }} />}
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -356,8 +373,8 @@ function ProjectSmartBar() {
               className="mb-1.5 overflow-hidden rounded-xl border border-border/40 bg-white shadow-smooth-lg"
               style={{ transformOrigin: "bottom" }}
             >
-              <div className="flex h-[340px] flex-col">
-                <div className="flex items-center justify-between border-b border-border/40 bg-bg-alt/50 px-5 py-3">
+              <div className={cn("flex flex-col transition-all duration-300", isMaximized ? "h-[75vh] max-h-[800px]" : "h-[340px]")}>
+                <div className="flex items-center justify-between border-b border-border/40 bg-bg-alt/50 px-5 py-3 shrink-0">
                   <span className="font-manrope text-sm font-medium text-text">Ask about this internship</span>
                   <div className="flex items-center gap-1">
                     {messages.length > 0 && (
@@ -370,7 +387,15 @@ function ProjectSmartBar() {
                       </button>
                     )}
                     <button
+                      onClick={() => setIsMaximized(!isMaximized)}
+                      title={isMaximized ? "Minimize" : "Maximize"}
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-black/5 hover:text-text"
+                    >
+                      {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                    </button>
+                    <button
                       onClick={() => setIsExpanded(false)}
+                      title="Close"
                       className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-black/5 hover:text-text"
                     >
                       <ChevronDown size={15} />
@@ -378,15 +403,72 @@ function ProjectSmartBar() {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-5">
-                  {messages.length === 0 ? (
+                <div className="flex-1 overflow-y-auto p-6">
+                  {isRecruiterMode && (messages.length === 0 || isMaximized) && (
+                    <div className={cn("flex flex-col shrink-0", messages.length > 0 ? "mb-6 border-b border-border/40 pb-6" : "h-full")}>
+                      <div className="mb-6 flex items-start gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                          <Briefcase size={20} />
+                        </div>
+                        <div>
+                          <h3 className="font-manrope text-base font-semibold text-text">Recruiter Summary Lens</h3>
+                          <p className="mt-1 font-mono text-sm leading-relaxed text-text-secondary">
+                            Role fit: UX / Product hybrid · Level: Junior/Mid · Proof: 16x MAU growth.<br />
+                            <span className="font-medium text-text">Why it matters:</span> This candidate ships real code that drives user metrics, acting as a force multiplier for early-stage engineering teams.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className={messages.length === 0 ? "mt-auto" : "mt-2"}>
+                        <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-widest text-text-muted">
+                          Suggested Interview Questions
+                        </p>
+                        <div className={cn("grid gap-2", isMaximized ? "grid-cols-2" : "grid-cols-1")}>
+                          {RECRUITER_PILLS.map((pill) => (
+                            <div
+                              key={pill}
+                              className="group flex items-center justify-between rounded-xl border border-border/40 bg-bg-alt/50 px-4 py-3 transition-colors hover:border-primary/30"
+                            >
+                              <span className={cn("font-mono text-text-secondary group-hover:text-text", isMaximized ? "text-xs pr-2" : "text-sm")}>{pill}</span>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigator.clipboard.writeText(pill);
+                                    setCopiedId(pill);
+                                    setTimeout(() => setCopiedId(null), 2000);
+                                  }}
+                                  className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-text-muted shadow-sm ring-1 ring-border/50 transition-colors hover:text-primary"
+                                  title="Copy question"
+                                >
+                                  {copiedId === pill ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    send(pill);
+                                    if (!isMaximized) setTimeout(() => setIsMaximized(true), 150);
+                                  }}
+                                  className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-text-muted shadow-sm ring-1 ring-border/50 transition-colors hover:text-primary"
+                                  title="Ask AI"
+                                >
+                                  <ArrowRight size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isRecruiterMode && messages.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
                       <Sparkles size={18} className="text-primary/30" />
                       <p className="max-w-[200px] font-mono text-xs text-text-muted">
                         Ask about the process, features, or outcomes.
                       </p>
                     </div>
-                  ) : (
+                  ) : (messages.length > 0 ? (
                     <div className="space-y-3">
                       {messages.map((m, i) => (
                         <div key={i} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
@@ -409,7 +491,7 @@ function ProjectSmartBar() {
                       )}
                       <div ref={bottomRef} />
                     </div>
-                  )}
+                  ) : null)}
                 </div>
 
                 <div className="border-t border-border/40 bg-white p-3">
@@ -442,8 +524,7 @@ function ProjectSmartBar() {
           )}
         </AnimatePresence>
 
-        <div className="relative rounded-2xl border border-white/50 bg-white/20 p-1.5 shadow-smooth-lg backdrop-blur-2xl">
-          {isExpanded && <div className="chat-glow" />}
+        <div className="relative rounded-2xl border border-white/50 bg-white/20 p-1.5 shadow-smooth-lg backdrop-blur-2xl mt-1.5">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex w-full items-center gap-3 rounded-xl bg-white/60 px-5 py-3.5 text-left backdrop-blur-sm transition-colors hover:bg-white/80"
@@ -459,17 +540,19 @@ function ProjectSmartBar() {
           </button>
         </div>
 
-        <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
-          {PROJECT_PILLS.map((pill) => (
-            <button
-              key={pill}
-              onClick={() => send(pill)}
-              className="rounded-full border border-border/40 bg-white/80 px-3 py-1 font-mono text-[10px] text-text-muted backdrop-blur-sm transition-all hover:border-primary/30 hover:bg-white hover:text-primary"
-            >
-              {pill}
-            </button>
-          ))}
-        </div>
+        {!isRecruiterMode && (
+          <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
+            {PROJECT_PILLS.map((pill) => (
+              <button
+                key={pill}
+                onClick={() => send(pill)}
+                className="rounded-full border border-border/40 bg-white/80 px-3 py-1 font-mono text-[10px] text-text-muted backdrop-blur-sm transition-all hover:border-primary/30 hover:bg-white hover:text-primary"
+              >
+                {pill}
+              </button>
+            ))}
+          </div>
+        )}
       </motion.div>
     </>
   );
@@ -551,7 +634,7 @@ function BigLabel({ text, color = "text-text" }: { text: string; color?: string 
   );
 }
 
-function StatItem({ value, label }: { value: string; label: string }) {
+function StatItem({ value, label }: { value: React.ReactNode; label: string }) {
   return (
     <div className="flex flex-col gap-1 border-l-2 border-primary/20 pl-6">
       <span className="font-manrope text-4xl font-medium text-primary md:text-5xl">{value}</span>
@@ -594,6 +677,260 @@ function ComponentSheet({ src, alt, caption }: { src: string; alt: string; capti
 }
 
 /* ─────────────────────────────────────────────────────────────
+   AUDIT CAROUSEL — Full-bleed infinite auto-scroll
+───────────────────────────────────────────────────────────── */
+const AUDIT_IMAGES = [
+  "0.Guide.png",
+  "1. Navigation.png",
+  "2. Homepage.png",
+  "2.1 Homepage.png",
+  "3. Dashboard.png",
+  "4. Analyze.png",
+  "4.1 Analyze.png",
+  "5. Alerts.png",
+  "6. AI Picks.png",
+  "Recommendations.png",
+];
+
+function AuditCarousel() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
+  const pausedRef = useRef(false);
+  const scrollPosRef = useRef(0);
+  const [visible, setVisible] = useState(false);
+  const [lightbox, setLightbox] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const CARD_WIDTH = 520;
+  const SPEED = 0.6;
+
+  // Entrance animation via IntersectionObserver
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setVisible(true); },
+      { rootMargin: "-80px" }
+    );
+    if (containerRef.current) obs.observe(containerRef.current);
+    return () => obs.disconnect();
+  }, []);
+
+  // Infinite auto-scroll via RAF
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const singleWidth = AUDIT_IMAGES.length * CARD_WIDTH;
+
+    function step() {
+      if (!pausedRef.current && track) {
+        scrollPosRef.current += SPEED;
+        if (scrollPosRef.current >= singleWidth) scrollPosRef.current -= singleWidth;
+        track.style.transform = `translateX(-${scrollPosRef.current}px)`;
+      }
+      rafRef.current = requestAnimationFrame(step);
+    }
+    rafRef.current = requestAnimationFrame(step);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, []);
+
+  // Close lightbox on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setLightbox(null); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const doubled = [...AUDIT_IMAGES, ...AUDIT_IMAGES];
+
+  return (
+    <div ref={containerRef}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={visible ? { opacity: 1, scale: 1 } : {}}
+        transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+        className="relative w-screen left-1/2 -translate-x-1/2 overflow-hidden"
+        onMouseEnter={() => { pausedRef.current = true; }}
+        onMouseLeave={() => { pausedRef.current = false; }}
+      >
+        {/* Track */}
+        <div
+          ref={trackRef}
+          className="flex gap-5 py-4 will-change-transform"
+          style={{ width: `${doubled.length * CARD_WIDTH}px` }}
+        >
+          {doubled.map((img, i) => (
+            <div
+              key={`${img}-${i}`}
+              className="flex-none cursor-zoom-in"
+              style={{ width: `${CARD_WIDTH - 20}px` }}
+              onClick={() => setLightbox(`/Marketcrunchai/${img}`)}
+            >
+              <div className="overflow-hidden rounded-xl border border-border/50 bg-white shadow-sm h-[420px] flex items-center justify-center p-2 hover:shadow-md transition-shadow duration-200">
+                <Image
+                  src={`/Marketcrunchai/${img}`}
+                  alt={`UX Audit - ${img.replace(".png", "")}`}
+                  width={1000}
+                  height={700}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Edge fade vignettes */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#FAFAFA] to-transparent z-10" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#FAFAFA] to-transparent z-10" />
+      </motion.div>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightbox && (
+          <motion.div
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-12 cursor-zoom-out"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setLightbox(null)}
+          >
+            <motion.div
+              className="relative max-w-[92vw] max-h-[92vh] overflow-hidden rounded-2xl shadow-2xl bg-white"
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={lightbox} alt="Audit page full view" className="block max-h-[90vh] w-auto max-w-[92vw] object-contain" />
+              <button
+                onClick={() => setLightbox(null)}
+                className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/10 text-black hover:bg-black/20 transition-colors font-mono text-sm"
+                aria-label="Close lightbox"
+              >
+                ✕
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RECRUITER MODE COMPONENTS
+───────────────────────────────────────────────────────────── */
+
+/** Fixed aurora banner shown at the top when Recruiter Mode is on */
+function RecruiterBanner() {
+  const { isRecruiterMode, toggleRecruiterMode } = useRecruiter();
+  return (
+    <AnimatePresence>
+      {isRecruiterMode && (
+        <motion.div
+          initial={{ y: -56, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -56, opacity: 0 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed top-16 left-0 right-0 z-[45] flex items-center justify-center gap-3 px-4 py-2.5"
+          style={{
+            background: "linear-gradient(90deg, #3b0764 0%, #4c1d95 25%, #5b21b6 50%, #4c1d95 75%, #3b0764 100%)",
+            boxShadow: "0 2px 24px rgba(109,40,217,0.35)",
+          }}
+        >
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.06]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+              backgroundSize: "128px",
+            }}
+          />
+          <Briefcase size={12} className="text-violet-200 shrink-0" />
+          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/90">
+            Recruiter Mode — Impact Lens Active
+          </span>
+          <span className="h-3 w-px bg-white/20 mx-1" />
+          <span className="font-mono text-[10px] text-violet-300/80">Interview prompts available below ↓</span>
+          <button
+            onClick={toggleRecruiterMode}
+            className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors"
+            aria-label="Dismiss recruiter banner"
+          >
+            <X size={10} />
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/** Wraps a metric value with a recruiter-mode highlight */
+function RecruiterHighlight({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const { isRecruiterMode } = useRecruiter();
+  if (!isRecruiterMode) return <>{children}</>;
+  return (
+    <span className={cn("text-primary", className)}>
+      {children}
+    </span>
+  );
+}
+
+/** "Why This Matters" callout injected between major sections only in recruiter mode */
+function WhyThisMatters({ id, headline, points, nextHref, prevHref }: { id?: string; headline: string; points: string[]; nextHref?: string; prevHref?: string; }) {
+  const { isRecruiterMode } = useRecruiter();
+  if (!isRecruiterMode) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, margin: "-40px" }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="relative z-10 mx-auto my-0 max-w-[1000px] px-6 md:px-12"
+      id={id}
+    >
+      <div
+        className="relative mb-8 mt-12 overflow-hidden rounded-2xl p-6 md:p-8"
+        style={{
+          background: "linear-gradient(135deg, rgba(99,102,241,0.05) 0%, rgba(139,92,246,0.06) 30%, rgba(168,85,247,0.04) 60%, rgba(79,70,229,0.03) 100%)",
+          boxShadow: "0 4px 32px rgba(99,102,241,0.06)",
+        }}
+      >
+        <div className="mb-4 flex items-center gap-2.5">
+          <SparkIcon size={18} />
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary/70 font-semibold">Why This Matters — Recruiter Lens</p>
+        </div>
+        <p className="font-manrope text-base font-semibold text-text mb-4">{headline}</p>
+        <ul className="space-y-2">
+          {points.map((p, i) => (
+            <li key={i} className="flex items-start gap-2.5 font-mono text-sm text-text-secondary">
+              <span className="mt-1 text-primary/50 shrink-0">→</span>
+              {p}
+            </li>
+          ))}
+        </ul>
+
+        {(nextHref || prevHref) && (
+          <div className="mt-6 flex items-center justify-between border-t border-primary/10 pt-4">
+            {prevHref ? (
+              <a href={prevHref} className="font-mono text-[10px] font-bold uppercase tracking-widest text-primary/60 transition-colors hover:text-primary">↑ Previous Lens</a>
+            ) : <span />}
+            {nextHref ? (
+              <a href={nextHref} className="font-mono text-[10px] font-bold uppercase tracking-widest text-primary/60 transition-colors hover:text-primary">Next Lens ↓</a>
+            ) : <span />}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
    MAIN PAGE
 ───────────────────────────────────────────────────────────── */
 const GridBackground = () => (
@@ -609,10 +946,12 @@ const GridBackground = () => (
 );
 
 export default function MarketCrunchPage() {
+  const { isRecruiterMode } = useRecruiter();
   return (
-    <div className="relative min-h-screen bg-[#FAFAFA] text-text selection:bg-primary/20">
+    <div className={cn("relative min-h-screen bg-[#FAFAFA] text-text selection:bg-primary/20", isRecruiterMode && "recruiter-mode")}>
       <CustomCursor />
       <Header initialDark={true} />
+      <RecruiterBanner />
       <ProjectSmartBar />
       <GridBackground />
       <VerticalNav sections={SECTION_NAV} />
@@ -643,11 +982,11 @@ export default function MarketCrunchPage() {
                 <Image
                   src="/MarketCrunch AI logo.png"
                   alt="MarketCrunch AI"
-                  width={18}
+                  width={90}
                   height={18}
                   className="rounded-sm"
                 />
-                <span className="font-mono text-[11px] font-medium text-text-secondary">MarketCrunch AI · San Francisco, CA</span>
+                <span className="font-mono text-[11px] font-medium text-text-secondary"> · San Francisco, CA</span>
               </div>
 
               <h1 className="mb-6 font-manrope text-5xl font-medium leading-[1.05] tracking-tight text-text md:text-7xl lg:text-[5rem]">
@@ -719,10 +1058,10 @@ export default function MarketCrunchPage() {
           <div className="mt-6 rounded-2xl border border-border/50 bg-white p-8 md:p-10 shadow-sm">
             <p className="mb-8 font-mono text-[10px] uppercase tracking-widest text-text-muted">Quantified Impact & Business Growth</p>
             <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-              <StatItem value="16×" label="MAU growth in 2025" />
-              <StatItem value="300M+" label="Data points analyzed daily" />
-              <StatItem value="$450K+" label="Raised in SAFEs post-stealth" />
-              <StatItem value="Bonus" label="Awarded for design impact" />
+              <StatItem value={<RecruiterHighlight>16×</RecruiterHighlight>} label="MAU growth in 2025" />
+              <StatItem value={<RecruiterHighlight>300M+</RecruiterHighlight>} label="Data points analyzed daily" />
+              <StatItem value={<RecruiterHighlight>$450K+</RecruiterHighlight>} label="Raised in SAFEs post-stealth" />
+              <StatItem value={<RecruiterHighlight>Bonus</RecruiterHighlight>} label="Awarded for design impact" />
             </div>
             <div className="mt-8 rounded-xl border border-primary/15 bg-primary/4 p-6">
               <p className="font-mono text-[10px] uppercase tracking-widest text-primary/60 mb-2">CEO · Post-Stealth Excerpt</p>
@@ -733,6 +1072,19 @@ export default function MarketCrunchPage() {
           </div>
         </div>
       </section>
+
+      <div id="lens-1" className="scroll-mt-40">
+        <WhyThisMatters
+          headline="This designer drove measurable business outcomes, not just Figma deliverables."
+          points={[
+            "16× MAU growth proves the redesigns improved retention and activation, not just aesthetics.",
+            "Received a performance bonus as sole designer — the CEO attributed growth to UX clarity and trust signals.",
+            "Shipped designs in React JS using Cursor — rare for a designer, demonstrates full product ownership.",
+            "Managed design-to-dev handoff via Figma Dev Mode, reducing ambiguity for the engineering team.",
+          ]}
+          nextHref="#lens-2"
+        />
+      </div>
 
       {/* ══════════════════════════════════════════════
           02: PROBLEM & OBJECTIVES
@@ -891,7 +1243,7 @@ export default function MarketCrunchPage() {
       {/* ══════════════════════════════════════════════
           JOURNEY MAP
       ══════════════════════════════════════════════ */}
-      <section id="journeymap" className="relative z-10 bg-[#FAFAFA] pb-24 md:pb-32">
+      <section id="journeymap" className="relative z-10 bg-[#FAFAFA] py-24 md:py-32">
         <div className="mx-auto max-w-[1280px] px-6 md:px-12">
           <SectionHeading number="04 / USER JOURNEY MAP" title="Mapping the Systematic Swing Trader's workflow to identify friction points." />
           <div className="overflow-x-auto pb-6 scrollbar-hide">
@@ -955,44 +1307,27 @@ export default function MarketCrunchPage() {
             </p>
           </div>
 
-          {/* Audit Image Carousel */}
+          {/* Audit Image Carousel – full-bleed infinite scroll */}
           <div className="mb-16">
             <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Extracted Export of 10-Page Audit Document</p>
-            <div className="flex w-full gap-5 overflow-x-auto snap-x snap-mandatory pb-8 pt-2 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
-              {[
-                "0.Guide.png",
-                "1. Navigation.png",
-                "2. Homepage.png",
-                "2.1 Homepage.png",
-                "3. Dashboard.png",
-                "4. Analyze.png",
-                "4.1 Analyze.png",
-                "5. Alerts.png",
-                "6. AI Picks.png",
-                "Recommendations.png"
-              ].map((img, i) => (
-                <div key={img} className="flex-none w-[85vw] md:w-[700px] snap-center shrink-0">
-                  <div className="overflow-hidden rounded-xl border border-border/50 bg-white shadow-sm h-full flex items-center justify-center p-2">
-                    <Image
-                      src={`/Marketcrunchai/${img}`}
-                      alt={`UX Audit Document - ${img}`}
-                      width={1000}
-                      height={700}
-                      className="w-full h-auto object-contain max-h-[500px]"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-            {/* Scroll hint */}
-            <div className="flex items-center gap-2 justify-center text-text-muted font-mono text-[10px] uppercase tracking-widest">
-              <span>←</span>
-              <span>Scroll to view all 10 pages</span>
-              <span>→</span>
-            </div>
+            <p className="font-mono text-xs text-text-muted mb-6">Hover to pause · Click any slide to view full page</p>
+            <AuditCarousel />
           </div>
         </div>
       </section>
+
+      <div id="lens-2" className="scroll-mt-40">
+        <WhyThisMatters
+          headline="Structured research methodology before a single Figma frame was opened."
+          points={[
+            "Heuristic evaluation against Nielsen's 10 principles + WCAG 2.1 AA — not just vibes-based critique.",
+            "Competitive benchmarking (TradingView, Robinhood, Seeking Alpha) to identify industry-standard patterns.",
+            "All findings triaged by severity (P0/P1/P2) and mapped to Asana sprints — shows process maturity.",
+            "Demonstrates an ability to balance user needs, business goals, and technical constraints under startup speed.",
+          ]}
+          prevHref="#lens-1"
+        />
+      </div>
 
       <SprintDivider number="01" label="Strategy & Foundation" weeks="Week 1–2 · Jun 2025" />
 

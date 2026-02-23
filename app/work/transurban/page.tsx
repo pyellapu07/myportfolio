@@ -12,11 +12,18 @@ import {
   ChevronDown,
   Sparkles,
   RefreshCw,
+  Briefcase,
+  Copy,
+  Check,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
+import { useRecruiter } from "@/lib/recruiter-context";
 import Header from "@/components/Header";
 import CustomCursor from "@/components/CustomCursor";
 import Footer from "@/components/Footer";
 import { cn } from "@/lib/utils";
+import SparkIcon from "@/components/SparkIcon";
 
 /* ─────────────────────────────────────────────────────────────
    PROJECT CHAT
@@ -34,9 +41,74 @@ const PROJECT_PILLS = [
   "What did the UEQ results show?",
 ];
 
+const RECRUITER_PILLS = [
+  "How did he approach the mixed-methods research?",
+  "What insights were gained from the SUS scores?",
+  "How did he present findings to stakeholders?",
+  "What was the biggest discovery?",
+];
+
+function RecruiterHighlight({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const { isRecruiterMode } = useRecruiter();
+  if (!isRecruiterMode) return <>{children}</>;
+  return <span className={cn("text-primary", className)}>{children}</span>;
+}
+
+function WhyThisMatters({ id, headline, points, nextHref, prevHref }: { id?: string; headline: string; points: string[]; nextHref?: string; prevHref?: string; }) {
+  const { isRecruiterMode } = useRecruiter();
+  if (!isRecruiterMode) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, margin: "-40px" }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="relative z-10 mx-auto my-0 max-w-[1000px] px-6 md:px-12"
+      id={id}
+    >
+      <div
+        className="relative mb-8 mt-12 overflow-hidden rounded-2xl p-6 md:p-8"
+        style={{
+          background: "linear-gradient(135deg, rgba(99,102,241,0.05) 0%, rgba(139,92,246,0.06) 30%, rgba(168,85,247,0.04) 60%, rgba(79,70,229,0.03) 100%)",
+          boxShadow: "0 4px 32px rgba(99,102,241,0.06)",
+        }}
+      >
+        <div className="mb-4 flex items-center gap-2.5">
+          <SparkIcon size={18} />
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary/70 font-semibold">Why This Matters — Recruiter Lens</p>
+        </div>
+        <p className="font-manrope text-base font-semibold text-text mb-4">{headline}</p>
+        <ul className="space-y-2">
+          {points.map((p, i) => (
+            <li key={i} className="flex items-start gap-2.5 font-mono text-sm text-text-secondary">
+              <span className="mt-1 text-primary/50 shrink-0">→</span>
+              {p}
+            </li>
+          ))}
+        </ul>
+
+        {(nextHref || prevHref) && (
+          <div className="mt-6 flex items-center justify-between border-t border-primary/10 pt-4">
+            {prevHref ? (
+              <a href={prevHref} className="font-mono text-[10px] font-bold uppercase tracking-widest text-primary/60 transition-colors hover:text-primary">↑ Previous Lens</a>
+            ) : <span />}
+            {nextHref ? (
+              <a href={nextHref} className="font-mono text-[10px] font-bold uppercase tracking-widest text-primary/60 transition-colors hover:text-primary">Next Lens ↓</a>
+            ) : <span />}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 function ProjectSmartBar() {
+  const { isRecruiterMode } = useRecruiter();
+  const pills = isRecruiterMode ? RECRUITER_PILLS : PROJECT_PILLS;
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const [input, setInput] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<{ role: "user" | "ai"; text: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [phraseIdx, setPhraseIdx] = useState(0);
@@ -45,6 +117,13 @@ function ProjectSmartBar() {
   const [placeholder, setPlaceholder] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isRecruiterMode) {
+      setIsExpanded(true);
+      setIsMaximized(false);
+    }
+  }, [isRecruiterMode]);
 
   useEffect(() => {
     if (isExpanded) return;
@@ -89,7 +168,7 @@ function ProjectSmartBar() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: `[Context: Transurban Express Lanes UX Research — Usabilathon competition project by EZ Pass Transurban. In-person research conducted in Virginia at Transurban HQ. Mixed-methods study: 127 survey participants, 8 semi-structured in-depth interviews, usability testing sessions, moderated think-aloud protocol. Research areas: toll payment flows, wayfinding signage comprehension, transponder setup, account management. Methods: affinity mapping (Miro), System Usability Scale (SUS), User Experience Questionnaire (UEQ), thematic analysis. Key findings: signage confusion at HOV entry points, penalty letter intimidation reducing adoption, cluttered account management UI, transponder placement instructions unclear. Deliverables: research synthesis report, affinity map, SUS/UEQ data, stakeholder presentation to Transurban team in Virginia. Team: Pradeep Yellapu (lead researcher). Project resulted in actionable design recommendations for Transurban to improve wayfinding, payment transparency, and onboarding.] ${text}`,
-          mode: "general",
+          mode: isRecruiterMode ? "recruiter" : "general",
           conversationHistory: [],
         }),
       });
@@ -112,26 +191,17 @@ function ProjectSmartBar() {
 
   return (
     <>
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-30"
-            onClick={() => setIsExpanded(false)}
-          />
-        )}
-      </AnimatePresence>
-
       <motion.div
         initial={{ y: 80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.8, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed bottom-6 left-1/2 z-40 w-[calc(100%-3rem)] max-w-[640px] -translate-x-1/2"
+        className={cn(
+          "fixed bottom-6 left-1/2 z-40 -translate-x-1/2 transition-all duration-300",
+          isExpanded ? (isMaximized ? "w-[calc(100%-3rem)] max-w-[1000px]" : "w-[calc(100%-3rem)] max-w-[800px]") : "w-[calc(100%-3rem)] max-w-[640px]"
+        )}
         data-no-cursor
       >
+        {isExpanded && <div className={cn("chat-glow transition-all duration-300", isMaximized ? "opacity-30" : "opacity-60")} style={{ borderRadius: isMaximized ? "48px" : "36px" }} />}
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -142,8 +212,9 @@ function ProjectSmartBar() {
               className="mb-1.5 overflow-hidden rounded-xl border border-border/40 bg-white shadow-smooth-lg"
               style={{ transformOrigin: "bottom" }}
             >
-              <div className="flex h-[340px] flex-col">
-                <div className="flex items-center justify-between border-b border-border/40 bg-bg-alt/50 px-5 py-3">
+              <div className={cn("flex flex-col transition-all duration-300", isMaximized ? "h-[75vh] max-h-[800px]" : "h-[340px]")}>
+                {/* Panel header */}
+                <div className="flex items-center justify-between border-b border-border/40 bg-bg-alt/50 px-5 py-3 shrink-0">
                   <span className="font-manrope text-sm font-medium text-text">Ask about this research</span>
                   <div className="flex items-center gap-1">
                     {messages.length > 0 && (
@@ -156,7 +227,15 @@ function ProjectSmartBar() {
                       </button>
                     )}
                     <button
+                      onClick={() => setIsMaximized(!isMaximized)}
+                      title={isMaximized ? "Minimize" : "Maximize"}
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-black/5 hover:text-text"
+                    >
+                      {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                    </button>
+                    <button
                       onClick={() => setIsExpanded(false)}
+                      title="Close"
                       className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-black/5 hover:text-text"
                     >
                       <ChevronDown size={15} />
@@ -164,15 +243,73 @@ function ProjectSmartBar() {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-5">
-                  {messages.length === 0 ? (
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-6">
+                  {isRecruiterMode && (messages.length === 0 || isMaximized) && (
+                    <div className={cn("flex flex-col shrink-0", messages.length > 0 ? "mb-6 border-b border-border/40 pb-6" : "h-full")}>
+                      <div className="mb-6 flex items-start gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                          <Briefcase size={20} />
+                        </div>
+                        <div>
+                          <h3 className="font-manrope text-base font-semibold text-text">Recruiter Summary Lens</h3>
+                          <p className="mt-1 font-mono text-sm leading-relaxed text-text-secondary">
+                            Role fit: UX Researcher (Lead) · Level: Intern / Junior · Proof: Rigorous mixed methods study informing Transurban HQ policy changes.<br />
+                            <span className="font-medium text-text">Why it matters:</span> Proven ability to triangulate qualitative friction with quantitative severity metrics.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className={messages.length === 0 ? "mt-auto" : "mt-2"}>
+                        <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-widest text-text-muted">
+                          Suggested Interview Questions
+                        </p>
+                        <div className={cn("grid gap-2", isMaximized ? "grid-cols-2" : "grid-cols-1")}>
+                          {RECRUITER_PILLS.map((pill) => (
+                            <div
+                              key={pill}
+                              className="group flex items-center justify-between rounded-xl border border-border/40 bg-bg-alt/50 px-4 py-3 transition-colors hover:border-primary/30"
+                            >
+                              <span className={cn("font-mono text-text-secondary group-hover:text-text", isMaximized ? "text-xs pr-2" : "text-sm")}>{pill}</span>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigator.clipboard.writeText(pill);
+                                    setCopiedId(pill);
+                                    setTimeout(() => setCopiedId(null), 2000);
+                                  }}
+                                  className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-text-muted shadow-sm ring-1 ring-border/50 transition-colors hover:text-primary"
+                                  title="Copy question"
+                                >
+                                  {copiedId === pill ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    send(pill);
+                                    if (!isMaximized) setTimeout(() => setIsMaximized(true), 150);
+                                  }}
+                                  className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-text-muted shadow-sm ring-1 ring-border/50 transition-colors hover:text-primary"
+                                  title="Ask AI"
+                                >
+                                  <ArrowRight size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isRecruiterMode && messages.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
                       <Sparkles size={18} className="text-primary/30" />
                       <p className="max-w-[200px] font-mono text-xs text-text-muted">
-                        Ask about the methods, findings, or outcomes.
+                        Ask about the findings, methods, or impact.
                       </p>
                     </div>
-                  ) : (
+                  ) : (messages.length > 0 ? (
                     <div className="space-y-3">
                       {messages.map((m, i) => (
                         <div key={i} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
@@ -195,9 +332,10 @@ function ProjectSmartBar() {
                       )}
                       <div ref={bottomRef} />
                     </div>
-                  )}
+                  ) : null)}
                 </div>
 
+                {/* Input */}
                 <div className="border-t border-border/40 bg-white p-3">
                   <div className="flex gap-2">
                     <textarea
@@ -228,8 +366,8 @@ function ProjectSmartBar() {
           )}
         </AnimatePresence>
 
-        <div className="relative rounded-2xl border border-white/50 bg-white/20 p-1.5 shadow-smooth-lg backdrop-blur-2xl">
-          {isExpanded && <div className="chat-glow" />}
+        {/* Collapsed bar */}
+        <div className="relative rounded-2xl border border-white/50 bg-white/20 p-1.5 shadow-smooth-lg backdrop-blur-2xl mt-1.5">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex w-full items-center gap-3 rounded-xl bg-white/60 px-5 py-3.5 text-left backdrop-blur-sm transition-colors hover:bg-white/80"
@@ -239,23 +377,26 @@ function ProjectSmartBar() {
               {placeholder || PROJECT_PLACEHOLDERS[0]}
             </span>
             <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-medium text-primary">
-              Project AI
+              Research AI
             </span>
             <MessageCircle size={14} className="shrink-0 text-text-muted" aria-hidden />
           </button>
         </div>
 
-        <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
-          {PROJECT_PILLS.map((pill) => (
-            <button
-              key={pill}
-              onClick={() => send(pill)}
-              className="rounded-full border border-border/40 bg-white/80 px-3 py-1 font-mono text-[10px] text-text-muted backdrop-blur-sm transition-all hover:border-primary/30 hover:bg-white hover:text-primary"
-            >
-              {pill}
-            </button>
-          ))}
-        </div>
+        {/* 3 recommended pills below bar (general mode only) */}
+        {!isRecruiterMode && (
+          <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
+            {PROJECT_PILLS.map((pill) => (
+              <button
+                key={pill}
+                onClick={() => send(pill)}
+                className="rounded-full border border-border/40 bg-white/60 px-3 py-1 font-mono text-[10px] text-text-secondary backdrop-blur-sm transition-colors hover:border-border hover:bg-white"
+              >
+                {pill}
+              </button>
+            ))}
+          </div>
+        )}
       </motion.div>
     </>
   );
@@ -294,11 +435,30 @@ function StatItem({ value, label }: { value: string; label: string }) {
 function InsightCard({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, margin: "-40px" }}
+      transition={{ duration: 0.4 }}
       className="rounded-xl border border-border/50 bg-white p-6 cursor-default"
       whileHover={{ scale: 1.025, y: -6 }}
-      transition={{ type: "spring", stiffness: 340, damping: 22 }}
     >
       <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-muted">{label}</p>
+      {children}
+    </motion.div>
+  );
+}
+
+function Fade({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  return (
+    <motion.div className={className} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-60px" }} transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}>
+      {children}
+    </motion.div>
+  );
+}
+
+function MediaPop({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  return (
+    <motion.div className={className} initial={{ opacity: 0, scale: 0.92 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, margin: "-60px" }} transition={{ duration: 0.6, delay, ease: [0.34, 1.3, 0.64, 1] }}>
       {children}
     </motion.div>
   );
@@ -423,7 +583,7 @@ export default function TransurbanPage() {
                 <span className="text-primary">Express Lanes Experience.</span>
               </h1>
               <p className="max-w-xl font-mono text-base leading-relaxed text-text-secondary md:text-lg">
-                A mixed-methods UX research study — conducted in-house at Transurban Virginia — to identify critical usability barriers in toll payment, wayfinding, and account management for 127 Express Lane users.
+                A mixed-methods UX research study — conducted in-house at <RecruiterHighlight>Transurban Virginia</RecruiterHighlight> — to identify critical usability barriers in toll payment, wayfinding, and account management for <RecruiterHighlight>127 Express Lane users</RecruiterHighlight>.
               </p>
             </div>
 
@@ -465,7 +625,7 @@ export default function TransurbanPage() {
           </div>
 
           {/* Hero image — payment prototype GIF */}
-          <div className="mt-8">
+          <MediaPop><div className="mt-8">
             <div className="relative flex items-center justify-center overflow-hidden rounded-2xl border border-border/50 bg-[#EBEBEB] px-10 py-10">
               <div
                 className="relative w-full max-w-[85%] overflow-hidden rounded-xl"
@@ -488,7 +648,7 @@ export default function TransurbanPage() {
             <p className="mt-4 text-center font-mono text-xs text-text-muted">
               Payment flow prototype — one of the key interaction sequences evaluated during usability testing sessions.
             </p>
-          </div>
+          </div></MediaPop>
         </div>
       </section>
 
@@ -500,7 +660,7 @@ export default function TransurbanPage() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="00 / CONTEXT" title="A government-backed usability challenge." />
 
-          <div className="grid gap-12 md:grid-cols-2 lg:gap-24">
+          <Fade><div className="grid gap-12 md:grid-cols-2 lg:gap-24">
             <div className="space-y-5">
               <p className="font-mono text-base leading-relaxed text-text-secondary">
                 The <strong className="font-medium text-text">EZ Pass Transurban Usabilathon</strong> was a competitive UX research challenge in which select teams were invited in-house to Transurban's Virginia offices to evaluate the Express Lanes user experience end-to-end — from pre-trip wayfinding through post-trip account reconciliation.
@@ -518,10 +678,10 @@ export default function TransurbanPage() {
               <StatItem value="8" label="Semi-structured interviews" />
               <StatItem value="3" label="Core usability domains evaluated" />
             </div>
-          </div>
+          </div></Fade>
 
           {/* Partnership logos */}
-          <div className="mt-16 relative overflow-hidden rounded-xl border border-border/50 bg-bg-alt">
+          <MediaPop><div className="mt-16 relative overflow-hidden rounded-xl border border-border/50 bg-bg-alt">
             <Image
               src="/transurban/ezpassamdtransurban partnershiplogos.png"
               alt="EZ Pass Maryland and Transurban partnership"
@@ -529,13 +689,23 @@ export default function TransurbanPage() {
               height={400}
               className="w-full h-auto object-contain p-8"
             />
-          </div>
+          </div></MediaPop>
           <p className="mt-4 text-center font-mono text-xs text-text-muted">
             EZ Pass Maryland · Transurban — the two systems whose integration created the core user experience friction we investigated.
           </p>
         </div>
       </section>
 
+      <WhyThisMatters
+        id="recruiter-lens-1"
+        headline="Proven ability to execute rigorous UX research in a high-stakes, real-world corporate environment."
+        points={[
+          "Conducted mixed-methods research integrating quantitative surveys and qualitative interviews.",
+          "Presented findings directly to the Transurban product and policy team.",
+          "Synthesized complex datasets into prioritizeable, actionable design directions."
+        ]}
+        nextHref="#recruiter-lens-2"
+      />
 
       {/* ══════════════════════════════════════════════
           01: RESEARCH DESIGN
@@ -544,30 +714,30 @@ export default function TransurbanPage() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="01 / RESEARCH DESIGN" title="Mixed-methods from the ground up." />
 
-          <div className="mb-10 space-y-5 max-w-2xl">
+          <Fade><div className="mb-10 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               We designed a <strong className="font-medium text-text">convergent mixed-methods protocol</strong> — combining a quantitative survey phase for breadth with a qualitative interview and usability-testing phase for depth. The two datasets were triangulated during synthesis to distinguish widespread systemic issues from edge-case friction.
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               The survey instrument was distributed to <strong className="font-medium text-text">127 Express Lane users</strong> across the Northern Virginia corridor, capturing frequency of use, self-reported pain points, transponder familiarity, and satisfaction proxies. Survey responses were used to prioritize interview topics and identify participant segments for the qualitative phase.
             </p>
-          </div>
+          </div></Fade>
 
           {/* Research plan board */}
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
+          <MediaPop><div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
             <Image
               src="/transurban/researchplanonboard1.png"
               alt="Research plan on whiteboard — Usabilathon kickoff"
               fill
               className="object-contain p-4 transition-transform duration-700 hover:scale-[1.02]"
             />
-          </div>
+          </div></MediaPop>
           <p className="mt-4 text-center font-mono text-xs text-text-muted">
             Research plan whiteboard — scoped and structured in-house at the Transurban Virginia office on day one.
           </p>
 
           {/* Method breakdown */}
-          <div className="mt-14 grid gap-5 md:grid-cols-3">
+          <Fade><div className="mt-14 grid gap-5 md:grid-cols-3">
             {[
               {
                 label: "Phase 1 — Generative survey",
@@ -593,7 +763,7 @@ export default function TransurbanPage() {
                 <p className="mt-2 font-mono text-xs leading-relaxed text-text-muted">{m.body}</p>
               </InsightCard>
             ))}
-          </div>
+          </div></Fade>
         </div>
       </section>
 
@@ -605,30 +775,30 @@ export default function TransurbanPage() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="02 / SYNTHESIS" title="From raw data to actionable insight." />
 
-          <div className="mb-10 space-y-5 max-w-2xl">
+          <Fade><div className="mb-10 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               Interview transcripts and usability session notes were synthesized using <strong className="font-medium text-text">affinity mapping on Miro</strong> — grouping atomic observations into first-order themes, then clustering themes into higher-order problem domains. This bottom-up synthesis process ensured findings were grounded in participant language rather than pre-existing hypotheses.
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               The affinity map revealed four dominant problem domains that cut across multiple user segments and research phases — confirming their systemic nature rather than representing isolated incidents.
             </p>
-          </div>
+          </div></Fade>
 
           {/* Affinity map */}
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
+          <MediaPop><div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
             <Image
               src="/transurban/affinitymapping on board.png"
               alt="Affinity mapping session — Miro board"
               fill
               className="object-cover transition-transform duration-700 hover:scale-[1.02]"
             />
-          </div>
+          </div></MediaPop>
           <p className="mt-4 text-center font-mono text-xs text-text-muted">
             Affinity map — synthesizing 8 interview transcripts and 127 survey responses into dominant usability themes.
           </p>
 
           {/* Key findings */}
-          <div className="mt-14 grid gap-5 md:grid-cols-2">
+          <Fade><div className="mt-14 grid gap-5 md:grid-cols-2">
             <InsightCard label="Finding 01 — Wayfinding">
               <p className="font-manrope text-sm font-medium text-text mt-1">HOV entry signage caused consistent lane confusion</p>
               <p className="mt-2 font-mono text-xs leading-relaxed text-text-muted">
@@ -653,15 +823,15 @@ export default function TransurbanPage() {
                 First-time users consistently misplaced transponders — attaching them below the windshield's metallic band or behind rearview mirror housing — leading to read failures at toll gantries. The included instruction sheet lacked clear spatial reference points, forcing users to rely on trial and error.
               </p>
             </InsightCard>
-          </div>
+          </div></Fade>
 
           {/* Key insight callout */}
-          <div className="mt-8 rounded-xl border border-primary/15 bg-primary/4 p-6">
+          <Fade><div className="mt-8 rounded-xl border border-primary/15 bg-primary/4 p-6">
             <p className="font-mono text-[10px] uppercase tracking-widest text-primary/60 mb-2">Cross-cutting insight</p>
             <p className="font-mono text-sm leading-relaxed text-text">
               The most consistent underlying theme across all four domains: <strong className="font-medium">the system was designed from an operational perspective, not a user mental model perspective.</strong> Signage, penalty letters, account structure, and installation guides all reflected how Transurban categorizes information internally — not how a commuter navigating a highway at 65mph processes and acts on it.
             </p>
-          </div>
+          </div></Fade>
         </div>
       </section>
 
@@ -673,16 +843,16 @@ export default function TransurbanPage() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="03 / EVALUATION" title="Measuring usability with validated instruments." />
 
-          <div className="mb-10 space-y-5 max-w-2xl">
+          <Fade><div className="mb-10 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               To complement the qualitative findings, we administered two standardized usability measurement instruments: the <strong className="font-medium text-text">System Usability Scale (SUS)</strong> and the <strong className="font-medium text-text">User Experience Questionnaire (UEQ)</strong>. Using validated scales allowed us to benchmark Transurban's performance against established norms and quantify the severity of identified issues with statistical grounding.
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               Participants completed both instruments immediately following their usability testing session, while task experience was still fresh — minimizing retrospective bias and ensuring ratings reflected actual interaction difficulty rather than general satisfaction.
             </p>
-          </div>
+          </div></Fade>
 
-          <div className="grid gap-8 md:grid-cols-2">
+          <Fade><div className="grid gap-8 md:grid-cols-2">
             {/* SUS */}
             <div className="rounded-xl border border-border/50 bg-bg-alt overflow-hidden">
               <div className="p-6">
@@ -693,12 +863,7 @@ export default function TransurbanPage() {
                 </p>
               </div>
               <div className="relative aspect-[4/3] w-full overflow-hidden border-t border-border/40 bg-white">
-                <Image
-                  src="/transurban/systemusabilityscale.png"
-                  alt="System Usability Scale results"
-                  fill
-                  className="object-contain p-4"
-                />
+                <Image src="/transurban/systemusabilityscale.png" alt="System Usability Scale results" fill className="object-contain p-4" />
               </div>
             </div>
 
@@ -712,18 +877,13 @@ export default function TransurbanPage() {
                 </p>
               </div>
               <div className="relative aspect-[4/3] w-full overflow-hidden border-t border-border/40 bg-white">
-                <Image
-                  src="/transurban/User Experience Questionnaire (UEQ) Results.png"
-                  alt="UEQ results across six dimensions"
-                  fill
-                  className="object-contain p-4"
-                />
+                <Image src="/transurban/User Experience Questionnaire (UEQ) Results.png" alt="UEQ results across six dimensions" fill className="object-contain p-4" />
               </div>
             </div>
-          </div>
+          </div></Fade>
 
           {/* Time on task */}
-          <div className="mt-8">
+          <MediaPop><div className="mt-8">
             <div className="rounded-xl border border-border/50 bg-white overflow-hidden">
               <div className="p-6 border-b border-border/40">
                 <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted mb-2">Task Completion Performance</p>
@@ -733,15 +893,10 @@ export default function TransurbanPage() {
                 </p>
               </div>
               <div className="relative aspect-[16/7] w-full overflow-hidden bg-[#F5F5F7]">
-                <Image
-                  src="/transurban/timeontask.png"
-                  alt="Time on task analysis"
-                  fill
-                  className="object-contain p-6"
-                />
+                <Image src="/transurban/timeontask.png" alt="Time on task analysis" fill className="object-contain p-6" />
               </div>
             </div>
-          </div>
+          </div></MediaPop>
         </div>
       </section>
 
@@ -753,119 +908,94 @@ export default function TransurbanPage() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="04 / AUDIT" title="What the existing system looked like." />
 
-          <div className="mb-10 space-y-5 max-w-2xl">
+          <Fade><div className="mb-10 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               A <strong className="font-medium text-text">heuristic evaluation</strong> of the existing Transurban account portal was conducted in parallel with user research. Evaluating against Nielsen's 10 usability heuristics surfaced structural IA issues that user testing later confirmed through behavioral evidence — providing triangulated confidence in the findings.
             </p>
-          </div>
+          </div></Fade>
 
-          <div className="grid gap-8 md:grid-cols-2">
-            <figure>
+          <Fade><div className="grid gap-8 md:grid-cols-2">
+            <MediaPop><figure>
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
-                <Image
-                  src="/transurban/clutteredoldviewtransurban.png"
-                  alt="Existing Transurban account portal — heuristic audit"
-                  fill
-                  className="object-contain"
-                />
+                <Image src="/transurban/clutteredoldviewtransurban.png" alt="Existing Transurban account portal — heuristic audit" fill className="object-contain" />
               </div>
               <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
                 Existing account interface — violation of Nielsen's Heuristic #8 (aesthetic and minimalist design). All functions rendered at equal weight with no visual hierarchy to guide task completion.
               </figcaption>
-            </figure>
+            </figure></MediaPop>
 
-            <div className="space-y-5">
+            <MediaPop delay={0.1}><div className="space-y-5">
               <figure>
                 <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
-                  <Image
-                    src="/transurban/bettertransponderdesign.png"
-                    alt="Improved transponder design concept"
-                    fill
-                    className="object-contain"
-                  />
+                  <Image src="/transurban/bettertransponderdesign.png" alt="Improved transponder design concept" fill className="object-contain" />
                 </div>
                 <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
                   Transponder design recommendation — informed by spatial error data from usability sessions.
                 </figcaption>
               </figure>
-            </div>
-          </div>
+            </div></MediaPop>
+          </div></Fade>
 
           {/* Signage and physical collateral */}
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            <figure>
+          <Fade><div className="mt-10 grid gap-6 md:grid-cols-3">
+            <MediaPop><figure>
               <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
-                <Image
-                  src="/transurban/preventfinessignageonroads.png"
-                  alt="Prevent fines road signage"
-                  fill
-                  className="object-contain p-2"
-                />
+                <Image src="/transurban/preventfinessignageonroads.png" alt="Prevent fines road signage" fill className="object-contain p-2" />
               </div>
               <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
                 HOV enforcement signage — evaluated for legibility and processing time at highway speeds.
               </figcaption>
-            </figure>
-            <figure>
+            </figure></MediaPop>
+            <MediaPop delay={0.1}><figure>
               <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
-                <Image
-                  src="/transurban/physicallettersentbytransurbantopenaltyusers.png"
-                  alt="Penalty letter sent by Transurban"
-                  fill
-                  className="object-cover"
-                />
+                <Image src="/transurban/physicallettersentbytransurbantopenaltyusers.png" alt="Penalty letter sent by Transurban" fill className="object-cover" />
               </div>
               <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
                 Penalty letter — formal tone and dense information hierarchy contributed to avoidance behavior.
               </figcaption>
-            </figure>
-            <figure>
+            </figure></MediaPop>
+            <MediaPop delay={0.2}><figure>
               <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
-                <Image
-                  src="/transurban/physicalletterinvoicesentbytransurbantopenaltyusers.png"
-                  alt="Invoice letter from Transurban"
-                  fill
-                  className="object-cover"
-                />
+                <Image src="/transurban/physicalletterinvoicesentbytransurbantopenaltyusers.png" alt="Invoice letter from Transurban" fill className="object-cover" />
               </div>
               <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
                 Invoice correspondence — language and layout tested against plain-language readability standards.
               </figcaption>
-            </figure>
-          </div>
+            </figure></MediaPop>
+          </div></Fade>
 
           {/* Transponder instructions */}
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
-            <figure>
+          <Fade><div className="mt-10 grid gap-6 md:grid-cols-2">
+            <MediaPop><figure>
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
-                <Image
-                  src="/transurban/instructionsonwheretoputtheexpass.png"
-                  alt="Transponder placement instructions"
-                  fill
-                  className="object-contain p-2"
-                />
+                <Image src="/transurban/instructionsonwheretoputtheexpass.png" alt="Transponder placement instructions" fill className="object-contain p-2" />
               </div>
               <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
                 Transponder placement guide — spatial ambiguity led to a high rate of installation errors in testing.
               </figcaption>
-            </figure>
-            <figure>
+            </figure></MediaPop>
+            <MediaPop delay={0.1}><figure>
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
-                <Image
-                  src="/transurban/instructionsarticleprovided by transurban on roads HOV 2.png"
-                  alt="HOV road instructions article"
-                  fill
-                  className="object-contain p-2"
-                />
+                <Image src="/transurban/instructionsarticleprovided by transurban on roads HOV 2.png" alt="HOV road instructions article" fill className="object-contain p-2" />
               </div>
               <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
                 HOV usage guide — evaluated against plain-language standards; found to assume significant prior knowledge.
               </figcaption>
-            </figure>
-          </div>
+            </figure></MediaPop>
+          </div></Fade>
         </div>
       </section>
 
+      <WhyThisMatters
+        id="recruiter-lens-2"
+        headline="Translating raw UX data into clear product strategy."
+        points={[
+          "Correlated SUS (System Usability Scale) and UEQ scores to validate qualitative friction.",
+          "Audited physical service touchpoints, not just digital screens, for holistic user journey understanding.",
+          "Demonstrated capability to tie UX failures back to the underlying operational and business logic."
+        ]}
+        prevHref="#recruiter-lens-1"
+      />
 
       {/* ══════════════════════════════════════════════
           05: RECOMMENDATIONS
@@ -874,51 +1004,29 @@ export default function TransurbanPage() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="05 / RECOMMENDATIONS" title="Four research-backed design directions." />
 
-          <div className="mb-16 max-w-2xl">
+          <Fade><div className="mb-16 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               Each recommendation maps directly to a finding from the research synthesis. Priority was determined by the intersection of prevalence (how many participants experienced it), severity (how significantly it impacted task completion), and addressability within Transurban's product roadmap.
             </p>
-          </div>
+          </div></Fade>
 
-          <div className="space-y-8">
+          <Fade><div className="space-y-8">
             {[
-              {
-                n: "01",
-                title: "Simplify signage through progressive disclosure",
-                finding: "HOV wayfinding confusion",
-                body: "Replace multi-element sign compositions with a sequenced signage system — delivering one critical decision cue per sign in the approach sequence rather than all information simultaneously. Prioritize high-contrast color coding aligned with the existing E-ZPass branding system to reduce cognitive parsing time at highway speeds.",
-              },
-              {
-                n: "02",
-                title: "Redesign penalty communication as plain-language guidance",
-                finding: "Penalty letter avoidance behavior",
-                body: "Reframe penalty correspondence from formal legal notices to action-oriented user communications. Lead with the resolution path — a clear, single-step call to action — before any fee or timeline information. Reduce information density by separating penalty notification from payment instructions across two distinct touchpoints.",
-              },
-              {
-                n: "03",
-                title: "Restructure account portal information architecture",
-                finding: "Account management task failure",
-                body: "Apply a task-frequency-based IA hierarchy: surface account balance, add funds, and recent transactions at the top level. Relegate low-frequency administrative actions (statement downloads, transponder settings) to a secondary layer accessible via explicit navigation. This directly addresses the cognitive load identified in the SUS and UEQ Perspicuity scores.",
-              },
-              {
-                n: "04",
-                title: "Redesign transponder installation guide with spatial anchors",
-                finding: "Transponder placement errors",
-                body: "Replace the text-heavy installation guide with a visual-first instruction set using windshield silhouettes as spatial reference frames. Include explicit callouts for common failure zones (metallic bands, mirror housings). Consider a short-form video QR code as a supplementary channel for users who need dynamic guidance.",
-              },
+              { n: "01", title: "Simplify signage through progressive disclosure", finding: "HOV wayfinding confusion", body: "Replace multi-element sign compositions with a sequenced signage system — delivering one critical decision cue per sign in the approach sequence rather than all information simultaneously. Prioritize high-contrast color coding aligned with the existing E-ZPass branding system to reduce cognitive parsing time at highway speeds." },
+              { n: "02", title: "Redesign penalty communication as plain-language guidance", finding: "Penalty letter avoidance behavior", body: "Reframe penalty correspondence from formal legal notices to action-oriented user communications. Lead with the resolution path — a clear, single-step call to action — before any fee or timeline information. Reduce information density by separating penalty notification from payment instructions across two distinct touchpoints." },
+              { n: "03", title: "Restructure account portal information architecture", finding: "Account management task failure", body: "Apply a task-frequency-based IA hierarchy: surface account balance, add funds, and recent transactions at the top level. Relegate low-frequency administrative actions (statement downloads, transponder settings) to a secondary layer accessible via explicit navigation. This directly addresses the cognitive load identified in the SUS and UEQ Perspicuity scores." },
+              { n: "04", title: "Redesign transponder installation guide with spatial anchors", finding: "Transponder placement errors", body: "Replace the text-heavy installation guide with a visual-first instruction set using windshield silhouettes as spatial reference frames. Include explicit callouts for common failure zones (metallic bands, mirror housings). Consider a short-form video QR code as a supplementary channel for users who need dynamic guidance." },
             ].map((r) => (
-              <div key={r.n} className="grid gap-6 rounded-xl border border-border/50 bg-white p-6 md:grid-cols-[auto_1fr]">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/8 font-mono text-xs font-medium text-primary">
-                  {r.n}
-                </div>
+              <motion.div key={r.n} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-40px" }} transition={{ duration: 0.45 }} className="grid gap-6 rounded-xl border border-border/50 bg-white p-6 md:grid-cols-[auto_1fr]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/8 font-mono text-xs font-medium text-primary">{r.n}</div>
                 <div>
                   <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-text-muted">↳ {r.finding}</p>
                   <h3 className="font-manrope text-lg font-medium text-text">{r.title}</h3>
                   <p className="mt-2 font-mono text-sm leading-relaxed text-text-secondary">{r.body}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </div></Fade>
         </div>
       </section>
 
@@ -930,44 +1038,30 @@ export default function TransurbanPage() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="06 / OUTCOME" title="Research delivered in-house to Transurban." />
 
-          <div className="mb-12 space-y-5 max-w-2xl">
+          <Fade><div className="mb-12 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               The full research synthesis — covering survey analysis, interview themes, usability evaluation data, SUS/UEQ benchmarking, and prioritized recommendations — was presented in-person to the Transurban product and policy team in Virginia. The presentation was structured to map each finding to a business impact metric (collections rate, user retention, support ticket volume) to ground design recommendations in language relevant to the stakeholder audience.
             </p>
-          </div>
+          </div></Fade>
 
           {/* Presentation photo */}
-          <figure>
+          <MediaPop><figure>
             <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-border grayscale transition-all duration-700 hover:grayscale-0">
-              <Image
-                src="/transurban/megivingpresentationtostakeholders.jpeg"
-                alt="Presenting research findings to Transurban stakeholders"
-                fill
-                className="object-cover"
-              />
+              <Image src="/transurban/megivingpresentationtostakeholders.jpeg" alt="Presenting research findings to Transurban stakeholders" fill className="object-cover" />
             </div>
             <figcaption className="mt-4 text-center font-mono text-xs text-text-muted">
               Presenting research findings and design recommendations to the Transurban team — Virginia, in-house.
             </figcaption>
-          </figure>
+          </figure></MediaPop>
 
           {/* Reflections */}
-          <div className="mt-16">
+          <Fade><div className="mt-16">
             <h3 className="mb-8 font-manrope text-xl font-medium text-text">What this project reinforced.</h3>
             <div className="grid gap-5 md:grid-cols-3">
               {[
-                {
-                  title: "Field research is irreplaceable",
-                  body: "Being physically on-site in Virginia — with access to actual signage, penalty letters, and physical transponders — produced a qualitative depth that remote research could not have replicated. The materials themselves were data.",
-                },
-                {
-                  title: "Validated scales quantify what interviews describe",
-                  body: "The SUS and UEQ gave us the numerical grounding to say 'this is below industry standard' — not just 'users found this confusing.' Stakeholders responded to data-backed severity rankings in ways they wouldn't have to qualitative observations alone.",
-                },
-                {
-                  title: "Operational logic ≠ user mental model",
-                  body: "Every usability failure we found traced back to the same root cause: the system was organized around how Transurban manages data, not how a commuter makes decisions. Naming this pattern early gave our recommendations a unifying rationale.",
-                },
+                { title: "Field research is irreplaceable", body: "Being physically on-site in Virginia — with access to actual signage, penalty letters, and physical transponders — produced a qualitative depth that remote research could not have replicated. The materials themselves were data." },
+                { title: "Validated scales quantify what interviews describe", body: "The SUS and UEQ gave us the numerical grounding to say 'this is below industry standard' — not just 'users found this confusing.' Stakeholders responded to data-backed severity rankings in ways they wouldn't have to qualitative observations alone." },
+                { title: "Operational logic ≠ user mental model", body: "Every usability failure we found traced back to the same root cause: the system was organized around how Transurban manages data, not how a commuter makes decisions. Naming this pattern early gave our recommendations a unifying rationale." },
               ].map((r) => (
                 <InsightCard key={r.title} label="Reflection">
                   <p className="mt-1 font-manrope text-sm font-medium text-text">{r.title}</p>
@@ -975,23 +1069,18 @@ export default function TransurbanPage() {
                 </InsightCard>
               ))}
             </div>
-          </div>
+          </div></Fade>
 
           {/* Team photo */}
-          <div className="mt-20">
+          <MediaPop><div className="mt-20">
             <p className="mb-5 text-center font-mono text-[10px] uppercase tracking-widest text-text-muted">The Team</p>
             <div className="relative aspect-[16/7] w-full overflow-hidden rounded-2xl border border-border grayscale transition-all duration-700 hover:grayscale-0">
-              <Image
-                src="/transurban/teampicture.png"
-                alt="Usabilathon team — Transurban Virginia"
-                fill
-                className="object-cover"
-              />
+              <Image src="/transurban/teampicture.png" alt="Usabilathon team — Transurban Virginia" fill className="object-cover" />
             </div>
             <p className="mt-4 text-center font-mono text-xs text-text-muted">
               Usabilathon team — UX researchers competing in-house at Transurban's Virginia offices.
             </p>
-          </div>
+          </div></MediaPop>
         </div>
       </section>
 

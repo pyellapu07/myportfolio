@@ -30,14 +30,14 @@ const Sparkle = ({ delay, style, color }: { delay: number; style: React.CSSPrope
 
 // Stable sparkle positions — no Math.random() at render time (causes hydration mismatch)
 const SPARKLE_POSITIONS = [
-    { top: "8%",  left: "12%" }, { top: "15%", left: "78%" },
+    { top: "8%", left: "12%" }, { top: "15%", left: "78%" },
     { top: "25%", left: "35%" }, { top: "32%", left: "60%" },
-    { top: "45%", left: "5%"  }, { top: "50%", left: "90%" },
+    { top: "45%", left: "5%" }, { top: "50%", left: "90%" },
     { top: "60%", left: "22%" }, { top: "68%", left: "55%" },
     { top: "75%", left: "80%" }, { top: "82%", left: "40%" },
     { top: "88%", left: "15%" }, { top: "92%", left: "70%" },
     { top: "20%", left: "50%" }, { top: "55%", left: "42%" },
-    { top: "38%", left: "88%" }, { top: "72%", left: "8%"  },
+    { top: "38%", left: "88%" }, { top: "72%", left: "8%" },
 ];
 
 export default function RecruiterSplash() {
@@ -185,7 +185,7 @@ export default function RecruiterSplash() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 1.4, duration: 0.7 }}
-                            className="mt-3 font-mono text-xs font-normal uppercase tracking-widest text-emerald-700/50"
+                            className="mt-3 font-mono text-xs font-normal uppercase tracking-widest text-emerald-700/50 text-center px-6"
                         >
                             With open hands, I welcome you to my creative world
                         </motion.p>

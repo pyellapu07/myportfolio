@@ -12,11 +12,18 @@ import {
   ChevronDown,
   Sparkles,
   RefreshCw,
+  Briefcase,
+  Copy,
+  Check,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
+import { useRecruiter } from "@/lib/recruiter-context";
 import Header from "@/components/Header";
 import CustomCursor from "@/components/CustomCursor";
 import Footer from "@/components/Footer";
 import { cn } from "@/lib/utils";
+import SparkIcon from "@/components/SparkIcon";
 import { FigmaIcon, NotionIcon } from "@/components/ToolIcons";
 
 /* ─────────────────────────────────────────────────────────────
@@ -35,9 +42,74 @@ const PROJECT_PILLS = [
   "How did you run user research?",
 ];
 
+const RECRUITER_PILLS = [
+  "How did he handle a 33-page monolithic form?",
+  "What was the impact on completion rates?",
+  "How did he collaborate with the PMs?",
+  "Can you explain the pill-style component decision?",
+];
+
+function RecruiterHighlight({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const { isRecruiterMode } = useRecruiter();
+  if (!isRecruiterMode) return <>{children}</>;
+  return <span className={cn("text-primary", className)}>{children}</span>;
+}
+
+function WhyThisMatters({ id, headline, points, nextHref, prevHref }: { id?: string; headline: string; points: string[]; nextHref?: string; prevHref?: string; }) {
+  const { isRecruiterMode } = useRecruiter();
+  if (!isRecruiterMode) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, margin: "-40px" }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="relative z-10 mx-auto my-0 max-w-[1000px] px-6 md:px-12"
+      id={id}
+    >
+      <div
+        className="relative mb-8 mt-12 overflow-hidden rounded-2xl p-6 md:p-8"
+        style={{
+          background: "linear-gradient(135deg, rgba(99,102,241,0.05) 0%, rgba(139,92,246,0.06) 30%, rgba(168,85,247,0.04) 60%, rgba(79,70,229,0.03) 100%)",
+          boxShadow: "0 4px 32px rgba(99,102,241,0.06)",
+        }}
+      >
+        <div className="mb-4 flex items-center gap-2.5">
+          <SparkIcon size={18} />
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary/70 font-semibold">Why This Matters — Recruiter Lens</p>
+        </div>
+        <p className="font-manrope text-base font-semibold text-text mb-4">{headline}</p>
+        <ul className="space-y-2">
+          {points.map((p, i) => (
+            <li key={i} className="flex items-start gap-2.5 font-mono text-sm text-text-secondary">
+              <span className="mt-1 text-primary/50 shrink-0">→</span>
+              {p}
+            </li>
+          ))}
+        </ul>
+
+        {(nextHref || prevHref) && (
+          <div className="mt-6 flex items-center justify-between border-t border-primary/10 pt-4">
+            {prevHref ? (
+              <a href={prevHref} className="font-mono text-[10px] font-bold uppercase tracking-widest text-primary/60 transition-colors hover:text-primary">↑ Previous Lens</a>
+            ) : <span />}
+            {nextHref ? (
+              <a href={nextHref} className="font-mono text-[10px] font-bold uppercase tracking-widest text-primary/60 transition-colors hover:text-primary">Next Lens ↓</a>
+            ) : <span />}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 function ProjectSmartBar() {
+  const { isRecruiterMode } = useRecruiter();
+  const pills = isRecruiterMode ? RECRUITER_PILLS : PROJECT_PILLS;
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const [input, setInput] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<{ role: "user" | "ai"; text: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [phraseIdx, setPhraseIdx] = useState(0);
@@ -46,6 +118,13 @@ function ProjectSmartBar() {
   const [placeholder, setPlaceholder] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isRecruiterMode) {
+      setIsExpanded(true);
+      setIsMaximized(false);
+    }
+  }, [isRecruiterMode]);
 
   // Typewriter rotating placeholder
   useEffect(() => {
@@ -91,7 +170,7 @@ function ProjectSmartBar() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: `[Context: HackImpact UMD Application Portal Redesign. 3-month Agile UX project. Weekly Monday sprint calls with cross-functional team (PMs, Tech Leads, Engineers, UI/UX Designers) and Microsoft Reston dev reviewer. Stakeholder: Aaryan Patel (Recruitment Manager). Collaborator: Sohayainder Kaur. Key outcomes: 33-page monolithic form → 4-step progressive flow, 80% reduction in navigation time, 750+ applicants/year, built full component library, replaced checkbox skill selection with pill-style components, introduced status tracker with Active/Inactive states, project live in production.] ${text}`,
-          mode: "general",
+          mode: isRecruiterMode ? "recruiter" : "general",
           conversationHistory: [],
         }),
       });
@@ -133,10 +212,13 @@ function ProjectSmartBar() {
         initial={{ y: 80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.8, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed bottom-6 left-1/2 z-40 w-[calc(100%-3rem)] max-w-[640px] -translate-x-1/2"
+        className={cn(
+          "fixed bottom-6 left-1/2 z-40 -translate-x-1/2 transition-all duration-300",
+          isExpanded ? (isMaximized ? "w-[calc(100%-3rem)] max-w-[1000px]" : "w-[calc(100%-3rem)] max-w-[800px]") : "w-[calc(100%-3rem)] max-w-[640px]"
+        )}
         data-no-cursor
       >
-        {/* Expanded chat panel */}
+        {isExpanded && <div className={cn("chat-glow transition-all duration-300", isMaximized ? "opacity-30" : "opacity-60")} style={{ borderRadius: isMaximized ? "48px" : "36px" }} />}
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -147,9 +229,9 @@ function ProjectSmartBar() {
               className="mb-1.5 overflow-hidden rounded-xl border border-border/40 bg-white shadow-smooth-lg"
               style={{ transformOrigin: "bottom" }}
             >
-              <div className="flex h-[340px] flex-col">
+              <div className={cn("flex flex-col transition-all duration-300", isMaximized ? "h-[75vh] max-h-[800px]" : "h-[340px]")}>
                 {/* Panel header */}
-                <div className="flex items-center justify-between border-b border-border/40 bg-bg-alt/50 px-5 py-3">
+                <div className="flex items-center justify-between border-b border-border/40 bg-bg-alt/50 px-5 py-3 shrink-0">
                   <span className="font-manrope text-sm font-medium text-text">Ask about this project</span>
                   <div className="flex items-center gap-1">
                     {messages.length > 0 && (
@@ -162,7 +244,15 @@ function ProjectSmartBar() {
                       </button>
                     )}
                     <button
+                      onClick={() => setIsMaximized(!isMaximized)}
+                      title={isMaximized ? "Minimize" : "Maximize"}
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-black/5 hover:text-text"
+                    >
+                      {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                    </button>
+                    <button
                       onClick={() => setIsExpanded(false)}
+                      title="Close"
                       className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-black/5 hover:text-text"
                     >
                       <ChevronDown size={15} />
@@ -171,15 +261,72 @@ function ProjectSmartBar() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-5">
-                  {messages.length === 0 ? (
+                <div className="flex-1 overflow-y-auto p-6">
+                  {isRecruiterMode && (messages.length === 0 || isMaximized) && (
+                    <div className={cn("flex flex-col shrink-0", messages.length > 0 ? "mb-6 border-b border-border/40 pb-6" : "h-full")}>
+                      <div className="mb-6 flex items-start gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                          <Briefcase size={20} />
+                        </div>
+                        <div>
+                          <h3 className="font-manrope text-base font-semibold text-text">Recruiter Summary Lens</h3>
+                          <p className="mt-1 font-mono text-sm leading-relaxed text-text-secondary">
+                            Role fit: UX Researcher / UI Designer · Level: Intern / Junior · Proof: 80% navigation time reduction.<br />
+                            <span className="font-medium text-text">Why it matters:</span> Proven ability to untangle complex legacy constraints and ship in rapid Agile sprints.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className={messages.length === 0 ? "mt-auto" : "mt-2"}>
+                        <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-widest text-text-muted">
+                          Suggested Interview Questions
+                        </p>
+                        <div className={cn("grid gap-2", isMaximized ? "grid-cols-2" : "grid-cols-1")}>
+                          {RECRUITER_PILLS.map((pill) => (
+                            <div
+                              key={pill}
+                              className="group flex items-center justify-between rounded-xl border border-border/40 bg-bg-alt/50 px-4 py-3 transition-colors hover:border-primary/30"
+                            >
+                              <span className={cn("font-mono text-text-secondary group-hover:text-text", isMaximized ? "text-xs pr-2" : "text-sm")}>{pill}</span>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigator.clipboard.writeText(pill);
+                                    setCopiedId(pill);
+                                    setTimeout(() => setCopiedId(null), 2000);
+                                  }}
+                                  className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-text-muted shadow-sm ring-1 ring-border/50 transition-colors hover:text-primary"
+                                  title="Copy question"
+                                >
+                                  {copiedId === pill ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    send(pill);
+                                    if (!isMaximized) setTimeout(() => setIsMaximized(true), 150);
+                                  }}
+                                  className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-text-muted shadow-sm ring-1 ring-border/50 transition-colors hover:text-primary"
+                                  title="Ask AI"
+                                >
+                                  <ArrowRight size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isRecruiterMode && messages.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
                       <Sparkles size={18} className="text-primary/30" />
                       <p className="max-w-[200px] font-mono text-xs text-text-muted">
                         Ask about the process, decisions, or outcomes.
                       </p>
                     </div>
-                  ) : (
+                  ) : (messages.length > 0 ? (
                     <div className="space-y-3">
                       {messages.map((m, i) => (
                         <div key={i} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
@@ -202,7 +349,7 @@ function ProjectSmartBar() {
                       )}
                       <div ref={bottomRef} />
                     </div>
-                  )}
+                  ) : null)}
                 </div>
 
                 {/* Input */}
@@ -236,9 +383,8 @@ function ProjectSmartBar() {
           )}
         </AnimatePresence>
 
-        {/* Collapsed bar , same style as homepage ChatBar */}
-        <div className="relative rounded-2xl border border-white/50 bg-white/20 p-1.5 shadow-smooth-lg backdrop-blur-2xl">
-          {isExpanded && <div className="chat-glow" />}
+        {/* Collapsed bar */}
+        <div className="relative rounded-2xl border border-white/50 bg-white/20 p-1.5 shadow-smooth-lg backdrop-blur-2xl mt-1.5">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex w-full items-center gap-3 rounded-xl bg-white/60 px-5 py-3.5 text-left backdrop-blur-sm transition-colors hover:bg-white/80"
@@ -254,18 +400,20 @@ function ProjectSmartBar() {
           </button>
         </div>
 
-        {/* 3 recommended pills below bar */}
-        <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
-          {PROJECT_PILLS.map((pill) => (
-            <button
-              key={pill}
-              onClick={() => send(pill)}
-              className="rounded-full border border-border/40 bg-white/80 px-3 py-1 font-mono text-[10px] text-text-muted backdrop-blur-sm transition-all hover:border-primary/30 hover:bg-white hover:text-primary"
-            >
-              {pill}
-            </button>
-          ))}
-        </div>
+        {/* 3 recommended pills below bar (general mode only) */}
+        {!isRecruiterMode && (
+          <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
+            {PROJECT_PILLS.map((pill) => (
+              <button
+                key={pill}
+                onClick={() => send(pill)}
+                className="rounded-full border border-border/40 bg-white/80 px-3 py-1 font-mono text-[10px] text-text-muted backdrop-blur-sm transition-all hover:border-primary/30 hover:bg-white hover:text-primary"
+              >
+                {pill}
+              </button>
+            ))}
+          </div>
+        )}
       </motion.div>
     </>
   );
@@ -285,10 +433,10 @@ function DetailRow({ label, value }: { label: string; value: string | React.Reac
 
 function SectionHeading({ number, title }: { number: string; title: string }) {
   return (
-    <div className="mb-12 md:mb-16">
+    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-60px" }} transition={{ duration: 0.5 }} className="mb-12 md:mb-16">
       <span className="mb-3 block font-mono text-[11px] text-primary/60">{number}</span>
       <h2 className="font-manrope text-3xl font-medium tracking-tight text-text md:text-5xl">{title}</h2>
-    </div>
+    </motion.div>
   );
 }
 
@@ -373,11 +521,30 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
 function InsightCard({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, margin: "-40px" }}
+      transition={{ duration: 0.4 }}
       className="rounded-xl border border-border/50 bg-white p-6 cursor-default"
       whileHover={{ scale: 1.025, y: -6 }}
-      transition={{ type: "spring", stiffness: 340, damping: 22 }}
     >
       <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-muted">{label}</p>
+      {children}
+    </motion.div>
+  );
+}
+
+function Fade({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  return (
+    <motion.div className={className} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-60px" }} transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}>
+      {children}
+    </motion.div>
+  );
+}
+
+function MediaPop({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  return (
+    <motion.div className={className} initial={{ opacity: 0, scale: 0.92 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, margin: "-60px" }} transition={{ duration: 0.6, delay, ease: [0.34, 1.3, 0.64, 1] }}>
       {children}
     </motion.div>
   );
@@ -434,7 +601,7 @@ export default function HackImpactPage() {
                 <span className="text-primary">Application Portal.</span>
               </h1>
               <p className="max-w-xl font-mono text-base leading-relaxed text-text-secondary md:text-lg">
-                We condensed a 33-page monolithic form into a streamlined 4-step progressive flow , reducing navigation time by 80% for 750+ applicants annually.
+                We condensed a <RecruiterHighlight>33-page</RecruiterHighlight> monolithic form into a streamlined <RecruiterHighlight>4-step</RecruiterHighlight> progressive flow , reducing navigation time by <RecruiterHighlight>80%</RecruiterHighlight> for 750+ applicants annually.
               </p>
             </div>
 
@@ -485,7 +652,7 @@ export default function HackImpactPage() {
           </div>
 
           {/* Hero image */}
-          <div className="mt-8">
+          <MediaPop><div className="mt-8">
             <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-border/50 bg-white">
               <Image
                 src="/hack4impact/latestversionview.gif"
@@ -496,10 +663,20 @@ export default function HackImpactPage() {
                 unoptimized
               />
             </div>
-          </div>
+          </div></MediaPop>
         </div>
       </section>
 
+      <WhyThisMatters
+        id="recruiter-lens-1"
+        headline="The ability to take a massive, sprawling legacy requirement (33 pages) and distill it into a progressive 4-step flow demonstrates strong synthesis and structural thinking."
+        points={[
+          "Reduced navigation time by 80%, directly impacting user satisfaction.",
+          "Handled complex dependencies and cross-functional feedback from Microsoft devs.",
+          "Delivered the full component library alongside the high-fidelity designs."
+        ]}
+        nextHref="#recruiter-lens-2"
+      />
 
       {/* ══════════════════════════════════════════════
           00: PROCESS FRAMEWORK
@@ -508,17 +685,17 @@ export default function HackImpactPage() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="00 / PROCESS" title="How we worked — Agile UX" />
 
-          <div className="mb-12 space-y-5 max-w-2xl">
+          <Fade><div className="mb-12 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               This project followed an <strong className="font-medium text-text">Agile UX methodology</strong> — a hybrid of Lean UX thinking and Scrum sprint cadence. Rather than front-loading research before any design work, we ran <strong className="font-medium text-text">parallel discovery and delivery tracks</strong> within each sprint.
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               Every Monday, the full cross-functional team convened for a structured sprint call: designers presented findings and prototypes, engineers flagged technical constraints, and the Microsoft Reston dev reviewer provided implementation-level feedback. <strong className="font-medium text-text">Stakeholder interviews with Aaryan Patel</strong> (Recruitment Manager) were embedded into Sprint 1 and 2, ensuring the applicant-side redesign stayed aligned with recruiter-side backend requirements.
             </p>
-          </div>
+          </div></Fade>
 
           {/* Agile UX sprint diagram placeholder */}
-          <div className="rounded-xl border border-border/50 bg-bg-alt p-8 md:p-10">
+          <Fade><div className="rounded-xl border border-border/50 bg-bg-alt p-8 md:p-10">
             <p className="mb-6 font-mono text-[10px] uppercase tracking-widest text-text-muted">Agile UX Framework — Sprint Structure</p>
 
             {/* Sprint timeline */}
@@ -577,7 +754,7 @@ export default function HackImpactPage() {
             </p>
 
             {/* Agile UX framework diagram */}
-            <div className="mt-6 relative w-full overflow-hidden rounded-lg border border-border/40 bg-white">
+            <MediaPop><div className="mt-6 relative w-full overflow-hidden rounded-lg border border-border/40 bg-white">
               <Image
                 src="/hack4impact/agile-ux-framework.png"
                 alt="Agile UX framework diagram"
@@ -585,8 +762,8 @@ export default function HackImpactPage() {
                 height={600}
                 className="w-full h-auto object-contain"
               />
-            </div>
-          </div>
+            </div></MediaPop>
+          </div></Fade>
         </div>
       </section>
 
@@ -598,7 +775,7 @@ export default function HackImpactPage() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="01 / DISCOVERY" title="We audited a 33-page barrier." />
 
-          <div className="grid gap-12 md:grid-cols-2 lg:gap-24">
+          <Fade><div className="grid gap-12 md:grid-cols-2 lg:gap-24">
             <div className="space-y-5">
               <p className="font-mono text-base leading-relaxed text-text-secondary">
                 HackImpact UMD receives <strong className="font-medium text-text">750+ applications every year</strong>. The existing portal was a monolithic form spanning 33 sequential pages with zero progress indication , applicants had no visibility into how much of the form remained.
@@ -616,9 +793,9 @@ export default function HackImpactPage() {
               <StatItem value="0%" label="Application status visibility for users" />
               <StatItem value="2" label="Distinct user flows sharing a single entry point" />
             </div>
-          </div>
+          </div></Fade>
 
-          <figure className="mt-16">
+          <MediaPop><figure className="mt-16">
             <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
               <Image
                 src="/hack4impact/formerdesign.png"
@@ -630,7 +807,7 @@ export default function HackImpactPage() {
             <figcaption className="mt-4 text-center font-mono text-xs text-text-muted max-w-2xl mx-auto">
               Original interface: Infinite scroll with no hierarchical grouping, a redundant sidebar navigation, and an Admin Login button competing with the primary applicant action.
             </figcaption>
-          </figure>
+          </figure></MediaPop>
         </div>
       </section>
 
@@ -642,29 +819,29 @@ export default function HackImpactPage() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="02 / RESEARCH" title="We mapped both sides of the system." />
 
-          <div className="mb-10 space-y-5 max-w-2xl">
+          <Fade><div className="mb-10 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               Before touching a single frame in Figma, we conducted <strong className="font-medium text-text">contextual inquiry sessions</strong> with current and former applicants, and ran a <strong className="font-medium text-text">structured stakeholder interview</strong> with Aaryan Patel (Recruitment Manager) to capture the recruiter-side mental model and backend constraints.
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               We then synthesized findings into a <strong className="font-medium text-text">dual-lane user journey map</strong> , one for applicants, one for reviewers , to identify where the two flows intersected, where they diverged, and where the current IA was forcing them to collide unnecessarily.
             </p>
-          </div>
+          </div></Fade>
 
-          <div className="relative aspect-[16/8] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
+          <MediaPop><div className="relative aspect-[16/8] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
             <Image
               src="/hack4impact/userflow.png"
               alt="Dual-lane user journey map , Applicant and Reviewer pathways"
               fill
               className="object-contain p-6 transition-transform duration-700 hover:scale-[1.02]"
             />
-          </div>
+          </div></MediaPop>
           <figcaption className="mt-4 text-center font-mono text-xs text-text-muted">
             Dual-lane user flow , mapping the Applicant and Reviewer pathways separately to expose IA conflicts in the original system.
           </figcaption>
 
           {/* Pain points */}
-          <div className="mt-14 grid gap-5 md:grid-cols-2">
+          <Fade><div className="mt-14 grid gap-5 md:grid-cols-2">
             <InsightCard label="Applicant pain points">
               <ul className="mt-3 space-y-2.5 font-mono text-sm text-text-secondary">
                 <li className="flex gap-2"><span className="mt-0.5 text-text-muted">,</span>No progress indication; cognitive load from unknown form length led to premature abandonment</li>
@@ -682,15 +859,15 @@ export default function HackImpactPage() {
                 <li className="flex gap-2"><span className="mt-0.5 text-text-muted">,</span>Inconsistent UI made dev iteration slow , no shared component language between design and engineering</li>
               </ul>
             </InsightCard>
-          </div>
+          </div></Fade>
 
           {/* Key research finding callout */}
-          <div className="mt-8 rounded-xl border border-primary/15 bg-primary/4 p-6">
+          <Fade><div className="mt-8 rounded-xl border border-primary/15 bg-primary/4 p-6">
             <p className="font-mono text-[10px] uppercase tracking-widest text-primary/60 mb-2">Key research insight</p>
             <p className="font-mono text-sm leading-relaxed text-text">
               The most critical finding: <strong className="font-medium">applicants and reviewers were sharing a single entry point</strong> without differentiated routing. First-time applicants needed to land on the form; returning applicants needed to land on their status page. The original IA treated them as identical , routing everyone to the same screen regardless of context, generating friction for both personas.
             </p>
-          </div>
+          </div></Fade>
         </div>
       </section>
 
@@ -702,29 +879,29 @@ export default function HackImpactPage() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="03 / DESIGN PROCESS" title="From constraints to high-fidelity." />
 
-          <div className="mb-10 max-w-2xl space-y-5">
+          <Fade><div className="mb-10 max-w-2xl space-y-5">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               We ran <strong className="font-medium text-text">three rounds of design critique</strong> within each sprint , internal review, cross-functional team review (Monday sprint call), and Microsoft dev reviewer sign-off. This created a structured validation gate before any work moved to implementation.
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               The login screen alone went through <strong className="font-medium text-text">six documented iterations</strong> , each addressing a specific piece of feedback from the Monday sprint call or a usability issue surfaced during prototype walkthroughs with applicants.
             </p>
-          </div>
+          </div></Fade>
 
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB]">
+          <MediaPop><div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-border/50 bg-[#F9FAFB]">
             <Image
               src="/hack4impact/login page design versions figma view screenshot.png"
               alt="Login screen iteration history in Figma"
               fill
               className="object-cover"
             />
-          </div>
+          </div></MediaPop>
           <figcaption className="mt-4 text-center font-mono text-xs text-text-muted">
             Figma iteration history for the login screen , each version addressing specific sprint feedback and heuristic violations.
           </figcaption>
 
           {/* Design principles */}
-          <div className="mt-14 grid gap-4 md:grid-cols-3">
+          <Fade><div className="mt-14 grid gap-4 md:grid-cols-3">
             {[
               {
                 principle: "One primary action per screen",
@@ -744,7 +921,7 @@ export default function HackImpactPage() {
                 <p className="mt-2 font-mono text-xs leading-relaxed text-text-muted">{p.rationale}</p>
               </InsightCard>
             ))}
-          </div>
+          </div></Fade>
         </div>
       </section>
 
@@ -861,6 +1038,16 @@ export default function HackImpactPage() {
         </div>
       </section>
 
+      <WhyThisMatters
+        id="recruiter-lens-2"
+        headline="Driving measurable impact through scalable design."
+        points={[
+          "Created a reusable component library, speeding up engineering implementation.",
+          "Shifted from subjective design to metrics-backed decisions (80% faster flow).",
+          "Balanced immediate feature delivery with long-term design system foundation."
+        ]}
+        prevHref="#recruiter-lens-1"
+      />
 
       {/* ══════════════════════════════════════════════
           05: OUTCOMES
@@ -869,14 +1056,14 @@ export default function HackImpactPage() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
           <SectionHeading number="05 / OUTCOME" title="Shipped. Live. Measurable." />
 
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
+          <Fade><div className="grid grid-cols-1 gap-12 md:grid-cols-3">
             <StatItem value="80%" label="Reduction in navigation time" />
             <StatItem value="750+" label="Annual applicants served" />
             <StatItem value="4" label="Steps from 33 pages" />
-          </div>
+          </div></Fade>
 
           {/* Testimonial */}
-          <div className="mt-20 rounded-2xl border border-border bg-white p-8 md:p-12">
+          <Fade><div className="mt-20 rounded-2xl border border-border bg-white p-8 md:p-12">
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-8">
               <div className="shrink-0 font-manrope text-4xl text-primary/30 leading-none">❝</div>
               <div>
@@ -889,10 +1076,10 @@ export default function HackImpactPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </div></Fade>
 
           {/* Reflections */}
-          <div className="mt-16">
+          <Fade><div className="mt-16">
             <h3 className="mb-8 font-manrope text-xl font-medium text-text">What this project reinforced.</h3>
             <div className="grid gap-5 md:grid-cols-3">
               {[
@@ -915,10 +1102,10 @@ export default function HackImpactPage() {
                 </InsightCard>
               ))}
             </div>
-          </div>
+          </div></Fade>
 
           {/* Team photo */}
-          <div className="mt-20">
+          <MediaPop><div className="mt-20">
             <p className="mb-5 text-center font-mono text-[10px] uppercase tracking-widest text-text-muted">The Team</p>
             <div className="relative aspect-[16/7] w-full overflow-hidden rounded-2xl border border-border grayscale transition-all duration-700 hover:grayscale-0">
               <Image
@@ -931,7 +1118,7 @@ export default function HackImpactPage() {
             <p className="mt-4 text-center font-mono text-xs text-text-muted">
               Cross-functional team: Project Managers · Tech Leads · Engineers · UI/UX Designers · Microsoft Reston Dev Reviewer
             </p>
-          </div>
+          </div></MediaPop>
 
           {/* Next steps */}
           <div className="mt-16">

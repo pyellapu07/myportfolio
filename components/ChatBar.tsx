@@ -113,6 +113,13 @@ export default function ChatBar() {
     if (!isExpanded) { setResponse(null); setError(null); }
   }, [isExpanded]);
 
+  // Auto-expand when recruiter mode is enabled
+  useEffect(() => {
+    if (isRecruiterMode) {
+      setIsExpanded(true);
+    }
+  }, [isRecruiterMode]);
+
   const toggleExpanded = useCallback(() => setIsExpanded((v) => !v), []);
 
   const toggleSkill = (skill: string) => {
@@ -471,9 +478,9 @@ export default function ChatBar() {
             isRecruiterMode
               ? "rounded-xl bg-white/60 backdrop-blur-sm"
               : cn(
-                  "rounded-xl border shadow-smooth border-border/60 bg-white/90 backdrop-blur-xl",
-                  isExpanded && "rounded-t-none border-t-0"
-                )
+                "rounded-xl border shadow-smooth border-border/60 bg-white/90 backdrop-blur-xl",
+                isExpanded && "rounded-t-none border-t-0"
+              )
           )}
         >
           <MessageCircle

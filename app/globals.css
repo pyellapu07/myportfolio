@@ -148,6 +148,35 @@ body {
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
+/* Drop zone glow */
+@keyframes drop-zone-glow {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.18);
+  }
+}
+
+.drop-zone-ring {
+  animation: drop-zone-glow 2.5s ease-in-out infinite;
+}
+
+.drop-zone-pulse {
+  animation: drop-zone-glow 2.5s ease-in-out infinite;
+  animation-delay: 0.4s;
+}
+
+/* UX Audit game custom cursor */
+.ux-audit-cursor {
+  cursor: crosshair;
+}
+
 /* Infinite scroll ticker */
 @keyframes ticker {
   0% {
@@ -249,35 +278,40 @@ body {
 /* ── Chat ambient glow (behind chat bar, recruiter mode) ────────── */
 
 @keyframes chat-glow-wave {
-  0%   {
+  0% {
     background-position: 0% 50%;
     opacity: 0.85;
-    transform: scaleX(1)    scaleY(1);
+    transform: scaleX(1) scaleY(1);
   }
-  20%  {
+
+  20% {
     background-position: 40% 20%;
     opacity: 0.95;
     transform: scaleX(1.06) scaleY(0.94);
   }
-  40%  {
+
+  40% {
     background-position: 80% 60%;
     opacity: 0.80;
     transform: scaleX(0.96) scaleY(1.08);
   }
-  60%  {
+
+  60% {
     background-position: 100% 30%;
     opacity: 1.00;
     transform: scaleX(1.08) scaleY(0.96);
   }
-  80%  {
+
+  80% {
     background-position: 30% 80%;
     opacity: 0.85;
     transform: scaleX(0.97) scaleY(1.05);
   }
+
   100% {
     background-position: 0% 50%;
     opacity: 0.85;
-    transform: scaleX(1)    scaleY(1);
+    transform: scaleX(1) scaleY(1);
   }
 }
 
@@ -289,11 +323,11 @@ body {
   z-index: -1;
   filter: blur(52px);
   background:
-    radial-gradient(ellipse 60% 65% at 15%  40%,  rgba(167, 139, 250, 0.90) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 60% at 75%  30%,  rgba(244, 114, 182, 0.80) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 55% at 50%  80%,  rgba(96,  165, 250, 0.75) 0%, transparent 65%),
-    radial-gradient(ellipse 45% 50% at 85%  70%,  rgba(52,  211, 153, 0.65) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 45% at 25%  15%,  rgba(251, 191,  36, 0.55) 0%, transparent 65%);
+    radial-gradient(ellipse 60% 65% at 15% 40%, rgba(167, 139, 250, 0.90) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 60% at 75% 30%, rgba(244, 114, 182, 0.80) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 55% at 50% 80%, rgba(96, 165, 250, 0.75) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 50% at 85% 70%, rgba(52, 211, 153, 0.65) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 45% at 25% 15%, rgba(251, 191, 36, 0.55) 0%, transparent 65%);
   background-size: 280% 280%;
   animation: chat-glow-wave 10s ease-in-out infinite;
 }
@@ -301,11 +335,25 @@ body {
 /* ── Fluid aurora gradient (recruiter chat) ──────────────────────── */
 
 @keyframes aurora-fill {
-  0%   { background-position: 0%   60%; }
-  25%  { background-position: 60%  30%; }
-  50%  { background-position: 100% 70%; }
-  75%  { background-position: 40%  10%; }
-  100% { background-position: 0%   60%; }
+  0% {
+    background-position: 0% 60%;
+  }
+
+  25% {
+    background-position: 60% 30%;
+  }
+
+  50% {
+    background-position: 100% 70%;
+  }
+
+  75% {
+    background-position: 40% 10%;
+  }
+
+  100% {
+    background-position: 0% 60%;
+  }
 }
 
 /* Light glassmorphism aurora — white base, soft color blooms */
@@ -383,13 +431,11 @@ body {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(
-    115deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.35) 40%,
-    rgba(255, 255, 255, 0.0) 60%,
-    transparent 100%
-  );
+  background: linear-gradient(115deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.35) 40%,
+      rgba(255, 255, 255, 0.0) 60%,
+      transparent 100%);
   background-size: 300% 300%;
   background-position: 120% 50%;
   transition: background-position 0.6s ease;

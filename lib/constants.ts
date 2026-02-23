@@ -12,7 +12,7 @@ export const SITE = {
   medium: "https://medium.com/design-bootcamp/why-ux-designers-matter-more-than-ever-in-the-age-of-ai-part-1-f74761c7a4c3",
   portfolio: "#",
   location: "Open to Relocation",
-  resumeUrl: "/resume.pdf",
+  resumeUrl: "/Pradeep_Yellapu_UX-Research_Product-Design_2026.pdf",
 } as const;
 
 export const NAV_LINKS = [
@@ -69,7 +69,7 @@ export const PROJECTS: Project[] = [
       "Conducted contextual interviews with UMD iNFO faculty to understand workload tracking pain points. Performed affinity mapping to identify recurring themes and synthesized insights into journey maps and task flows, proposing a streamlined dashboard design that improved task ownership clarity.",
     techStack: ["UX Research", "Contextual Inquiry", "Affinity Mapping", "Journey Mapping", "Task Flows"],
     image: "/facultydashboardpreview.png",
-    link: "#",
+    link: "/work/workflow",
     featured: false,
   },
   {
