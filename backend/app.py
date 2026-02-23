@@ -13,12 +13,14 @@ app = Flask(__name__)
 
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3002")
 
-# Allow localhost dev ports + production Vercel URL + all *.vercel.app preview deployments
+# Allow localhost dev ports + production Vercel URL + custom domain + all *.vercel.app preview deployments
 CORS(app, origins=[
     r"http://localhost:3000",
     r"http://localhost:3001",
     r"http://localhost:3002",
     FRONTEND_URL,
+    r"https://pradeepyellapu.com",
+    r"https://www.pradeepyellapu.com",
     r"https://.*\.vercel\.app",
 ], supports_credentials=True)
 
