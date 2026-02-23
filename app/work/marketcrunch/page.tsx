@@ -1313,6 +1313,45 @@ export default function MarketCrunchPage() {
             <p className="font-mono text-xs text-text-muted mb-6">Hover to pause · Click any slide to view full page</p>
             <AuditCarousel />
           </div>
+
+          {/* Competitor Analysis — companies benchmarked */}
+          <Fade>
+            <div className="mb-16">
+              <p className="mb-6 font-mono text-[10px] uppercase tracking-widest text-text-muted">List of Competitors Considered</p>
+              <div className="rounded-xl border border-border/50 bg-bg-alt p-6 md:p-10">
+                <div className="flex flex-col gap-8 md:flex-row md:items-center md:gap-12">
+                  <p className="max-w-md font-mono text-sm leading-relaxed text-text-secondary">
+                    As part of the audit, the following platforms were reviewed to understand industry standards and user experience patterns in financial data visualization and AI-based stock analysis:
+                  </p>
+                  <div className="flex flex-wrap items-center gap-5 md:gap-6">
+                    {[
+                      { src: "/Marketcrunchai/Seeking_Alpha_Logo.svg.png", name: "Seeking Alpha" },
+                      { src: "/Marketcrunchai/Yahoo!_Finance_logo_2021.png", name: "Yahoo Finance" },
+                      { src: "/Marketcrunchai/fintech.png", name: "Fintool" },
+                      { src: "/Marketcrunchai/fiscalai.png", name: "Fiscal AI" },
+                      { src: "/Marketcrunchai/Robinhood_(company)_logo.svg.png", name: "Robinhood" },
+                      { src: "/Marketcrunchai/Stocktwits-Logo-New.png", name: "Stocktwits" },
+                      { src: "/Marketcrunchai/Perplexity-Logo.png", name: "Perplexity Finance" },
+                      { src: "/Marketcrunchai/finch-logo-freelogovectors.net_.png", name: "Finch AI" },
+                    ].map((c) => (
+                      <div key={c.name} className="group flex flex-col items-center gap-1.5">
+                        <div className="flex h-10 w-20 items-center justify-center rounded-lg border border-border/30 bg-white px-2 transition-all group-hover:border-border/60 group-hover:shadow-sm">
+                          <Image
+                            src={c.src}
+                            alt={c.name}
+                            width={72}
+                            height={32}
+                            className="h-6 w-auto object-contain"
+                          />
+                        </div>
+                        <span className="font-mono text-[9px] text-text-muted">{c.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Fade>
         </div>
       </section>
 
