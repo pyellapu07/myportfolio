@@ -1,31 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  PenTool,
-  Search,
-  Layout,
-  Accessibility,
-  Figma,
-  Network,
-} from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
-import { ABOUT_TEXT, ABOUT_HIGHLIGHTS } from "@/lib/constants";
-
-const iconMap: Record<string, React.ElementType> = {
-  "pen-tool": PenTool,
-  search: Search,
-  layout: Layout,
-  accessibility: Accessibility,
-  figma: Figma,
-  sitemap: Network,
-};
+import BeachReveal from "./BeachReveal";
+import { ABOUT_TEXT } from "@/lib/constants";
 
 export default function About() {
   return (
     <SectionWrapper id="about" alternate>
-      <div className="grid gap-12 md:grid-cols-2 md:gap-16">
-        {/* Left column */}
+      <div className="grid gap-12 md:gap-10 md:items-center md:grid-cols-[2fr_3fr]">
+        {/* Left column — text */}
         <div>
           <motion.span
             initial={{ opacity: 0, y: 8 }}
@@ -59,37 +43,27 @@ export default function About() {
               </motion.p>
             ))}
           </div>
+
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+            className="mt-5 font-mono text-[11px] uppercase tracking-widest text-text-secondary/50"
+          >
+            ← click the button to see my POV
+          </motion.p>
         </div>
 
-        {/* Right column - Skills highlights */}
-        <div className="flex items-center">
-          <div className="grid w-full grid-cols-2 gap-3">
-            {ABOUT_HIGHLIGHTS.map((item, i) => {
-              const Icon = iconMap[item.icon] || Search;
-              return (
-                <motion.div
-                  key={item.label}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    delay: 0.3 + i * 0.08,
-                    duration: 0.5,
-                    ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
-                  }}
-                  className="group flex items-center gap-3 rounded-xl border border-border bg-white p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20"
-                >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary transition-colors duration-300 group-hover:bg-primary/15">
-                    <Icon size={18} />
-                  </div>
-                  <span className="text-sm font-medium text-text">
-                    {item.label}
-                  </span>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
+        {/* Right column — Beach Reveal interactive */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.25, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <BeachReveal />
+        </motion.div>
       </div>
     </SectionWrapper>
   );
