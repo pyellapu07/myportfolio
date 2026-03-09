@@ -85,13 +85,13 @@ export const PROJECTS: Project[] = [
   },
   {
     title: "NASA Harvest — Xylem Institute",
-    subtitle: "Product Research & Design — Geospatial Climate Reports",
-    impact: "32% reduction in bounce rate · Brand identity system · QGIS data workflows",
+    subtitle: "Product Design · Design Systems · AI Pipeline — End-to-end from websites to bulletin automation",
+    impact: "32% reduction in bounce rate · 2 live websites · 2 design systems · Nairobi workshop · AI bulletin pipeline",
     description:
-      "Contributed to end-to-end UX research and interface design for geospatial climate reports at the NASA Harvest-affiliated Xylem Institute. Conducted user research with climate scientists and policy analysts, led iterative prototyping in Figma, and developed a comprehensive brand identity system and style guide ensuring consistent visual language.",
-    techStack: ["UX Research", "Figma", "Information Architecture", "Visual Design", "Brand Identity", "QGIS"],
+      "Built the complete design layer for NASA Harvest-affiliated Xylem Lab: launched two production websites from zero, designed two distinct brand systems, ran a 3-day AGRA RFBS training workshop in Nairobi for analysts from 9 countries, and built Xylem Auto-Pilot — an AI pipeline that converts satellite crop data into publication-ready HTML bulletins in a single click.",
+    techStack: ["Product Design", "Design Systems", "Brand Identity", "AI Pipeline", "UX Research", "Figma", "Python", "HTML/CSS", "QGIS"],
     image: "/collabpreview.gif",
-    link: "#",
+    link: "/work/xylem-institute",
     featured: false,
   },
   {
