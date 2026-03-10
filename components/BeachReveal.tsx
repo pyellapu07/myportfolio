@@ -353,7 +353,7 @@ export default function BeachReveal() {
           className="pointer-events-none absolute"
           style={{
             top: "6%",
-            right: "2%",
+            right: "14%",
             z: 50,
           }}
           initial={{ opacity: 0, scale: 0.75, y: -10 }}
@@ -362,7 +362,7 @@ export default function BeachReveal() {
           transition={{ delay: 0.85, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
           {/* Arrow + label in one block, rotated together */}
-          <div style={{ transform: "rotate(-6deg)", transformOrigin: "right top" }}>
+          <div style={{ transform: "rotate(-6deg)", transformOrigin: "center top" }}>
             {/* Handwritten label */}
             <p
               className={caveat.className}
@@ -374,32 +374,32 @@ export default function BeachReveal() {
                   "0 1px 0 rgba(255,255,255,0.95), 0 0 14px rgba(255,255,255,0.75)",
                 whiteSpace: "nowrap",
                 lineHeight: 1,
-                textAlign: "right",
+                textAlign: "center",
               }}
             >
               This is Me!
             </p>
 
-            {/* Curved arrow — tail near text, head points left toward avatar */}
+            {/* Arrow — curves LEFT from below the text toward the avatar */}
             <svg
-              width="72"
-              height="48"
-              viewBox="0 0 72 48"
+              width="80"
+              height="44"
+              viewBox="0 0 80 44"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              style={{ display: "block", marginLeft: "auto" }}
+              style={{ display: "block" }}
             >
-              {/* Curve: starts top-right (near text), sweeps left and slightly down */}
+              {/* Gentle left-pointing arc: right → left */}
               <path
-                d="M 68 6 C 55 4, 28 8, 6 34"
+                d="M 72 10 C 58 4, 28 6, 8 20"
                 stroke="#111827"
                 strokeWidth="2.4"
                 strokeLinecap="round"
                 fill="none"
               />
-              {/* Arrowhead pointing bottom-left */}
+              {/* Arrowhead pointing left */}
               <path
-                d="M 6 34 L 18 26 M 6 34 L 16 42"
+                d="M 8 20 L 22 10 M 8 20 L 22 28"
                 stroke="#111827"
                 strokeWidth="2.4"
                 strokeLinecap="round"
