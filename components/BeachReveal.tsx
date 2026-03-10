@@ -353,61 +353,59 @@ export default function BeachReveal() {
           className="pointer-events-none absolute"
           style={{
             top: "6%",
-            right: "-6%",
-            z: 50,            // pushes annotation forward in preserve-3d context
+            right: "2%",
+            z: 50,
           }}
           initial={{ opacity: 0, scale: 0.75, y: -10 }}
           animate={{ opacity: 1, scale: 1,    y: 0   }}
           exit={{   opacity: 0, scale: 0.75           }}
           transition={{ delay: 0.85, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* Handwritten label */}
-          <p
-            className={caveat.className}
-            style={{
-              fontSize: "24px",
-              fontWeight: 700,
-              color: "#111827",
-              transform: "rotate(-7deg)",
-              textShadow:
-                "0 1px 0 rgba(255,255,255,0.9), 0 0 12px rgba(255,255,255,0.7)",
-              whiteSpace: "nowrap",
-              lineHeight: 1,
-            }}
-          >
-            This is Me!
-          </p>
+          {/* Arrow + label in one block, rotated together */}
+          <div style={{ transform: "rotate(-6deg)", transformOrigin: "right top" }}>
+            {/* Handwritten label */}
+            <p
+              className={caveat.className}
+              style={{
+                fontSize: "22px",
+                fontWeight: 700,
+                color: "#111827",
+                textShadow:
+                  "0 1px 0 rgba(255,255,255,0.95), 0 0 14px rgba(255,255,255,0.75)",
+                whiteSpace: "nowrap",
+                lineHeight: 1,
+                textAlign: "right",
+              }}
+            >
+              This is Me!
+            </p>
 
-          {/* Curved arrow — starts at text, sweeps left toward the avatar */}
-          <svg
-            style={{
-              position: "absolute",
-              top: "18px",
-              right: "84px",
-              overflow: "visible",
-            }}
-            width="68"
-            height="54"
-            viewBox="0 0 68 54"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Main curve: from top-right → bottom-left */}
-            <path
-              d="M 62 6 C 48 2, 16 10, 5 46"
-              stroke="#111827"
-              strokeWidth="2.5"
-              strokeLinecap="round"
+            {/* Curved arrow — tail near text, head points left toward avatar */}
+            <svg
+              width="72"
+              height="48"
+              viewBox="0 0 72 48"
               fill="none"
-            />
-            {/* Arrowhead at the tip */}
-            <path
-              d="M 5 46 L 17 38 M 5 46 L 16 52"
-              stroke="#111827"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ display: "block", marginLeft: "auto" }}
+            >
+              {/* Curve: starts top-right (near text), sweeps left and slightly down */}
+              <path
+                d="M 68 6 C 55 4, 28 8, 6 34"
+                stroke="#111827"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                fill="none"
+              />
+              {/* Arrowhead pointing bottom-left */}
+              <path
+                d="M 6 34 L 18 26 M 6 34 L 16 42"
+                stroke="#111827"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
