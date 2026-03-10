@@ -352,8 +352,8 @@ export default function BeachReveal() {
         <motion.div
           className="pointer-events-none absolute"
           style={{
-            top: "6%",
-            right: "14%",
+            top: "5%",
+            right: "4%",
             z: 50,
           }}
           initial={{ opacity: 0, scale: 0.75, y: -10 }}
@@ -361,9 +361,41 @@ export default function BeachReveal() {
           exit={{   opacity: 0, scale: 0.75           }}
           transition={{ delay: 0.85, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* Arrow + label in one block, rotated together */}
-          <div style={{ transform: "rotate(-6deg)", transformOrigin: "center top" }}>
-            {/* Handwritten label — larger on desktop */}
+          {/* flex row: [← arrow] [This is Me!] — arrow on LEFT, text on RIGHT */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              transform: "rotate(-6deg)",
+              transformOrigin: "right center",
+            }}
+          >
+            {/* Arrow SVG — tip on the LEFT pointing at avatar */}
+            <svg
+              className="w-14 md:w-[82px] flex-shrink-0"
+              viewBox="0 0 82 52"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Tail right (near text), swoops up-left to tip */}
+              <path
+                d="M 76 34 C 58 12, 28 8, 7 26"
+                stroke="#111827"
+                strokeWidth="2.8"
+                strokeLinecap="round"
+                fill="none"
+              />
+              {/* Arrowhead — tip at (7,26), wings open to the right → clearly points LEFT */}
+              <path
+                d="M 7 26 L 24 14 M 7 26 L 24 38"
+                stroke="#111827"
+                strokeWidth="2.8"
+                strokeLinecap="round"
+              />
+            </svg>
+
+            {/* Handwritten label */}
             <p
               className={`${caveat.className} text-xl md:text-[28px]`}
               style={{
@@ -373,35 +405,10 @@ export default function BeachReveal() {
                   "0 1px 0 rgba(255,255,255,0.95), 0 0 14px rgba(255,255,255,0.75)",
                 whiteSpace: "nowrap",
                 lineHeight: 1,
-                textAlign: "right",
               }}
             >
               This is Me!
             </p>
-
-            {/* Arrow — tail top-right (below text), head points left toward avatar */}
-            <svg
-              className="w-16 md:w-[88px] block ml-auto"
-              viewBox="0 0 88 58"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Arc: top-right → left-centre, matching direction toward avatar */}
-              <path
-                d="M 82 8 C 64 2, 28 10, 7 42"
-                stroke="#111827"
-                strokeWidth="2.6"
-                strokeLinecap="round"
-                fill="none"
-              />
-              {/* Arrowhead — tip at (7,42), wings open right so it points left-down */}
-              <path
-                d="M 7 42 L 20 32 M 7 42 L 19 50"
-                stroke="#111827"
-                strokeWidth="2.6"
-                strokeLinecap="round"
-              />
-            </svg>
           </div>
         </motion.div>
       )}
