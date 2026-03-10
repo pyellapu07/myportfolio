@@ -363,45 +363,42 @@ export default function BeachReveal() {
         >
           {/* Arrow + label in one block, rotated together */}
           <div style={{ transform: "rotate(-6deg)", transformOrigin: "center top" }}>
-            {/* Handwritten label */}
+            {/* Handwritten label — larger on desktop */}
             <p
-              className={caveat.className}
+              className={`${caveat.className} text-xl md:text-[28px]`}
               style={{
-                fontSize: "22px",
                 fontWeight: 700,
                 color: "#111827",
                 textShadow:
                   "0 1px 0 rgba(255,255,255,0.95), 0 0 14px rgba(255,255,255,0.75)",
                 whiteSpace: "nowrap",
                 lineHeight: 1,
-                textAlign: "center",
+                textAlign: "right",
               }}
             >
               This is Me!
             </p>
 
-            {/* Arrow — curves LEFT from below the text toward the avatar */}
+            {/* Arrow — tail top-right (below text), head points left toward avatar */}
             <svg
-              width="80"
-              height="44"
-              viewBox="0 0 80 44"
+              className="w-16 md:w-[88px] block ml-auto"
+              viewBox="0 0 88 58"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              style={{ display: "block" }}
             >
-              {/* Gentle left-pointing arc: right → left */}
+              {/* Arc: top-right → left-centre, matching direction toward avatar */}
               <path
-                d="M 72 10 C 58 4, 28 6, 8 20"
+                d="M 82 8 C 64 2, 28 10, 7 42"
                 stroke="#111827"
-                strokeWidth="2.4"
+                strokeWidth="2.6"
                 strokeLinecap="round"
                 fill="none"
               />
-              {/* Arrowhead pointing left */}
+              {/* Arrowhead — tip at (7,42), wings open right so it points left-down */}
               <path
-                d="M 8 20 L 22 10 M 8 20 L 22 28"
+                d="M 7 42 L 20 32 M 7 42 L 19 50"
                 stroke="#111827"
-                strokeWidth="2.4"
+                strokeWidth="2.6"
                 strokeLinecap="round"
               />
             </svg>
