@@ -5,6 +5,9 @@ import {
   motion, AnimatePresence,
   useMotionValue, useSpring,
 } from "framer-motion";
+import { Caveat } from "next/font/google";
+
+const caveat = Caveat({ subsets: ["latin"], weight: ["700"] });
 
 /* ─── Label data ─────────────────────────────────────────────────────────── */
 
@@ -203,6 +206,7 @@ export default function BeachReveal() {
   return (
     <div style={{ perspective: "900px" }}>
     <motion.div
+      className="relative"
       style={{
         rotateX: springRotX,
         rotateY: springRotY,
@@ -341,6 +345,73 @@ export default function BeachReveal() {
         </AnimatePresence>
       </div>
     </div>
+
+    {/* ── "This is Me" annotation — OUTSIDE overflow-hidden, tilts with card ── */}
+    <AnimatePresence>
+      {phase === "good" && (
+        <motion.div
+          className="pointer-events-none absolute"
+          style={{
+            top: "6%",
+            right: "-6%",
+            z: 50,            // pushes annotation forward in preserve-3d context
+          }}
+          initial={{ opacity: 0, scale: 0.75, y: -10 }}
+          animate={{ opacity: 1, scale: 1,    y: 0   }}
+          exit={{   opacity: 0, scale: 0.75           }}
+          transition={{ delay: 0.85, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {/* Handwritten label */}
+          <p
+            className={caveat.className}
+            style={{
+              fontSize: "24px",
+              fontWeight: 700,
+              color: "#111827",
+              transform: "rotate(-7deg)",
+              textShadow:
+                "0 1px 0 rgba(255,255,255,0.9), 0 0 12px rgba(255,255,255,0.7)",
+              whiteSpace: "nowrap",
+              lineHeight: 1,
+            }}
+          >
+            This is Me!
+          </p>
+
+          {/* Curved arrow — starts at text, sweeps left toward the avatar */}
+          <svg
+            style={{
+              position: "absolute",
+              top: "18px",
+              right: "84px",
+              overflow: "visible",
+            }}
+            width="68"
+            height="54"
+            viewBox="0 0 68 54"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Main curve: from top-right → bottom-left */}
+            <path
+              d="M 62 6 C 48 2, 16 10, 5 46"
+              stroke="#111827"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              fill="none"
+            />
+            {/* Arrowhead at the tip */}
+            <path
+              d="M 5 46 L 17 38 M 5 46 L 16 52"
+              stroke="#111827"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </motion.div>
+      )}
+    </AnimatePresence>
+
     </motion.div>
     </div>
   );
