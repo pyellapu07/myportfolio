@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   motion, AnimatePresence,
-  useMotionValue, useSpring, useTransform,
+  useMotionValue, useSpring,
 } from "framer-motion";
 
 /* ─── Label data ─────────────────────────────────────────────────────────── */
@@ -131,27 +131,37 @@ export default function BeachReveal() {
 
   const isGood = phase === "good";
 
-  /* ── Mouse parallax ── */
-  const rawX = useMotionValue(0);
-  const rawY = useMotionValue(0);
-  const springX = useSpring(rawX, { stiffness: 80, damping: 22 });
-  const springY = useSpring(rawY, { stiffness: 80, damping: 22 });
+  /* ── Global repel effect — card pushes away from cursor even outside frame ── */
+  const repelX = useMotionValue(0);
+  const repelY = useMotionValue(0);
+  const springRepelX = useSpring(repelX, { stiffness: 140, damping: 18 });
+  const springRepelY = useSpring(repelY, { stiffness: 140, damping: 18 });
 
-  // Scene shifts gently against cursor (feels far away)
-  const sceneX = useTransform(springX, [-0.5, 0.5], [8, -8]);
-  const sceneYp = useTransform(springY, [-0.5, 0.5], [5, -5]);
-
-  // Glasses drift slightly with cursor (feels close / in your hand)
-  const glassesXp = useTransform(springX, [-0.5, 0.5], [-14, 14]);
-  const glassesYp = useTransform(springY, [-0.5, 0.5], [-8, 8]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    rawX.set((e.clientX - rect.left) / rect.width - 0.5);
-    rawY.set((e.clientY - rect.top) / rect.height - 0.5);
-  };
-  const handleMouseLeave = () => { rawX.set(0); rawY.set(0); };
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      // Card centre in viewport coords
+      const cardCX = rect.left + rect.width  / 2;
+      const cardCY = rect.top  + rect.height / 2;
+      // Vector from cursor → card centre (positive = card is to the right / below)
+      const dx   = cardCX - e.clientX;
+      const dy   = cardCY - e.clientY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const maxRadius = 380; // px — repel zone
+      const maxRepel  = 24;  // px — max displacement
+      if (dist < maxRadius && dist > 0) {
+        const strength = (1 - dist / maxRadius) * maxRepel;
+        repelX.set((dx / dist) * strength);
+        repelY.set((dy / dist) * strength);
+      } else {
+        repelX.set(0);
+        repelY.set(0);
+      }
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [repelX, repelY]);
 
   const reveal = () => {
     if (phase !== "bad") return;
@@ -194,18 +204,14 @@ export default function BeachReveal() {
     "linear";
 
   return (
+    <motion.div style={{ x: springRepelX, y: springRepelY }}>
     <div
       ref={containerRef}
       className="relative w-full select-none overflow-hidden rounded-2xl shadow-xl"
       style={{ aspectRatio: "1 / 1" }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
     >
-      {/* ── Scenes — wrapped for parallax, scaled up to hide edge gaps ── */}
-      <motion.div
-        className="absolute inset-0"
-        style={{ x: sceneX, y: sceneYp, scale: 1.06 }}
-      >
+      {/* ── Scenes ── */}
+      <div className="absolute inset-0">
         {/* Scene 1 — bad beach */}
         <video
           autoPlay loop muted playsInline
@@ -223,7 +229,7 @@ export default function BeachReveal() {
         >
           <source src="/scene%202.mp4" type="video/mp4" />
         </video>
-      </motion.div>
+      </div>
 
       {/* ── Transition vignette (brief darkening during glasses rise) ─── */}
       <motion.div
@@ -272,11 +278,8 @@ export default function BeachReveal() {
           ))}
       </AnimatePresence>
 
-      {/* ── Sunglasses PNG — centered, parallax on cursor ───────────────── */}
+      {/* ── Sunglasses PNG — centered, phase slide animation ───────────── */}
       <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center overflow-hidden">
-        {/* Outer: cursor parallax */}
-        <motion.div className="w-full" style={{ x: glassesXp, y: glassesYp }}>
-        {/* Inner: phase slide animation */}
         <motion.div
           className="w-full"
           initial={{ y: "300%" }}
@@ -291,7 +294,6 @@ export default function BeachReveal() {
             style={{ opacity: 0.45 }}
             draggable={false}
           />
-        </motion.div>
         </motion.div>
       </div>
 
@@ -325,5 +327,6 @@ export default function BeachReveal() {
         </AnimatePresence>
       </div>
     </div>
+    </motion.div>
   );
 }
