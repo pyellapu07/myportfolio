@@ -8,7 +8,7 @@ import { ABOUT_TEXT } from "@/lib/constants";
 export default function About() {
   return (
     <SectionWrapper id="about" alternate>
-      <div className="grid gap-12 md:gap-10 md:items-center md:grid-cols-[2fr_3fr]">
+      <div className="grid gap-12 md:gap-16 md:items-end md:grid-cols-[2fr_3fr]">
         {/* Left column — text */}
         <div>
           <motion.span

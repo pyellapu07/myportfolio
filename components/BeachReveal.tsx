@@ -131,37 +131,34 @@ export default function BeachReveal() {
 
   const isGood = phase === "good";
 
-  /* ── Global repel effect — card pushes away from cursor even outside frame ── */
-  const repelX = useMotionValue(0);
-  const repelY = useMotionValue(0);
-  const springRepelX = useSpring(repelX, { stiffness: 140, damping: 18 });
-  const springRepelY = useSpring(repelY, { stiffness: 140, damping: 18 });
+  /* ── Global 3-D tilt — tracks cursor anywhere on the page ── */
+  const rotX = useMotionValue(0);
+  const rotY = useMotionValue(0);
+  const springRotX = useSpring(rotX, { stiffness: 90, damping: 20 });
+  const springRotY = useSpring(rotY, { stiffness: 90, damping: 20 });
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
-      // Card centre in viewport coords
-      const cardCX = rect.left + rect.width  / 2;
-      const cardCY = rect.top  + rect.height / 2;
-      // Vector from cursor → card centre (positive = card is to the right / below)
-      const dx   = cardCX - e.clientX;
-      const dy   = cardCY - e.clientY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const maxRadius = 380; // px — repel zone
-      const maxRepel  = 24;  // px — max displacement
-      if (dist < maxRadius && dist > 0) {
-        const strength = (1 - dist / maxRadius) * maxRepel;
-        repelX.set((dx / dist) * strength);
-        repelY.set((dy / dist) * strength);
-      } else {
-        repelX.set(0);
-        repelY.set(0);
-      }
+      // Normalised offset from card centre (-1 … 1 inside, beyond ±1 when outside)
+      const nx = (e.clientX - (rect.left + rect.width  / 2)) / (rect.width  / 2);
+      const ny = (e.clientY - (rect.top  + rect.height / 2)) / (rect.height / 2);
+      // Soft-clamp so far-off cursor still tilts but doesn't over-rotate
+      const clamp = (v: number, max: number) =>
+        Math.sign(v) * Math.min(Math.abs(v), max);
+      const MAX_TILT = 14; // degrees
+      rotY.set( clamp(nx, 1.4) * MAX_TILT);  // cursor right → rotate right
+      rotX.set(-clamp(ny, 1.4) * MAX_TILT);  // cursor above → tilt back
     };
+    const onLeave = () => { rotX.set(0); rotY.set(0); };
     window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
-  }, [repelX, repelY]);
+    document.documentElement.addEventListener("mouseleave", onLeave);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      document.documentElement.removeEventListener("mouseleave", onLeave);
+    };
+  }, [rotX, rotY]);
 
   const reveal = () => {
     if (phase !== "bad") return;
@@ -204,10 +201,17 @@ export default function BeachReveal() {
     "linear";
 
   return (
-    <motion.div style={{ x: springRepelX, y: springRepelY }}>
+    <div style={{ perspective: "900px" }}>
+    <motion.div
+      style={{
+        rotateX: springRotX,
+        rotateY: springRotY,
+        transformStyle: "preserve-3d",
+      }}
+    >
     <div
       ref={containerRef}
-      className="relative w-full select-none overflow-hidden rounded-2xl shadow-xl"
+      className="relative w-full select-none overflow-hidden rounded-2xl shadow-2xl"
       style={{ aspectRatio: "1 / 1" }}
     >
       {/* ── Scenes ── */}
@@ -230,6 +234,16 @@ export default function BeachReveal() {
           <source src="/scene%202.mp4" type="video/mp4" />
         </video>
       </div>
+
+      {/* ── Matte mask — film-like vignette over the whole card ────────── */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[8] rounded-2xl"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,0.38) 100%)",
+          mixBlendMode: "multiply",
+        }}
+      />
 
       {/* ── Transition vignette (brief darkening during glasses rise) ─── */}
       <motion.div
@@ -328,5 +342,6 @@ export default function BeachReveal() {
       </div>
     </div>
     </motion.div>
+    </div>
   );
 }
