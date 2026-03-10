@@ -150,7 +150,7 @@ export default function BeachReveal() {
       // Soft-clamp so far-off cursor still tilts but doesn't over-rotate
       const clamp = (v: number, max: number) =>
         Math.sign(v) * Math.min(Math.abs(v), max);
-      const MAX_TILT = 14; // degrees
+      const MAX_TILT = 6; // degrees
       rotY.set( clamp(nx, 1.4) * MAX_TILT);  // cursor right → rotate right
       rotX.set(-clamp(ny, 1.4) * MAX_TILT);  // cursor above → tilt back
     };
