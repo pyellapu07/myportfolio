@@ -1,8 +1,61 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import Image from "next/image";
+import { useRef } from "react";
 import SectionWrapper from "./SectionWrapper";
 import { TIMELINE } from "@/lib/constants";
+
+// Voxel icons — index matches TIMELINE order
+const VOXEL_ICONS = [
+  "/voxel/satellite.gif",   // NASA Harvest — Xylem Institute
+  "/voxel/barchart.gif",    // MarketCrunch AI
+  "/voxel/clipboard.gif",   // HackImpact
+  "/voxel/server.gif",      // Computacenter
+  "/voxel/lightbulb.gif",   // My Equation
+];
+
+function VoxelFloater({ src, isLeft }: { src: string; isLeft: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+
+  // Scroll up as user scrolls down — parallax range
+  const y = useTransform(scrollYProgress, [0, 1], [70, -70]);
+
+  return (
+    <div
+      ref={ref}
+      className={`absolute hidden md:flex items-center justify-center top-1/2 -translate-y-1/2 pointer-events-none select-none ${
+        isLeft ? "right-[8%]" : "left-[8%]"
+      }`}
+    >
+      {/* Parallax wrapper */}
+      <motion.div style={{ y }}>
+        {/* Entrance animation wrapper */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.55, rotate: isLeft ? 10 : -10 }}
+          whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+          viewport={{ once: false, amount: 0.15 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <Image
+            src={src}
+            alt=""
+            width={160}
+            height={160}
+            className="drop-shadow-2xl"
+            unoptimized
+            aria-hidden
+          />
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+}
 
 export default function Timeline() {
   return (
@@ -33,6 +86,8 @@ export default function Timeline() {
 
         {TIMELINE.map((item, i) => {
           const isLeft = i % 2 === 0;
+          const voxelSrc = VOXEL_ICONS[i];
+
           return (
             <motion.div
               key={item.role + item.organization}
@@ -44,12 +99,15 @@ export default function Timeline() {
                 duration: 0.6,
                 ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
               }}
-              className={`relative mb-10 flex items-start md:mb-12 ${
+              className={`relative mb-10 flex items-start md:mb-16 ${
                 isLeft
                   ? "md:flex-row md:pr-[calc(50%+2rem)]"
                   : "md:flex-row-reverse md:pl-[calc(50%+2rem)]"
               }`}
             >
+              {/* Voxel icon floating on the empty side */}
+              {voxelSrc && <VoxelFloater src={voxelSrc} isLeft={isLeft} />}
+
               {/* Dot */}
               <div
                 className="absolute left-4 z-10 -translate-x-1/2 md:left-1/2"
