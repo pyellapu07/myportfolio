@@ -166,24 +166,24 @@ export default function Hero() {
         transition={{ delay: gameActive ? 0 : 0.8, duration: 0.8 }}
         className="relative z-10 border-t border-white/[0.06] bg-black/20 backdrop-blur-sm"
       >
-        <div className="overflow-hidden py-4">
-          <div className="ticker-scroll flex items-center gap-14 whitespace-nowrap">
+        <div className="overflow-hidden py-6">
+          <div className="ticker-scroll flex items-center gap-16 whitespace-nowrap">
             {tickerDouble.map((item, i) => (
               <div
                 key={`${item.name}-${i}`}
-                className="flex shrink-0 items-center gap-3"
+                className="flex shrink-0 items-center gap-4"
               >
-                <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-white/10 p-1">
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-white/10 p-2">
                   <Image
                     src={item.logo}
                     alt={item.name}
-                    width={36}
-                    height={36}
+                    width={64}
+                    height={64}
                     className="h-full w-full object-contain"
-                    sizes="36px"
+                    sizes="64px"
                   />
                 </div>
-                <span className="font-mono text-sm font-medium text-white/55">
+                <span className="font-mono text-base font-medium text-white/75">
                   {item.name}
                 </span>
               </div>
