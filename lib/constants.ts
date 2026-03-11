@@ -91,7 +91,7 @@ export const PROJECTS: Project[] = [
     description:
       "Built the complete design layer for NASA Harvest-affiliated Xylem Lab: launched two production websites from zero, designed two distinct brand systems, ran a 3-day AGRA RFBS training workshop in Nairobi for analysts from 9 countries, and built Xylem Auto-Pilot — an AI pipeline that converts satellite crop data into publication-ready HTML bulletins in a single click.",
     techStack: ["Product Design", "Design Systems", "Brand Identity", "AI Pipeline", "UX Research", "Figma", "Python", "HTML/CSS", "QGIS"],
-    image: "/collabpreview.gif",
+    image: "/xylemlabscreenrecording.gif",
     link: "/work/xylem-institute",
     featured: false,
   },
