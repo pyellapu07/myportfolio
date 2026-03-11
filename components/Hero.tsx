@@ -167,21 +167,17 @@ export default function Hero() {
         className="relative z-10 border-t border-white/[0.06] bg-black/20 backdrop-blur-sm"
       >
         <div className="overflow-hidden py-7">
-          <div className="ticker-scroll flex items-center gap-14 whitespace-nowrap">
+          <div className="ticker-scroll flex items-center gap-16 whitespace-nowrap">
             {tickerDouble.map((item, i) => (
-              <div
+              <Image
                 key={`${item.name}-${i}`}
-                className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-white/10 p-2.5"
-              >
-                <Image
-                  src={item.logo}
-                  alt={item.name}
-                  width={80}
-                  height={80}
-                  className="h-full w-full object-contain"
-                  sizes="80px"
-                />
-              </div>
+                src={item.logo}
+                alt={item.name}
+                width={120}
+                height={64}
+                className="h-16 max-w-[110px] shrink-0 object-contain opacity-80"
+                style={{ width: "auto" }}
+              />
             ))}
           </div>
         </div>

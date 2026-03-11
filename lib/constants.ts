@@ -40,6 +40,7 @@ export const TICKER_ITEMS = [
   { name: "Transurban", logo: "/transurbanlogo.png" },
   { name: "My Equation", logo: "/myequation logo.png" },
   { name: "Terps Esports", logo: "/esportslogo.png" },
+  { name: "PrepSharp", logo: "/prepsharplogo.PNG" },
 ];
 
 export const METRICS = [
