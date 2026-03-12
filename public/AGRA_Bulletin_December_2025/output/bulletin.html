@@ -1,0 +1,2132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Crop Yield Forecast Estimates – December</title>
+
+<style>
+/* ---------- Reset / Base ---------- */
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height:1.6; color:#333; background:#f5f5f5; }
+a { color:#2c5530; text-decoration:none; }
+
+/* ---------- Layout Shell ---------- */
+.container { max-width:1200px; margin:0 auto; background:#fff; box-shadow:0 0 20px rgba(0,0,0,0.08); }
+.header { background:linear-gradient(135deg, #2c5530, #4a7c4e); color:#fff; padding:2rem; text-align:center; }
+.header h1 { font-size:2.5rem; font-weight:300; margin-bottom:.25rem; }
+.header .subtitle { font-size:1.1rem; opacity:.9; margin-bottom:.75rem; }
+.header .organizations { font-size:.9rem; opacity:.85; }
+
+/* Banner ribbon (logos strip) */
+.banner { background:#2f5f39; color:#fff; padding:14px 10px 8px; text-align:center; }
+.banner .line1 { font-size:.95rem; opacity:.95; }
+.banner .line2 { font-size:.95rem; opacity:.9; margin-top:2px; }
+.banner .logos { display:flex; gap:16px; justify-content:center; align-items:center; padding:10px 8px 8px; }
+.banner .logos img { height:36px; width:auto; object-fit:contain; filter: drop-shadow(0 1px 1px rgba(0,0,0,.15)); }
+
+/* ---------- Nav ---------- */
+.nav { background:#1a4a1e; padding:.75rem 0; position:sticky; top:0; z-index:100; }
+.nav ul { list-style:none; display:flex; justify-content:center; flex-wrap:wrap; }
+.nav li { margin:0 .75rem; }
+.nav a { color:#fff; padding:.45rem .75rem; border-radius:4px; }
+.nav a:hover, .nav a.active { background:rgba(255,255,255,0.18); }
+
+/* ---------- Sections ---------- */
+.content { padding:2rem; }
+.section { margin-bottom:3rem; }
+.section h2 { color:#2c5530; font-size:2rem; margin-bottom:1rem; border-bottom:3px solid #4a7c4e; padding-bottom:.5rem; }
+.section h3 { color:#1a4a1e; font-size:1.5rem; margin:1.5rem 0 1rem; }
+.section h4 { color:#2c5530; font-size:1.1rem; margin:1rem 0 .5rem; }
+
+/* ---------- Cards / Highlights ---------- */
+.executive-summary { background:#f8f9fa; padding:1.5rem; border-left:5px solid #4a7c4e; margin:1rem 0 2rem; }
+.data-highlight { background:#e8f5e8; padding:1rem; border-radius:8px; margin:1rem 0; }
+
+/* ---------- Country Blocks ---------- */
+.country-section { border:1px solid #ddd; border-radius:8px; margin:2rem 0; overflow:hidden; }
+.country-header { background:linear-gradient(135deg, #4a7c4e, #2c5530); color:#fff; padding:1.25rem 1.5rem; }
+.country-header h3 { margin:0; font-size:1.6rem; }
+.country-content { padding:1.5rem; }
+
+/* ---------- Tables ---------- */
+table { width:100%; border-collapse:collapse; margin:1rem 0; background:#fff; border-radius:8px; overflow:hidden;
+        box-shadow:0 2px 10px rgba(0,0,0,0.06); }
+th { background:linear-gradient(135deg, #4a7c4e, #2c5530); color:#fff; padding:0.85rem; text-align:left; font-weight:600; }
+td { padding:0.75rem 0.9rem; border-bottom:1px solid #eee; }
+tr:nth-child(even) { background:#f8f9fa; }
+tr:hover { background:#e8f5e8; transition:background .25s; }
+
+/* Condition chips */
+.condition-poor { background:#ffebee; color:#c62828; }
+.condition-watch { background:#fff8e1; color:#f57c00; }
+.condition-favorable { background:#e8f5e9; color:#2e7d32; }
+.condition-exceptional { background:#e3f2fd; color:#1565c0; }
+
+/* ---------- Figures ---------- */
+.figure-container { text-align:center; margin:1.75rem 0; }
+.figure-container img { max-width:100%; height:auto; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+.figure-caption { font-style:italic; color:#666; margin-top:.75rem; padding:0 1rem; }
+.figure-caption h4 { color:#2c5530; font-size:1.05rem; margin-bottom:.35rem; font-style:normal; }
+/* ---------- STRICT 2-UP MAP GRID ---------- */
+.figure-grid{
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap:16px;
+  align-items:start;
+  margin:1rem 0 1.75rem;
+}
+
+.figure-grid img{
+  width:100%;
+  height:520px;
+  object-fit:contain;   /* no cropping */
+  background:#fff;
+  border-radius:8px;
+}
+
+.figure-placeholder{
+  width:100%;
+  height:420px;
+  border:2px dashed #d6e3db;
+  border-radius:8px;
+  background:#f8fbf9;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#7a8f86;
+  font-style:italic;
+  font-size:14px;
+}
+
+/* ---------- Comparison table (Executive Summary) ---------- */
+.exec-table { margin-top:.75rem; }
+.exec-table th, .exec-table td { white-space:nowrap; }
+
+/* ---------- Footer ---------- */
+.disclaimer { background:#f8f9fa; border:1px solid #ddd; border-radius:8px; padding:1.25rem; font-size:.92rem; color:#666; }
+
+/* ---------- D3 Chart UI (updated) ---------- */
+.chart-wrap{
+  margin: 10px auto 26px;
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+  max-width:980px;   /* centers + constrains chart area */
+}
+.button-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:6px 0; }
+.pill{
+  border:none; padding:12px 20px; border-radius:999px; cursor:pointer;
+  font-size:16px; font-weight:600; letter-spacing:.2px; color:#1b4332; background:#e8f0f2;
+  box-shadow:0 2px 6px rgba(0,0,0,.08); transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.pill:hover{ transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,.12); }
+.pill.is-active{ background:#c5d6db; /* darker than neutral */
+  color:#0e2f24;
+  outline:2px solid #1b4332; /* stronger ring */
+  box-shadow:inset 0 0 0 2px rgba(27,67,50,.35), 0 4px 10px rgba(0,0,0,.10);
+}
+.pill.crop.is-active{ background:#b9d1d7; color:#083125; }
+.pill.source[data-src="All"]{ background:#e3eaee; color:#22323a; }
+.pill.source.usda{ background:#2c7bb6; color:#fff; }
+.pill.source.fao{  background:#f4a259; color:#fff; }
+.pill.source.umd-xylemlab{  background:#1a9850; color:#fff; }
+
+#d3-prod-chart{ display:block; margin:0 auto; }
+
+.tooltip {
+  position:fixed; pointer-events:none; background:#ffffff; color:#263238; border:1px solid #ddd;
+  border-radius:10px; padding:10px 12px; font-size:12px; box-shadow:0 8px 20px rgba(0,0,0,.12); opacity:0; transition:opacity .12s;
+}
+
+/* Axis look: larger, darker */
+.axis text{ fill:#28352b; font-size:14px; }
+.axis path, .axis line{ stroke:#9ab19d; stroke-width:1; }
+.y-title{ fill:#2c5530; font-weight:700; font-size:14px; }
+
+/* ---- Chips / region selector ---- */
+.control-row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:center; }
+.region-input{ padding:10px 12px; border:1px solid #c9d5cf; border-radius:10px; min-width:240px; font-size:14px; }
+.chips{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:6px; }
+.chip{ background:#edf4ee; color:#134e4a; border:1px solid #cfe3d8; padding:6px 10px; border-radius:999px; font-size:13px; display:flex; align-items:center; gap:6px; }
+.chip button{ border:none; background:transparent; cursor:pointer; font-size:14px; color:#0b3d35; line-height:1; }
+.small-note{ font-size:12px; color:#6b7f73; text-align:center; margin-top:2px; }
+
+/* ---------- Regional Table Filters + Sorting ---------- */
+.filter-row { 
+  display:flex; gap:12px; margin:12px 0; flex-wrap:wrap; 
+}
+.filter-row label { font-weight:600; margin-right:6px; }
+.filter-row select { padding:6px 10px; border:1px solid #aaa; border-radius:6px; }
+
+th.sortable { cursor:pointer; position:relative; }
+th.sortable:after {
+  content:"⇅"; position:absolute; right:8px; font-size:.8rem; opacity:.6;
+}
+.filter-actions {
+  margin-left: auto;
+}
+
+.download-btn {
+  background: linear-gradient(135deg, #2c5530, #4a7c4e);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.download-btn:hover {
+  background: linear-gradient(135deg, #35643b, #5a8d59);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* ---------- Season Labels (Msimu / Vuli / etc.) ---------- */
+.season-tag{
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.2px;
+  background:#edf4ee;
+  color:#1a4a1e;
+  border:1px solid #cfe3d8;
+  margin-left:8px;
+  vertical-align:middle;
+}
+
+.season-note{
+  font-size:0.92rem;
+  color:#4f5f55;
+  margin-top:8px;
+}
+
+</style>
+
+<!-- D3 (once) -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <header class="header">
+    <h1>Crop Yield Forecast Estimates</h1>
+    <div class="subtitle">December</div>
+  </header>
+
+  <!-- Partner banner -->
+  <div class="banner">
+    <div class="line1">Partnership for Inclusive Agricultural Transformation in Africa (PIATA)</div>
+    <div class="line2">The Regional Food Balance Sheet</div>
+    <div class="logos">
+      <img src="../data/static/AGRA_Banner.png" alt="Partner Logos" style="width:100%; max-width:900px; height:auto; object-fit:contain;">
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <ul>
+      <li><a href="#overview" class="active">Overview</a></li>
+      <li><a href="#executive-summary">Executive Summary</a></li>
+      
+      <li><a href="#zambia">Zambia</a></li>
+      
+      <li><a href="#appendix">Appendix</a></li>
+    </ul>
+  </nav>
+
+  <main class="content">
+
+    <!-- Overview -->
+    <section id="overview" class="section">
+      <h2>Overview</h2>
+      <p>This report summarizes yield, acreage, and total production estimates for <strong>maize, rice, and beans</strong> across focus countries. The data is updated monthly in the RFBS Dashboard via a standard data file. Our model reports on the main growing season for countries with available historical yield data for model training.</p>
+
+      <h3>Data Limitations and Model Caveats</h3>
+      <p>The data used in this report has limitations due to gaps in historical records and variations in data collection methods:</p>
+      <ul style="margin-left:1.25rem;">
+        <li>Historical data accuracy and consistency vary by country</li>
+        <li>Our model reflects these data gaps, as it is trained on available information</li>
+        <li>We view these limitations as opportunities to improve data sharing and scaling methods with our country partners</li>
+      </ul>
+
+      <div class="data-highlight">
+        <p><strong>Current Focus:</strong> Data presented this month focuses on maize, rice and bean systems in <strong>Zambia</strong>, which are currently in season.</p>
+      </div>
+    </section>
+
+    <!-- Executive Summary -->
+    <section id="executive-summary" class="section">
+      <h2>Executive Summary</h2>
+
+      <div class="executive-summary">
+        <p>Current projections for December 2025 maize production in East Africa show varying forecasts between USDA, FAO, and UMD-XylemLab models. For Zambia maize, USDA and FAO present similar area estimates of 1.4 million hectares with yields of 2.43 and 2.3 MT/ha respectively, resulting in production around 3.3 to 3.4 million MT. UMD-XylemLab estimates a slightly smaller area of 1.33 million hectares and a lower yield of 2.05 MT/ha but projects a production range of 2.35 to 3.18 million MT, reflecting uncertainty and perhaps a narrower geographic focus. Data for rice and beans across other East African countries was not provided, limiting cross-crop comparison at this time. Nevertheless, the maize forecasts illustrate differences driven by model scope and data inputs. Overall, the regional December outlook points to relatively stable maize production with moderate variability, underscoring the importance of integrating multiple data sources for comprehensive agricultural assessment.</p>
+      </div>
+
+      <!-- All Sources Interactive Chart -->
+      <h3>All Sources Interactive Chart</h3>
+      <div class="chart-wrap">
+        <div id="crop-buttons" class="button-row"></div>
+        <div id="source-buttons" class="button-row" style="margin-top:4px;"></div>
+        <svg id="d3-prod-chart" width="980" height="480"></svg>
+      </div>
+      <div id="d3-tooltip" class="tooltip"></div>
+      <!-- After the chart container -->
+              <div id="all-sources-chart"></div>
+
+              
+              <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+     	<strong>Note:</strong> 
+    	
+        	   * Tanzania data represents Msimu season only.
+    	
+      </div>
+              
+
+      <script>
+        // Combined UMD + non-UMD rows injected by Python
+        const rows = [{"Country": "Zambia", "OriginalCountry": "Zambia", "Crop": "Maize", "Source": "USDA", "Area": 1.4, "Yield": 2.43, "MinProd": 3.4, "MaxProd": 3.4, "SeasonNote": null}, {"Country": "Zambia", "OriginalCountry": "Zambia", "Crop": "Maize", "Source": "FAO", "Area": 1.4, "Yield": 2.3, "MinProd": 3.3, "MaxProd": 3.3, "SeasonNote": null}, {"Country": "Zambia", "OriginalCountry": "Zambia", "Crop": "Maize", "Source": "UMD-XylemLab", "Area": 1.33, "Yield": 2.05, "MinProd": 2.35, "MaxProd": 3.18, "SeasonNote": null}];
+
+        // Colors per source
+        const sourceColors = { USDA:"#2c7bb6", FAO:"#f4a259", "UMD-XylemLab":"#1a9850" };
+
+        // State
+        const crops   = Array.from(new Set(rows.map(d => d.Crop)));
+        const sources = ["All", ...Array.from(new Set(rows.map(d => d.Source)))];
+        let activeCrop   = crops[0] || "Maize";
+        let activeSource = "All";
+
+        // Crop buttons (neutral)
+        const cropBtnSel = d3.select("#crop-buttons")
+          .selectAll("button")
+          .data(crops)
+          .join("button")
+            .attr("class","pill crop")
+            .classed("is-active", d => d === activeCrop)
+            .text(d => d)
+            .on("click", (_, d) => { activeCrop=d; cropBtnSel.classed("is-active", x=>x===activeCrop); update(); });
+
+        // Source buttons (colored)
+        const srcBtnSel = d3.select("#source-buttons")
+          .selectAll("button")
+          .data(sources)
+          .join("button")
+            .attr("class", d => {
+        		if (d === "All") return "pill source";
+        		if (d === "UMD-XylemLab") return "pill source umd-xylemlab";  // Changed
+        		return "pill source " + d.toLowerCase();
+    	    })
+            .attr("data-src", d => d)
+            .style("background", d => d==="All" ? "#e3eaee" : (sourceColors[d]||"#888"))
+            .style("color", d => d==="All" ? "#22323a" : "#fff")
+            .classed("is-active", d => d === activeSource)
+            .text(d => d)
+            .on("click", (_, d) => { activeSource=d; srcBtnSel.classed("is-active", x=>x===activeSource); update(); });
+
+        // Chart scaffold
+        const svg = d3.select("#d3-prod-chart");
+        const margin = {top: 16, right: 24, bottom: 64, left: 80};
+        const W = +svg.attr("width")  - margin.left - margin.right;
+        const H = +svg.attr("height") - margin.top  - margin.bottom;
+        const g  = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+        const gx = g.append("g").attr("class","axis").attr("transform", `translate(0,${H})`);
+        const gy = g.append("g").attr("class","axis");
+        g.append("text").attr("class","y-title")
+          .attr("x",-H/2).attr("y",-56).attr("transform","rotate(-90)")
+          .attr("text-anchor","middle")
+          .text("Production (Million MT)");
+
+        const x = d3.scaleBand().padding(0.36).range([0, W]); // wider cat spacing
+        const y = d3.scaleLinear().range([H, 0]);
+
+        const barLayer = g.append("g");
+        const errLayer = g.append("g");
+        const capLayer = g.append("g");
+        const tooltip  = d3.select("#d3-tooltip");
+
+        function update(){
+          let data = rows.filter(r => r.Crop === activeCrop);
+          if (activeSource !== "All") data = data.filter(r => r.Source === activeSource);
+
+          // Aggregate per Country+Source
+          const grouped = d3.rollups(
+            data,
+            v => ({
+              Country: v[0].Country,
+              Source : v[0].Source,
+              Crop   : v[0].Crop,
+              mean   : d3.mean(v, d => (d.MinProd + d.MaxProd)/2),
+              min    : d3.mean(v, d => d.MinProd),
+              max    : d3.mean(v, d => d.MaxProd),
+              area   : d3.sum(v, d => d.Area),
+              yld    : d3.mean(v, d => d.Yield)
+            }),
+            d => d.Country, d => d.Source
+          );
+
+          const flat = [];
+          grouped.forEach(([country, arr]) => arr.forEach(([src,val]) => flat.push(val)));
+
+          const countries = Array.from(new Set(flat.map(d => d.Country)));
+          x.domain(countries);
+          y.domain([0, Math.max(1, d3.max(flat, d => d.max) * 1.15 || 0.5)]).nice();
+
+          // Geometry
+          const srcsInView = (activeSource === "All")
+            ? Array.from(new Set(flat.map(d => d.Source)))
+            : [activeSource];
+
+          const bw = x.bandwidth();
+          const xSub = d3.scaleBand().domain(srcsInView).range([0, bw]).paddingInner(0.04).paddingOuter(0.22);
+          const SINGLE_WIDTH = Math.min(36, Math.max(18, bw * 0.38));
+
+          function barX(d){
+            const bx = x(d.Country) ?? 0;
+            if (activeSource === "All") return bx + xSub(d.Source);
+            return bx + (bw - SINGLE_WIDTH)/2;
+          }
+          function barW(){ return activeSource === "All" ? xSub.bandwidth() : SINGLE_WIDTH; }
+
+          // Bars
+          const key = d => `${d.Country}__${d.Source}`;
+          const bars = barLayer.selectAll("rect.bar").data(flat, key);
+
+          bars.exit().transition().duration(250).attr("y", y(0)).attr("height", 0).remove();
+
+          bars.enter().append("rect")
+              .attr("class","bar")
+              .attr("rx",3).attr("ry",3)
+              .attr("x", d => barX(d))
+              .attr("y", y(0)).attr("height", 0).attr("width", barW())
+              .attr("fill", d => sourceColors[d.Source] || "#888")
+              .attr("opacity", activeSource==="All" ? 0.9 : 0.95)
+            .merge(bars)
+              .transition().duration(450)
+              .attr("x", d => barX(d))
+              .attr("width", barW())
+              .attr("y", d => y(d.mean))
+              .attr("height", d => Math.max(0, y(0) - y(d.mean)));
+
+          // Error bars — UMD only, vertical with caps, not touching axis
+          const umdOnly = flat.filter(d => d.Source === "UMD-XylemLab" && (d.max - d.min) > 1e-6);
+
+          const errs = errLayer.selectAll("line.err").data(umdOnly, key);
+          errs.exit().remove();
+          errs.enter().append("line")
+              .attr("class","err")
+              .attr("stroke","#2c5530").attr("stroke-width",1.6)
+            .merge(errs)
+              .transition().duration(450)
+              .attr("x1", d => barX(d) + barW()/2)
+              .attr("x2", d => barX(d) + barW()/2)
+              .attr("y1", d => y(d.max))
+              .attr("y2", d => y(d.min));
+
+          const capW = d => Math.max(8, barW() * 0.45);
+          const capsTop = capLayer.selectAll("line.capTop").data(umdOnly, key);
+          capsTop.exit().remove();
+          capsTop.enter().append("line")
+              .attr("class","capTop")
+              .attr("stroke","#2c5530").attr("stroke-width",1.6)
+            .merge(capsTop)
+              .transition().duration(450)
+              .attr("x1", d => barX(d) + (barW() - capW())/2)
+              .attr("x2", d => barX(d) + (barW() + capW())/2)
+              .attr("y1", d => y(d.max))
+              .attr("y2", d => y(d.max));
+
+          const capsBot = capLayer.selectAll("line.capBot").data(umdOnly, key);
+          capsBot.exit().remove();
+          capsBot.enter().append("line")
+              .attr("class","capBot")
+              .attr("stroke","#2c5530").attr("stroke-width",1.6)
+            .merge(capsBot)
+              .transition().duration(450)
+              .attr("x1", d => barX(d) + (barW() - capW())/2)
+              .attr("x2", d => barX(d) + (barW() + capW())/2)
+              .attr("y1", d => y(d.min))
+              .attr("y2", d => y(d.min));
+
+          // Tooltip (only show min–max for UMD)
+          barLayer.selectAll("rect.bar")
+            .on("pointerenter", function (event, d) {
+              d3.select(this).attr("opacity", 1);
+              tooltip.style("opacity",1).html(`
+                <div style="font-weight:700;margin-bottom:4px;">${d.Country}</div>
+                <div>Crop: <b>${d.Crop}</b></div>
+                <div>Source: <b>${d.Source}</b></div>
+                <div>Mean prod: <b>${d.mean.toFixed(2)}</b> M MT</div>
+                ${d.Source==='UMD-XylemLab' ? `<div>Min–Max: <b>${d.min.toFixed(2)} – ${d.max.toFixed(2)}</b> M MT</div>` : ``}
+                <div>Area: <b>${d.area.toFixed(2)}</b> M ha</div>
+                <div>Yield: <b>${d.yld.toFixed(2)}</b> MT/ha</div>
+              `);
+            })
+            .on("pointermove", function (event) {
+              const [px, py] = d3.pointer(event, document.body);
+              tooltip.style("left", (px+14)+"px").style("top", (py-10)+"px");
+            })
+            .on("pointerleave", function(){
+              d3.select(this).attr("opacity", activeSource==="All" ? 0.9 : 0.95);
+              tooltip.style("opacity",0);
+            });
+
+          // Axes (styled via CSS .axis rules)
+          gx.transition().duration(350).call(d3.axisBottom(x));
+          gy.transition().duration(350).call(d3.axisLeft(y).ticks(6));
+        }
+
+        update();
+      </script>
+
+      <!-- Comparison table (rows pre-rendered by Python) -->
+      <h3>All Sources Comparison Table</h3>
+      <table class="exec-table">
+        <thead>
+          <tr>
+            <th>Country</th><th>Crop</th><th>Source</th>
+            <th>Area (Million ha)</th><th>Yield (MT/ha)</th><th>Min - Max Production (Million MT)</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr>
+            
+              <td rowspan="3"><strong>Zambia</strong></td>
+            
+            
+              <td rowspan="3"><strong>Maize</strong></td>
+            
+            <td style="color:#2c7bb6;">
+              USDA
+            </td>
+            <td>1.4</td>
+            <td>2.43</td>
+            <td>3.4</td>
+          </tr>
+          
+          <tr>
+            
+            
+            <td style="color:#f4a259;">
+              FAO
+            </td>
+            <td>1.4</td>
+            <td>2.3</td>
+            <td>3.3</td>
+          </tr>
+          
+          <tr>
+            
+            
+            <td style="color:#1a9850;">
+              UMD-XylemLab
+            </td>
+            <td>1.33</td>
+            <td>2.05</td>
+            <td>2.35 - 3.18</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Country Chapters built by Python (kept as-is) -->
+    <section class="section" id="country-summary">
+  <section class="section" id="country-summary">
+<h2>Regional Overview/Conditions</h2>
+<h3>Country Summary</h3>
+<ul class="data-highlight" style="list-style:disc;padding-left:22px;">
+<li><strong>Zambia:</strong> Maize shows favorable to stable conditions in most regions with positive yield anomalies ranging from 0.184 in Western to 0.478 in Luapula, indicating generally improving or stable trends except in Western and Southern regions where yields are lower but still show positive anomalies. No data on beans or rice conditions are provided in the current dataset, so their status is not assessed here. The highest positive yield anomaly is in Luapula (0.478), while the lowest among maize regions is Western (0.184). Overall, maize conditions appear more favorable in Northern, Luapula, and Central regions, with Western and Southern regions showing lower predicted yields but stable trends.</li>
+</ul></section>
+<div class="country-section" id="zambia">
+  <div class="country-header">
+    <h3>Zambia</h3>
+  </div>
+  <div class="country-content">
+    <div class="figure-container">
+      <img src="../data/calendars/Zambia.png" alt="Zambia Agricultural Calendar">
+      <div class="figure-caption">
+        <h4>Figure: Agricultural Calendar – Zambia</h4>
+        <p>Zambia is currently within the main agricultural season, which runs from November to May. Planting started in November, and crop development is progressing with predictions updated in December. The main harvest is anticipated to begin in April and continue through May for this season.</p>
+      </div>
+    </div>
+    <h4>Regional Crop Conditions Summary</h4>
+    <p>Maize shows favorable to stable conditions in most regions with positive yield anomalies ranging from 0.184 in Western to 0.478 in Luapula, indicating generally improving or stable trends except in Western and Southern regions where yields are lower but still show positive anomalies. No data on beans or rice conditions are provided in the current dataset, so their status is not assessed here. The highest positive yield anomaly is in Luapula (0.478), while the lowest among maize regions is Western (0.184). Overall, maize conditions appear more favorable in Northern, Luapula, and Central regions, with Western and Southern regions showing lower predicted yields but stable trends.</p>
+<button class="pill" onclick="location.href='#regional-table-zambia'">
+  View Regional Production Forecast Table
+</button>
+    <div class="figure-container">
+      <img src="zambia_production_part1.png" alt="Zambia mean production with min/max">
+      <div class="figure-caption">
+        <h4>Figure: Mean Predicted Production with Min/Max – Zambia (Part 1)</h4>
+        <p>Bar chart showing mean predicted production for maize, beans, and rice with min/max ranges.</p>
+      </div>
+    </div>
+    <div class="figure-container">
+      <img src="zambia_production_part2.png" alt="Zambia mean production with min/max">
+      <div class="figure-caption">
+        <h4>Figure: Mean Predicted Production with Min/Max – Zambia (Part 2)</h4>
+        <p>Bar chart showing mean predicted production for maize, beans, and rice with min/max ranges.</p>
+      </div>
+    </div>
+    <h4>Maize Maps</h4>
+    <div class="figure-grid">
+      <div class="figure-container">
+        <img src="../data/maps/Zambia_Maize_December_Yield.png" alt="Zambia Maize December Yield Map">
+        <div class="figure-caption">
+          <h4>Regional Maize Yield Forecasts</h4>
+          <p>In December 2025, Central Province is the top-performing maize region in Zambia with a yield of 2.69 MgT/ha, while Western Province shows the lowest yield at 0.96 MgT/ha. Notable extremes include high yields above 2.5 MgT/ha in parts of Central and Northern provinces and low yields below 1.0 MgT/ha in Western Province.</p>
+        </div></div>
+      <div class="figure-container">
+        <img src="../data/maps/Zambia_Maize_December_Yield_Anomaly.png" alt="Zambia Maize December Yield Anomaly Map">
+        <div class="figure-caption">
+          <h4>Regional Maize Yield Anomaly</h4>
+          <p>In December 2025, Zambia's Northern and Luapula regions show the highest positive maize yield anomalies at 0.48 MgT/ha, while the Western region has the lowest at 0.18 MgT/ha, indicating notable spatial variation in maize yield performance.</p>
+        </div></div>
+    </div>
+    <h4>Production Narrative</h4>
+    <p>Maize dominates the production landscape with the largest planted areas, notably Central (344,294 ha), Eastern (365,683 ha), and Southern (257,292 ha). Mean predicted production volumes are highest in Central (926,668 tons), Eastern (621,268 tons), and Southern (378,013 tons) regions. Predicted yields vary from 0.96 MgT/ha in Western to 2.69 MgT/ha in Central, supporting overall positive production trends. The maize production is generally improving or stable across regions, though Western and Southern provinces show the lowest yields but without a declining trend. Data for beans and rice production areas and yields are not included in the current dataset for December 2026, limiting evaluation for these crops.</p>
+  </div></div>
+
+     
+</section>
+    <!-- === New: Per-country interactive regional charts (injected into each country section) === -->
+    <script>
+      // Data from Python: { "Kenya": [...], "Uganda":[...], ... }
+      // Each row suggested fields: Country, Region, Crop, Area, PredictedYield, MinProd, MaxProd
+      // Where MinProd/MaxProd are in tons. If only mean is available, set both equal.
+      const regionDataByCountry = {"Zambia": [{"Region": "Central", "Crop": "Maize", "MeanProd": 926150.86, "MinProd": 901842.0, "MaxProd": 951494.0, "Area": 344294.0, "Yield": 2.69, "Trend": "Improving"}, {"Region": "Copperbelt", "Crop": "Maize", "MeanProd": 212924.8, "MinProd": 170388.0, "MaxProd": 254571.0, "Area": 92576.0, "Yield": 2.3, "Trend": "Stable"}, {"Region": "Eastern", "Crop": "Maize", "MeanProd": 621661.1, "MinProd": 466106.0, "MaxProd": 776429.0, "Area": 365683.0, "Yield": 1.7, "Trend": "Stable"}, {"Region": "Luapula", "Crop": "Maize", "MeanProd": 157239.5, "MinProd": 124584.0, "MaxProd": 190181.0, "Area": 64975.0, "Yield": 2.42, "Trend": "Improving"}, {"Region": "Lusaka", "Crop": "Maize", "MeanProd": 96162.99, "MinProd": 72302.0, "MaxProd": 119728.0, "Area": 41629.0, "Yield": 2.31, "Trend": "Stable"}, {"Region": "North-Western", "Crop": "Maize", "MeanProd": 83885.26000000001, "MinProd": 60814.0, "MaxProd": 106961.0, "Area": 40721.0, "Yield": 2.06, "Trend": "Improving"}, {"Region": "Northern", "Crop": "Maize", "MeanProd": 277845.44999999995, "MinProd": 227446.0, "MaxProd": 328517.0, "Area": 108959.0, "Yield": 2.55, "Trend": "Improving"}, {"Region": "Southern", "Crop": "Maize", "MeanProd": 378219.24, "MinProd": 314291.0, "MaxProd": 441734.0, "Area": 257292.0, "Yield": 1.47, "Trend": "Stable"}, {"Region": "Western", "Crop": "Maize", "MeanProd": 9217.92, "MinProd": 7632.0, "MaxProd": 10739.0, "Area": 9602.0, "Yield": 0.96, "Trend": "Stable"}]};
+
+      // Utility: slugify for ids / anchors
+      const slug = s => String(s || "").toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
+
+      // Hide static PNG production charts inside country sections (true "replace")
+      function hideStaticProductionPNGs(sectionEl){
+        if (!sectionEl) return;
+        const imgs = sectionEl.querySelectorAll('img');
+        imgs.forEach(img => {
+          const src = (img.getAttribute('src') || '').toLowerCase();
+          if (/_production_part\d*\.png$/.test(src) || src.includes('production_part')) {
+            const fig = img.closest('.figure-container') || img;
+            fig.style.display = 'none';
+          }
+        });
+      }
+
+      // Create and inject a full interactive chart block into a given country section
+      function injectRegionChart(country, rows){
+        const sec = document.querySelector('.country-section#' + slug(country));
+        // fallback: try by heading text if id missing
+        let contentHost = sec ? sec.querySelector('.country-content') : null;
+
+        if (!contentHost) {
+          // fallback: append to summary section end
+          contentHost = document.getElementById('country-summary');
+        }
+
+        // Build wrapper
+        const wrap = document.createElement('div');
+        wrap.className = 'chart-wrap';
+        wrap.id = `region-wrap-${slug(country)}`;
+        wrap.innerHTML = `
+          <h3 style="margin-top:6px;">${country} — Regional Interactive Chart</h3>
+          <div class="control-row" style="margin-top:2px;">
+            <div id="crop-buttons-${slug(country)}" class="button-row"></div>
+          </div>
+          <div class="control-row">
+            <input id="region-input-${slug(country)}" class="region-input" list="region-list-${slug(country)}" placeholder="Type a region/county and click Add">
+            <datalist id="region-list-${slug(country)}"></datalist>
+            <button class="pill" id="btn-add-${slug(country)}">Add</button>
+            <button class="pill" id="btn-top3-${slug(country)}">Top 3</button>
+            <button class="pill" id="btn-top5-${slug(country)}">Top 5</button>
+            <button class="pill" id="btn-clear-${slug(country)}">Clear</button>
+          </div>
+          <div class="chips" id="chips-${slug(country)}"></div>
+          <div class="small-note">Bars show mean predicted production; vertical whiskers (UMD) show min–max range.</div>
+          <svg id="svg-${slug(country)}" width="980" height="420"></svg>
+        `;
+        contentHost.appendChild(wrap);
+
+        // Optionally hide old PNGs
+        hideStaticProductionPNGs(sec || contentHost);
+
+        // ---- D3 setup for this country ----
+        const svg = d3.select(`#svg-${slug(country)}`);
+        const margin = {top: 18, right: 22, bottom: 66, left: 92};
+        const W = +svg.attr("width")  - margin.left - margin.right;
+        const H = +svg.attr("height") - margin.top  - margin.bottom;
+        const g  = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+        const gx = g.append("g").attr("class","axis").attr("transform", `translate(0,${H})`);
+        const gy = g.append("g").attr("class","axis");
+        g.append("text").attr("class","y-title")
+          .attr("x",-H/2).attr("y",-70).attr("transform","rotate(-90)")
+          .attr("text-anchor","middle").text("Predicted Production (tons)");
+
+        const x = d3.scaleBand().padding(0.36).range([0, W]);
+        const y = d3.scaleLinear().range([H, 0]);
+
+        const barLayer = g.append("g");
+        const errLayer = g.append("g");
+        const capLayer = g.append("g");
+
+        // Data prep
+        const allCrops = Array.from(new Set(rows.map(r => String(r.Crop).trim()))).sort();
+        let activeCrop = allCrops[0] || "Maize";
+        const regionsAll = Array.from(new Set(rows.filter(r => r.Crop===activeCrop).map(r => String(r.Region)))).sort();
+        let selectedRegions = [];
+
+        // Build crop buttons
+        const cropBtns = d3.select(`#crop-buttons-${slug(country)}`)
+          .selectAll("button")
+          .data(allCrops)
+          .join("button")
+          .attr("class","pill crop")
+          .classed("is-active", d => d===activeCrop)
+          .text(d => d)
+          .on("click", (_, d) => {
+            activeCrop = d;
+            // refresh datalist
+            refreshDatalist();
+            // reset default selection to Top 5 for new crop
+            pickTopN(5);
+            cropBtns.classed("is-active", x => x===activeCrop);
+            update();
+          });
+
+        // Build datalist options
+        const datalist = document.getElementById(`region-list-${slug(country)}`);
+        function refreshDatalist(){
+          datalist.innerHTML = "";
+          const regs = Array.from(new Set(rows.filter(r => r.Crop===activeCrop).map(r => String(r.Region)))).sort();
+          regs.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r;
+            datalist.appendChild(opt);
+          });
+        }
+        refreshDatalist();
+
+        // Helpers to compute mean/min/max per region for active crop
+        function regionStatsForCrop(crop){
+          const subset = rows.filter(r => r.Crop === crop);
+          const byRegion = d3.rollups(
+            subset,
+            v => {
+              // calc mean, min, max production (tons)
+              const mins = v.map(d => +d.MinProd).filter(n => Number.isFinite(n));
+              const maxs = v.map(d => +d.MaxProd).filter(n => Number.isFinite(n));
+              let min = d3.sum(mins);
+              let max = d3.sum(maxs);
+              if (!Number.isFinite(min) || !Number.isFinite(max)) {
+                // fallback to area*yield if min/max missing
+                const means = v.map(d => (+d.Area || 0) * (+d.PredictedYield || 0));
+                min = max = d3.sum(means);
+              }
+              const mean = (min + max) / 2;
+              return { region: v[0].Region, crop, mean, min, max };
+            },
+            d => d.Region
+          ).map(([region, obj]) => obj);
+          // Sort descending mean
+          byRegion.sort((a,b) => d3.descending(a.mean, b.mean));
+          return byRegion;
+        }
+
+        function pickTopN(n){
+          const stats = regionStatsForCrop(activeCrop);
+          selectedRegions = stats.slice(0, n).map(d => d.region);
+          renderChips();
+        }
+
+        // Chips UI
+        const chipsHost = document.getElementById(`chips-${slug(country)}`);
+        function renderChips(){
+          chipsHost.innerHTML = "";
+          selectedRegions.forEach(reg => {
+            const el = document.createElement('span');
+            el.className = 'chip';
+            el.innerHTML = `${reg} <button aria-label="Remove ${reg}">&times;</button>`;
+            el.querySelector('button').addEventListener('click', () => {
+              selectedRegions = selectedRegions.filter(x => x !== reg);
+              renderChips();
+              update();
+            });
+            chipsHost.appendChild(el);
+          });
+        }
+
+        // Buttons
+        document.getElementById(`btn-add-${slug(country)}`).addEventListener('click', () => {
+          const txt = document.getElementById(`region-input-${slug(country)}`).value.trim();
+          const validRegions = new Set(rows.filter(r => r.Crop===activeCrop).map(r => String(r.Region)));
+          if (txt && validRegions.has(txt) && !selectedRegions.includes(txt)){
+            selectedRegions.push(txt);
+            renderChips();
+            update();
+          }
+          document.getElementById(`region-input-${slug(country)}`).value = "";
+        });
+        document.getElementById(`btn-top3-${slug(country)}`).addEventListener('click', () => { pickTopN(3); update(); });
+        document.getElementById(`btn-top5-${slug(country)}`).addEventListener('click', () => { pickTopN(5); update(); });
+        document.getElementById(`btn-clear-${slug(country)}`).addEventListener('click', () => { selectedRegions = []; renderChips(); update(); });
+
+        // Default: Top 5 for initial crop
+        pickTopN(5);
+
+        function update(){
+          const stats = regionStatsForCrop(activeCrop);
+          const regionSet = new Set(selectedRegions.length ? selectedRegions : stats.slice(0,5).map(d=>d.region));
+          const data = stats.filter(d => regionSet.has(d.region));
+
+          // domains
+          const regions = data.map(d => d.region);
+          x.domain(regions);
+          const ymax = d3.max(data, d => d.max) || 1;
+          y.domain([0, ymax * 1.15]).nice();
+
+          // bars
+          const bars = barLayer.selectAll("rect.bar").data(data, d => d.region);
+          bars.exit().transition().duration(250).attr("y", y(0)).attr("height", 0).remove();
+
+          const bw = x.bandwidth();
+          const BARW = Math.min(36, Math.max(18, bw * 0.38));
+
+          const cropColors = {
+            "Maize": "#1a9850",   // green
+            "Rice":  "#f4a259",   // orange
+            "Beans": "#5e3c99"    // purple (or any color you like)
+          };
+
+          bars.enter().append("rect")
+              .attr("class","bar")
+              .attr("rx",3).attr("ry",3)
+              .attr("x", d => (x(d.region) ?? 0) + (bw - BARW)/2)
+              .attr("y", y(0)).attr("height", 0).attr("width", BARW)
+              .attr("fill", d => cropColors[d.crop] || "#888")
+              .attr("opacity", 0.95)
+            .merge(bars)
+              .transition().duration(450)
+              .attr("x", d => (x(d.region) ?? 0) + (bw - BARW)/2)
+              .attr("width", BARW)
+              .attr("y", d => y(d.mean))
+              .attr("height", d => Math.max(0, y(0) - y(d.mean)))
+              .attr("fill", d => cropColors[d.crop] || "#888");
+
+          // error whiskers with caps (UMD)
+          const errs = errLayer.selectAll("line.err").data(data, d => d.region);
+          errs.exit().remove();
+          errs.enter().append("line")
+              .attr("class","err")
+              .attr("stroke","#2c5530").attr("stroke-width",1.6)
+            .merge(errs)
+              .transition().duration(450)
+              .attr("x1", d => (x(d.region) ?? 0) + (bw)/2)
+              .attr("x2", d => (x(d.region) ?? 0) + (bw)/2)
+              .attr("y1", d => y(d.max))
+              .attr("y2", d => y(d.min));
+
+          const capW = Math.max(8, BARW * 0.4);
+          const capsTop = capLayer.selectAll("line.capTop").data(data, d => d.region);
+          capsTop.exit().remove();
+          capsTop.enter().append("line")
+              .attr("class","capTop")
+              .attr("stroke","#2c5530").attr("stroke-width",1.6)
+            .merge(capsTop)
+              .transition().duration(450)
+              .attr("x1", d => (x(d.region) ?? 0) + (bw - capW)/2)
+              .attr("x2", d => (x(d.region) ?? 0) + (bw + capW)/2)
+              .attr("y1", d => y(d.max))
+              .attr("y2", d => y(d.max));
+
+          const capsBot = capLayer.selectAll("line.capBot").data(data, d => d.region);
+          capsBot.exit().remove();
+          capsBot.enter().append("line")
+              .attr("class","capBot")
+              .attr("stroke","#2c5530").attr("stroke-width",1.6)
+            .merge(capsBot)
+              .transition().duration(450)
+              .attr("x1", d => (x(d.region) ?? 0) + (bw - capW)/2)
+              .attr("x2", d => (x(d.region) ?? 0) + (bw + capW)/2)
+              .attr("y1", d => y(d.min))
+              .attr("y2", d => y(d.min));
+
+          // axes
+          gx.transition().duration(350).call(d3.axisBottom(x));
+          gy.transition().duration(350).call(d3.axisLeft(y).ticks(6));
+        }
+
+        update();
+      }
+
+      // Initialize charts for all countries present in data
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!regionDataByCountry) return;
+        Object.keys(regionDataByCountry).forEach(country => {
+          try {
+            injectRegionChart(country, regionDataByCountry[country] || []);
+          } catch (e) {
+            console.warn('Failed to inject chart for', country, e);
+          }
+        });
+      });
+    </script>
+    <!-- === End: per-country interactive charts === -->
+    <section id="appendix-tables" class="section">
+  <h2>Regional Production Forecast Tables</h2>
+
+  
+    <h3 id="regional-table-zambia">Zambia – Regional Production Table</h3>
+
+    <div class="filter-row">
+      <div>
+        <label for="crop-filter-zambia">Crop:</label>
+        <select id="crop-filter-zambia">
+          <option value="All">All</option>
+          <option value="Maize">Maize</option>
+          <option value="Rice">Rice</option>
+          <option value="Beans">Beans</option>
+        </select>
+      </div>
+      <div>
+        <label for="cond-filter-zambia">Condition:</label>
+        <select id="cond-filter-zambia">
+          <option value="All">All</option>
+          <option value="Exceptional">Exceptional</option>
+          <option value="Favorable">Favorable</option>
+          <option value="Watch">Watch</option>
+          <option value="Poor">Poor</option>
+        </select>
+      </div>
+      <button class="download-btn" data-table="regional-table-zambia" type="button">
+        Download CSV
+      </button>
+    </div>
+
+    <table class="regional-table" id="regional-table-zambia">
+      <thead>
+        <tr>
+          <th>Crop</th>
+          <th>Region</th>
+          <th class="sortable">Predicted Yield (MT/ha)</th>
+          <th class="sortable">Yield Anomaly</th>
+          <th>Min–Max Production (tons)</th>
+          <th>Condition</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr data-crop="Maize" data-condition="Favorable">
+          <td><strong>Maize</strong></td>
+          <td>Central</td>
+          <td>2.69</td>
+          <td>0.35</td>
+          <td>901842.0 – 951494.0</td>
+          <td class="condition-favorable">Favorable</td>
+        </tr>
+        
+        <tr data-crop="Maize" data-condition="Favorable">
+          <td><strong>Maize</strong></td>
+          <td>Copperbelt</td>
+          <td>2.3</td>
+          <td>0.282</td>
+          <td>170388.0 – 254571.0</td>
+          <td class="condition-favorable">Favorable</td>
+        </tr>
+        
+        <tr data-crop="Maize" data-condition="Favorable">
+          <td><strong>Maize</strong></td>
+          <td>Eastern</td>
+          <td>1.7</td>
+          <td>0.266</td>
+          <td>466106.0 – 776429.0</td>
+          <td class="condition-favorable">Favorable</td>
+        </tr>
+        
+        <tr data-crop="Maize" data-condition="Favorable">
+          <td><strong>Maize</strong></td>
+          <td>Luapula</td>
+          <td>2.42</td>
+          <td>0.478</td>
+          <td>124584.0 – 190181.0</td>
+          <td class="condition-favorable">Favorable</td>
+        </tr>
+        
+        <tr data-crop="Maize" data-condition="Favorable">
+          <td><strong>Maize</strong></td>
+          <td>Lusaka</td>
+          <td>2.31</td>
+          <td>0.341</td>
+          <td>72302.0 – 119728.0</td>
+          <td class="condition-favorable">Favorable</td>
+        </tr>
+        
+        <tr data-crop="Maize" data-condition="Favorable">
+          <td><strong>Maize</strong></td>
+          <td>North-Western</td>
+          <td>2.06</td>
+          <td>0.398</td>
+          <td>60814.0 – 106961.0</td>
+          <td class="condition-favorable">Favorable</td>
+        </tr>
+        
+        <tr data-crop="Maize" data-condition="Favorable">
+          <td><strong>Maize</strong></td>
+          <td>Northern</td>
+          <td>2.55</td>
+          <td>0.477</td>
+          <td>227446.0 – 328517.0</td>
+          <td class="condition-favorable">Favorable</td>
+        </tr>
+        
+        <tr data-crop="Maize" data-condition="Favorable">
+          <td><strong>Maize</strong></td>
+          <td>Southern</td>
+          <td>1.47</td>
+          <td>0.28</td>
+          <td>314291.0 – 441734.0</td>
+          <td class="condition-favorable">Favorable</td>
+        </tr>
+        
+        <tr data-crop="Maize" data-condition="Favorable">
+          <td><strong>Maize</strong></td>
+          <td>Western</td>
+          <td>0.96</td>
+          <td>0.184</td>
+          <td>7632.0 – 10739.0</td>
+          <td class="condition-favorable">Favorable</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  
+</section>
+
+    <!-- Appendix -->
+    <section id="appendix" class="section">
+      <h2>Appendix A: Model Description and Parameters</h2>
+
+      <h3>Crop Conditions Classes</h3>
+      <table>
+        <thead><tr><th>Class</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td class="condition-exceptional"><strong>Exceptional</strong></td><td>Conditions are much better than average at the time of reporting. Used only during the grain-filling through harvest stages.</td></tr>
+          <tr><td class="condition-favorable"><strong>Favorable</strong></td><td>Conditions range from slightly below to slightly above-average at reporting time.</td></tr>
+          <tr><td class="condition-watch"><strong>Watch</strong></td><td>Near average but with risk to final yields; recovery possible if conditions improve.</td></tr>
+          <tr><td class="condition-poor"><strong>Poor</strong></td><td>Well below average; yields likely 10–25% below average with limited recovery potential.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Data Sources</h3>
+      <table>
+        <thead><tr><th>Data Type</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>NDVI</td><td>UMD GLAM system</td></tr>
+          <tr><td>ESI</td><td>NASA SERVIR Global</td></tr>
+          <tr><td>Precipitation</td><td>CHIRPS (historical), NOAA CPC</td></tr>
+          <tr><td>Precipitation Forecast</td><td>CHIRPS-GEFS</td></tr>
+          <tr><td>Soil Moisture</td><td>NASA–USDA Global (SMOS)</td></tr>
+          <tr><td>Temperature</td><td>NOAA CPC</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Model Performance Summary</h3>
+      <p>Our yield prediction model is evaluated using historical data to assess accuracy and reliability. Performance metrics are calculated by comparing predicted yields against actual reported yields from previous seasons.</p>
+
+                <table>
+  	<thead><tr><th>Country</th><th>Crop</th><th>R² Score</th><th>RMSE (MT/ha)</th><th>MAE (MT/ha)</th><th>Training Period</th></tr></thead>
+  	<tbody>
+    	
+    	  <tr><td><strong>Tanzania</strong></td> <td>Maize</td><td>0.78</td><td>0.45</td><td>0.35</td><td>2010-2023</td></tr>
+    	
+    	  <tr><td><strong>Tanzania</strong></td> <td>Rice</td><td>0.72</td><td>0.52</td><td>0.42</td><td>2010-2023</td></tr>
+    	
+    	  <tr><td><strong>Tanzania</strong></td> <td>Beans</td><td>0.68</td><td>0.38</td><td>0.30</td><td>2010-2023</td></tr>
+    	
+    	  <tr><td><strong>Kenya</strong></td> <td>Maize</td><td>0.75</td><td>0.48</td><td>0.38</td><td>2010-2023</td></tr>
+    	
+          </tbody>
+                 </table>
+
+      <div style="margin-top: 1rem; font-size: 0.95rem; color: #555;">
+  	<p><strong>Metrics Explanation:</strong></p>
+  	<ul style="margin-left: 1.5rem;">
+    	<li><strong>R² Score:</strong> Coefficient of determination (0-1); higher values indicate better model fit. Values above 0.7 indicate strong predictive power.</li>
+    	<li><strong>RMSE:</strong> Root Mean Square Error; average magnitude of prediction errors in MT/ha. Lower is better.</li>
+    	<li><strong>MAE:</strong> Mean Absolute Error; average absolute difference between predicted and actual yields in MT/ha. Lower is better.</li>
+  	</ul>
+                </div>
+
+      <div class="disclaimer">
+        <h4>Disclaimer</h4>
+        <p>The opinions expressed in this report are those of the authors and do not necessarily reflect the official policy or position of AGRA, its employees, partners, or affiliates. While every effort has been made to ensure the accuracy and completeness of the information, we assume no responsibility for any errors or omissions.</p>
+        <p><strong>Project Lead:</strong> Dr. Catherine Nakalembe<br/>
+           <strong>Team:</strong> Xylem Lab / NASA Harvest–Africa Team<br/>
+           <strong>Date:</strong> December</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Loop through all regional tables
+  document.querySelectorAll("table.regional-table").forEach(table => {
+    const countryId = table.id.replace("regional-table-", "");
+    const cropSel = document.getElementById(`crop-filter-${countryId}`);
+    const condSel = document.getElementById(`cond-filter-${countryId}`);
+    const downloadBtn = document.querySelector(`.download-btn[data-table="${table.id}"]`);
+
+    // --- FILTERING ---
+    function applyFilters() {
+      const crop = cropSel.value;
+      const cond = condSel.value;
+      table.querySelectorAll("tbody tr").forEach(row => {
+        const rowCrop = row.getAttribute("data-crop");
+        const rowCond = row.getAttribute("data-condition");
+        let show = true;
+        if (crop !== "All" && rowCrop !== crop) show = false;
+        if (cond !== "All" && rowCond !== cond) show = false;
+        row.style.display = show ? "" : "none";
+      });
+    }
+    cropSel.addEventListener("change", applyFilters);
+    condSel.addEventListener("change", applyFilters);
+
+    // --- SORTING ---
+    table.querySelectorAll("th.sortable").forEach((th, idx) => {
+      let asc = true;
+      th.addEventListener("click", () => {
+        const rows = Array.from(table.querySelectorAll("tbody tr")).filter(r => r.style.display !== "none");
+        rows.sort((a,b) => {
+          const aVal = parseFloat(a.children[idx].innerText) || 0;
+          const bVal = parseFloat(b.children[idx].innerText) || 0;
+          return asc ? aVal - bVal : bVal - aVal;
+        });
+        asc = !asc;
+        rows.forEach(r => table.querySelector("tbody").appendChild(r));
+      });
+    });
+
+    // --- DOWNLOAD CSV ---
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", (event) => {
+        event.stopPropagation(); // prevent double trigger
+        event.preventDefault();
+
+        let csv = [];
+        const rows = table.querySelectorAll("tr");
+        rows.forEach((row, ridx) => {
+          if (row.style.display === "none") return; // skip hidden
+          const cols = row.querySelectorAll("th,td");
+          let values = Array.from(cols).map(c => c.innerText.trim());
+
+          if (ridx === 0) {
+            // Header: split Min–Max
+            values = values.flatMap(v => {
+              if (v.includes("Min–Max")) return ["Min Production (tons)", "Max Production (tons)"];
+              return [v];
+            });
+          } else {
+            // Data rows: split ranges
+            values = values.flatMap(v => {
+              if (v.includes("–")) {
+                const parts = v.split("–").map(p => p.trim());
+                if (parts.length === 2) return [parts[0], parts[1]];
+              }
+              return [v];
+            });
+          }
+          csv.push(values.map(v => `"${v}"`).join(","));
+        });
+
+        const blob = new Blob([csv.join("\n")], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${countryId}_regional_table.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }); // attach once only
+    }
+  });
+});
+</script>
+<!-- Footer -->
+<footer class="bulletin-footer">
+    <div class="footer-container">
+        <div class="footer-section footer-branding">
+            <img src="F:\Nakalembe lab\agra_rag\data\static\XylemLab logo.png" alt="XylemLab Logo" class="footer-logo">
+            <p class="footer-tagline">Advancing Agricultural Intelligence Through Remote Sensing</p>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul class="footer-links">
+                <li><a href="https://www.xylemlab.org/mission" target="_blank">Our Mission</a></li>
+                <li><a href="https://www.xylemlab.org/get-involved" target="_blank">Get Involved</a></li>
+                <li><a href="https://www.xylemlab.org/donate" target="_blank">Make a Donation</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Contact Us</h4>
+            <ul class="footer-links">
+                <li><a href="https://circle.xylemlab.org" target="_blank">Circle Community</a></li>
+                <li><a href="https://bsky.app/profile/xylemlab.org" target="_blank">Bluesky</a></li>
+                <li><a href="https://www.linkedin.com/company/xylemlab" target="_blank">LinkedIn Community</a></li>
+                <li><a href="mailto:contact@xylemlab.org">contact@xylemlab.org</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Our Network</h4>
+            <ul class="footer-links">
+                <li><a href="https://www.xylemlab.org/" target="_blank">XylemLab</a></li>
+                <li><a href="https://www.xyleminstitute.org/" target="_blank">Xylem Institute</a></li>
+                <li><a href="https://www.umd.edu" target="_blank">University of Maryland</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <p>&copy; 2026 UMD-XylemLab. All rights reserved. | Bulletin generated on March 10, 2026 at 02:53 UTC</p>
+        <p class="footer-disclaimer">Data sources: USDA, FAO, and UMD-XylemLab predictive models</p>
+    </div>
+</footer>
+
+<style>
+.bulletin-footer {
+    background: linear-gradient(135deg, #2c5530, #4a7c4e);
+    color: #ffffff;
+    margin-top: 60px;
+    padding: 50px 20px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.footer-section h4 {
+    color: #a8d5a8;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+}
+
+.footer-branding {
+    grid-column: 1;
+}
+
+.footer-logo {
+    max-width: 180px;
+    height: auto;
+    margin-bottom: 15px;
+    filter: brightness(0) invert(1);
+}
+
+.footer-tagline {
+    color: #e8f5e8;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 10px;
+}
+
+.footer-links a {
+    color: #f0f7f0;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.footer-links a:hover {
+    color: #c8e6c8;
+    transform: translateX(3px);
+}
+
+.footer-links a::before {
+    content: "→";
+    margin-right: 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.footer-links a:hover::before {
+    opacity: 1;
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 30px auto 0;
+    text-align: center;
+    padding-top: 20px;
+}
+
+.footer-bottom p {
+    color: #d4e7d4;
+    font-size: 13px;
+    margin: 8px 0;
+}
+
+.footer-disclaimer {
+    font-style: italic;
+    color: #b8d4b8;
+}
+
+@media (max-width: 768px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .footer-branding {
+        grid-column: 1;
+    }
+}
+</style>
+
+<!-- Social Share Component v3 - Inline SVGs, No External Dependencies -->
+<style>
+/* Bulletin color palette */
+:root {
+    --bulletin-primary: #1a472a;
+    --bulletin-primary-light: #2d5a3d;
+    --bulletin-primary-dark: #0f2d1a;
+    --bulletin-accent: #3d8b5f;
+    --bulletin-bg: #f8faf9;
+    --bulletin-border: #d4e5db;
+    --bulletin-text: #1a1a1a;
+    --bulletin-text-muted: #5a6b5f;
+}
+
+/* Modal Overlay */
+.share-modal-v2 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.share-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 71, 42, 0.4);
+    backdrop-filter: blur(4px);
+}
+
+.share-modal-content-v2 {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    padding: 0;
+    max-width: 560px;
+    width: 94%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 80px rgba(26, 71, 42, 0.25);
+    border: 1px solid var(--bulletin-border);
+}
+
+.share-modal-header-v2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: var(--bulletin-primary);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.share-header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.share-header-title h3 {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.share-header-title svg {
+    width: 24px;
+    height: 24px;
+    fill: white;
+}
+
+.share-close-btn-v2 {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.share-close-btn-v2:hover {
+    background: rgba(255,255,255,0.25);
+}
+
+.share-close-btn-v2 svg {
+    width: 20px;
+    height: 20px;
+    fill: white;
+}
+
+/* Headline Box */
+.share-headline-box {
+    margin: 20px 24px;
+    padding: 16px;
+    background: var(--bulletin-bg);
+    border-radius: 8px;
+    border-left: 4px solid var(--bulletin-accent);
+}
+
+.share-headline-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bulletin-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.share-headline-label svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--bulletin-accent);
+}
+
+.share-headline-text {
+    margin: 0;
+    font-size: 15px;
+    color: var(--bulletin-text);
+    line-height: 1.5;
+}
+
+/* Sections */
+.share-section {
+    padding: 0 24px 20px;
+}
+
+.share-section-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bulletin-text-muted);
+    margin-bottom: 12px;
+}
+
+/* Platform Grid */
+.share-platforms-v2 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.platform-btn-v2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 8px;
+    border: 2px solid var(--bulletin-border);
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 11px;
+    color: var(--bulletin-text-muted);
+}
+
+.platform-btn-v2:hover {
+    border-color: var(--bulletin-accent);
+    background: var(--bulletin-bg);
+}
+
+.platform-btn-v2.active {
+    border-color: var(--bulletin-primary);
+    background: var(--bulletin-primary);
+    color: white;
+}
+
+.platform-btn-v2 svg {
+    width: 28px;
+    height: 28px;
+    transition: all 0.2s;
+}
+
+.platform-btn-v2.active svg {
+    fill: white;
+}
+
+/* Tone Buttons */
+.tone-buttons-v2 {
+    display: flex;
+    gap: 10px;
+}
+
+.tone-btn-v2 {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border: 2px solid var(--bulletin-border);
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--bulletin-text-muted);
+    transition: all 0.2s;
+}
+
+.tone-btn-v2:hover {
+    border-color: var(--bulletin-accent);
+}
+
+.tone-btn-v2.active {
+    border-color: var(--bulletin-primary);
+    background: var(--bulletin-bg);
+    color: var(--bulletin-primary);
+}
+
+.tone-icon {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 6px;
+    background: var(--bulletin-border);
+    border-radius: 4px;
+    color: var(--bulletin-text-muted);
+}
+
+.tone-btn-v2.active .tone-icon {
+    background: var(--bulletin-primary);
+    color: white;
+}
+
+/* Preview */
+.share-preview-v2 {
+    background: var(--bulletin-bg);
+    border-radius: 8px;
+    border: 1px solid var(--bulletin-border);
+    overflow: hidden;
+}
+
+.share-preview-v2 textarea {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    resize: none;
+    background: transparent;
+    color: var(--bulletin-text);
+    line-height: 1.5;
+    box-sizing: border-box;
+}
+
+.share-preview-v2 textarea:focus {
+    outline: none;
+}
+
+.share-preview-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: rgba(0,0,0,0.03);
+    font-size: 12px;
+    color: var(--bulletin-text-muted);
+}
+
+.char-warning {
+    color: #c53030;
+}
+
+/* Actions */
+.share-actions-v2 {
+    display: flex;
+    gap: 12px;
+    padding: 0 24px 20px;
+}
+
+.share-action-btn-v2 {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.share-action-btn-v2 svg {
+    width: 18px;
+    height: 18px;
+}
+
+.share-action-btn-v2.secondary {
+    background: var(--bulletin-bg);
+    color: var(--bulletin-primary);
+    border: 2px solid var(--bulletin-border);
+}
+
+.share-action-btn-v2.secondary svg {
+    fill: var(--bulletin-primary);
+}
+
+.share-action-btn-v2.secondary:hover {
+    background: var(--bulletin-border);
+}
+
+.share-action-btn-v2.primary {
+    background: var(--bulletin-primary);
+    color: white;
+}
+
+.share-action-btn-v2.primary svg {
+    fill: white;
+}
+
+.share-action-btn-v2.primary:hover {
+    background: var(--bulletin-primary-light);
+}
+
+/* Hashtags */
+.share-hashtags-section {
+    border-top: 1px solid var(--bulletin-border);
+    padding-top: 20px;
+    margin-top: 4px;
+}
+
+.hashtag-list-v2 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.hashtag-list-v2 span {
+    background: var(--bulletin-bg);
+    color: var(--bulletin-accent);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid var(--bulletin-border);
+    transition: all 0.2s;
+}
+
+.hashtag-list-v2 span:hover {
+    background: var(--bulletin-accent);
+    color: white;
+    border-color: var(--bulletin-accent);
+}
+
+/* Medium Extra Section */
+.medium-extra-section {
+    padding: 20px 24px;
+    background: var(--bulletin-bg);
+    border-top: 1px solid var(--bulletin-border);
+}
+
+.medium-outline {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid var(--bulletin-border);
+}
+
+.medium-field {
+    margin-bottom: 12px;
+}
+
+.medium-field:last-child {
+    margin-bottom: 0;
+}
+
+.medium-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--bulletin-text-muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.medium-field input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--bulletin-border);
+    border-radius: 6px;
+    font-size: 14px;
+    background: var(--bulletin-bg);
+    box-sizing: border-box;
+}
+
+.medium-field ul {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 13px;
+    color: var(--bulletin-text);
+}
+
+.medium-field li {
+    margin-bottom: 6px;
+}
+
+/* Floating Share Button */
+.bulletin-share-btn-v2 {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 20px;
+    border-radius: 50px;
+    background: var(--bulletin-primary);
+    color: white;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(26, 71, 42, 0.35);
+    z-index: 9999;
+    transition: all 0.2s;
+}
+
+.bulletin-share-btn-v2:hover {
+    background: var(--bulletin-primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(26, 71, 42, 0.4);
+}
+
+.bulletin-share-btn-v2 svg {
+    width: 20px;
+    height: 20px;
+    fill: white;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .share-platforms-v2 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .share-modal-content-v2 {
+        max-height: 85vh;
+        margin: 0 12px;
+    }
+    
+    .tone-buttons-v2 {
+        flex-direction: column;
+    }
+    
+    .bulletin-share-btn-v2 span {
+        display: none;
+    }
+    
+    .bulletin-share-btn-v2 {
+        padding: 14px;
+        border-radius: 50%;
+    }
+}
+</style>
+
+<!-- Share Modal -->
+<div id="share-modal" class="share-modal-v2" style="display:none;">
+    <div class="share-modal-overlay" onclick="closeShareModal()"></div>
+    <div class="share-modal-content-v2">
+        <div class="share-modal-header-v2">
+            <div class="share-header-title">
+                <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+                <h3>Share This Bulletin</h3>
+            </div>
+            <button class="share-close-btn-v2" onclick="closeShareModal()">
+                <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        
+        <div class="share-headline-box">
+            <div class="share-headline-label">
+                <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                Key Insight
+            </div>
+            <p class="share-headline-text">Explore how Zambia is set to transform its maize production landscape this December.</p>
+        </div>
+        
+        <div class="share-section">
+            <div class="share-section-label">Select Platform</div>
+            <div class="share-platforms-v2">
+                <!-- X/Twitter -->
+                <button class="platform-btn-v2 active" data-platform="twitter" onclick="selectPlatform('twitter')">
+                    <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <span>X / Twitter</span>
+                </button>
+                <!-- LinkedIn -->
+                <button class="platform-btn-v2" data-platform="linkedin" onclick="selectPlatform('linkedin')">
+                    <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    <span>LinkedIn</span>
+                </button>
+                <!-- WhatsApp -->
+                <button class="platform-btn-v2" data-platform="whatsapp" onclick="selectPlatform('whatsapp')">
+                    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    <span>WhatsApp</span>
+                </button>
+                <!-- Facebook -->
+                <button class="platform-btn-v2" data-platform="facebook" onclick="selectPlatform('facebook')">
+                    <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    <span>Facebook</span>
+                </button>
+                <!-- Instagram -->
+                <button class="platform-btn-v2" data-platform="instagram" onclick="selectPlatform('instagram')">
+                    <svg viewBox="0 0 24 24"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
+                    <span>Instagram</span>
+                </button>
+                <!-- Telegram -->
+                <button class="platform-btn-v2" data-platform="telegram" onclick="selectPlatform('telegram')">
+                    <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                    <span>Telegram</span>
+                </button>
+                <!-- Medium -->
+                <button class="platform-btn-v2" data-platform="medium" onclick="selectPlatform('medium')">
+                    <svg viewBox="0 0 24 24"><path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg>
+                    <span>Medium</span>
+                </button>
+                <!-- Email -->
+                <button class="platform-btn-v2" data-platform="email" onclick="selectPlatform('email')">
+                    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    <span>Email</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="share-section">
+            <div class="share-section-label">Select Tone</div>
+            <div class="tone-buttons-v2">
+                <button class="tone-btn-v2 active" data-tone="formal" onclick="selectTone('formal')">
+                    <span class="tone-icon">PRO</span>
+                    Formal
+                </button>
+                <button class="tone-btn-v2" data-tone="casual" onclick="selectTone('casual')">
+                    <span class="tone-icon">FRI</span>
+                    Casual
+                </button>
+                <button class="tone-btn-v2" data-tone="data" onclick="selectTone('data')">
+                    <span class="tone-icon">NUM</span>
+                    Data-Rich
+                </button>
+            </div>
+        </div>
+        
+        <div class="share-section">
+            <div class="share-section-label">Preview</div>
+            <div class="share-preview-v2">
+                <textarea id="share-text" rows="5"></textarea>
+                <div class="share-preview-footer">
+                    <span id="char-count">0 characters</span>
+                    <span id="platform-limit"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="share-actions-v2">
+            <button class="share-action-btn-v2 secondary" onclick="copyShareText()">
+                <svg id="copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                <span id="copy-text">Copy Text</span>
+            </button>
+            <button class="share-action-btn-v2 primary" onclick="shareNow()">
+                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                Share Now
+            </button>
+        </div>
+        
+        <div class="share-section share-hashtags-section">
+            <div class="share-section-label">Suggested Hashtags</div>
+            <div id="hashtag-list" class="hashtag-list-v2"></div>
+        </div>
+        
+        <div id="medium-extra" class="medium-extra-section" style="display:none;">
+            <div class="share-section-label">Medium Article Outline</div>
+            <div class="medium-outline">
+                <div class="medium-field">
+                    <label>Title</label>
+                    <input type="text" id="medium-title" readonly>
+                </div>
+                <div class="medium-field">
+                    <label>Subtitle</label>
+                    <input type="text" id="medium-subtitle" readonly>
+                </div>
+                <div class="medium-field">
+                    <label>Key Points</label>
+                    <ul id="medium-points"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const SOCIAL_DATA = {"headline": "Zambia\'s Maize Yield Forecast: Insights for December 2026", "key_insight": "Explore how Zambia is set to transform its maize production landscape this December.", "twitter": {"formal": "How will Zambia\'s maize yield fare this December? Discover comprehensive insights supported by COMESA RFBS and AGRA PIATA. #FoodSecurity #Agriculture", "casual": "Excited about Zambia\'s maize prospects this December? Check out the latest forecast! #FarmingUpdates #Zambia", "data": "December 2026: Zambia\'s maize yield under the spotlight. Gain insights from the latest bulletin. Supported by COMESA RFBS and AGRA PIATA. #Agriculture #AgriData"}, "linkedin": {"formal": "As December 2026 approaches, Zambia\'s maize yield forecast is on our radar. With support from COMESA RFBS and AGRA PIATA, this bulletin provides crucial insights into agricultural trends. Explore the data here: https://xylem-lab.github.io/agra/Bulletins/2026/December_2026/output/bulletin.html", "casual": "Zambia\'s maize yield forecast for December 2026 is here! Supported by COMESA RFBS and AGRA PIATA, this bulletin offers a deep dive into the numbers. Discover more: [Bulletin Link]", "data": "The December 2026 bulletin offers vital data on Zambia\'s maize yield: \n- Supported by COMESA RFBS & AGRA PIATA \n- Forecasts and trends \nExplore the details: https://xylem-lab.github.io/agra/Bulletins/2026/December_2026/output/bulletin.html"}, "whatsapp": {"formal": "Zambia\'s maize yield forecast for December 2026 is here. Supported by COMESA RFBS and AGRA PIATA, learn how these insights can impact your farming decisions. Check out the full bulletin: [Bulletin Link]", "casual": "Hey farmers, check this out: Zambia\'s maize yield forecast for December 2026 is out. Get the insights you need for the upcoming season! [Bulletin Link]", "data": "Latest data on Zambia\'s maize yields for December 2026, supported by COMESA RFBS and AGRA PIATA. See the full bulletin for details: [Bulletin Link]"}, "facebook": {"formal": "Discover Zambia\'s maize yield forecast for December 2026. Backed by COMESA RFBS and AGRA PIATA, this bulletin provides the insights you need to plan effectively. Read more: [Bulletin Link]", "casual": "Zambia\'s maize forecast for December 2026 is here! Supported by COMESA RFBS and AGRA PIATA, find out what the future holds for maize growers. [Bulletin Link]", "data": "December 2026 maize yield forecast for Zambia is out. Supported by COMESA RFBS and AGRA PIATA, it offers key insights for farmers. Check it out: [Bulletin Link]"}, "telegram": {"formal": "Zambia\'s maize yield forecast for December 2026 is now available. Supported by COMESA RFBS and AGRA PIATA, this bulletin provides essential insights for the agriculture sector. [Bulletin Link]", "casual": "December 2026 maize forecast for Zambia is here! Supported by COMESA RFBS and AGRA PIATA, get the latest insights now: [Bulletin Link]", "data": "Explore the December 2026 maize yield data for Zambia, backed by COMESA RFBS and AGRA PIATA. Full bulletin here: [Bulletin Link]"}, "email": {"formal": {"subject": "Zambia\'s December 2026 Maize Yield Forecast", "body": "Dear Recipient, \n\nWe are pleased to share the latest forecast for Zambia\'s maize yield for December 2026. Supported by COMESA RFBS and AGRA PIATA, this bulletin offers detailed insights into agricultural trends. \n\nRead the full bulletin here: [Bulletin Link] \n\nBest regards, \n\n[Your Name]"}, "casual": {"subject": "Check Out Zambia\'s Latest Maize Forecast!", "body": "Hi there, \n\nExciting news for maize growers in Zambia! The December 2026 forecast is out, and it\'s packed with valuable insights, thanks to COMESA RFBS and AGRA PIATA. \n\nDive into the details: [Bulletin Link] \n\nCheers, \n\n[Your Name]"}, "data": {"subject": "Data Insights: Zambia\'s December 2026 Maize Yield", "body": "Hello, \n\nGet the latest data on Zambia\'s maize yield for December 2026. Supported by COMESA RFBS and AGRA PIATA, this bulletin provides key insights for your planning. \n\nAccess the full bulletin here: [Bulletin Link] \n\nRegards, \n\n[Your Name]"}}, "medium": {"title": "Zambia\'s December 2026 Maize Yield: A Forecast to Watch", "subtitle": "Unveiling Insights Backed by COMESA RFBS and AGRA PIATA", "opening": "As December 2026 approaches, the agricultural community turns its attention to Zambia\'s maize yield forecast. With substantial support from initiatives like COMESA RFBS and AGRA PIATA, this bulletin sheds light on the expected trends and implications for farmers and stakeholders.", "key_points": ["Zambia\'s maize yield forecast for December 2026.", "Support from COMESA RFBS and AGRA PIATA.", "Key insights and implications for agriculture stakeholders."]}, "instagram": {"caption": "Zambia\'s December 2026 maize yield forecast is out. Supported by COMESA RFBS and AGRA PIATA, this bulletin provides the insights you need. Check it out via the link in bio!", "story_text": "Zambia\'s maize forecast for December 2026 is here! Supported by COMESA RFBS and AGRA PIATA. Swipe up for details!", "hashtags": ["#FoodSecurity", "#Agriculture", "#Zambia"]}, "hashtags": ["#FoodSecurity", "#Agriculture", "#Zambia", "#MaizeYield", "#COMESA", "#AGRA"], "stats": {"total_countries": 1, "total_crops": 1, "highlights": []}};
+const BULLETIN_URL = "https://xylem-lab.github.io/agra/Bulletins/2026/December_2026/output/bulletin.html";
+const BULLETIN_MONTH = "December";
+const BULLETIN_YEAR = 2026;
+
+const PLATFORM_LIMITS = {
+    twitter: 280,
+    linkedin: 3000,
+    whatsapp: 1000,
+    facebook: 500,
+    telegram: 1000,
+    instagram: 2200,
+    medium: 5000,
+    email: 5000
+};
+
+let currentPlatform = 'twitter';
+let currentTone = 'formal';
+
+function openShareModal() {
+    document.getElementById('share-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    selectPlatform('twitter');
+    updateHashtags();
+}
+
+function closeShareModal() {
+    document.getElementById('share-modal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function selectPlatform(platform) {
+    currentPlatform = platform;
+    
+    document.querySelectorAll('.platform-btn-v2').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.platform === platform);
+    });
+    
+    const mediumExtra = document.getElementById('medium-extra');
+    if (platform === 'medium') {
+        mediumExtra.style.display = 'block';
+        updateMediumFields();
+    } else {
+        mediumExtra.style.display = 'none';
+    }
+    
+    updatePreview();
+}
+
+function selectTone(tone) {
+    currentTone = tone;
+    
+    document.querySelectorAll('.tone-btn-v2').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tone === tone);
+    });
+    
+    updatePreview();
+}
+
+function updatePreview() {
+    const textarea = document.getElementById('share-text');
+    let text = '';
+    
+    try {
+        if (currentPlatform === 'email') {
+            const emailData = SOCIAL_DATA.email?.[currentTone];
+            if (emailData) {
+                text = `Subject: ${emailData.subject}\n\n${emailData.body}\n\n${BULLETIN_URL}`;
+            }
+        } else if (currentPlatform === 'medium') {
+            const mediumData = SOCIAL_DATA.medium;
+            if (mediumData) {
+                text = `${mediumData.title}\n\n${mediumData.opening}\n\nRead more: ${BULLETIN_URL}`;
+            }
+        } else if (currentPlatform === 'instagram') {
+            const igData = SOCIAL_DATA.instagram;
+            if (igData) {
+                text = igData.caption + '\n\n' + (igData.hashtags?.join(' ') || '');
+            }
+        } else {
+            const platformData = SOCIAL_DATA[currentPlatform];
+            if (platformData?.[currentTone]) {
+                text = platformData[currentTone] + '\n\n' + BULLETIN_URL;
+            }
+        }
+    } catch (e) {
+        text = `${BULLETIN_MONTH} ${BULLETIN_YEAR} Yield Forecast Bulletin now available.\n\n${BULLETIN_URL}`;
+    }
+    
+    if (!text) {
+        text = `${BULLETIN_MONTH} ${BULLETIN_YEAR} Yield Forecast Bulletin now available.\n\n${BULLETIN_URL}`;
+    }
+    
+    textarea.value = text;
+    
+    const charCount = text.length;
+    const limit = PLATFORM_LIMITS[currentPlatform] || 1000;
+    document.getElementById('char-count').textContent = `${charCount} characters`;
+    
+    const limitEl = document.getElementById('platform-limit');
+    if (charCount > limit) {
+        limitEl.textContent = `Exceeds ${limit} limit`;
+        limitEl.className = 'char-warning';
+    } else {
+        limitEl.textContent = `Limit: ${limit}`;
+        limitEl.className = '';
+    }
+}
+
+function updateMediumFields() {
+    const mediumData = SOCIAL_DATA.medium;
+    if (mediumData) {
+        document.getElementById('medium-title').value = mediumData.title || '';
+        document.getElementById('medium-subtitle').value = mediumData.subtitle || '';
+        
+        const pointsList = document.getElementById('medium-points');
+        pointsList.innerHTML = '';
+        (mediumData.key_points || []).forEach(point => {
+            const li = document.createElement('li');
+            li.textContent = point;
+            pointsList.appendChild(li);
+        });
+    }
+}
+
+function updateHashtags() {
+    const container = document.getElementById('hashtag-list');
+    const hashtags = SOCIAL_DATA.hashtags || ['#FoodSecurity', '#Agriculture', '#Africa', '#COMESA'];
+    
+    container.innerHTML = hashtags.map(tag => 
+        `<span onclick="addHashtag('${tag}')">${tag}</span>`
+    ).join('');
+}
+
+function addHashtag(tag) {
+    const textarea = document.getElementById('share-text');
+    if (!textarea.value.includes(tag)) {
+        textarea.value = textarea.value.trim() + ' ' + tag;
+        updatePreview();
+    }
+}
+
+function copyShareText() {
+    const textarea = document.getElementById('share-text');
+    navigator.clipboard.writeText(textarea.value).then(() => {
+        document.getElementById('copy-icon').innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
+        document.getElementById('copy-text').textContent = 'Copied!';
+        setTimeout(() => {
+            document.getElementById('copy-icon').innerHTML = '<path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>';
+            document.getElementById('copy-text').textContent = 'Copy Text';
+        }, 2000);
+    });
+}
+
+function shareNow() {
+    const text = encodeURIComponent(document.getElementById('share-text').value);
+    const url = encodeURIComponent(BULLETIN_URL);
+    
+    let shareUrl = '';
+    
+    switch(currentPlatform) {
+        case 'twitter':
+            shareUrl = `https://twitter.com/intent/tweet?text=${text}`;
+            break;
+        case 'linkedin':
+            shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+            break;
+        case 'whatsapp':
+            shareUrl = `https://wa.me/?text=${text}`;
+            break;
+        case 'facebook':
+            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`;
+            break;
+        case 'telegram':
+            shareUrl = `https://t.me/share/url?url=${url}&text=${text}`;
+            break;
+        case 'instagram':
+            copyShareText();
+            alert('Caption copied! Open Instagram to paste.');
+            return;
+        case 'medium':
+            shareUrl = `https://medium.com/new-story`;
+            copyShareText();
+            break;
+        case 'email':
+            const emailData = SOCIAL_DATA.email?.[currentTone];
+            if (emailData) {
+                shareUrl = `mailto:?subject=${encodeURIComponent(emailData.subject)}&body=${text}`;
+            }
+            break;
+    }
+    
+    if (shareUrl) {
+        window.open(shareUrl, '_blank', 'width=600,height=500');
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeShareModal();
+});
+</script>
+
+<!-- Floating Share Button -->
+<button class="bulletin-share-btn-v2" onclick="openShareModal()">
+    <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+    <span>Share Bulletin</span>
+</button>
+
+</body>
+</html>
+```
