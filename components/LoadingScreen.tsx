@@ -4,21 +4,20 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
-// ⏱ Adjust this to match the GIF's single-loop duration in ms
-const GIF_DURATION_MS = 4000;
+// ⏱ Set this to your GIF's exact single-loop duration in ms
+const GIF_DURATION_MS = 8000;
 
 export default function LoadingScreen() {
-  // Start visible — immediately hide if already seen this session
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    // Already seen this session → hide instantly
+    // Already seen this session → hide instantly, no animation
     if (sessionStorage.getItem("loadingSeen")) {
       setVisible(false);
       return;
     }
 
-    // Lock scroll while loading
+    // First visit — lock scroll and play full GIF
     document.body.style.overflow = "hidden";
 
     const timer = setTimeout(() => {
@@ -40,16 +39,16 @@ export default function LoadingScreen() {
           key="loader"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center"
+          transition={{ duration: 0.7, ease: "easeInOut" }}
+          className="fixed inset-0 z-[9999]"
           style={{ backgroundColor: "#F0E8DC" }}
         >
+          {/* GIF fills entire viewport, cropped to cover on all screen sizes */}
           <Image
             src="/voxel/loadinganimation.gif"
             alt=""
-            width={700}
-            height={394}
-            className="w-[90vw] max-w-[700px]"
+            fill
+            className="object-cover"
             unoptimized
             priority
             aria-hidden
