@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, DM_Mono } from "next/font/google";
 import "./globals.css";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -53,6 +54,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${manrope.variable} ${dmMono.variable} antialiased`}>
+        <LoadingScreen />
         <a href="#main" className="skip-link">
           Skip to main content
         </a>
