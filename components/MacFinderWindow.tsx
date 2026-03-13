@@ -143,7 +143,7 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
 
             {/* Title */}
             <span className="flex-1 select-none text-center font-mono text-[11px] font-medium text-neutral-500">
-              creative work/
+              creativesidehustle/
             </span>
 
             {/* View toggle */}
