@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { MessageCircle, X } from "lucide-react";
 import Image from "next/image";
 
 /* ── Data ──────────────────────────────────────────────────────────── */
@@ -65,6 +66,7 @@ export default function TestimonialToast() {
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const cycleRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /* Appear after initial page-load animations settle */
@@ -174,80 +176,97 @@ export default function TestimonialToast() {
         </AnimatePresence>
       </div>
 
-      {/* ── Mobile: slide-down notification from top ── */}
-      <div className="pointer-events-none fixed left-3 right-3 top-3 z-30 md:hidden">
-        <AnimatePresence mode="wait">
-          {visible && (
-            <motion.div
-              key={`mob-${index}`}
-              drag="y"
-              dragConstraints={{ top: -300, bottom: 8 }}
-              dragElastic={{ top: 0.6, bottom: 0.1 }}
-              onDragEnd={(_, info) => {
-                if (info.offset.y < -48 || info.velocity.y < -400) {
-                  setVisible(false);
-                }
-              }}
-              initial={{ y: -120, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -120, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 320, damping: 28 }}
-              className="pointer-events-auto touch-none"
-            >
-              {/* Notification pill */}
-              <div
-                className="overflow-hidden rounded-2xl border border-white/55 bg-white/80 shadow-[0_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-2xl"
-                onClick={() => setExpanded((v) => !v)}
+      {/* ── Mobile: notification icon + bottom sheet ── */}
+      <div className="md:hidden">
+        {/* Floating notification button */}
+        <motion.button
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 3.4, type: "spring", stiffness: 300, damping: 25 }}
+          onClick={() => setMobileOpen(true)}
+          className="fixed bottom-6 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-white/60 bg-white/85 shadow-[0_4px_24px_rgba(0,0,0,0.13)] backdrop-blur-xl"
+        >
+          <MessageCircle size={18} className="text-neutral-700" />
+          <span className="absolute -right-1 -top-1 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-accent text-[9px] font-bold text-white shadow-sm">
+            {TESTIMONIALS.length}
+          </span>
+        </motion.button>
+
+        {/* Bottom sheet */}
+        <AnimatePresence>
+          {mobileOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                onClick={() => setMobileOpen(false)}
+                className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]"
+              />
+
+              {/* Sheet */}
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", stiffness: 320, damping: 32 }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={{ top: 0.05, bottom: 0.4 }}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 72 || info.velocity.y > 400) setMobileOpen(false);
+                }}
+                className="fixed bottom-0 left-0 right-0 z-50 touch-none rounded-t-3xl border-t border-white/50 bg-white/92 pb-safe shadow-[0_-8px_48px_rgba(0,0,0,0.13)] backdrop-blur-2xl"
               >
-                {/* Drag handle pill */}
-                <div className="flex justify-center pt-2">
-                  <div className="h-1 w-8 rounded-full bg-neutral-300/70" />
+                {/* Drag handle */}
+                <div className="flex justify-center pt-3 pb-1">
+                  <div className="h-1 w-9 rounded-full bg-neutral-300" />
                 </div>
 
-                <div className="flex items-start gap-3 px-4 pb-3.5 pt-2">
-                  {/* Large avatar for notification */}
-                  <div className="relative mt-0.5 h-10 w-10 shrink-0">
-                    {t.avatar ? (
-                      <Image src={t.avatar} alt={t.name} fill sizes="40px" className="rounded-full object-cover ring-1 ring-black/8" />
-                    ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 text-xs font-bold text-white">
-                        {t.initials}
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 pb-3 pt-1">
+                  <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
+                    What people say
+                  </p>
+                  <button onClick={() => setMobileOpen(false)} className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 active:bg-neutral-200">
+                    <X size={12} />
+                  </button>
+                </div>
+
+                {/* Cards */}
+                <div className="max-h-[62vh] overflow-y-auto px-4 pb-10 space-y-3">
+                  {TESTIMONIALS.map((item, i) => (
+                    <div key={i} className="rounded-2xl border border-neutral-100/80 bg-white p-4 shadow-[0_1px_6px_rgba(0,0,0,0.06)]">
+                      {/* Top accent line */}
+                      <div className="mb-3 h-[1.5px] w-full rounded-full bg-gradient-to-r from-orange-400/50 via-accent/25 to-transparent" />
+
+                      <div className="flex items-center gap-3 mb-2.5">
+                        <div className="relative h-9 w-9 shrink-0">
+                          {item.avatar ? (
+                            <Image src={item.avatar} alt={item.name} fill sizes="36px" className="rounded-full object-cover ring-1 ring-black/8" />
+                          ) : (
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 text-[10px] font-bold text-white">
+                              {item.initials}
+                            </div>
+                          )}
+                          <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white bg-green-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-mono text-[11px] font-semibold leading-tight text-neutral-900">{item.name}</p>
+                          <p className="font-mono text-[9px] leading-tight text-neutral-400">{item.role}</p>
+                          <p className="font-mono text-[8.5px] leading-tight text-neutral-300">{item.sub}</p>
+                        </div>
+                        <span className="ml-auto font-serif text-2xl leading-none text-orange-300/60 select-none">&ldquo;</span>
                       </div>
-                    )}
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-[1.5px] border-white bg-green-400" />
-                  </div>
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <p className="truncate font-mono text-[11px] font-semibold text-neutral-900">{t.name}</p>
-                      <span className="shrink-0 font-mono text-[9px] text-neutral-400">now</span>
+                      <p className="text-[12.5px] leading-relaxed text-neutral-700">{item.short}</p>
                     </div>
-                    <p className="font-mono text-[9px] text-neutral-400">{t.role}</p>
-
-                    <AnimatePresence mode="wait">
-                      {!expanded ? (
-                        <motion.p key="mob-short" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="mt-1.5 line-clamp-2 text-[12px] leading-relaxed text-neutral-700">
-                          {t.short}
-                        </motion.p>
-                      ) : (
-                        <motion.p key="mob-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="mt-1.5 text-[11.5px] leading-relaxed text-neutral-600">
-                          {t.full}
-                        </motion.p>
-                      )}
-                    </AnimatePresence>
-
-                    <p className="mt-1 font-mono text-[9px] text-neutral-400">
-                      {expanded ? "tap to collapse" : "tap to read more - swipe up to dismiss"}
-                    </p>
-                  </div>
+                  ))}
                 </div>
-
-                {/* Progress bar */}
-                {!expanded && (
-                  <motion.div key={`mob-prog-${index}`} className="h-[1.5px] bg-orange-400/40" initial={{ width: "100%" }} animate={{ width: "0%" }} transition={{ duration: 6.2, ease: "linear" }} />
-                )}
-              </div>
-            </motion.div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </div>
