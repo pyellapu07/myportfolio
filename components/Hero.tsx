@@ -30,19 +30,6 @@ export default function Hero() {
 
   return (
     <section id="hero-section" className="hero-gradient bg-lines relative flex min-h-screen flex-col justify-between overflow-hidden pt-16">
-      {/* Windows XP wallpaper — blurred base layer */}
-      <div className="absolute inset-0 z-0" aria-hidden>
-        <Image
-          src="/windows_xp_original-wallpaper-1920x1080.jpg"
-          alt=""
-          fill
-          priority
-          className="scale-110 object-cover blur-md"
-        />
-        {/* Dark overlay so text stays readable */}
-        <div className="absolute inset-0 bg-black/50" />
-      </div>
-
       {/* Physics particle field — floats behind content */}
       {!gameActive && <HeroParticles onGameStart={handleGameStart} />}
 
@@ -98,7 +85,7 @@ export default function Hero() {
                   }
                 }
               }}
-              className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-black/70 text-white/60 backdrop-blur-sm transition-colors hover:bg-white/10 hover:text-white"
+              className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-neutral-300 bg-white/90 text-neutral-500 backdrop-blur-sm transition-colors hover:bg-neutral-100 hover:text-neutral-900"
               aria-label={isMuted ? "Listen to intro" : "Mute"}
             >
               {isMuted ? <Volume2 size={12} /> : <VolumeX size={12} />}
@@ -113,11 +100,11 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="mb-6 flex flex-wrap items-center gap-4"
         >
-          <p className="font-mono text-sm text-white/60">
+          <p className="font-mono text-sm text-neutral-500">
             {isRecruiterMode ? (
-              <>Hi recruiter, I&apos;m <span className="text-white">Pradeep</span></>
+              <>Hi recruiter, I&apos;m <span className="text-neutral-900">Pradeep</span></>
             ) : (
-              <>Heyy Bub, I&apos;m <span className="text-white">Pradeep</span></>
+              <>Heyy Bub, I&apos;m <span className="text-neutral-900">Pradeep</span></>
             )}
           </p>
 
@@ -134,7 +121,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.25 }}
-          className="max-w-[900px] font-display text-[clamp(2.5rem,7vw,5.5rem)] font-extrabold leading-[1.05] tracking-tight text-white"
+          className="max-w-[900px] font-display text-[clamp(2.5rem,7vw,5.5rem)] font-extrabold leading-[1.05] tracking-tight text-neutral-900"
         >
           A product designer{" "}
           <br className="hidden md:block" />
@@ -165,7 +152,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-8 max-w-[520px] font-mono text-sm leading-relaxed text-white/40"
+          className="mt-8 max-w-[520px] font-mono text-sm leading-relaxed text-neutral-400"
         >
           5+ years creating user-centered digital products. Reduced friction by 40%,
           boosted engagement by 167%. Currently at UMD.
@@ -177,7 +164,7 @@ export default function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: gameActive ? 0 : 1 }}
         transition={{ delay: gameActive ? 0 : 0.8, duration: 0.8 }}
-        className="relative z-10 border-t border-white/[0.06] bg-black/20 backdrop-blur-sm"
+        className="relative z-10 border-t border-neutral-200 bg-white/30 backdrop-blur-sm"
       >
         <div className="overflow-hidden py-7">
           <div className="ticker-scroll flex items-center gap-16 whitespace-nowrap">

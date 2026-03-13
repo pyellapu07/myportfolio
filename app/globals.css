@@ -257,19 +257,17 @@ body {
     0 64px 128px rgba(0, 0, 0, 0.02);
 }
 
-/* Hero fluid gradient — sits on top of the blurred wallpaper image */
+/* Hero — pale warm beige */
 .hero-gradient {
-  background:
-    radial-gradient(ellipse at bottom left, rgba(255, 82, 16, 0.30) 0%, transparent 55%),
-    radial-gradient(ellipse at top right, rgba(142, 96, 240, 0.28) 0%, transparent 55%);
+  background: #FAF8F4;
 }
 
-/* Thin background lines */
+/* Thin background lines — widely spaced, very low opacity dark */
 .bg-lines {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 80px 80px;
+    linear-gradient(rgba(0, 0, 0, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.045) 1px, transparent 1px);
+  background-size: 130px 130px;
 }
 
 /* ── Chat ambient glow (behind chat bar, recruiter mode) ────────── */
