@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Download, MessageCircle } from "lucide-react";
+import { Menu, X, Download, Bell } from "lucide-react";
 import RecruiterToggle from "./RecruiterToggle";
 import { NAV_LINKS, SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -97,7 +97,7 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
               className={cn("relative", isDarkText ? "text-text" : "text-white")}
               aria-label="Testimonials"
             >
-              <MessageCircle size={19} />
+              <Bell size={19} />
               <span className="absolute -right-1.5 -top-1.5 flex h-[15px] w-[15px] items-center justify-center rounded-full bg-accent text-[8px] font-bold text-white">
                 3
               </span>

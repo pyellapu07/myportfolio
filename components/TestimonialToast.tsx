@@ -67,6 +67,7 @@ export default function TestimonialToast() {
   const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sheetExpanded, setSheetExpanded] = useState<Record<number, boolean>>({});
   const cycleRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /* Appear after initial page-load animations settle */
@@ -230,33 +231,55 @@ export default function TestimonialToast() {
 
                 {/* Cards */}
                 <div className="max-h-[62vh] overflow-y-auto px-4 pb-10 space-y-3">
-                  {TESTIMONIALS.map((item, i) => (
-                    <div key={i} className="rounded-2xl border border-neutral-100/80 bg-white p-4 shadow-[0_1px_6px_rgba(0,0,0,0.06)]">
-                      {/* Top accent line */}
-                      <div className="mb-3 h-[1.5px] w-full rounded-full bg-gradient-to-r from-orange-400/50 via-accent/25 to-transparent" />
+                  {TESTIMONIALS.map((item, i) => {
+                    const isExpanded = !!sheetExpanded[i];
+                    return (
+                      <div key={i} className="rounded-2xl border border-neutral-100/80 bg-white p-4 shadow-[0_1px_6px_rgba(0,0,0,0.06)]">
+                        {/* Top accent line */}
+                        <div className="mb-3 h-[1.5px] w-full rounded-full bg-gradient-to-r from-orange-400/50 via-accent/25 to-transparent" />
 
-                      <div className="flex items-center gap-3 mb-2.5">
-                        <div className="relative h-9 w-9 shrink-0">
-                          {item.avatar ? (
-                            <Image src={item.avatar} alt={item.name} fill sizes="36px" className="rounded-full object-cover ring-1 ring-black/8" />
+                        <div className="flex items-center gap-3 mb-2.5">
+                          <div className="relative h-9 w-9 shrink-0">
+                            {item.avatar ? (
+                              <Image src={item.avatar} alt={item.name} fill sizes="36px" className="rounded-full object-cover ring-1 ring-black/8" />
+                            ) : (
+                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 text-[10px] font-bold text-white">
+                                {item.initials}
+                              </div>
+                            )}
+                            <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white bg-green-400" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-mono text-[11px] font-semibold leading-tight text-neutral-900">{item.name}</p>
+                            <p className="font-mono text-[9px] leading-tight text-neutral-400">{item.role}</p>
+                            <p className="font-mono text-[8.5px] leading-tight text-neutral-300">{item.sub}</p>
+                          </div>
+                          <span className="ml-auto font-serif text-2xl leading-none text-orange-300/60 select-none">&ldquo;</span>
+                        </div>
+
+                        <AnimatePresence mode="wait">
+                          {!isExpanded ? (
+                            <motion.p key={`s-${i}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+                              className="text-[12.5px] leading-relaxed text-neutral-700">
+                              {item.short}
+                            </motion.p>
                           ) : (
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 text-[10px] font-bold text-white">
-                              {item.initials}
-                            </div>
+                            <motion.p key={`f-${i}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+                              className="text-[12px] leading-relaxed text-neutral-600">
+                              {item.full}
+                            </motion.p>
                           )}
-                          <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white bg-green-400" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-mono text-[11px] font-semibold leading-tight text-neutral-900">{item.name}</p>
-                          <p className="font-mono text-[9px] leading-tight text-neutral-400">{item.role}</p>
-                          <p className="font-mono text-[8.5px] leading-tight text-neutral-300">{item.sub}</p>
-                        </div>
-                        <span className="ml-auto font-serif text-2xl leading-none text-orange-300/60 select-none">&ldquo;</span>
-                      </div>
+                        </AnimatePresence>
 
-                      <p className="text-[12.5px] leading-relaxed text-neutral-700">{item.short}</p>
-                    </div>
-                  ))}
+                        <button
+                          onClick={() => setSheetExpanded((prev) => ({ ...prev, [i]: !prev[i] }))}
+                          className="mt-2 font-mono text-[10px] font-semibold text-accent transition-colors active:text-accent/60"
+                        >
+                          {isExpanded ? "read less -" : "read more -"}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </motion.div>
             </>
