@@ -69,7 +69,7 @@ export const PROJECTS: Project[] = [
     description:
       "Conducted contextual interviews with UMD iNFO faculty to understand workload tracking pain points. Performed affinity mapping to identify recurring themes and synthesized insights into journey maps and task flows, proposing a streamlined dashboard design that improved task ownership clarity.",
     techStack: ["UX Research", "Contextual Inquiry", "Affinity Mapping", "Journey Mapping", "Task Flows"],
-    image: "/facultydashboardpreview.png",
+    image: "/facultydashboardpreview.jpg",
     link: "/work/workflow",
     featured: false,
   },
