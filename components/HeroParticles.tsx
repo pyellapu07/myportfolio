@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Search } from "lucide-react";
+import { Search, Volume2, VolumeX } from "lucide-react";
 
 /* ── Natural dimensions (px) ────────────────────────────────────────── */
 const NATURAL: Record<string, [number, number]> = {
@@ -119,6 +119,10 @@ const CENTER_ZONE = { left: 18, right: 82, top: 15, bottom: 85 };
 /* ── Component ──────────────────────────────────────────────────────── */
 export default function HeroParticles({ onGameStart }: { onGameStart?: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Self-emoticon video audio state
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
 
   // Smooth scroll parallax
   const [scrollY, setScrollY] = useState(0);
@@ -308,23 +312,57 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
             onPointerLeave={() => { if (!isDragging) setHoveredIdx(null); }}
           >
             {item.file === "self emoticon.png" ? (
-              <video
-                src="/grok-video-202a19e2-8bfb-4c98-8ac7-c28be5820793.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                aria-label="Pradeep's animated avatar"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  display: "block",
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  userSelect: "none",
-                  pointerEvents: "none",
-                }}
-              />
+              <div className="relative" style={{ width: "100%", height: "100%" }}>
+                <video
+                  ref={videoRef}
+                  src="/grok-video-202a19e2-8bfb-4c98-8ac7-c28be5820793.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  aria-label="Pradeep's animated avatar"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    display: "block",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    userSelect: "none",
+                    pointerEvents: "none",
+                  }}
+                  onEnded={() => {
+                    if (videoRef.current && !videoRef.current.muted) {
+                      videoRef.current.muted = true;
+                      videoRef.current.loop = true;
+                      videoRef.current.play();
+                      setIsMuted(true);
+                    }
+                  }}
+                />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (videoRef.current) {
+                      if (isMuted) {
+                        videoRef.current.currentTime = 0;
+                        videoRef.current.muted = false;
+                        videoRef.current.loop = false;
+                        videoRef.current.play();
+                        setIsMuted(false);
+                      } else {
+                        videoRef.current.muted = true;
+                        videoRef.current.loop = true;
+                        setIsMuted(true);
+                      }
+                    }
+                  }}
+                  style={{ pointerEvents: "auto" }}
+                  className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-neutral-300 bg-white/90 text-neutral-500 backdrop-blur-sm transition-colors hover:bg-neutral-100 hover:text-neutral-900"
+                  aria-label={isMuted ? "Listen to intro" : "Mute"}
+                >
+                  {isMuted ? <Volume2 size={12} /> : <VolumeX size={12} />}
+                </button>
+              </div>
             ) : (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
