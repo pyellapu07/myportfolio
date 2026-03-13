@@ -262,7 +262,11 @@ body {
   background: #FAF8F4;
 }
 
-.bg-lines {}
+/* Vertical lines only */
+.bg-lines {
+  background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.045) 1px, transparent 1px);
+  background-size: 130px 100%;
+}
 
 /* ── Chat ambient glow (behind chat bar, recruiter mode) ────────── */
 
