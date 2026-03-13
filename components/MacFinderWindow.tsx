@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence, useDragControls } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { X, Grid, List } from "lucide-react";
 
 /* ── Creative work data ─────────────────────────────────────────────
@@ -165,9 +165,30 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [preview, setPreview] = useState<CreativeFile | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  // dragListener=false means Framer Motion won't inject cursor:grab on the whole window —
-  // only the title bar (where we call dragControls.start) initiates drag
-  const dragControls = useDragControls();
+
+  // Manual drag via raw pointer events on the title bar only.
+  // We deliberately avoid Framer Motion's `drag` prop because it injects
+  // `cursor: grab` as a JS inline style on the whole window, breaking
+  // natural pointer cursors on all child buttons.
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  function onTitlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    // Don't initiate drag when clicking traffic-light buttons
+    if ((e.target as HTMLElement).closest("button")) return;
+    const startX = e.clientX - x.get();
+    const startY = e.clientY - y.get();
+    function onMove(ev: PointerEvent) {
+      x.set(ev.clientX - startX);
+      y.set(ev.clientY - startY);
+    }
+    function onUp() {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
 
   const filtered = activeCategory === "All" ? FILES : FILES.filter((f) => f.category === activeCategory);
 
@@ -183,13 +204,8 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
           className="absolute inset-0 bg-black/25 backdrop-blur-[2px]"
         />
 
-        {/* Finder window */}
+        {/* Finder window — no Framer drag prop, manual motion values only */}
         <motion.div
-          drag
-          dragControls={dragControls}
-          dragListener={false}
-          dragMomentum={false}
-          dragElastic={0}
           onClick={(e) => e.stopPropagation()}
           initial={{ scale: 0.92, opacity: 0, y: 32 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -201,12 +217,12 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
             backdrop-blur-3xl
             sm:w-[700px] sm:max-w-[96vw] sm:rounded-2xl sm:border
             sm:shadow-[0_32px_90px_rgba(0,0,0,0.22),0_0_0_0.5px_rgba(0,0,0,0.08)]"
-          style={{ height: "clamp(480px, 85svh, 560px)" }}
+          style={{ height: "clamp(480px, 85svh, 560px)", x, y }}
         >
-          {/* ── Title bar — only this element starts the drag ────── */}
+          {/* ── Title bar — drag handle via raw pointer events ───── */}
           <div
-            onPointerDown={(e) => dragControls.start(e)}
-            className="flex h-11 shrink-0 cursor-grab items-center gap-2 border-b border-black/[0.07] bg-white/55 px-4 active:cursor-grabbing select-none"
+            onPointerDown={onTitlePointerDown}
+            className="flex h-11 shrink-0 cursor-grab select-none items-center gap-2 border-b border-black/[0.07] bg-white/55 px-4 active:cursor-grabbing"
           >
             {/* Traffic lights */}
             <button
