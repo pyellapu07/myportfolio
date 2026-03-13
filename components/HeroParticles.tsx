@@ -307,22 +307,41 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
             onPointerEnter={() => setHoveredIdx(i)}
             onPointerLeave={() => { if (!isDragging) setHoveredIdx(null); }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={item.file === "self emoticon.png" ? `/${item.file}` : `/anti gravity/${item.file}`}
-              alt=""
-              draggable={false}
-              style={{
-                width: "100%",
-                height: "auto",
-                display: "block",
-                filter: shadow,
-
-                userSelect: "none",
-                pointerEvents: "none",
-                transition: "filter 0.25s",
-              }}
-            />
+            {item.file === "self emoticon.png" ? (
+              <video
+                src="/grok-video-202a19e2-8bfb-4c98-8ac7-c28be5820793.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                aria-label="Pradeep's animated avatar"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  display: "block",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  userSelect: "none",
+                  pointerEvents: "none",
+                }}
+              />
+            ) : (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={`/anti gravity/${item.file}`}
+                alt=""
+                draggable={false}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  display: "block",
+                  filter: shadow,
+                  userSelect: "none",
+                  pointerEvents: "none",
+                  transition: "filter 0.25s",
+                }}
+              />
+            )}
           </div>
         );
       })}
