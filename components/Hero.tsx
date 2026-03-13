@@ -170,7 +170,7 @@ export default function Hero() {
           onClick={() => setFinderOpen(true)}
           className="mt-6 flex items-center gap-2.5 self-start rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 backdrop-blur-sm transition-colors hover:bg-white/80 active:scale-95 md:hidden"
         >
-          <MacFolderIcon size={28} />
+          <MacFolderIcon size={28} uid="mob" />
           <span className="font-mono text-[11px] font-medium text-neutral-500">creative work/</span>
         </motion.button>
       </motion.div>
@@ -221,7 +221,7 @@ export default function Hero() {
           whileTap={{ scale: 0.96 }}
           onClick={() => setFinderOpen(true)}
         >
-          <MacFolderIcon size={72} />
+          <MacFolderIcon size={72} uid="desk" />
           <span className="font-mono text-[9.5px] font-medium text-neutral-400 tracking-wide">
             creative/
           </span>

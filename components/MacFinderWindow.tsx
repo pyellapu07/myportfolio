@@ -45,27 +45,35 @@ const SIDEBAR_ITEMS = [
 ];
 
 /* ── Mac folder SVG ─────────────────────────────────────────────────── */
-export function MacFolderIcon({ size = 72 }: { size?: number }) {
+export function MacFolderIcon({ size = 72, uid = "mf" }: { size?: number; uid?: string }) {
+  // Each instance gets unique gradient IDs to avoid document-level SVG ID collisions
+  const g1 = `${uid}-back`;
+  const g2 = `${uid}-front`;
+  const g3 = `${uid}-shine`;
   return (
-    <svg width={size} height={size * 0.8} viewBox="0 0 60 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size * 0.8} viewBox="0 0 60 48" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="fb" x1="30" y1="8" x2="30" y2="46" gradientUnits="userSpaceOnUse">
+        <linearGradient id={g1} x1="30" y1="8" x2="30" y2="46" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#89CFFF" />
           <stop offset="100%" stopColor="#3A8EF5" />
         </linearGradient>
-        <linearGradient id="ff" x1="30" y1="16" x2="30" y2="46" gradientUnits="userSpaceOnUse">
+        <linearGradient id={g2} x1="30" y1="16" x2="30" y2="46" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#5BB8FF" />
           <stop offset="100%" stopColor="#2175E0" />
         </linearGradient>
-        <linearGradient id="fsh" x1="30" y1="16" x2="30" y2="24" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="white" stopOpacity="0.25" />
+        <linearGradient id={g3} x1="30" y1="16" x2="30" y2="24" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="white" stopOpacity="0.28" />
           <stop offset="100%" stopColor="white" stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path d="M4 14C4 11.8 5.8 10 8 10H22L26.5 14H4Z" fill="url(#fb)" />
-      <rect x="4" y="14" width="52" height="30" rx="4" fill="url(#fb)" />
-      <rect x="4" y="17" width="52" height="27" rx="3" fill="url(#ff)" />
-      <rect x="4" y="17" width="52" height="8"  rx="3" fill="url(#fsh)" />
+      {/* Tab */}
+      <path d="M4 14C4 11.8 5.8 10 8 10H22L26.5 14H4Z" fill={`url(#${g1})`} />
+      {/* Back plate */}
+      <rect x="4" y="14" width="52" height="30" rx="4" fill={`url(#${g1})`} />
+      {/* Front plate */}
+      <rect x="4" y="17" width="52" height="27" rx="3" fill={`url(#${g2})`} />
+      {/* Shine */}
+      <rect x="4" y="17" width="52" height="8"  rx="3" fill={`url(#${g3})`} />
     </svg>
   );
 }
