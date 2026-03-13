@@ -7,6 +7,7 @@ import { useRecruiter } from "@/lib/recruiter-context";
 import { ROTATING_WORDS, TICKER_ITEMS } from "@/lib/constants";
 import HeroParticles from "./HeroParticles";
 import UXAuditGame from "./UXAuditGame";
+import MacFinderWindow, { MacFolderIcon } from "./MacFinderWindow";
 import { Volume2, VolumeX } from "lucide-react";
 
 export default function Hero() {
@@ -14,6 +15,7 @@ export default function Hero() {
   const [wordIndex, setWordIndex] = useState(0);
   const [gameActive, setGameActive] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [finderOpen, setFinderOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -187,6 +189,31 @@ export default function Hero() {
       <AnimatePresence>
         {gameActive && <UXAuditGame onExit={handleGameExit} />}
       </AnimatePresence>
+
+      {/* ── Mac folder sticker — desktop only easter egg ──────────── */}
+      {!gameActive && (
+        <motion.div
+          drag
+          dragMomentum={false}
+          dragElastic={0}
+          className="absolute z-[6] hidden cursor-grab select-none flex-col items-center gap-1 md:flex active:cursor-grabbing"
+          style={{ right: "9%", top: "48%" }}
+          initial={{ opacity: 0, rotate: -7, scale: 0.85 }}
+          animate={{ opacity: 1, rotate: -7, scale: 1 }}
+          transition={{ delay: 2.8, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          whileHover={{ scale: 1.08, rotate: -5, transition: { duration: 0.2 } }}
+          whileTap={{ scale: 0.96 }}
+          onClick={() => setFinderOpen(true)}
+        >
+          <MacFolderIcon size={72} />
+          <span className="font-mono text-[9.5px] font-medium text-neutral-400 tracking-wide">
+            creative/
+          </span>
+        </motion.div>
+      )}
+
+      {/* Mac Finder window */}
+      {finderOpen && <MacFinderWindow onClose={() => setFinderOpen(false)} />}
     </section>
   );
 }
