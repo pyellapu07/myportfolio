@@ -16,9 +16,31 @@ export default function Hero() {
   const [gameActive, setGameActive] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [finderOpen, setFinderOpen] = useState(false);
+  const [isPeeking, setIsPeeking] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   // Prevents entrance animation from re-running on finderOpen toggle
   const folderShownRef = useRef(false);
+
+  // Cards peek out of folder every ~4.5s, retract after 1.6s
+  useEffect(() => {
+    function doPeek() {
+      setIsPeeking(true);
+      setTimeout(() => setIsPeeking(false), 1600);
+    }
+    const init = setTimeout(() => {
+      doPeek();
+      const iv = setInterval(doPeek, 4500);
+      return () => clearInterval(iv);
+    }, 3200);
+    return () => clearTimeout(init);
+  }, []);
+
+  // 3 images to peek out of the folder
+  const PEEK_CARDS = [
+    "/creative-work/blossom poster OW5_1.5x.png",
+    "/creative-work/TerpsEsportsGraphic.jpeg",
+    "/creative-work/valorant premier 2_1.5x_2x.jpg",
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -170,7 +192,31 @@ export default function Hero() {
           onClick={() => setFinderOpen(true)}
           className="mt-6 flex items-center gap-2.5 self-start rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 backdrop-blur-sm transition-colors hover:bg-white/80 active:scale-95 md:hidden"
         >
-          <MacFolderIcon size={28} uid="mob" />
+          {/* Mobile folder with mini peek cards */}
+          <div style={{ position: "relative", width: 28, height: 22, overflow: "visible", flexShrink: 0 }}>
+            {PEEK_CARDS.map((src, i) => (
+              <motion.div
+                key={i}
+                style={{
+                  position: "absolute", width: 18, height: 14,
+                  borderRadius: 2, overflow: "hidden",
+                  left: "50%", top: "10%", marginLeft: -9,
+                  zIndex: 2 + i,
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
+                  transformOrigin: "bottom center",
+                }}
+                animate={isPeeking
+                  ? { y: -(4 + i * 7), rotate: (i - 1) * 11, opacity: 1 }
+                  : { y: 5, rotate: (i - 1) * 2, opacity: 0.8 }}
+                transition={{ type: "spring", stiffness: 280, damping: 22, delay: isPeeking ? i * 0.07 : (2 - i) * 0.05 }}
+              >
+                <img src={src} alt="" draggable={false} style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
+              </motion.div>
+            ))}
+            <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
+              <MacFolderIcon size={28} uid="mob" />
+            </div>
+          </div>
           <span className="font-mono text-[11px] font-medium text-neutral-500">creativesidehustle/</span>
         </motion.button>
       </motion.div>
@@ -221,7 +267,31 @@ export default function Hero() {
           whileTap={{ scale: 0.96 }}
           onClick={() => setFinderOpen(true)}
         >
-          <MacFolderIcon size={72} uid="desk" />
+          {/* Desktop folder with peek cards behind it */}
+          <div style={{ position: "relative", width: 72, height: 58, overflow: "visible" }}>
+            {PEEK_CARDS.map((src, i) => (
+              <motion.div
+                key={i}
+                style={{
+                  position: "absolute", width: 42, height: 33,
+                  borderRadius: 5, overflow: "hidden",
+                  left: "50%", top: "8%", marginLeft: -21,
+                  zIndex: 2 + i,
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.28)",
+                  transformOrigin: "bottom center",
+                }}
+                animate={isPeeking
+                  ? { y: -(10 + i * 16), rotate: (i - 1) * 13, opacity: 1 }
+                  : { y: 8,  rotate: (i - 1) * 2.5, opacity: 0.85 }}
+                transition={{ type: "spring", stiffness: 280, damping: 22, delay: isPeeking ? i * 0.07 : (2 - i) * 0.05 }}
+              >
+                <img src={src} alt="" draggable={false} style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
+              </motion.div>
+            ))}
+            <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
+              <MacFolderIcon size={72} uid="desk" />
+            </div>
+          </div>
           <span className="font-mono text-[9.5px] font-medium text-neutral-400 tracking-wide">
             creativesidehustle/
           </span>

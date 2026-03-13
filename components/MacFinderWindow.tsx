@@ -19,29 +19,107 @@ interface CreativeFile {
 }
 
 const FILES: CreativeFile[] = [
-  { name: "Enactus Rebrand",      category: "Branding",       gradient: "linear-gradient(135deg,#FF6B35,#F7931E)", year: "2023", size: "12 MB" },
-  { name: "Event Poster Series",  category: "Posters",        gradient: "linear-gradient(135deg,#667EEA,#764BA2)", year: "2022", size: "8 MB"  },
-  { name: "Abstract Illustrations",category:"Illustrations",  gradient: "linear-gradient(135deg,#11998E,#38EF7D)", year: "2023", size: "22 MB" },
-  { name: "Gig Flyer",            category: "Posters",        gradient: "linear-gradient(135deg,#FC5C7D,#6A3093)", year: "2022", size: "4 MB"  },
-  { name: "App Icon Set",         category: "Branding",       gradient: "linear-gradient(135deg,#4FACFE,#00F2FE)", year: "2023", size: "6 MB"  },
-  { name: "Typography Play",      category: "Illustrations",  gradient: "linear-gradient(135deg,#43E97B,#38F9D7)", year: "2021", size: "3 MB"  },
-  { name: "Motion Reel",          category: "Motion",         gradient: "linear-gradient(135deg,#FA709A,#FEE140)", year: "2023", size: "180 MB"},
-  { name: "Brand Style Guide",    category: "Branding",       gradient: "linear-gradient(135deg,#A18CD1,#FBC2EB)", year: "2022", size: "34 MB" },
-  { name: "Spot Illustrations",   category: "Illustrations",  gradient: "linear-gradient(135deg,#FCCB90,#D57EEB)", year: "2021", size: "15 MB" },
-  { name: "Merch Design",         category: "Print",          gradient: "linear-gradient(135deg,#84FAB0,#8FD3F4)", year: "2022", size: "20 MB" },
-  { name: "Social Templates",     category: "Branding",       gradient: "linear-gradient(135deg,#F093FB,#F5576C)", year: "2023", size: "9 MB"  },
-  { name: "Zine Layout",          category: "Print",          gradient: "linear-gradient(135deg,#5EE7DF,#B490CA)", year: "2021", size: "28 MB" },
+  // ── Posters ──────────────────────────────────────────────────────
+  {
+    name: "Blossom - Overwatch",
+    category: "Posters",
+    src: "/creative-work/blossom poster OW5_1.5x.png",
+    gradient: "linear-gradient(135deg,#FC5C7D,#6A3093)",
+    year: "2023",
+  },
+  {
+    name: "Valorant Premier",
+    category: "Posters",
+    src: "/creative-work/valorant premier 2_1.5x_2x.jpg",
+    gradient: "linear-gradient(135deg,#FF4655,#1a1a2e)",
+    year: "2023",
+  },
+  {
+    name: "Terps Esports",
+    category: "Posters",
+    src: "/creative-work/TerpsEsportsGraphic.jpeg",
+    gradient: "linear-gradient(135deg,#E21833,#FFD520)",
+    year: "2022",
+  },
+  {
+    name: "NJC Valorant",
+    category: "Posters",
+    src: "/creative-work/NJC valorant thumbnail_1.5x.png",
+    gradient: "linear-gradient(135deg,#FF4655,#0F1923)",
+    year: "2022",
+  },
+  {
+    name: "Hype Up - Overwatch",
+    category: "Posters",
+    src: "/creative-work/hype up overwatch bec2_1.5x.png",
+    gradient: "linear-gradient(135deg,#F99E1C,#EC6A2A)",
+    year: "2022",
+  },
+  {
+    name: "Hype Up - Rocket League",
+    category: "Posters",
+    src: "/creative-work/hype up rocketleague bec1_1.5x.png",
+    gradient: "linear-gradient(135deg,#1A73E8,#00C4CC)",
+    year: "2022",
+  },
+  {
+    name: "Rocket League Thumbnail",
+    category: "Posters",
+    src: "/creative-work/thumbnail RL6_2x.png",
+    gradient: "linear-gradient(135deg,#00B4D8,#0077B6)",
+    year: "2022",
+  },
+  {
+    name: "Esports Vlog",
+    category: "Posters",
+    src: "/creative-work/esports vlog thumbnail-Recovered_2x.jpg",
+    gradient: "linear-gradient(135deg,#7F00FF,#E100FF)",
+    year: "2022",
+  },
+  {
+    name: "Giving Day",
+    category: "Posters",
+    src: "/creative-work/thumbnail giving day.png",
+    gradient: "linear-gradient(135deg,#11998E,#38EF7D)",
+    year: "2023",
+  },
+  {
+    name: "Phone to Phone",
+    category: "Posters",
+    src: "/creative-work/phone to phone thumbanail_2x.png",
+    gradient: "linear-gradient(135deg,#4FACFE,#00F2FE)",
+    year: "2023",
+  },
+  // ── Motion ───────────────────────────────────────────────────────
+  {
+    name: "Rise - Motion GIF",
+    category: "Motion",
+    src: "/creative-work/EmbraceyourhumanityridethewaveofemotionsandwatchyourselfRISEAlsodidImenti-ezgif.com-video-to-gif-converter.gif",
+    gradient: "linear-gradient(135deg,#FA709A,#FEE140)",
+    year: "2023",
+  },
+  {
+    name: "Motion Loop",
+    category: "Motion",
+    src: "/creative-work/VID-20230604-WA0002-ezgif.com-video-to-gif-converter.gif",
+    gradient: "linear-gradient(135deg,#A18CD1,#FBC2EB)",
+    year: "2023",
+  },
+  {
+    name: "Animation GIF",
+    category: "Motion",
+    src: "/creative-work/6c8222172727095.6484132626f3a.gif",
+    gradient: "linear-gradient(135deg,#667EEA,#764BA2)",
+    year: "2022",
+  },
 ];
 
-const CATEGORIES = ["All", "Branding", "Illustrations", "Posters", "Motion", "Print"];
+const CATEGORIES = ["All", "Posters", "Motion"];
 
 const SIDEBAR_ITEMS = [
-  { label: "All",           icon: "🗂️" },
-  { label: "Branding",      icon: "🎨" },
-  { label: "Illustrations", icon: "✏️" },
-  { label: "Posters",       icon: "🖼️" },
-  { label: "Motion",        icon: "🎬" },
-  { label: "Print",         icon: "🖨️" },
+  { label: "All",     icon: "🗂️" },
+  { label: "Posters", icon: "🖼️" },
+  { label: "Motion",  icon: "🎬" },
 ];
 
 /* ── Mac folder SVG ─────────────────────────────────────────────────── */
