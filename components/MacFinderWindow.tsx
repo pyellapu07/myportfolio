@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { X, Grid, List } from "lucide-react";
 
 /* ── Creative work data ─────────────────────────────────────────────
@@ -165,6 +165,9 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [preview, setPreview] = useState<CreativeFile | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  // dragListener=false means Framer Motion won't inject cursor:grab on the whole window —
+  // only the title bar (where we call dragControls.start) initiates drag
+  const dragControls = useDragControls();
 
   const filtered = activeCategory === "All" ? FILES : FILES.filter((f) => f.category === activeCategory);
 
@@ -183,6 +186,8 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
         {/* Finder window */}
         <motion.div
           drag
+          dragControls={dragControls}
+          dragListener={false}
           dragMomentum={false}
           dragElastic={0}
           onClick={(e) => e.stopPropagation()}
@@ -190,28 +195,23 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.94, opacity: 0, y: 24 }}
           transition={{ type: "spring", stiffness: 320, damping: 28 }}
-          /* On mobile: full width, rounded top, tall. Desktop: fixed size centered */
           className="relative z-10 flex w-full flex-col overflow-hidden
             rounded-t-2xl border-t border-white/50
             bg-white/90 shadow-[0_-16px_60px_rgba(0,0,0,0.18)]
             backdrop-blur-3xl
             sm:w-[700px] sm:max-w-[96vw] sm:rounded-2xl sm:border
             sm:shadow-[0_32px_90px_rgba(0,0,0,0.22),0_0_0_0.5px_rgba(0,0,0,0.08)]"
-          style={{
-            height: "clamp(480px, 85svh, 560px)",
-            /* Override Framer Motion's cursor:grab so inner content has correct cursors */
-            cursor: "default",
-          }}
+          style={{ height: "clamp(480px, 85svh, 560px)" }}
         >
-          {/* ── Title bar — this is the drag handle ─────────────── */}
+          {/* ── Title bar — only this element starts the drag ────── */}
           <div
-            className="flex h-11 shrink-0 cursor-grab items-center gap-2 border-b border-black/[0.07] bg-white/55 px-4 active:cursor-grabbing"
+            onPointerDown={(e) => dragControls.start(e)}
+            className="flex h-11 shrink-0 cursor-grab items-center gap-2 border-b border-black/[0.07] bg-white/55 px-4 active:cursor-grabbing select-none"
           >
             {/* Traffic lights */}
             <button
               onClick={onClose}
-              style={{ cursor: "pointer" }}
-              className="group flex h-3 w-3 items-center justify-center rounded-full bg-[#FF5F57] transition-all hover:brightness-90"
+              className="group flex h-3 w-3 cursor-pointer items-center justify-center rounded-full bg-[#FF5F57] transition-all hover:brightness-90"
               aria-label="Close"
             >
               <X size={6} className="text-[#820005] opacity-0 transition-opacity group-hover:opacity-80" />
@@ -225,19 +225,17 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
             </span>
 
             {/* View toggle */}
-            <div className="flex items-center gap-1" style={{ cursor: "default" }}>
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => setViewMode("grid")}
-                style={{ cursor: "pointer" }}
-                className={`rounded p-1 transition-colors ${viewMode === "grid" ? "bg-neutral-200 text-neutral-700" : "text-neutral-400 hover:text-neutral-600"}`}
+                className={`cursor-pointer rounded p-1 transition-colors ${viewMode === "grid" ? "bg-neutral-200 text-neutral-700" : "text-neutral-400 hover:text-neutral-600"}`}
                 aria-label="Grid view"
               >
                 <Grid size={12} />
               </button>
               <button
                 onClick={() => setViewMode("list")}
-                style={{ cursor: "pointer" }}
-                className={`rounded p-1 transition-colors ${viewMode === "list" ? "bg-neutral-200 text-neutral-700" : "text-neutral-400 hover:text-neutral-600"}`}
+                className={`cursor-pointer rounded p-1 transition-colors ${viewMode === "list" ? "bg-neutral-200 text-neutral-700" : "text-neutral-400 hover:text-neutral-600"}`}
                 aria-label="List view"
               >
                 <List size={12} />
@@ -248,14 +246,13 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
           {/* ── Mobile category pills ──────────────────────────────── */}
           <div
             className="flex shrink-0 gap-2 overflow-x-auto border-b border-black/[0.06] bg-white/40 px-3 py-2 sm:hidden"
-            style={{ cursor: "default", scrollbarWidth: "none" }}
+            style={{ scrollbarWidth: "none" }}
           >
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                style={{ cursor: "pointer" }}
-                className={`shrink-0 rounded-full px-3 py-1 font-mono text-[11px] font-medium transition-colors ${
+                className={`shrink-0 cursor-pointer rounded-full px-3 py-1 font-mono text-[11px] font-medium transition-colors ${
                   activeCategory === cat
                     ? "bg-accent text-white"
                     : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
@@ -267,7 +264,7 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
           </div>
 
           {/* ── Body ──────────────────────────────────────────────── */}
-          <div className="flex min-h-0 flex-1" style={{ cursor: "default" }}>
+          <div className="flex min-h-0 flex-1">
             {/* Sidebar — desktop only */}
             <div className="hidden w-[130px] shrink-0 flex-col gap-0.5 border-r border-black/[0.06] bg-white/35 p-2.5 pt-3 sm:flex">
               <p className="mb-1.5 px-2 font-mono text-[8.5px] font-semibold uppercase tracking-widest text-neutral-400">
@@ -277,8 +274,7 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
                 <button
                   key={item.label}
                   onClick={() => setActiveCategory(item.label)}
-                  style={{ cursor: "pointer" }}
-                  className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left font-mono text-[11px] transition-colors ${
+                  className={`flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left font-mono text-[11px] transition-colors ${
                     activeCategory === item.label
                       ? "bg-accent/10 font-semibold text-accent"
                       : "text-neutral-600 hover:bg-black/[0.04]"
@@ -291,7 +287,7 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
             </div>
 
             {/* File area */}
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4" style={{ cursor: "default" }}>
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4">
               <AnimatePresence mode="wait">
                 {viewMode === "grid" ? (
                   <motion.div
@@ -309,8 +305,7 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: i * 0.03, duration: 0.18 }}
                         onClick={() => setPreview(file)}
-                        style={{ cursor: "pointer" }}
-                        className="group flex flex-col items-center gap-1.5 rounded-xl p-2 transition-colors hover:bg-black/[0.05] active:bg-black/[0.08]"
+                        className="group flex cursor-pointer flex-col items-center gap-1.5 rounded-xl p-2 transition-colors hover:bg-black/[0.05] active:bg-black/[0.08]"
                       >
                         <div
                           className="h-20 w-full rounded-lg shadow-sm transition-shadow group-hover:shadow-md"
@@ -342,8 +337,7 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.025, duration: 0.15 }}
                         onClick={() => setPreview(file)}
-                        style={{ cursor: "pointer" }}
-                        className="group flex items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-black/[0.04]"
+                        className="group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-black/[0.04]"
                       >
                         <div
                           className="h-8 w-8 shrink-0 rounded-md shadow-sm"
@@ -372,7 +366,6 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
           {/* ── Status bar ────────────────────────────────────────── */}
           <div
             className="flex shrink-0 items-center border-t border-black/[0.06] bg-white/40 px-4 py-1.5"
-            style={{ cursor: "default" }}
           >
             <p className="font-mono text-[9px] text-neutral-400">
               {filtered.length} item{filtered.length !== 1 ? "s" : ""}
@@ -419,8 +412,7 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
                   </div>
                   <button
                     onClick={() => setPreview(null)}
-                    style={{ cursor: "pointer" }}
-                    className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/60"
+                    className="absolute right-3 top-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/60"
                     aria-label="Close preview"
                   >
                     <X size={14} />
