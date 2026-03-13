@@ -30,6 +30,19 @@ export default function Hero() {
 
   return (
     <section id="hero-section" className="hero-gradient bg-lines relative flex min-h-screen flex-col justify-between overflow-hidden pt-16">
+      {/* Windows XP wallpaper — blurred base layer */}
+      <div className="absolute inset-0 z-0" aria-hidden>
+        <Image
+          src="/windows_xp_original-wallpaper-1920x1080.jpg"
+          alt=""
+          fill
+          priority
+          className="scale-110 object-cover blur-md"
+        />
+        {/* Dark overlay so text stays readable */}
+        <div className="absolute inset-0 bg-black/70" />
+      </div>
+
       {/* Physics particle field — floats behind content */}
       {!gameActive && <HeroParticles onGameStart={handleGameStart} />}
 

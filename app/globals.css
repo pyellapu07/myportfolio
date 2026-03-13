@@ -257,14 +257,11 @@ body {
     0 64px 128px rgba(0, 0, 0, 0.02);
 }
 
-/* Hero fluid gradient */
+/* Hero fluid gradient — sits on top of the blurred wallpaper image */
 .hero-gradient {
   background:
-    radial-gradient(ellipse at top left, #000000 0%, transparent 50%),
-    radial-gradient(ellipse at bottom right, #000000 0%, transparent 50%),
-    radial-gradient(ellipse at bottom left, #FF5210 0%, transparent 60%),
-    radial-gradient(ellipse at top right, #8E60F0 0%, transparent 60%),
-    #0A0A0A;
+    radial-gradient(ellipse at bottom left, rgba(255, 82, 16, 0.30) 0%, transparent 55%),
+    radial-gradient(ellipse at top right, rgba(142, 96, 240, 0.28) 0%, transparent 55%);
 }
 
 /* Thin background lines */
