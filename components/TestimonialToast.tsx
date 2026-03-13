@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X } from "lucide-react";
+import { X } from "lucide-react";
 import Image from "next/image";
 
 /* ── Data ──────────────────────────────────────────────────────────── */
@@ -73,6 +73,13 @@ export default function TestimonialToast() {
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 3400);
     return () => clearTimeout(t);
+  }, []);
+
+  /* Listen for header notification button tap (mobile) */
+  useEffect(() => {
+    const open = () => setMobileOpen(true);
+    window.addEventListener("open-testimonials", open);
+    return () => window.removeEventListener("open-testimonials", open);
   }, []);
 
   /* Auto-cycle — pauses while expanded */
@@ -176,22 +183,8 @@ export default function TestimonialToast() {
         </AnimatePresence>
       </div>
 
-      {/* ── Mobile: notification icon + bottom sheet ── */}
+      {/* ── Mobile: bottom sheet (triggered by header notification icon) ── */}
       <div className="md:hidden">
-        {/* Floating notification button */}
-        <motion.button
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 3.4, type: "spring", stiffness: 300, damping: 25 }}
-          onClick={() => setMobileOpen(true)}
-          className="fixed bottom-6 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-white/60 bg-white/85 shadow-[0_4px_24px_rgba(0,0,0,0.13)] backdrop-blur-xl"
-        >
-          <MessageCircle size={18} className="text-neutral-700" />
-          <span className="absolute -right-1 -top-1 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-accent text-[9px] font-bold text-white shadow-sm">
-            {TESTIMONIALS.length}
-          </span>
-        </motion.button>
-
         {/* Bottom sheet */}
         <AnimatePresence>
           {mobileOpen && (
