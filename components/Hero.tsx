@@ -17,6 +17,8 @@ export default function Hero() {
   const [isMuted, setIsMuted] = useState(true);
   const [finderOpen, setFinderOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  // Prevents entrance animation from re-running on finderOpen toggle
+  const folderShownRef = useRef(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -159,6 +161,18 @@ export default function Hero() {
           5+ years creating user-centered digital products. Reduced friction by 40%,
           boosted engagement by 167%. Currently at UMD.
         </motion.p>
+
+        {/* Mobile creative work folder tap ─ hidden on desktop */}
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.75 }}
+          onClick={() => setFinderOpen(true)}
+          className="mt-6 flex items-center gap-2.5 self-start rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 backdrop-blur-sm transition-colors hover:bg-white/80 active:scale-95 md:hidden"
+        >
+          <MacFolderIcon size={28} />
+          <span className="font-mono text-[11px] font-medium text-neutral-500">creative work/</span>
+        </motion.button>
       </motion.div>
 
       {/* Infinite scrolling company ticker */}
@@ -196,11 +210,13 @@ export default function Hero() {
           drag
           dragMomentum={false}
           dragElastic={0}
-          className="absolute z-[6] hidden cursor-grab select-none flex-col items-center gap-1 md:flex active:cursor-grabbing"
+          className="absolute z-[25] hidden cursor-grab select-none flex-col items-center gap-1 md:flex active:cursor-grabbing"
           style={{ right: "9%", top: "48%" }}
-          initial={{ opacity: 0, rotate: -7, scale: 0.85 }}
+          /* initial=false after first mount so finderOpen toggles don't re-run entrance */
+          initial={folderShownRef.current ? false : { opacity: 0, rotate: -7, scale: 0.85 }}
           animate={{ opacity: 1, rotate: -7, scale: 1 }}
-          transition={{ delay: 2.8, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          transition={folderShownRef.current ? { duration: 0 } : { delay: 2.8, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          onAnimationComplete={() => { folderShownRef.current = true; }}
           whileHover={{ scale: 1.08, rotate: -5, transition: { duration: 0.2 } }}
           whileTap={{ scale: 0.96 }}
           onClick={() => setFinderOpen(true)}
