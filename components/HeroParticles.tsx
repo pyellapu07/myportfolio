@@ -255,7 +255,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
           <div className="drop-zone-pulse absolute inset-0 rounded-full border-2 border-accent/20" />
           <Search size={20} className="text-accent/50" />
         </div>
-        <span className="font-mono text-[10px] tracking-wider text-white/25 text-center leading-tight">
+        <span className="font-mono text-[10px] tracking-wider text-neutral-400 text-center leading-tight">
           Drop a sticker
         </span>
       </div>
@@ -276,11 +276,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
         const isHovered = hoveredIdx === i;
 
         const scale = isDragging ? 1.04 : isHovered ? 1.04 : 1;
-        const shadow = isDragging
-          ? "drop-shadow(0 20px 40px rgba(0,0,0,0.7)) drop-shadow(0 4px 12px rgba(0,0,0,0.5))"
-          : isHovered
-            ? "drop-shadow(0 12px 28px rgba(0,0,0,0.65)) drop-shadow(0 2px 8px rgba(0,0,0,0.4))"
-            : "drop-shadow(0 6px 20px rgba(0,0,0,0.5))";
+        const shadow = "none";
 
         // Don't apply parallax to dragged item — feels more grounded
         const txParallax = isDragging ? 0 : 0;
@@ -299,7 +295,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
               width: w,
               height: h,
               transform: `translate(${ox + effectiveDx + txParallax}px, ${oy + effectiveDy + tyParallax}px) rotate(${rot}deg) scale(${scale})`,
-              opacity: isHovered || isDragging ? Math.min(item.opacity + 0.18, 0.92) : item.opacity,
+              opacity: 1,
               cursor: isDragging ? "grabbing" : "grab",
               zIndex: isDragging ? 50 : isHovered ? 20 : 5,
               willChange: "transform, opacity",
