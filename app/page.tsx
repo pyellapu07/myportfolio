@@ -13,11 +13,13 @@ import Footer from "@/components/Footer";
 import ChatBar from "@/components/ChatBar";
 import RecruiterSplash from "@/components/RecruiterSplash";
 import CustomCursor from "@/components/CustomCursor";
+import TestimonialToast from "@/components/TestimonialToast";
 
 export default function Home() {
   return (
     <RecruiterProvider>
       <CustomCursor />
+      <TestimonialToast />
       <RecruiterSplash />
       <Header initialDark />
       <main id="main">

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageCircle,
   X,
-  Send,
+  ArrowUp,
   Brain,
   Loader2,
   AlertCircle,
@@ -460,7 +460,7 @@ export default function ChatBar() {
                       {loading ? (
                         <Loader2 size={16} className="animate-spin" />
                       ) : (
-                        <Send size={16} />
+                        <ArrowUp size={16} />
                       )}
                     </button>
                   </div>
@@ -503,10 +503,8 @@ export default function ChatBar() {
               Recruiter
             </span>
           )}
-          {isExpanded ? (
+          {isExpanded && (
             <X size={14} className="shrink-0 text-text-muted" />
-          ) : (
-            <MessageCircle size={14} className="shrink-0 text-text-muted" />
           )}
         </button>
       </div>
