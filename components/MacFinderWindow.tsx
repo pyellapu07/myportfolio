@@ -174,6 +174,8 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
   const y = useMotionValue(0);
 
   function onTitlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    // No drag on mobile (bottom-sheet layout, dragging doesn't make sense)
+    if (window.innerWidth < 640) return;
     // Don't initiate drag when clicking traffic-light buttons
     if ((e.target as HTMLElement).closest("button")) return;
     const startX = e.clientX - x.get();
@@ -222,7 +224,7 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
           {/* ── Title bar — drag handle via raw pointer events ───── */}
           <div
             onPointerDown={onTitlePointerDown}
-            className="flex h-11 shrink-0 cursor-grab select-none items-center gap-2 border-b border-black/[0.07] bg-white/55 px-4 active:cursor-grabbing"
+            className="flex h-11 shrink-0 select-none items-center gap-2 border-b border-black/[0.07] bg-white/55 px-4 sm:cursor-grab sm:active:cursor-grabbing"
           >
             {/* Traffic lights */}
             <button

@@ -59,7 +59,7 @@ export default function Projects() {
           >
             <CardWrapper>
               {/* GIF preview — gray bg, GIF centered with smooth shadow */}
-              <div className="relative flex items-center justify-center overflow-hidden bg-[#EBEBEB] px-10 py-8 aspect-[16/9]">
+              <div className="relative flex items-center justify-center overflow-hidden bg-[#EBEBEB] px-4 py-4 aspect-[16/7] sm:px-10 sm:py-8 sm:aspect-[16/9]">
                 <div
                   className="relative w-full max-w-[88%] overflow-hidden rounded-xl"
                   style={{
@@ -79,10 +79,10 @@ export default function Projects() {
                 </div>
               </div>
 
-              <div className="p-8 md:p-12">
+              <div className="p-4 sm:p-8 md:p-12">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="font-display text-2xl font-extrabold text-text md:text-3xl">{project.title}</h3>
+                    <h3 className="font-display text-xl font-extrabold text-text sm:text-2xl md:text-3xl">{project.title}</h3>
                     <p className="mt-1 font-mono text-xs text-text-muted">{project.subtitle}</p>
                   </div>
                   <span
@@ -92,9 +92,9 @@ export default function Projects() {
                     <ArrowUpRight size={18} className="transition-transform duration-300 group-hover:rotate-[30deg]" />
                   </span>
                 </div>
-                <p className="mt-4 font-mono text-sm font-medium text-accent">{project.impact}</p>
-                <p className="mt-4 max-w-[720px] text-sm leading-relaxed text-text-secondary">{project.description}</p>
-                <div className="mt-6 flex flex-wrap gap-2">
+                <p className="mt-2 font-mono text-sm font-medium text-accent sm:mt-4">{project.impact}</p>
+                <p className="mt-2 max-w-[720px] text-sm leading-relaxed text-text-secondary sm:mt-4">{project.description}</p>
+                <div className="mt-4 flex flex-wrap gap-2 sm:mt-6">
                   {project.techStack.map((t) => (
                     <span key={t} className="rounded-full border border-border px-3 py-1 font-mono text-[11px] text-text-secondary">{t}</span>
                   ))}
@@ -133,7 +133,7 @@ export default function Projects() {
             >
               <CardWrapper>
                 {/* GIF/image preview — gray bg with smooth shadow */}
-                <div className="relative flex items-center justify-center overflow-hidden bg-[#EBEBEB] px-6 py-6 aspect-[16/10]">
+                <div className="relative flex items-center justify-center overflow-hidden bg-[#EBEBEB] px-4 py-3 aspect-[16/7] sm:px-6 sm:py-6 sm:aspect-[16/10]">
                   <div
                     className="relative w-full max-w-[90%] overflow-hidden rounded-lg"
                     style={{
@@ -152,10 +152,10 @@ export default function Projects() {
                   </div>
                 </div>
 
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h3 className="font-display text-lg font-extrabold text-text">{project.title}</h3>
+                      <h3 className="font-display text-base font-extrabold text-text sm:text-lg">{project.title}</h3>
                       <p className="mt-1 font-mono text-[11px] text-text-muted">{project.subtitle}</p>
                     </div>
                     <span
