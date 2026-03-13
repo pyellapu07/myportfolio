@@ -40,7 +40,7 @@ export default function Hero() {
           className="scale-110 object-cover blur-md"
         />
         {/* Dark overlay so text stays readable */}
-        <div className="absolute inset-0 bg-black/70" />
+        <div className="absolute inset-0 bg-black/50" />
       </div>
 
       {/* Physics particle field — floats behind content */}
