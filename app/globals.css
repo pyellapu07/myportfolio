@@ -262,13 +262,7 @@ body {
   background: #FAF8F4;
 }
 
-/* Thin background lines — widely spaced, very low opacity dark */
-.bg-lines {
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.045) 1px, transparent 1px);
-  background-size: 130px 130px;
-}
+.bg-lines {}
 
 /* ── Chat ambient glow (behind chat bar, recruiter mode) ────────── */
 
