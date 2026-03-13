@@ -93,7 +93,7 @@ export default function Projects() {
                   </span>
                 </div>
                 <p className="mt-2 font-mono text-sm font-medium text-accent sm:mt-4">{project.impact}</p>
-                <p className="mt-2 max-w-[720px] text-sm leading-relaxed text-text-secondary sm:mt-4">{project.description}</p>
+                <p className="mt-2 line-clamp-3 max-w-[720px] text-sm leading-relaxed text-text-secondary sm:mt-4 sm:line-clamp-none">{project.description}</p>
                 <div className="mt-4 flex flex-wrap gap-2 sm:mt-6">
                   {project.techStack.map((t) => (
                     <span key={t} className="rounded-full border border-border px-3 py-1 font-mono text-[11px] text-text-secondary">{t}</span>
@@ -166,7 +166,7 @@ export default function Projects() {
                     </span>
                   </div>
                   <p className="mt-3 font-mono text-xs font-medium text-accent">{project.impact}</p>
-                  <p className="mt-3 text-sm leading-relaxed text-text-secondary">{project.description}</p>
+                  <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-text-secondary sm:line-clamp-none">{project.description}</p>
                   <div className="mt-4 flex flex-wrap gap-1.5">
                     {project.techStack.map((t) => (
                       <span key={t} className="rounded-full border border-border px-2.5 py-0.5 font-mono text-[10px] text-text-muted">{t}</span>
