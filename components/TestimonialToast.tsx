@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import Image from "next/image";
@@ -13,8 +14,8 @@ interface Testimonial {
   avatar: string | null;
   initials?: string;
   rotate: number;
-  top: string;  // distance from top of viewport
-  right: string; // distance from right edge
+  top: string;
+  right: string;
   short: string;
   full: string;
 }
@@ -68,7 +69,19 @@ export default function TestimonialToast() {
   const [expanded, setExpanded] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sheetExpanded, setSheetExpanded] = useState<Record<number, boolean>>({});
+  const [mounted, setMounted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const cycleRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  /* Mount + track breakpoint via JS — more reliable than CSS-only on real Safari */
+  useEffect(() => {
+    setMounted(true);
+    const mq = window.matchMedia("(min-width: 768px)");
+    setIsDesktop(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   /* Appear after initial page-load animations settle */
   useEffect(() => {
@@ -76,7 +89,7 @@ export default function TestimonialToast() {
     return () => clearTimeout(t);
   }, []);
 
-  /* Listen for header notification button tap (mobile) */
+  /* Listen for header notification button (mobile) */
   useEffect(() => {
     const open = () => setMobileOpen(true);
     window.addEventListener("open-testimonials", open);
@@ -104,7 +117,7 @@ export default function TestimonialToast() {
 
   const t = TESTIMONIALS[index];
 
-  /* Shared avatar node to avoid repetition */
+  /* Desktop avatar */
   const Avatar = ({ size = 8 }: { size?: number }) => (
     <div className={`relative h-${size} w-${size} shrink-0`}>
       {t.avatar ? (
@@ -126,166 +139,238 @@ export default function TestimonialToast() {
     </div>
   );
 
+  /* ── Mobile sheet — rendered via portal so it always sits above everything ── */
+  const mobileSheet =
+    mounted && !isDesktop
+      ? createPortal(
+          <AnimatePresence>
+            {mobileOpen && (
+              <>
+                {/* Backdrop */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.22 }}
+                  onClick={() => setMobileOpen(false)}
+                  className="fixed inset-0 z-[9998] bg-black/25 backdrop-blur-[2px]"
+                />
+
+                {/* Sheet */}
+                <motion.div
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ type: "spring", stiffness: 320, damping: 32 }}
+                  drag="y"
+                  dragConstraints={{ top: 0, bottom: 0 }}
+                  dragElastic={{ top: 0.05, bottom: 0.4 }}
+                  onDragEnd={(_, info) => {
+                    if (info.offset.y > 72 || info.velocity.y > 400) setMobileOpen(false);
+                  }}
+                  className="fixed bottom-0 left-0 right-0 z-[9999] touch-none rounded-t-3xl border-t border-white/50 bg-white/95 shadow-[0_-8px_48px_rgba(0,0,0,0.15)] backdrop-blur-2xl"
+                >
+                  {/* Drag handle */}
+                  <div className="flex justify-center pt-3 pb-1">
+                    <div className="h-1 w-9 rounded-full bg-neutral-300" />
+                  </div>
+
+                  {/* Sheet header */}
+                  <div className="flex items-center justify-between px-5 pb-3 pt-1">
+                    <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
+                      What people say
+                    </p>
+                    <button
+                      onClick={() => setMobileOpen(false)}
+                      className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 active:bg-neutral-200"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+
+                  {/* Testimonial cards */}
+                  <div className="max-h-[62vh] overflow-y-auto px-4 pb-10 space-y-3">
+                    {TESTIMONIALS.map((item, i) => {
+                      const isExp = !!sheetExpanded[i];
+                      return (
+                        <div
+                          key={i}
+                          className="rounded-2xl border border-neutral-100/80 bg-white p-4 shadow-[0_1px_6px_rgba(0,0,0,0.06)]"
+                        >
+                          <div className="mb-3 h-[1.5px] w-full rounded-full bg-gradient-to-r from-orange-400/50 via-orange-300/25 to-transparent" />
+
+                          <div className="flex items-center gap-3 mb-2.5">
+                            <div className="relative h-9 w-9 shrink-0">
+                              {item.avatar ? (
+                                <Image
+                                  src={item.avatar}
+                                  alt={item.name}
+                                  fill
+                                  sizes="36px"
+                                  className="rounded-full object-cover ring-1 ring-black/8"
+                                />
+                              ) : (
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 text-[10px] font-bold text-white">
+                                  {item.initials}
+                                </div>
+                              )}
+                              <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white bg-green-400" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-mono text-[11px] font-semibold leading-tight text-neutral-900">
+                                {item.name}
+                              </p>
+                              <p className="font-mono text-[9px] leading-tight text-neutral-400">
+                                {item.role}
+                              </p>
+                              <p className="font-mono text-[8.5px] leading-tight text-neutral-300">
+                                {item.sub}
+                              </p>
+                            </div>
+                            <span className="ml-auto font-serif text-2xl leading-none text-orange-300/60 select-none">
+                              &ldquo;
+                            </span>
+                          </div>
+
+                          <AnimatePresence mode="wait">
+                            {!isExp ? (
+                              <motion.p
+                                key={`s-${i}`}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="text-[12.5px] leading-relaxed text-neutral-700"
+                              >
+                                {item.short}
+                              </motion.p>
+                            ) : (
+                              <motion.p
+                                key={`f-${i}`}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="text-[12px] leading-relaxed text-neutral-600"
+                              >
+                                {item.full}
+                              </motion.p>
+                            )}
+                          </AnimatePresence>
+
+                          <button
+                            onClick={() =>
+                              setSheetExpanded((prev) => ({ ...prev, [i]: !prev[i] }))
+                            }
+                            className="mt-2 font-mono text-[10px] font-semibold text-orange-500 transition-colors active:text-orange-400"
+                          >
+                            {isExp ? "read less -" : "read more -"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>,
+          document.body
+        )
+      : null;
+
   return (
     <>
-      {/* ── Desktop: floating angled sticker card ── */}
-      <div
-        className="pointer-events-none fixed z-30 hidden md:block"
-        style={{ top: t.top, right: t.right }}
-      >
-        <AnimatePresence mode="wait">
-          {visible && (
-            <motion.div
-              key={index}
-              drag
-              dragMomentum={true}
-              dragElastic={0.12}
-              whileDrag={{ scale: 1.04, zIndex: 50 }}
-              initial={{ opacity: 1, scale: 0.88, y: 16 }}
-              animate={{ opacity: 1, scale: 1, y: 0, rotate: t.rotate }}
-              exit={{ opacity: 0, scale: 0.9, y: -12 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="pointer-events-auto cursor-grab active:cursor-grabbing"
-              style={{ originX: "50%", originY: "50%" }}
-            >
-              <div className="relative w-[252px] overflow-hidden rounded-2xl border border-white/60 bg-white/72 shadow-[0_4px_28px_rgba(0,0,0,0.10),0_1px_0_rgba(255,255,255,0.8)_inset] backdrop-blur-2xl">
-                <div className="h-[1.5px] w-full bg-gradient-to-r from-orange-400/50 via-accent/30 to-transparent" />
-                <div className="px-4 pb-3.5 pt-3">
-                  <div className="mb-2.5 flex items-center gap-2.5">
-                    <Avatar size={8} />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-mono text-[10.5px] font-semibold leading-tight text-neutral-900">{t.name}</p>
-                      <p className="truncate font-mono text-[9px] leading-tight text-neutral-400">{t.sub}</p>
-                    </div>
-                    <span className="ml-auto shrink-0 font-serif text-2xl leading-none text-orange-300/70 select-none">&ldquo;</span>
-                  </div>
-                  <p className="mb-2 font-mono text-[9px] font-medium uppercase tracking-wide text-neutral-400">{t.role}</p>
-                  <AnimatePresence mode="wait">
-                    {!expanded ? (
-                      <motion.p key="short" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="text-[11.5px] leading-relaxed text-neutral-700">
-                        {t.short}
-                      </motion.p>
-                    ) : (
-                      <motion.p key="full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="text-[11px] leading-relaxed text-neutral-600">
-                        {t.full}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                  <button onClick={() => setExpanded((v) => !v)} className="mt-2 font-mono text-[10px] font-semibold text-accent transition-colors hover:text-accent/70">
-                    {expanded ? "- less" : "read more -"}
-                  </button>
-                </div>
-                {!expanded && (
-                  <motion.div key={`prog-${index}`} className="absolute bottom-0 left-0 h-[1.5px] bg-orange-400/35" initial={{ width: "100%" }} animate={{ width: "0%" }} transition={{ duration: 6.2, ease: "linear" }} />
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── Mobile: bottom sheet (triggered by header notification icon) ── */}
-      <div className="md:hidden">
-        {/* Bottom sheet */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <>
-              {/* Backdrop */}
+      {/* ── Desktop only: floating angled sticker card (JS-gated) ── */}
+      {isDesktop && (
+        <div
+          className="pointer-events-none fixed z-30"
+          style={{ top: t.top, right: t.right }}
+        >
+          <AnimatePresence mode="wait">
+            {visible && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.22 }}
-                onClick={() => setMobileOpen(false)}
-                className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]"
-              />
-
-              {/* Sheet */}
-              <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", stiffness: 320, damping: 32 }}
-                drag="y"
-                dragConstraints={{ top: 0, bottom: 0 }}
-                dragElastic={{ top: 0.05, bottom: 0.4 }}
-                onDragEnd={(_, info) => {
-                  if (info.offset.y > 72 || info.velocity.y > 400) setMobileOpen(false);
-                }}
-                className="fixed bottom-0 left-0 right-0 z-50 touch-none rounded-t-3xl border-t border-white/50 bg-white/92 pb-safe shadow-[0_-8px_48px_rgba(0,0,0,0.13)] backdrop-blur-2xl"
+                key={index}
+                drag
+                dragMomentum={true}
+                dragElastic={0.12}
+                whileDrag={{ scale: 1.04, zIndex: 50 }}
+                initial={{ opacity: 1, scale: 0.88, y: 16 }}
+                animate={{ opacity: 1, scale: 1, y: 0, rotate: t.rotate }}
+                exit={{ opacity: 0, scale: 0.9, y: -12 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="pointer-events-auto cursor-grab active:cursor-grabbing"
+                style={{ originX: "50%", originY: "50%" }}
               >
-                {/* Drag handle */}
-                <div className="flex justify-center pt-3 pb-1">
-                  <div className="h-1 w-9 rounded-full bg-neutral-300" />
-                </div>
-
-                {/* Header */}
-                <div className="flex items-center justify-between px-5 pb-3 pt-1">
-                  <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
-                    What people say
-                  </p>
-                  <button onClick={() => setMobileOpen(false)} className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 active:bg-neutral-200">
-                    <X size={12} />
-                  </button>
-                </div>
-
-                {/* Cards */}
-                <div className="max-h-[62vh] overflow-y-auto px-4 pb-10 space-y-3">
-                  {TESTIMONIALS.map((item, i) => {
-                    const isExpanded = !!sheetExpanded[i];
-                    return (
-                      <div key={i} className="rounded-2xl border border-neutral-100/80 bg-white p-4 shadow-[0_1px_6px_rgba(0,0,0,0.06)]">
-                        {/* Top accent line */}
-                        <div className="mb-3 h-[1.5px] w-full rounded-full bg-gradient-to-r from-orange-400/50 via-accent/25 to-transparent" />
-
-                        <div className="flex items-center gap-3 mb-2.5">
-                          <div className="relative h-9 w-9 shrink-0">
-                            {item.avatar ? (
-                              <Image src={item.avatar} alt={item.name} fill sizes="36px" className="rounded-full object-cover ring-1 ring-black/8" />
-                            ) : (
-                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 text-[10px] font-bold text-white">
-                                {item.initials}
-                              </div>
-                            )}
-                            <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white bg-green-400" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-mono text-[11px] font-semibold leading-tight text-neutral-900">{item.name}</p>
-                            <p className="font-mono text-[9px] leading-tight text-neutral-400">{item.role}</p>
-                            <p className="font-mono text-[8.5px] leading-tight text-neutral-300">{item.sub}</p>
-                          </div>
-                          <span className="ml-auto font-serif text-2xl leading-none text-orange-300/60 select-none">&ldquo;</span>
-                        </div>
-
-                        <AnimatePresence mode="wait">
-                          {!isExpanded ? (
-                            <motion.p key={`s-${i}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
-                              className="text-[12.5px] leading-relaxed text-neutral-700">
-                              {item.short}
-                            </motion.p>
-                          ) : (
-                            <motion.p key={`f-${i}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
-                              className="text-[12px] leading-relaxed text-neutral-600">
-                              {item.full}
-                            </motion.p>
-                          )}
-                        </AnimatePresence>
-
-                        <button
-                          onClick={() => setSheetExpanded((prev) => ({ ...prev, [i]: !prev[i] }))}
-                          className="mt-2 font-mono text-[10px] font-semibold text-accent transition-colors active:text-accent/60"
-                        >
-                          {isExpanded ? "read less -" : "read more -"}
-                        </button>
+                <div className="relative w-[252px] overflow-hidden rounded-2xl border border-white/60 bg-white/72 shadow-[0_4px_28px_rgba(0,0,0,0.10),0_1px_0_rgba(255,255,255,0.8)_inset] backdrop-blur-2xl">
+                  <div className="h-[1.5px] w-full bg-gradient-to-r from-orange-400/50 via-accent/30 to-transparent" />
+                  <div className="px-4 pb-3.5 pt-3">
+                    <div className="mb-2.5 flex items-center gap-2.5">
+                      <Avatar size={8} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-mono text-[10.5px] font-semibold leading-tight text-neutral-900">
+                          {t.name}
+                        </p>
+                        <p className="truncate font-mono text-[9px] leading-tight text-neutral-400">
+                          {t.sub}
+                        </p>
                       </div>
-                    );
-                  })}
+                      <span className="ml-auto shrink-0 font-serif text-2xl leading-none text-orange-300/70 select-none">
+                        &ldquo;
+                      </span>
+                    </div>
+                    <p className="mb-2 font-mono text-[9px] font-medium uppercase tracking-wide text-neutral-400">
+                      {t.role}
+                    </p>
+                    <AnimatePresence mode="wait">
+                      {!expanded ? (
+                        <motion.p
+                          key="short"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.18 }}
+                          className="text-[11.5px] leading-relaxed text-neutral-700"
+                        >
+                          {t.short}
+                        </motion.p>
+                      ) : (
+                        <motion.p
+                          key="full"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.18 }}
+                          className="text-[11px] leading-relaxed text-neutral-600"
+                        >
+                          {t.full}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                    <button
+                      onClick={() => setExpanded((v) => !v)}
+                      className="mt-2 font-mono text-[10px] font-semibold text-accent transition-colors hover:text-accent/70"
+                    >
+                      {expanded ? "- less" : "read more -"}
+                    </button>
+                  </div>
+                  {!expanded && (
+                    <motion.div
+                      key={`prog-${index}`}
+                      className="absolute bottom-0 left-0 h-[1.5px] bg-orange-400/35"
+                      initial={{ width: "100%" }}
+                      animate={{ width: "0%" }}
+                      transition={{ duration: 6.2, ease: "linear" }}
+                    />
+                  )}
                 </div>
               </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-      </div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* ── Mobile: portal-rendered bottom sheet ── */}
+      {mobileSheet}
     </>
   );
 }
