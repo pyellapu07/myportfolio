@@ -135,7 +135,7 @@ export default function Hero() {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: "-100%", opacity: 0 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="col-start-1 row-start-1 bg-gradient-to-r from-accent via-accent-light to-warm bg-clip-text text-transparent"
+                className="col-start-1 row-start-1 text-accent"
               >
                 {ROTATING_WORDS[wordIndex]}
               </motion.span>
