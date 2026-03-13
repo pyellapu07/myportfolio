@@ -136,9 +136,9 @@ export default function CustomCursor() {
         >
           {/* Three claw lines */}
           <svg width="28" height="18" viewBox="0 0 28 18" fill="none">
-            <line x1="4"  y1="2" x2="4"  y2="16" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" />
-            <line x1="14" y1="2" x2="14" y2="16" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" />
-            <line x1="24" y1="2" x2="24" y2="16" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="4"  y1="2" x2="4"  y2="16" stroke="rgba(0,0,0,0.25)" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="14" y1="2" x2="14" y2="16" stroke="rgba(0,0,0,0.25)" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="24" y1="2" x2="24" y2="16" stroke="rgba(0,0,0,0.25)" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </motion.div>
       ))}
@@ -151,7 +151,7 @@ export default function CustomCursor() {
           height: isHovering ? 40 : 28,
           opacity: isVisible && !isOnNoCursor ? 1 : 0,
           borderColor: isOnHero
-            ? isHovering ? "rgba(255,100,50,0.8)" : "rgba(255,255,255,0.35)"
+            ? isHovering ? "rgba(255,100,50,0.8)" : "rgba(0,0,0,0.25)"
             : isHovering ? "rgba(99,102,241,0.7)" : "rgba(99,102,241,0.3)",
         }}
         transition={{ duration: 0.2, ease: "easeOut" }}
@@ -174,7 +174,7 @@ export default function CustomCursor() {
           height: isHovering ? 5 : 4,
           opacity: isVisible && !isOnNoCursor ? 1 : 0,
           backgroundColor: isOnHero
-            ? isHovering ? "#FF5210" : "rgba(255,255,255,0.9)"
+            ? isHovering ? "#FF5210" : "rgba(0,0,0,0.7)"
             : isHovering ? "#6366F1" : "#111111",
         }}
         transition={{ duration: 0.15 }}

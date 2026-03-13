@@ -19,7 +19,7 @@ export default function Home() {
     <RecruiterProvider>
       <CustomCursor />
       <RecruiterSplash />
-      <Header />
+      <Header initialDark />
       <main id="main">
         <Hero />
         <ImpactMetrics />
