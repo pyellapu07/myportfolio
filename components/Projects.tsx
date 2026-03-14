@@ -58,25 +58,16 @@ export default function Projects() {
             className="group mb-16 overflow-hidden rounded-xl border border-border bg-white transition-all duration-500 hover:-translate-y-1 hover:shadow-smooth-hover cursor-pointer"
           >
             <CardWrapper>
-              {/* GIF preview — gray bg, GIF centered with smooth shadow */}
-              <div className="relative flex items-center justify-center overflow-hidden bg-[#EBEBEB] px-4 py-4 aspect-[16/7] sm:px-10 sm:py-8 sm:aspect-[16/9]">
-                <div
-                  className="relative w-full max-w-[88%] overflow-hidden rounded-xl"
-                  style={{
-                    boxShadow:
-                      "0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.10), 0 24px 56px rgba(0,0,0,0.12), 0 48px 80px rgba(0,0,0,0.06)",
-                  }}
-                >
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    width={1200}
-                    height={675}
-                    className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                    priority
-                    unoptimized={project.image.endsWith(".gif")}
-                  />
-                </div>
+              {/* Image — full bleed */}
+              <div className="relative overflow-hidden aspect-[16/7] sm:aspect-[16/9]">
+                <Image
+                  src={project.image}
+                  alt={project.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                  priority
+                  unoptimized={project.image.endsWith(".gif")}
+                />
               </div>
 
               <div className="p-4 sm:p-8 md:p-12">
@@ -132,25 +123,37 @@ export default function Projects() {
               className="group overflow-hidden rounded-xl border border-border bg-white transition-all duration-500 hover:-translate-y-1 hover:shadow-smooth-hover cursor-pointer"
             >
               <CardWrapper>
-                {/* GIF/image preview — gray bg with smooth shadow */}
-                <div className="relative flex items-center justify-center overflow-hidden bg-[#EBEBEB] px-4 py-3 aspect-[16/7] sm:px-6 sm:py-6 sm:aspect-[16/10]">
-                  <div
-                    className="relative w-full max-w-[90%] overflow-hidden rounded-lg"
-                    style={{
-                      boxShadow:
-                        "0 2px 6px rgba(0,0,0,0.07), 0 6px 18px rgba(0,0,0,0.09), 0 18px 40px rgba(0,0,0,0.10), 0 36px 60px rgba(0,0,0,0.05)",
-                    }}
-                  >
+                {/* Image preview */}
+                {project.title === "NASA Harvest — Xylem Institute" ? (
+                  <div className="relative flex items-center justify-center overflow-hidden bg-[#EBEBEB] px-4 py-3 aspect-[16/7] sm:px-6 sm:py-6 sm:aspect-[16/10]">
+                    <div
+                      className="relative w-full max-w-[90%] overflow-hidden rounded-lg"
+                      style={{
+                        boxShadow:
+                          "0 2px 6px rgba(0,0,0,0.07), 0 6px 18px rgba(0,0,0,0.09), 0 18px 40px rgba(0,0,0,0.10), 0 36px 60px rgba(0,0,0,0.05)",
+                      }}
+                    >
+                      <Image
+                        src={project.image}
+                        alt={project.title}
+                        width={640}
+                        height={400}
+                        className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                        unoptimized={project.image.endsWith(".gif")}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative overflow-hidden aspect-[16/7] sm:aspect-[16/10]">
                     <Image
                       src={project.image}
                       alt={project.title}
-                      width={640}
-                      height={400}
-                      className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                       unoptimized={project.image.endsWith(".gif")}
                     />
                   </div>
-                </div>
+                )}
 
                 <div className="p-4 sm:p-6">
                   <div className="flex items-start justify-between gap-3">
