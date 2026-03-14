@@ -1,15 +1,30 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
 import { PROJECTS } from "@/lib/constants";
+import { useState } from "react";
 
 export default function Projects() {
   const featured = PROJECTS.filter((p) => p.featured);
   const rest = PROJECTS.filter((p) => !p.featured);
+
+  // Floating cursor label
+  const rawX = useMotionValue(-200);
+  const rawY = useMotionValue(-200);
+  const springX = useSpring(rawX, { stiffness: 600, damping: 35 });
+  const springY = useSpring(rawY, { stiffness: 600, damping: 35 });
+  const [cursorLabel, setCursorLabel] = useState<string | null>(null);
+
+  function handleMouseMove(e: React.MouseEvent) {
+    rawX.set(e.clientX);
+    rawY.set(e.clientY);
+  }
+  function handleMouseEnter(label: string) { setCursorLabel(label); }
+  function handleMouseLeave() { setCursorLabel(null); }
 
   return (
     <SectionWrapper id="work">
@@ -55,7 +70,10 @@ export default function Projects() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-            className="group mb-16 overflow-hidden rounded-xl border border-border bg-white transition-all duration-500 hover:-translate-y-1 hover:shadow-smooth-hover cursor-pointer"
+            className="group mb-16 overflow-hidden rounded-xl border border-border bg-white transition-all duration-500 hover:-translate-y-1 hover:shadow-smooth-hover cursor-none"
+          onMouseMove={handleMouseMove}
+          onMouseEnter={() => handleMouseEnter(project.cursorLabel ?? "View case study →")}
+          onMouseLeave={handleMouseLeave}
           >
             <CardWrapper>
               {/* Image — full bleed */}
@@ -120,7 +138,10 @@ export default function Projects() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.15 }}
               transition={{ delay: i * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-              className="group overflow-hidden rounded-xl border border-border bg-white transition-all duration-500 hover:-translate-y-1 hover:shadow-smooth-hover cursor-pointer"
+              className="group overflow-hidden rounded-xl border border-border bg-white transition-all duration-500 hover:-translate-y-1 hover:shadow-smooth-hover cursor-none"
+            onMouseMove={handleMouseMove}
+            onMouseEnter={() => handleMouseEnter(project.cursorLabel ?? "View case study →")}
+            onMouseLeave={handleMouseLeave}
             >
               <CardWrapper>
                 {/* Image preview */}
@@ -178,6 +199,23 @@ export default function Projects() {
           );
         })}
       </div>
+
+      {/* Floating cursor label */}
+      <AnimatePresence>
+        {cursorLabel && (
+          <motion.div
+            key="cursor-label"
+            className="pointer-events-none fixed z-[9999] -translate-x-1/2 -translate-y-[calc(100%+14px)] rounded-full bg-white px-4 py-2 text-sm font-medium text-text shadow-md ring-1 ring-border whitespace-nowrap"
+            style={{ left: springX, top: springY }}
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.85 }}
+            transition={{ duration: 0.15 }}
+          >
+            {cursorLabel}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </SectionWrapper>
   );
 }

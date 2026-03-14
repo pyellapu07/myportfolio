@@ -8,6 +8,7 @@ export interface Project {
   link?: string;
   caseStudy?: string;
   featured?: boolean;
+  cursorLabel?: string;
 }
 
 export interface TimelineItem {

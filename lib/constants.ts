@@ -61,6 +61,7 @@ export const PROJECTS: Project[] = [
     image: "/marketcrunchaipreview.gif",
     link: "/work/marketcrunch",
     featured: true,
+    cursorLabel: "View case study →",
   },
   {
     title: "Faculty Dashboard",
@@ -72,6 +73,7 @@ export const PROJECTS: Project[] = [
     image: "/facultydashboardpreview.jpg",
     link: "/work/workflow",
     featured: true,
+    cursorLabel: "View case study →",
   },
   {
     title: "Transurban Express Lanes",
@@ -83,6 +85,7 @@ export const PROJECTS: Project[] = [
     image: "/transurbanpreview.gif",
     link: "/work/transurban",
     featured: true,
+    cursorLabel: "View case study →",
   },
   {
     title: "NASA Harvest — Xylem Institute",
@@ -94,6 +97,7 @@ export const PROJECTS: Project[] = [
     image: "/xylemlabscreenrecording.gif",
     link: "/work/xylem-institute",
     featured: false,
+    cursorLabel: "View case study →",
   },
   {
     title: "HackImpact Application Portal",
@@ -105,6 +109,7 @@ export const PROJECTS: Project[] = [
     image: "/hack4impactpreview.gif",
     link: "/work/hack4impact",
     featured: false,
+    cursorLabel: "View case study →",
   },
   {
     title: "PrepSharp",
@@ -115,7 +120,8 @@ export const PROJECTS: Project[] = [
     techStack: ["Product Design", "Figma", "User Flows", "Visual Design", "AI/UX"],
     image: "/prepsharppreview.gif",
     link: "#",
-    featured: false,
+    featured: true,
+    cursorLabel: "Serving Soon.. 🍳",
   },
 ];
 
