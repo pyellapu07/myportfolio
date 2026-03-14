@@ -125,14 +125,11 @@ export default function Projects() {
               <CardWrapper>
                 {/* Image preview */}
                 {project.title === "NASA Harvest — Xylem Institute" ? (
-                  <div className="relative flex items-center justify-center overflow-hidden bg-[#EBEBEB] px-4 py-3 aspect-[16/7] sm:px-6 sm:py-6 sm:aspect-[16/10]">
-                    <div
-                      className="relative w-full max-w-[90%] overflow-hidden rounded-lg"
-                      style={{
-                        boxShadow:
-                          "0 2px 6px rgba(0,0,0,0.07), 0 6px 18px rgba(0,0,0,0.09), 0 18px 40px rgba(0,0,0,0.10), 0 36px 60px rgba(0,0,0,0.05)",
-                      }}
-                    >
+                  <div
+                    className="relative flex items-center justify-center overflow-hidden px-4 py-3 aspect-[16/7] sm:px-6 sm:py-6 sm:aspect-[16/10]"
+                    style={{ background: "linear-gradient(135deg, #ffffff 0%, #dcfce7 45%, #86efac 100%)" }}
+                  >
+                    <div className="relative w-full max-w-[90%] overflow-hidden rounded-lg">
                       <Image
                         src={project.image}
                         alt={project.title}

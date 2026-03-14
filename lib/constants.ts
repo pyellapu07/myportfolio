@@ -71,7 +71,7 @@ export const PROJECTS: Project[] = [
     techStack: ["UX Research", "Contextual Inquiry", "Affinity Mapping", "Journey Mapping", "Task Flows"],
     image: "/facultydashboardpreview.jpg",
     link: "/work/workflow",
-    featured: false,
+    featured: true,
   },
   {
     title: "Transurban Express Lanes",
@@ -82,7 +82,7 @@ export const PROJECTS: Project[] = [
     techStack: ["UX Research", "Surveys", "Usability Testing", "Thematic Analysis", "SUS", "Affinity Mapping"],
     image: "/transurbanpreview.gif",
     link: "/work/transurban",
-    featured: false,
+    featured: true,
   },
   {
     title: "NASA Harvest — Xylem Institute",
@@ -102,7 +102,7 @@ export const PROJECTS: Project[] = [
     description:
       "Designed a 4-step modular application flow applying progressive disclosure to condense a 33-page process. Built a centralized recruiter dashboard with role-based access control. Conducted generative user research with nonprofit stakeholders through semi-structured interviews and contextual inquiry to define design opportunities.",
     techStack: ["Product Design", "User Research", "Prototyping", "Dashboard Design", "Figma", "Progressive Disclosure"],
-    image: "/hack4impact/latestversionview.gif",
+    image: "/hack4impactpreview.gif",
     link: "/work/hack4impact",
     featured: false,
   },
