@@ -53,6 +53,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
+      <head>
+        <link rel="icon" href="/Favicon.png" type="image/png" sizes="any" />
+        <link rel="shortcut icon" href="/Favicon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/Favicon.png" />
+      </head>
       <body className={`${manrope.variable} ${dmMono.variable} antialiased`}>
         <LoadingScreen />
         <a href="#main" className="skip-link">
