@@ -8,7 +8,7 @@ export const SITE = {
   email: "pyellapu@umd.edu",
   phone: "240.610.7815",
   linkedin: "https://linkedin.com/in/pradeepyellapu",
-  github: "https://github.com/pradeepyellapu",
+  github: "https://github.com/pyellapu07",
   medium: "https://medium.com/design-bootcamp/why-ux-designers-matter-more-than-ever-in-the-age-of-ai-part-1-f74761c7a4c3",
   portfolio: "#",
   location: "Open to Relocation",
@@ -121,7 +121,7 @@ export const PROJECTS: Project[] = [
     image: "/prepsharppreview.gif",
     link: "#",
     featured: true,
-    cursorLabel: "Serving Soon.. 🍳",
+    cursorLabel: "Serving Soon..",
   },
 ];
 

@@ -102,7 +102,7 @@ export default function Projects() {
         {cursorLabel && (
           <motion.div
             key="cursor-label"
-            className="pointer-events-none fixed z-[9999] -translate-x-1/2 -translate-y-[calc(100%+14px)] rounded-full bg-white px-4 py-2 text-sm font-medium text-text shadow-md ring-1 ring-border whitespace-nowrap"
+            className="pointer-events-none fixed z-[9999] -translate-x-1/2 -translate-y-[calc(100%+14px)] rounded-[2px] bg-[#0d1b3e] px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-widest text-white whitespace-nowrap"
             style={{ left: springX, top: springY }}
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
