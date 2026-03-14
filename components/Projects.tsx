@@ -150,7 +150,7 @@ function FeaturedCard({ project, onMouseMove, onMouseEnter, onMouseLeave }: Card
       onMouseLeave={onMouseLeave}
     >
       <Wrapper>
-        <div className="relative overflow-hidden aspect-[16/7] sm:aspect-[16/9]">
+        <div className="relative overflow-hidden aspect-[16/9]">
           <Image
             src={project.image}
             alt={project.title}
@@ -211,7 +211,7 @@ function GridCard({ project, index, onMouseMove, onMouseEnter, onMouseLeave }: C
       <Wrapper>
         {project.title === "NASA Harvest — Xylem Institute" ? (
           <div
-            className="relative flex items-center justify-center overflow-hidden px-4 py-3 aspect-[16/7] sm:px-6 sm:py-6 sm:aspect-[16/10]"
+            className="relative flex items-center justify-center overflow-hidden px-4 py-4 aspect-[16/10] sm:px-6 sm:py-6"
             style={{ background: "linear-gradient(135deg, #ffffff 0%, #dcfce7 45%, #86efac 100%)" }}
           >
             <div className="relative w-full max-w-[90%] overflow-hidden rounded-lg">
@@ -226,7 +226,7 @@ function GridCard({ project, index, onMouseMove, onMouseEnter, onMouseLeave }: C
             </div>
           </div>
         ) : (
-          <div className="relative overflow-hidden aspect-[16/7] sm:aspect-[16/10]">
+          <div className="relative overflow-hidden aspect-[16/10]">
             <Image
               src={project.image}
               alt={project.title}
