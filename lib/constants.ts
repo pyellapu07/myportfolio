@@ -76,18 +76,6 @@ export const PROJECTS: Project[] = [
     cursorLabel: "View case study →",
   },
   {
-    title: "Transurban Express Lanes",
-    subtitle: "UX Research — Toll Payment & Wayfinding Experience",
-    impact: "127 survey participants · 8 in-depth interviews · SUS scores & qualitative analysis",
-    description:
-      "Conducted mixed-methods UX research using surveys, semi-structured interviews, and usability testing to evaluate express lane user experience. Applied thematic analysis and affinity mapping to identify critical usability issues in wayfinding, toll transparency, and account management that impacted user trust and adoption.",
-    techStack: ["UX Research", "Surveys", "Usability Testing", "Thematic Analysis", "SUS", "Affinity Mapping"],
-    image: "/transurbanpreview.gif",
-    link: "/work/transurban",
-    featured: true,
-    cursorLabel: "View case study →",
-  },
-  {
     title: "NASA Harvest — Xylem Institute",
     subtitle: "Product Design · Design Systems · AI Pipeline — End-to-end from websites to bulletin automation",
     impact: "32% reduction in bounce rate · 2 live websites · 2 design systems · Nairobi workshop · AI bulletin pipeline",
@@ -109,6 +97,18 @@ export const PROJECTS: Project[] = [
     image: "/hack4impactpreview.gif",
     link: "/work/hack4impact",
     featured: false,
+    cursorLabel: "View case study →",
+  },
+  {
+    title: "Transurban Express Lanes",
+    subtitle: "UX Research — Toll Payment & Wayfinding Experience",
+    impact: "127 survey participants · 8 in-depth interviews · SUS scores & qualitative analysis",
+    description:
+      "Conducted mixed-methods UX research using surveys, semi-structured interviews, and usability testing to evaluate express lane user experience. Applied thematic analysis and affinity mapping to identify critical usability issues in wayfinding, toll transparency, and account management that impacted user trust and adoption.",
+    techStack: ["UX Research", "Surveys", "Usability Testing", "Thematic Analysis", "SUS", "Affinity Mapping"],
+    image: "/transurbanpreview.gif",
+    link: "/work/transurban",
+    featured: true,
     cursorLabel: "View case study →",
   },
   {
