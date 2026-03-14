@@ -17,7 +17,7 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pradeep Yellapu — Product Designer & UX Researcher",
+  title: "Pradeep's Canvas",
   description:
     "Product Designer & UX Researcher with 5+ years of experience creating user-centered digital products across enterprise SaaS, AI platforms, and consumer applications.",
   keywords: [
