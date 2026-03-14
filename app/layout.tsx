@@ -44,6 +44,11 @@ export const metadata: Metadata = {
       "Product Designer & UX Researcher crafting user-centered digital experiences.",
   },
   robots: { index: true, follow: true },
+  icons: {
+    icon: "/Favicon.png",
+    shortcut: "/Favicon.png",
+    apple: "/Favicon.png",
+  },
 };
 
 export default function RootLayout({
