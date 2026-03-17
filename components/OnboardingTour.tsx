@@ -139,42 +139,41 @@ export default function OnboardingTour() {
 
   if (!active) return null;
 
-  const spotTop = rect ? rect.top - PAD : 0;
-  const spotLeft = rect ? rect.left - PAD : 0;
-  const spotW = rect ? rect.width + PAD * 2 : 0;
-  const spotH = rect ? rect.height + PAD * 2 : 0;
-
-  // Clip path that punches a hole in the overlay where the target is
-  const clipPath = rect
-    ? `polygon(
-        0% 0%, 0% 100%,
-        ${spotLeft}px 100%, ${spotLeft}px ${spotTop}px,
-        ${spotLeft + spotW}px ${spotTop}px, ${spotLeft + spotW}px ${spotTop + spotH}px,
-        ${spotLeft}px ${spotTop + spotH}px, ${spotLeft}px 100%,
-        100% 100%, 100% 0%
-      )`
-    : "none";
+  const RADIUS = 12;
+  const spotTop  = rect ? rect.top    - PAD : 0;
+  const spotLeft = rect ? rect.left   - PAD : 0;
+  const spotW    = rect ? rect.width  + PAD * 2 : 0;
+  const spotH    = rect ? rect.height + PAD * 2 : 0;
+  const BG = "rgba(0,0,0,0.58)";
 
   return (
     <AnimatePresence>
       {active && (
         <>
-          {/* Overlay with spotlight hole */}
-          <motion.div
-            key="overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[9990] pointer-events-auto"
-            style={{
-              backgroundColor: "rgba(0,0,0,0.55)",
-              clipPath,
-            }}
-            onClick={finish}
-          />
+          {/* 4-panel overlay — leaves a transparent hole where the target is.
+              Cursor passes through the hole freely; clicking outside dismisses. */}
+          {/* Top panel */}
+          <motion.div key="ov-top"    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }} onClick={finish}
+            className="fixed z-[9990] pointer-events-auto left-0 right-0 top-0"
+            style={{ height: spotTop, backgroundColor: BG }} />
+          {/* Bottom panel */}
+          <motion.div key="ov-bot"    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }} onClick={finish}
+            className="fixed z-[9990] pointer-events-auto left-0 right-0 bottom-0"
+            style={{ top: spotTop + spotH, backgroundColor: BG }} />
+          {/* Left panel */}
+          <motion.div key="ov-left"   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }} onClick={finish}
+            className="fixed z-[9990] pointer-events-auto top-0 bottom-0 left-0"
+            style={{ width: spotLeft, top: spotTop, height: spotH, backgroundColor: BG }} />
+          {/* Right panel */}
+          <motion.div key="ov-right"  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }} onClick={finish}
+            className="fixed z-[9990] pointer-events-auto top-0 bottom-0 right-0"
+            style={{ left: spotLeft + spotW, top: spotTop, height: spotH, backgroundColor: BG }} />
 
-          {/* Spotlight border ring */}
+          {/* Spotlight ring — rounded corners, pointer-events-none so cursor shows */}
           {rect && (
             <motion.div
               key={`ring-${step}`}
@@ -182,13 +181,14 @@ export default function OnboardingTour() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
-              className="fixed z-[9991] rounded-[10px] pointer-events-none"
+              className="fixed z-[9991] pointer-events-none"
               style={{
                 top: spotTop,
                 left: spotLeft,
                 width: spotW,
                 height: spotH,
-                boxShadow: "0 0 0 2px #FF5210",
+                borderRadius: RADIUS,
+                boxShadow: "0 0 0 2.5px #FF5210, 0 0 0 4px rgba(255,82,16,0.15)",
               }}
             />
           )}

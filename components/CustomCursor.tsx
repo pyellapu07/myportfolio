@@ -127,7 +127,7 @@ export default function CustomCursor() {
           initial={{ opacity: 0.6, scale: 1 }}
           animate={{ opacity: 0, scale: 1.1 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="pointer-events-none fixed z-[200]"
+          className="pointer-events-none fixed z-[9996]"
           style={{
             left: mark.x,
             top: mark.y,
@@ -145,7 +145,7 @@ export default function CustomCursor() {
 
       {/* Outer ring — lags, morphs on hover */}
       <motion.div
-        className="pointer-events-none fixed z-[201]"
+        className="pointer-events-none fixed z-[9997]"
         animate={{
           width: isHovering ? 40 : 28,
           height: isHovering ? 40 : 28,
@@ -168,7 +168,7 @@ export default function CustomCursor() {
 
       {/* Inner dot — snappy, always at exact cursor */}
       <motion.div
-        className="pointer-events-none fixed z-[202]"
+        className="pointer-events-none fixed z-[9998]"
         animate={{
           width: isHovering ? 5 : 4,
           height: isHovering ? 5 : 4,
