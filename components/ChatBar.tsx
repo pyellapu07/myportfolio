@@ -159,6 +159,7 @@ export default function ChatBar() {
 
   return (
     <motion.div
+      data-tour="chat"
       initial={{ y: 80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{

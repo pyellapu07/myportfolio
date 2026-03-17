@@ -14,12 +14,14 @@ import ChatBar from "@/components/ChatBar";
 import RecruiterSplash from "@/components/RecruiterSplash";
 import CustomCursor from "@/components/CustomCursor";
 import TestimonialToast from "@/components/TestimonialToast";
+import OnboardingTour from "@/components/OnboardingTour";
 
 export default function Home() {
   return (
     <RecruiterProvider>
       <CustomCursor />
       <TestimonialToast />
+      <OnboardingTour />
       <RecruiterSplash />
       <Header initialDark />
       <main id="main">

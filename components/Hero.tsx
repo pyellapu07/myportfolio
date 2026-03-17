@@ -256,6 +256,7 @@ export default function Hero() {
           drag
           dragMomentum={false}
           dragElastic={0}
+          data-tour="folder"
           className="absolute z-[25] hidden cursor-grab select-none flex-col items-center gap-1 md:flex active:cursor-grabbing"
           style={{ right: "22%", top: "46%" }}
           /* initial=false after first mount so finderOpen toggles don't re-run entrance */

@@ -71,7 +71,7 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
           </div>
 
           {/* Right side */}
-          <div className="hidden items-center gap-5 md:flex">
+          <div className="hidden items-center gap-5 md:flex" data-tour="recruiter">
             <RecruiterToggle size="sm" dark={!isDarkText} />
             <a
               href={SITE.resumeUrl}
