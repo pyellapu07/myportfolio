@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import PasswordGate from "@/components/PasswordGate";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -691,6 +692,11 @@ export default function XylemInstitutePage() {
   );
 
   return (
+    <PasswordGate
+      password="nairobi2025"
+      storageKey="xylem-unlocked"
+      projectName="NASA Harvest — Xylem Institute Case Study"
+    >
     <div className="relative min-h-screen bg-[#FAFAFA] text-text selection:bg-primary/20">
       <CustomCursor />
       <Header initialDark={true} />
@@ -1431,5 +1437,6 @@ export default function XylemInstitutePage() {
 
       <Footer />
     </div>
+    </PasswordGate>
   );
 }

@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import PasswordGate from "@/components/PasswordGate";
 import { Menu, X, Download, ArrowRight, ArrowLeft, MessageCircle, RefreshCw, ChevronDown, Sparkles, Loader2, Briefcase, Copy, Check, Maximize2, Minimize2 } from "lucide-react";
 import { useRecruiter } from "@/lib/recruiter-context";
 import Header from "@/components/Header";
@@ -948,6 +949,11 @@ const GridBackground = () => (
 export default function MarketCrunchPage() {
   const { isRecruiterMode } = useRecruiter();
   return (
+    <PasswordGate
+      password="marketcrunch2025"
+      storageKey="mc-unlocked"
+      projectName="MarketCrunch AI — Case Study"
+    >
     <div className={cn("relative min-h-screen bg-[#FAFAFA] text-text selection:bg-primary/20", isRecruiterMode && "recruiter-mode")}>
       <CustomCursor />
       <Header initialDark={true} />
@@ -1984,5 +1990,6 @@ export default function MarketCrunchPage() {
 
       <Footer />
     </div>
+    </PasswordGate>
   );
 }

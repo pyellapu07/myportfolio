@@ -61,7 +61,7 @@ export const PROJECTS: Project[] = [
     image: "/marketcrunchaipreview.gif",
     link: "/work/marketcrunch",
     featured: true,
-    cursorLabel: "View case study →",
+    cursorLabel: "NDA · ask me about it",
   },
   {
     title: "Faculty Dashboard",
@@ -85,7 +85,7 @@ export const PROJECTS: Project[] = [
     image: "/xylemlabscreenrecording.gif",
     link: "/work/xylem-institute",
     featured: false,
-    cursorLabel: "View case study →",
+    cursorLabel: "NDA · ask me about it",
   },
   {
     title: "HackImpact Application Portal",
