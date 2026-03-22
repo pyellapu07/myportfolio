@@ -54,9 +54,9 @@ export const PROJECTS: Project[] = [
   {
     title: "MarketCrunch AI",
     subtitle: "Product Design & UX Research — Trading Platform Redesign",
-    impact: "167% increase in new user attempts · 40% boost in elite plan sales · 15% reduction in reporting errors",
+    impact: "End-to-end redesign · design system · usability research",
     description:
-      "Led a comprehensive UX audit across 20+ screens benchmarking against Robinhood, Yahoo Finance, and TradingView. Designed high-fidelity prototypes validated through moderated usability testing with 12 enterprise users. Built a scalable design system following atomic design principles, redesigned onboarding flow and dashboard information architecture resulting in dramatically improved conversion and feature adoption metrics.",
+      "Worked embedded with the product team on a fintech trading platform — conducting UX research, running usability sessions, and designing a scalable component system. Focused on improving how users understand complex financial data at a glance.",
     techStack: ["Product Design", "UX Research", "Figma", "Design Systems", "Usability Testing", "Heuristic Evaluation"],
     image: "/marketcrunchaipreview.gif",
     link: "/work/marketcrunch",
