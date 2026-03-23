@@ -1458,8 +1458,7 @@ export default function MarketCrunchPage() {
 
                 {/* Branch 2 */}
                 <div className="flex flex-col items-center w-48 relative">
-                  <div className="bg-white border-2 border-blue-500/30 px-6 py-3 rounded-lg font-manrope font-semibold text-blue-900 shadow-sm w-full text-center z-10 flex flex-col items-center justify-center">
-                    <span className="text-xl mb-1">📈</span>
+                  <div className="bg-white border-2 border-blue-500/30 px-6 py-3 rounded-lg font-manrope font-semibold text-blue-900 shadow-sm w-full text-center z-10 flex items-center justify-center">
                     <span className="text-sm">Analyze</span>
                   </div>
                   <div className="w-0.5 h-6 bg-border/50 my-2"></div>
@@ -1471,8 +1470,7 @@ export default function MarketCrunchPage() {
 
                 {/* Branch 3 */}
                 <div className="flex flex-col items-center w-48">
-                  <div className="bg-white border-2 border-green-500/30 px-6 py-3 rounded-lg font-manrope font-semibold text-green-900 shadow-sm w-full text-center z-10 flex flex-col items-center justify-center">
-                    <span className="text-xl mb-1">🎯</span>
+                  <div className="bg-white border-2 border-green-500/30 px-6 py-3 rounded-lg font-manrope font-semibold text-green-900 shadow-sm w-full text-center z-10 flex items-center justify-center">
                     <span className="text-sm">AI Picks</span>
                   </div>
                   <div className="w-0.5 h-6 bg-border/50 my-2"></div>
@@ -1635,8 +1633,8 @@ export default function MarketCrunchPage() {
               />
             </div>
             <div className="font-mono text-xs text-text-muted flex flex-col gap-2 mt-1">
-              <span className="flex items-center gap-1.5">🔴 <strong className="font-medium text-text-secondary">Before:</strong> Disjointed experience with no reliable way to return home or switch core contexts.</span>
-              <span className="flex items-center gap-1.5">🟢 <strong className="font-medium text-text-secondary">After:</strong> A persistent bottom tab bar acting as a primary scaffold, anchored by the AI Picks gateway.</span>
+              <span className="flex items-center gap-1.5"><strong className="font-medium text-text-secondary">Before:</strong> Disjointed experience with no reliable way to return home or switch core contexts.</span>
+              <span className="flex items-center gap-1.5"><strong className="font-medium text-text-secondary">After:</strong> A persistent bottom tab bar acting as a primary scaffold, anchored by the AI Picks gateway.</span>
             </div>
           </div>
 
