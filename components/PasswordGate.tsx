@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
+import CustomCursor from "@/components/CustomCursor";
 
 // Each protected page has its own storage key so they're independently unlocked
 interface PasswordGateProps {
@@ -52,6 +53,7 @@ export default function PasswordGate({
 
   return (
     <AnimatePresence>
+      <CustomCursor />
       <motion.div
         key="gate"
         initial={{ opacity: 0 }}
