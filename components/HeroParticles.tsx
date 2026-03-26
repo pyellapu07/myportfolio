@@ -24,6 +24,7 @@ const NATURAL: Record<string, [number, number]> = {
   "togglefigma.png": [221, 115],
   "variants figma.png": [155, 239],
   "self emoticon.png": [1024, 1024],
+  "microsoft-logo.png": [400, 134],
 };
 
 const DISPLAY_W: Record<string, number> = {
@@ -46,6 +47,7 @@ const DISPLAY_W: Record<string, number> = {
   "togglefigma.png": 130,
   "variants figma.png": 100,
   "self emoticon.png": 90,
+  "microsoft-logo.png": 88,
 };
 
 interface SlotItem {
@@ -80,6 +82,9 @@ const SLOTS: SlotItem[] = [
   { file: "conversionviz.png", left: 2, top: 52, depth: 0.14, rotation: 4, opacity: 0.40, anchor: "tl" },
   { file: "self emoticon.png", left: 3, top: 38, depth: 0.12, rotation: -6, opacity: 0.55, anchor: "tl" },
   { file: "variants figma.png", left: 1, top: 72, depth: 0.11, rotation: -3, opacity: 0.38, anchor: "tl" },
+
+  // ── MICROSOFT BADGE ────────────────────────────────────────────────
+  { file: "microsoft-logo.png", left: 78, top: 58, depth: 0.13, rotation: -8, opacity: 1, anchor: "tr" },
 
   // ── TOP-LEFT ───────────────────────────────────────────────────────
   { file: "Cursor miro.png", left: 3, top: 12, depth: 0.06, rotation: 8, opacity: 0.38, anchor: "tl" },
@@ -311,7 +316,55 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
             onPointerEnter={() => setHoveredIdx(i)}
             onPointerLeave={() => { if (!isDragging) setHoveredIdx(null); }}
           >
-            {item.file === "self emoticon.png" ? (
+            {item.file === "microsoft-logo.png" ? (
+              <div className="relative" style={{ width: "100%", height: "100%" }}>
+                {/* Hover tooltip — trophy + achievement text */}
+                <div style={{
+                  position: "absolute",
+                  bottom: "calc(100% + 10px)",
+                  left: "50%",
+                  transform: `translateX(-50%) translateY(${isHovered ? "0px" : "8px"})`,
+                  opacity: isHovered ? 1 : 0,
+                  transition: "opacity 0.22s ease, transform 0.22s ease",
+                  pointerEvents: "none",
+                  whiteSpace: "nowrap",
+                  zIndex: 100,
+                }}>
+                  <div style={{
+                    background: "rgba(255,255,255,0.96)",
+                    backdropFilter: "blur(10px)",
+                    borderRadius: "8px",
+                    padding: "6px 10px",
+                    border: "1px solid rgba(0,0,0,0.07)",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.10)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "7px",
+                  }}>
+                    {/* Trophy SVG */}
+                    <svg width="13" height="16" viewBox="0 0 20 26" fill="none">
+                      <rect x="0" y="0" width="3" height="7" rx="1.5" fill="#F5A623"/>
+                      <rect x="17" y="0" width="3" height="7" rx="1.5" fill="#F5A623"/>
+                      <path d="M3 0h14v9a7 7 0 01-14 0V0z" fill="#FFB800"/>
+                      <path d="M3 0h14v5a7 7 0 01-14 0V0z" fill="#FFC832"/>
+                      <rect x="8" y="16" width="4" height="5" rx="1" fill="#FFB800"/>
+                      <rect x="5" y="21" width="10" height="2.5" rx="1.25" fill="#F5A623"/>
+                    </svg>
+                    <span style={{ fontFamily: "monospace", fontSize: "10px", color: "#333", letterSpacing: "0.04em", fontWeight: 500 }}>
+                      1st Place · MLSA Vinci Di UI · 2021
+                    </span>
+                  </div>
+                </div>
+                {/* Logo */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/microsoft-logo.png"
+                  alt="Microsoft MLSA - 1st Place Vinci Di UI"
+                  draggable={false}
+                  style={{ width: "100%", height: "auto", display: "block", userSelect: "none", pointerEvents: "none" }}
+                />
+              </div>
+            ) : item.file === "self emoticon.png" ? (
               <div className="relative" style={{ width: "100%", height: "100%" }}>
                 <video
                   ref={videoRef}
