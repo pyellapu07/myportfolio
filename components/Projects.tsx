@@ -209,7 +209,7 @@ function GridCard({ project, index, onMouseMove, onMouseEnter, onMouseLeave }: C
       onMouseLeave={onMouseLeave}
     >
       <Wrapper>
-        {project.title === "NASA Harvest — Xylem Institute" ? (
+        {project.title === "NASA Harvest, Xylem Institute" ? (
           <div
             className="relative flex items-center justify-center overflow-hidden px-4 py-4 aspect-[16/10] sm:px-6 sm:py-6"
             style={{ background: "linear-gradient(135deg, #ffffff 0%, #dcfce7 45%, #86efac 100%)" }}

@@ -46,9 +46,9 @@ function getScoreMessage(score: number, total: number) {
     const pct = score / total;
     if (pct >= 0.9) return "You'd make an incredible UX auditor. Ship it? Not without your review.";
     if (pct >= 0.7) return "Sharp eye! Most usability issues don't stand a chance around you.";
-    if (pct >= 0.5) return "Solid catch rate — a few slipped through, but you've got the instinct.";
+    if (pct >= 0.5) return "Solid catch rate, a few slipped through, but you've got the instinct.";
     if (pct >= 0.3) return "Not bad for a first audit! The tricky ones need a second look.";
-    return "UX issues are sneaky — but now you know what to look for. Try again?";
+    return "UX issues are sneaky, but now you know what to look for. Try again?";
 }
 
 /* ── Component ──────────────────────────────────────────────────────── */
@@ -196,7 +196,7 @@ export default function UXAuditGame({ onExit }: { onExit: () => void }) {
             {/* Screen reader live region */}
             <div ref={liveRef} className="sr-only" aria-live="polite" aria-atomic="true" />
 
-            {/* Exit button — always visible */}
+            {/* Exit button, always visible */}
             <button
                 onClick={onExit}
                 className="absolute right-6 top-6 z-[110] flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"

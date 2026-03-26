@@ -96,7 +96,7 @@ function SprintDivider({ number, label, weeks, positive = true }: {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   RADIAL DIAL NAV — vertical mechanical dial with tick sounds
+   RADIAL DIAL NAV, vertical mechanical dial with tick sounds
    Drag up/down to scrub sections; ticks fire on each crossing
 ───────────────────────────────────────────────────────────── */
 const SECTION_NAV = [
@@ -678,7 +678,7 @@ function ComponentSheet({ src, alt, caption }: { src: string; alt: string; capti
 }
 
 /* ─────────────────────────────────────────────────────────────
-   AUDIT CAROUSEL — Full-bleed infinite auto-scroll
+   AUDIT CAROUSEL, Full-bleed infinite auto-scroll
 ───────────────────────────────────────────────────────────── */
 const AUDIT_IMAGES = [
   "0.Guide.png",
@@ -848,7 +848,7 @@ function RecruiterBanner() {
           />
           <Briefcase size={12} className="text-violet-200 shrink-0" />
           <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/90">
-            Recruiter Mode — Impact Lens Active
+            Recruiter Mode, Impact Lens Active
           </span>
           <span className="h-3 w-px bg-white/20 mx-1" />
           <span className="font-mono text-[10px] text-violet-300/80">Interview prompts available below ↓</span>
@@ -904,7 +904,7 @@ function WhyThisMatters({ id, headline, points, nextHref, prevHref }: { id?: str
       >
         <div className="mb-4 flex items-center gap-2.5">
           <SparkIcon size={18} />
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary/70 font-semibold">Why This Matters — Recruiter Lens</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary/70 font-semibold">Why This Matters, Recruiter Lens</p>
         </div>
         <p className="font-manrope text-base font-semibold text-text mb-4">{headline}</p>
         <ul className="space-y-2">
@@ -952,7 +952,7 @@ export default function MarketCrunchPage() {
     <PasswordGate
       password="marketcrunch2025"
       storageKey="mc-unlocked"
-      projectName="MarketCrunch AI — Case Study"
+      projectName="MarketCrunch AI, Case Study"
     >
     <div className={cn("relative min-h-screen bg-[#FAFAFA] text-text selection:bg-primary/20", isRecruiterMode && "recruiter-mode")}>
       <CustomCursor />
@@ -1072,7 +1072,7 @@ export default function MarketCrunchPage() {
             <div className="mt-8 rounded-xl border border-primary/15 bg-primary/4 p-6">
               <p className="font-mono text-[10px] uppercase tracking-widest text-primary/60 mb-2">CEO · Post-Stealth Excerpt</p>
               <p className="font-mono text-sm leading-relaxed text-text">
-                &quot;MAU grew ~16x, double-digit engagement growth... That wouldn&apos;t be possible without our small-but-mighty team who combined <strong className="font-medium">delightful UX and quantitative research rigor.</strong>&quot; — Bhushan Suryavanshi, Founder & CEO
+                &quot;MAU grew ~16x, double-digit engagement growth... That wouldn&apos;t be possible without our small-but-mighty team who combined <strong className="font-medium">delightful UX and quantitative research rigor.</strong>&quot;, Bhushan Suryavanshi, Founder & CEO
               </p>
             </div>
           </div>
@@ -1084,8 +1084,8 @@ export default function MarketCrunchPage() {
           headline="This designer drove measurable business outcomes, not just Figma deliverables."
           points={[
             "16× MAU growth proves the redesigns improved retention and activation, not just aesthetics.",
-            "Received a performance bonus as sole designer — the CEO attributed growth to UX clarity and trust signals.",
-            "Shipped designs in React JS using Cursor — rare for a designer, demonstrates full product ownership.",
+            "Received a performance bonus as sole designer, the CEO attributed growth to UX clarity and trust signals.",
+            "Shipped designs in React JS using Cursor, rare for a designer, demonstrates full product ownership.",
             "Managed design-to-dev handoff via Figma Dev Mode, reducing ambiguity for the engineering team.",
           ]}
           nextHref="#lens-2"
@@ -1320,7 +1320,7 @@ export default function MarketCrunchPage() {
             <AuditCarousel />
           </div>
 
-          {/* Competitor Analysis — companies benchmarked */}
+          {/* Competitor Analysis, companies benchmarked */}
           <Fade>
             <div className="mb-16">
               <p className="mb-6 font-mono text-[10px] uppercase tracking-widest text-text-muted">List of Competitors Considered</p>
@@ -1365,9 +1365,9 @@ export default function MarketCrunchPage() {
         <WhyThisMatters
           headline="Structured research methodology before a single Figma frame was opened."
           points={[
-            "Heuristic evaluation against Nielsen's 10 principles + WCAG 2.1 AA — not just vibes-based critique.",
+            "Heuristic evaluation against Nielsen's 10 principles + WCAG 2.1 AA, not just vibes-based critique.",
             "Competitive benchmarking (TradingView, Robinhood, Seeking Alpha) to identify industry-standard patterns.",
-            "All findings triaged by severity (P0/P1/P2) and mapped to Asana sprints — shows process maturity.",
+            "All findings triaged by severity (P0/P1/P2) and mapped to Asana sprints, shows process maturity.",
             "Demonstrates an ability to balance user needs, business goals, and technical constraints under startup speed.",
           ]}
           prevHref="#lens-1"
@@ -1606,7 +1606,7 @@ export default function MarketCrunchPage() {
               <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #f19d9e33, #f1ece6)" }}>
                 <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-red-500 mb-2">The Problem</p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                  MarketCrunch&apos;s primary use case is mobile, yet had <strong className="font-medium text-text">no persistent navigation scaffold</strong>. Switching between Analyze, AI Picks, Options, and Market Pulse required memory-dependent paths — violating Recognition over Recall (Nielsen #6).
+                  MarketCrunch&apos;s primary use case is mobile, yet had <strong className="font-medium text-text">no persistent navigation scaffold</strong>. Switching between Analyze, AI Picks, Options, and Market Pulse required memory-dependent paths, violating Recognition over Recall (Nielsen #6).
                 </p>
               </div>
             </Fade>
@@ -1614,7 +1614,7 @@ export default function MarketCrunchPage() {
               <div className="rounded-xl p-6" style={{ background: "linear-gradient(270deg, #9ff09c33, #f0ebe6)" }}>
                 <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-green-600 mb-2">The Solution</p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                  A <strong className="font-medium text-text">persistent bottom tab bar</strong> following iOS HIG + Material Design conventions — the most thumb-accessible zone per eye-tracking research. Icon + label pairs enable direct wayfinding with zero cognitive overhead.
+                  A <strong className="font-medium text-text">persistent bottom tab bar</strong> following iOS HIG + Material Design conventions, the most thumb-accessible zone per eye-tracking research. Icon + label pairs enable direct wayfinding with zero cognitive overhead.
                 </p>
               </div>
             </Fade>
@@ -1916,7 +1916,7 @@ export default function MarketCrunchPage() {
                   <p className="font-manrope text-[10px] font-bold uppercase tracking-[0.18em] text-[#8E60F0] m-0">Julian (Swing Trader)</p>
                 </div>
                 <p className="font-mono text-sm leading-relaxed text-text mt-3">
-                  &quot;As a swing trader monitoring AAPL, TSLA, and NVDA, I want to re-access analyzed tickers without re-entering symbols — eliminating the 15+ weekly manual inputs that interrupt my analysis workflow.&quot;
+                  &quot;As a swing trader monitoring AAPL, TSLA, and NVDA, I want to re-access analyzed tickers without re-entering symbols, eliminating the 15+ weekly manual inputs that interrupt my analysis workflow.&quot;
                 </p>
               </div>
             </div>

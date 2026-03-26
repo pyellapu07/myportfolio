@@ -75,7 +75,7 @@ function WhyThisMatters({ id, headline, points, nextHref, prevHref }: { id?: str
       >
         <div className="mb-4 flex items-center gap-2.5">
           <SparkIcon size={18} />
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary/70 font-semibold">Why This Matters — Recruiter Lens</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary/70 font-semibold">Why This Matters, Recruiter Lens</p>
         </div>
         <p className="font-manrope text-base font-semibold text-text mb-4">{headline}</p>
         <ul className="space-y-2">
@@ -167,7 +167,7 @@ function ProjectSmartBar() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: `[Context: Transurban Express Lanes UX Research — Usabilathon competition project by EZ Pass Transurban. In-person research conducted in Virginia at Transurban HQ. Mixed-methods study: 127 survey participants, 8 semi-structured in-depth interviews, usability testing sessions, moderated think-aloud protocol. Research areas: toll payment flows, wayfinding signage comprehension, transponder setup, account management. Methods: affinity mapping (Miro), System Usability Scale (SUS), User Experience Questionnaire (UEQ), thematic analysis. Key findings: signage confusion at HOV entry points, penalty letter intimidation reducing adoption, cluttered account management UI, transponder placement instructions unclear. Deliverables: research synthesis report, affinity map, SUS/UEQ data, stakeholder presentation to Transurban team in Virginia. Team: Pradeep Yellapu (lead researcher). Project resulted in actionable design recommendations for Transurban to improve wayfinding, payment transparency, and onboarding.] ${text}`,
+          message: `[Context: Transurban Express Lanes UX Research, Usabilathon competition project by EZ Pass Transurban. In-person research conducted in Virginia at Transurban HQ. Mixed-methods study: 127 survey participants, 8 semi-structured in-depth interviews, usability testing sessions, moderated think-aloud protocol. Research areas: toll payment flows, wayfinding signage comprehension, transponder setup, account management. Methods: affinity mapping (Miro), System Usability Scale (SUS), User Experience Questionnaire (UEQ), thematic analysis. Key findings: signage confusion at HOV entry points, penalty letter intimidation reducing adoption, cluttered account management UI, transponder placement instructions unclear. Deliverables: research synthesis report, affinity map, SUS/UEQ data, stakeholder presentation to Transurban team in Virginia. Team: Pradeep Yellapu (lead researcher). Project resulted in actionable design recommendations for Transurban to improve wayfinding, payment transparency, and onboarding.] ${text}`,
           mode: isRecruiterMode ? "recruiter" : "general",
           conversationHistory: [],
         }),
@@ -583,7 +583,7 @@ export default function TransurbanPage() {
                 <span className="text-primary">Express Lanes Experience.</span>
               </h1>
               <p className="max-w-xl font-mono text-base leading-relaxed text-text-secondary md:text-lg">
-                A mixed-methods UX research study — conducted in-house at <RecruiterHighlight>Transurban Virginia</RecruiterHighlight> — to identify critical usability barriers in toll payment, wayfinding, and account management for <RecruiterHighlight>127 Express Lane users</RecruiterHighlight>.
+                A mixed-methods UX research study, conducted in-house at <RecruiterHighlight>Transurban Virginia</RecruiterHighlight>, to identify critical usability barriers in toll payment, wayfinding, and account management for <RecruiterHighlight>127 Express Lane users</RecruiterHighlight>.
               </p>
             </div>
 
@@ -624,7 +624,7 @@ export default function TransurbanPage() {
             </div>
           </div>
 
-          {/* Hero image — payment prototype GIF */}
+          {/* Hero image, payment prototype GIF */}
           <MediaPop><div className="mt-8">
             <div className="relative flex items-center justify-center overflow-hidden rounded-2xl border border-border/50 bg-[#EBEBEB] px-10 py-10">
               <div
@@ -636,7 +636,7 @@ export default function TransurbanPage() {
               >
                 <Image
                   src="/transurban/payment_prototype.gif"
-                  alt="Transurban Express Lanes — Payment Flow Prototype"
+                  alt="Transurban Express Lanes, Payment Flow Prototype"
                   width={1200}
                   height={675}
                   className="w-full h-auto object-cover"
@@ -646,7 +646,7 @@ export default function TransurbanPage() {
               </div>
             </div>
             <p className="mt-4 text-center font-mono text-xs text-text-muted">
-              Payment flow prototype — one of the key interaction sequences evaluated during usability testing sessions.
+              Payment flow prototype, one of the key interaction sequences evaluated during usability testing sessions.
             </p>
           </div></MediaPop>
         </div>
@@ -663,13 +663,13 @@ export default function TransurbanPage() {
           <Fade><div className="grid gap-12 md:grid-cols-2 lg:gap-24">
             <div className="space-y-5">
               <p className="font-mono text-base leading-relaxed text-text-secondary">
-                The <strong className="font-medium text-text">EZ Pass Transurban Usabilathon</strong> was a competitive UX research challenge in which select teams were invited in-house to Transurban's Virginia offices to evaluate the Express Lanes user experience end-to-end — from pre-trip wayfinding through post-trip account reconciliation.
+                The <strong className="font-medium text-text">EZ Pass Transurban Usabilathon</strong> was a competitive UX research challenge in which select teams were invited in-house to Transurban's Virginia offices to evaluate the Express Lanes user experience end-to-end, from pre-trip wayfinding through post-trip account reconciliation.
               </p>
               <p className="font-mono text-base leading-relaxed text-text-secondary">
                 Unlike a traditional academic project, this was a <strong className="font-medium text-text">real-world stakeholder engagement</strong>: our research findings were presented directly to the Transurban product and policy team, with the expectation that identified friction points would inform roadmap decisions.
               </p>
               <p className="font-mono text-base leading-relaxed text-text-secondary">
-                The scope was deliberately broad — covering physical wayfinding, digital account management, transponder onboarding, and penalty communication — reflecting the <strong className="font-medium text-text">full user lifecycle</strong> rather than a single touchpoint.
+                The scope was deliberately broad, covering physical wayfinding, digital account management, transponder onboarding, and penalty communication, reflecting the <strong className="font-medium text-text">full user lifecycle</strong> rather than a single touchpoint.
               </p>
             </div>
 
@@ -691,7 +691,7 @@ export default function TransurbanPage() {
             />
           </div></MediaPop>
           <p className="mt-4 text-center font-mono text-xs text-text-muted">
-            EZ Pass Maryland · Transurban — the two systems whose integration created the core user experience friction we investigated.
+            EZ Pass Maryland · Transurban, the two systems whose integration created the core user experience friction we investigated.
           </p>
         </div>
       </section>
@@ -716,7 +716,7 @@ export default function TransurbanPage() {
 
           <Fade><div className="mb-10 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              We designed a <strong className="font-medium text-text">convergent mixed-methods protocol</strong> — combining a quantitative survey phase for breadth with a qualitative interview and usability-testing phase for depth. The two datasets were triangulated during synthesis to distinguish widespread systemic issues from edge-case friction.
+              We designed a <strong className="font-medium text-text">convergent mixed-methods protocol</strong>, combining a quantitative survey phase for breadth with a qualitative interview and usability-testing phase for depth. The two datasets were triangulated during synthesis to distinguish widespread systemic issues from edge-case friction.
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               The survey instrument was distributed to <strong className="font-medium text-text">127 Express Lane users</strong> across the Northern Virginia corridor, capturing frequency of use, self-reported pain points, transponder familiarity, and satisfaction proxies. Survey responses were used to prioritize interview topics and identify participant segments for the qualitative phase.
@@ -727,32 +727,32 @@ export default function TransurbanPage() {
           <MediaPop><div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
             <Image
               src="/transurban/researchplanonboard1.png"
-              alt="Research plan on whiteboard — Usabilathon kickoff"
+              alt="Research plan on whiteboard, Usabilathon kickoff"
               fill
               className="object-contain p-4 transition-transform duration-700 hover:scale-[1.02]"
             />
           </div></MediaPop>
           <p className="mt-4 text-center font-mono text-xs text-text-muted">
-            Research plan whiteboard — scoped and structured in-house at the Transurban Virginia office on day one.
+            Research plan whiteboard, scoped and structured in-house at the Transurban Virginia office on day one.
           </p>
 
           {/* Method breakdown */}
           <Fade><div className="mt-14 grid gap-5 md:grid-cols-3">
             {[
               {
-                label: "Phase 1 — Generative survey",
+                label: "Phase 1, Generative survey",
                 title: "127-participant quantitative sweep",
                 body: "Structured questionnaire distributed to active Express Lane users. Captured usage frequency, self-reported pain points, and satisfaction ratings to identify the highest-prevalence friction themes before committing interview time.",
               },
               {
-                label: "Phase 2 — Qualitative interviews",
+                label: "Phase 2, Qualitative interviews",
                 title: "8 semi-structured in-depth sessions",
-                body: "One-on-one interviews with Express Lane users representing a cross-section of usage patterns — commuters, occasional users, and first-time adopters. Each session followed a flexible topic guide allowing emergent themes to surface organically.",
+                body: "One-on-one interviews with Express Lane users representing a cross-section of usage patterns, commuters, occasional users, and first-time adopters. Each session followed a flexible topic guide allowing emergent themes to surface organically.",
               },
               {
-                label: "Phase 3 — Usability evaluation",
+                label: "Phase 3, Usability evaluation",
                 title: "Think-aloud protocol + task analysis",
-                body: "Moderated usability testing using a think-aloud protocol. Participants were asked to complete representative tasks — adding funds, locating transaction history, understanding a penalty notice — while narrating their reasoning aloud.",
+                body: "Moderated usability testing using a think-aloud protocol. Participants were asked to complete representative tasks, adding funds, locating transaction history, understanding a penalty notice, while narrating their reasoning aloud.",
               },
             ].map((m) => (
               <InsightCard
@@ -777,10 +777,10 @@ export default function TransurbanPage() {
 
           <Fade><div className="mb-10 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              Interview transcripts and usability session notes were synthesized using <strong className="font-medium text-text">affinity mapping on Miro</strong> — grouping atomic observations into first-order themes, then clustering themes into higher-order problem domains. This bottom-up synthesis process ensured findings were grounded in participant language rather than pre-existing hypotheses.
+              Interview transcripts and usability session notes were synthesized using <strong className="font-medium text-text">affinity mapping on Miro</strong>, grouping atomic observations into first-order themes, then clustering themes into higher-order problem domains. This bottom-up synthesis process ensured findings were grounded in participant language rather than pre-existing hypotheses.
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              The affinity map revealed four dominant problem domains that cut across multiple user segments and research phases — confirming their systemic nature rather than representing isolated incidents.
+              The affinity map revealed four dominant problem domains that cut across multiple user segments and research phases, confirming their systemic nature rather than representing isolated incidents.
             </p>
           </div></Fade>
 
@@ -788,39 +788,39 @@ export default function TransurbanPage() {
           <MediaPop><div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
             <Image
               src="/transurban/affinitymapping on board.png"
-              alt="Affinity mapping session — Miro board"
+              alt="Affinity mapping session, Miro board"
               fill
               className="object-cover transition-transform duration-700 hover:scale-[1.02]"
             />
           </div></MediaPop>
           <p className="mt-4 text-center font-mono text-xs text-text-muted">
-            Affinity map — synthesizing 8 interview transcripts and 127 survey responses into dominant usability themes.
+            Affinity map, synthesizing 8 interview transcripts and 127 survey responses into dominant usability themes.
           </p>
 
           {/* Key findings */}
           <Fade><div className="mt-14 grid gap-5 md:grid-cols-2">
-            <InsightCard label="Finding 01 — Wayfinding">
+            <InsightCard label="Finding 01, Wayfinding">
               <p className="font-manrope text-sm font-medium text-text mt-1">HOV entry signage caused consistent lane confusion</p>
               <p className="mt-2 font-mono text-xs leading-relaxed text-text-muted">
-                Participants consistently misidentified HOV entry points, particularly where Express and General Purpose lanes diverge. Signage cognitive load was compounded by high driving speeds — users reported not having sufficient time to parse multi-element sign compositions before passing the decision point.
+                Participants consistently misidentified HOV entry points, particularly where Express and General Purpose lanes diverge. Signage cognitive load was compounded by high driving speeds, users reported not having sufficient time to parse multi-element sign compositions before passing the decision point.
               </p>
             </InsightCard>
-            <InsightCard label="Finding 02 — Penalty communication">
+            <InsightCard label="Finding 02, Penalty communication">
               <p className="font-manrope text-sm font-medium text-text mt-1">Physical penalty letters generated avoidance, not compliance</p>
               <p className="mt-2 font-mono text-xs leading-relaxed text-text-muted">
-                The formal tone and visual density of penalty correspondence caused anxiety rather than motivating resolution. Several participants described leaving penalty letters unopened — a behavioral pattern with direct downstream consequences for Transurban's collections rate and user retention.
+                The formal tone and visual density of penalty correspondence caused anxiety rather than motivating resolution. Several participants described leaving penalty letters unopened, a behavioral pattern with direct downstream consequences for Transurban's collections rate and user retention.
               </p>
             </InsightCard>
-            <InsightCard label="Finding 03 — Account management">
+            <InsightCard label="Finding 03, Account management">
               <p className="font-manrope text-sm font-medium text-text mt-1">Cluttered interface obscured primary account actions</p>
               <p className="mt-2 font-mono text-xs leading-relaxed text-text-muted">
-                The existing account portal presented all functions at equal visual weight — transaction history, auto-replenishment settings, transponder management, and statements competed for attention on a single crowded screen. Participants required significantly more time-on-task than expected for routine actions like adding funds or checking a balance.
+                The existing account portal presented all functions at equal visual weight, transaction history, auto-replenishment settings, transponder management, and statements competed for attention on a single crowded screen. Participants required significantly more time-on-task than expected for routine actions like adding funds or checking a balance.
               </p>
             </InsightCard>
-            <InsightCard label="Finding 04 — Transponder onboarding">
+            <InsightCard label="Finding 04, Transponder onboarding">
               <p className="font-manrope text-sm font-medium text-text mt-1">Physical installation instructions generated repeated errors</p>
               <p className="mt-2 font-mono text-xs leading-relaxed text-text-muted">
-                First-time users consistently misplaced transponders — attaching them below the windshield's metallic band or behind rearview mirror housing — leading to read failures at toll gantries. The included instruction sheet lacked clear spatial reference points, forcing users to rely on trial and error.
+                First-time users consistently misplaced transponders, attaching them below the windshield's metallic band or behind rearview mirror housing, leading to read failures at toll gantries. The included instruction sheet lacked clear spatial reference points, forcing users to rely on trial and error.
               </p>
             </InsightCard>
           </div></Fade>
@@ -829,7 +829,7 @@ export default function TransurbanPage() {
           <Fade><div className="mt-8 rounded-xl border border-primary/15 bg-primary/4 p-6">
             <p className="font-mono text-[10px] uppercase tracking-widest text-primary/60 mb-2">Cross-cutting insight</p>
             <p className="font-mono text-sm leading-relaxed text-text">
-              The most consistent underlying theme across all four domains: <strong className="font-medium">the system was designed from an operational perspective, not a user mental model perspective.</strong> Signage, penalty letters, account structure, and installation guides all reflected how Transurban categorizes information internally — not how a commuter navigating a highway at 65mph processes and acts on it.
+              The most consistent underlying theme across all four domains: <strong className="font-medium">the system was designed from an operational perspective, not a user mental model perspective.</strong> Signage, penalty letters, account structure, and installation guides all reflected how Transurban categorizes information internally, not how a commuter navigating a highway at 65mph processes and acts on it.
             </p>
           </div></Fade>
         </div>
@@ -848,7 +848,7 @@ export default function TransurbanPage() {
               To complement the qualitative findings, we administered two standardized usability measurement instruments: the <strong className="font-medium text-text">System Usability Scale (SUS)</strong> and the <strong className="font-medium text-text">User Experience Questionnaire (UEQ)</strong>. Using validated scales allowed us to benchmark Transurban's performance against established norms and quantify the severity of identified issues with statistical grounding.
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              Participants completed both instruments immediately following their usability testing session, while task experience was still fresh — minimizing retrospective bias and ensuring ratings reflected actual interaction difficulty rather than general satisfaction.
+              Participants completed both instruments immediately following their usability testing session, while task experience was still fresh, minimizing retrospective bias and ensuring ratings reflected actual interaction difficulty rather than general satisfaction.
             </p>
           </div></Fade>
 
@@ -873,7 +873,7 @@ export default function TransurbanPage() {
                 <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted mb-3">User Experience Questionnaire (UEQ)</p>
                 <p className="font-manrope text-sm font-medium text-text mb-3">Multi-dimensional UX quality assessment</p>
                 <p className="font-mono text-xs leading-relaxed text-text-muted">
-                  The UEQ evaluates six dimensions — Attractiveness, Perspicuity, Efficiency, Dependability, Stimulation, and Novelty — on a -3 to +3 scale. This allowed us to isolate which UX dimensions were underperforming relative to industry benchmarks, providing targeted design direction beyond a single composite score.
+                  The UEQ evaluates six dimensions, Attractiveness, Perspicuity, Efficiency, Dependability, Stimulation, and Novelty - on a -3 to +3 scale. This allowed us to isolate which UX dimensions were underperforming relative to industry benchmarks, providing targeted design direction beyond a single composite score.
                 </p>
               </div>
               <div className="relative aspect-[4/3] w-full overflow-hidden border-t border-border/40 bg-white">
@@ -889,7 +889,7 @@ export default function TransurbanPage() {
                 <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted mb-2">Task Completion Performance</p>
                 <p className="font-manrope text-sm font-medium text-text">Time-on-task analysis across key user journeys</p>
                 <p className="mt-2 font-mono text-xs leading-relaxed text-text-muted max-w-2xl">
-                  Time-on-task was recorded for each usability testing scenario. Outlier times — where participants took significantly longer than expected or failed to complete a task — were cross-referenced with concurrent think-aloud narration to identify the specific interface element or content gap responsible for the delay.
+                  Time-on-task was recorded for each usability testing scenario. Outlier times, where participants took significantly longer than expected or failed to complete a task, were cross-referenced with concurrent think-aloud narration to identify the specific interface element or content gap responsible for the delay.
                 </p>
               </div>
               <div className="relative aspect-[16/7] w-full overflow-hidden bg-[#F5F5F7]">
@@ -910,17 +910,17 @@ export default function TransurbanPage() {
 
           <Fade><div className="mb-10 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              A <strong className="font-medium text-text">heuristic evaluation</strong> of the existing Transurban account portal was conducted in parallel with user research. Evaluating against Nielsen's 10 usability heuristics surfaced structural IA issues that user testing later confirmed through behavioral evidence — providing triangulated confidence in the findings.
+              A <strong className="font-medium text-text">heuristic evaluation</strong> of the existing Transurban account portal was conducted in parallel with user research. Evaluating against Nielsen's 10 usability heuristics surfaced structural IA issues that user testing later confirmed through behavioral evidence, providing triangulated confidence in the findings.
             </p>
           </div></Fade>
 
           <Fade><div className="grid gap-8 md:grid-cols-2">
             <MediaPop><figure>
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border bg-[#F5F5F7]">
-                <Image src="/transurban/clutteredoldviewtransurban.png" alt="Existing Transurban account portal — heuristic audit" fill className="object-contain" />
+                <Image src="/transurban/clutteredoldviewtransurban.png" alt="Existing Transurban account portal, heuristic audit" fill className="object-contain" />
               </div>
               <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
-                Existing account interface — violation of Nielsen's Heuristic #8 (aesthetic and minimalist design). All functions rendered at equal weight with no visual hierarchy to guide task completion.
+                Existing account interface, violation of Nielsen's Heuristic #8 (aesthetic and minimalist design). All functions rendered at equal weight with no visual hierarchy to guide task completion.
               </figcaption>
             </figure></MediaPop>
 
@@ -930,7 +930,7 @@ export default function TransurbanPage() {
                   <Image src="/transurban/bettertransponderdesign.png" alt="Improved transponder design concept" fill className="object-contain" />
                 </div>
                 <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
-                  Transponder design recommendation — informed by spatial error data from usability sessions.
+                  Transponder design recommendation, informed by spatial error data from usability sessions.
                 </figcaption>
               </figure>
             </div></MediaPop>
@@ -943,7 +943,7 @@ export default function TransurbanPage() {
                 <Image src="/transurban/preventfinessignageonroads.png" alt="Prevent fines road signage" fill className="object-contain p-2" />
               </div>
               <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
-                HOV enforcement signage — evaluated for legibility and processing time at highway speeds.
+                HOV enforcement signage, evaluated for legibility and processing time at highway speeds.
               </figcaption>
             </figure></MediaPop>
             <MediaPop delay={0.1}><figure>
@@ -951,7 +951,7 @@ export default function TransurbanPage() {
                 <Image src="/transurban/physicallettersentbytransurbantopenaltyusers.png" alt="Penalty letter sent by Transurban" fill className="object-cover" />
               </div>
               <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
-                Penalty letter — formal tone and dense information hierarchy contributed to avoidance behavior.
+                Penalty letter, formal tone and dense information hierarchy contributed to avoidance behavior.
               </figcaption>
             </figure></MediaPop>
             <MediaPop delay={0.2}><figure>
@@ -959,7 +959,7 @@ export default function TransurbanPage() {
                 <Image src="/transurban/physicalletterinvoicesentbytransurbantopenaltyusers.png" alt="Invoice letter from Transurban" fill className="object-cover" />
               </div>
               <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
-                Invoice correspondence — language and layout tested against plain-language readability standards.
+                Invoice correspondence, language and layout tested against plain-language readability standards.
               </figcaption>
             </figure></MediaPop>
           </div></Fade>
@@ -971,7 +971,7 @@ export default function TransurbanPage() {
                 <Image src="/transurban/instructionsonwheretoputtheexpass.png" alt="Transponder placement instructions" fill className="object-contain p-2" />
               </div>
               <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
-                Transponder placement guide — spatial ambiguity led to a high rate of installation errors in testing.
+                Transponder placement guide, spatial ambiguity led to a high rate of installation errors in testing.
               </figcaption>
             </figure></MediaPop>
             <MediaPop delay={0.1}><figure>
@@ -979,7 +979,7 @@ export default function TransurbanPage() {
                 <Image src="/transurban/instructionsarticleprovided by transurban on roads HOV 2.png" alt="HOV road instructions article" fill className="object-contain p-2" />
               </div>
               <figcaption className="mt-3 font-mono text-xs text-text-muted text-center">
-                HOV usage guide — evaluated against plain-language standards; found to assume significant prior knowledge.
+                HOV usage guide, evaluated against plain-language standards; found to assume significant prior knowledge.
               </figcaption>
             </figure></MediaPop>
           </div></Fade>
@@ -1012,8 +1012,8 @@ export default function TransurbanPage() {
 
           <Fade><div className="space-y-8">
             {[
-              { n: "01", title: "Simplify signage through progressive disclosure", finding: "HOV wayfinding confusion", body: "Replace multi-element sign compositions with a sequenced signage system — delivering one critical decision cue per sign in the approach sequence rather than all information simultaneously. Prioritize high-contrast color coding aligned with the existing E-ZPass branding system to reduce cognitive parsing time at highway speeds." },
-              { n: "02", title: "Redesign penalty communication as plain-language guidance", finding: "Penalty letter avoidance behavior", body: "Reframe penalty correspondence from formal legal notices to action-oriented user communications. Lead with the resolution path — a clear, single-step call to action — before any fee or timeline information. Reduce information density by separating penalty notification from payment instructions across two distinct touchpoints." },
+              { n: "01", title: "Simplify signage through progressive disclosure", finding: "HOV wayfinding confusion", body: "Replace multi-element sign compositions with a sequenced signage system, delivering one critical decision cue per sign in the approach sequence rather than all information simultaneously. Prioritize high-contrast color coding aligned with the existing E-ZPass branding system to reduce cognitive parsing time at highway speeds." },
+              { n: "02", title: "Redesign penalty communication as plain-language guidance", finding: "Penalty letter avoidance behavior", body: "Reframe penalty correspondence from formal legal notices to action-oriented user communications. Lead with the resolution path, a clear, single-step call to action, before any fee or timeline information. Reduce information density by separating penalty notification from payment instructions across two distinct touchpoints." },
               { n: "03", title: "Restructure account portal information architecture", finding: "Account management task failure", body: "Apply a task-frequency-based IA hierarchy: surface account balance, add funds, and recent transactions at the top level. Relegate low-frequency administrative actions (statement downloads, transponder settings) to a secondary layer accessible via explicit navigation. This directly addresses the cognitive load identified in the SUS and UEQ Perspicuity scores." },
               { n: "04", title: "Redesign transponder installation guide with spatial anchors", finding: "Transponder placement errors", body: "Replace the text-heavy installation guide with a visual-first instruction set using windshield silhouettes as spatial reference frames. Include explicit callouts for common failure zones (metallic bands, mirror housings). Consider a short-form video QR code as a supplementary channel for users who need dynamic guidance." },
             ].map((r) => (
@@ -1040,7 +1040,7 @@ export default function TransurbanPage() {
 
           <Fade><div className="mb-12 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              The full research synthesis — covering survey analysis, interview themes, usability evaluation data, SUS/UEQ benchmarking, and prioritized recommendations — was presented in-person to the Transurban product and policy team in Virginia. The presentation was structured to map each finding to a business impact metric (collections rate, user retention, support ticket volume) to ground design recommendations in language relevant to the stakeholder audience.
+              The full research synthesis, covering survey analysis, interview themes, usability evaluation data, SUS/UEQ benchmarking, and prioritized recommendations, was presented in-person to the Transurban product and policy team in Virginia. The presentation was structured to map each finding to a business impact metric (collections rate, user retention, support ticket volume) to ground design recommendations in language relevant to the stakeholder audience.
             </p>
           </div></Fade>
 
@@ -1050,7 +1050,7 @@ export default function TransurbanPage() {
               <Image src="/transurban/megivingpresentationtostakeholders.jpeg" alt="Presenting research findings to Transurban stakeholders" fill className="object-cover" />
             </div>
             <figcaption className="mt-4 text-center font-mono text-xs text-text-muted">
-              Presenting research findings and design recommendations to the Transurban team — Virginia, in-house.
+              Presenting research findings and design recommendations to the Transurban team, Virginia, in-house.
             </figcaption>
           </figure></MediaPop>
 
@@ -1059,8 +1059,8 @@ export default function TransurbanPage() {
             <h3 className="mb-8 font-manrope text-xl font-medium text-text">What this project reinforced.</h3>
             <div className="grid gap-5 md:grid-cols-3">
               {[
-                { title: "Field research is irreplaceable", body: "Being physically on-site in Virginia — with access to actual signage, penalty letters, and physical transponders — produced a qualitative depth that remote research could not have replicated. The materials themselves were data." },
-                { title: "Validated scales quantify what interviews describe", body: "The SUS and UEQ gave us the numerical grounding to say 'this is below industry standard' — not just 'users found this confusing.' Stakeholders responded to data-backed severity rankings in ways they wouldn't have to qualitative observations alone." },
+                { title: "Field research is irreplaceable", body: "Being physically on-site in Virginia, with access to actual signage, penalty letters, and physical transponders, produced a qualitative depth that remote research could not have replicated. The materials themselves were data." },
+                { title: "Validated scales quantify what interviews describe", body: "The SUS and UEQ gave us the numerical grounding to say 'this is below industry standard', not just 'users found this confusing.' Stakeholders responded to data-backed severity rankings in ways they wouldn't have to qualitative observations alone." },
                 { title: "Operational logic ≠ user mental model", body: "Every usability failure we found traced back to the same root cause: the system was organized around how Transurban manages data, not how a commuter makes decisions. Naming this pattern early gave our recommendations a unifying rationale." },
               ].map((r) => (
                 <InsightCard key={r.title} label="Reflection">
@@ -1075,10 +1075,10 @@ export default function TransurbanPage() {
           <MediaPop><div className="mt-20">
             <p className="mb-5 text-center font-mono text-[10px] uppercase tracking-widest text-text-muted">The Team</p>
             <div className="relative aspect-[16/7] w-full overflow-hidden rounded-2xl border border-border grayscale transition-all duration-700 hover:grayscale-0">
-              <Image src="/transurban/teampicture.png" alt="Usabilathon team — Transurban Virginia" fill className="object-cover" />
+              <Image src="/transurban/teampicture.png" alt="Usabilathon team, Transurban Virginia" fill className="object-cover" />
             </div>
             <p className="mt-4 text-center font-mono text-xs text-text-muted">
-              Usabilathon team — UX researchers competing in-house at Transurban's Virginia offices.
+              Usabilathon team, UX researchers competing in-house at Transurban's Virginia offices.
             </p>
           </div></MediaPop>
         </div>

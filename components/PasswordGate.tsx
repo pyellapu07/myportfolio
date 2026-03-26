@@ -131,7 +131,7 @@ export default function PasswordGate({
               animate={{ opacity: 1, y: 0 }}
               className="mt-2 font-mono text-[11px] text-red-500"
             >
-              Wrong password — try again or reach out directly.
+              Wrong password, try again or reach out directly.
             </motion.p>
           )}
 

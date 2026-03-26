@@ -19,7 +19,7 @@ const STEPS = [
     target: '[data-tour="recruiter"]',
     title: "Recruiter mode",
     description:
-      "Toggle this to switch the portfolio into a recruiter-focused view — metrics and impact front and center.",
+      "Toggle this to switch the portfolio into a recruiter-focused view, metrics and impact front and center.",
     placement: "bottom" as const,
     scrollBlock: "start" as const,
   },
@@ -27,7 +27,7 @@ const STEPS = [
     target: '[data-tour="folder"]',
     title: "creativesidehustle/",
     description:
-      "An easter egg. Click the folder to explore my graphic design and motion work — the non-UX side of me.",
+      "An easter egg. Click the folder to explore my graphic design and motion work, the non-UX side of me.",
     placement: "left" as const,
     scrollBlock: "center" as const,
   },
@@ -35,7 +35,7 @@ const STEPS = [
     target: "#work",
     title: "Case studies",
     description:
-      "Hover any project card for a custom cursor label. NDA-protected work is locked — reach out and I'll share access.",
+      "Hover any project card for a custom cursor label. NDA-protected work is locked, reach out and I'll share access.",
     placement: "top" as const,
     scrollBlock: "start" as const,
   },
@@ -150,7 +150,7 @@ export default function OnboardingTour() {
     <AnimatePresence>
       {active && (
         <>
-          {/* 4-panel overlay — leaves a transparent hole where the target is.
+          {/* 4-panel overlay, leaves a transparent hole where the target is.
               Cursor passes through the hole freely; clicking outside dismisses. */}
           {/* Top panel */}
           <motion.div key="ov-top"    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -173,7 +173,7 @@ export default function OnboardingTour() {
             className="fixed z-[9990] pointer-events-auto top-0 bottom-0 right-0"
             style={{ left: spotLeft + spotW, top: spotTop, height: spotH, backgroundColor: BG }} />
 
-          {/* Spotlight ring — rounded corners, pointer-events-none so cursor shows */}
+          {/* Spotlight ring, rounded corners, pointer-events-none so cursor shows */}
           {rect && (
             <motion.div
               key={`ring-${step}`}

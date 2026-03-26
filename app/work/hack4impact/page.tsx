@@ -76,7 +76,7 @@ function WhyThisMatters({ id, headline, points, nextHref, prevHref }: { id?: str
       >
         <div className="mb-4 flex items-center gap-2.5">
           <SparkIcon size={18} />
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary/70 font-semibold">Why This Matters — Recruiter Lens</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary/70 font-semibold">Why This Matters, Recruiter Lens</p>
         </div>
         <p className="font-manrope text-base font-semibold text-text mb-4">{headline}</p>
         <ul className="space-y-2">
@@ -683,11 +683,11 @@ export default function HackImpactPage() {
       ══════════════════════════════════════════════ */}
       <section id="h4i-process" className="relative z-10 border-t border-border/40 bg-white py-24 md:py-32">
         <div className="mx-auto max-w-[1000px] px-6 md:px-12">
-          <SectionHeading number="00 / PROCESS" title="How we worked — Agile UX" />
+          <SectionHeading number="00 / PROCESS" title="How we worked, Agile UX" />
 
           <Fade><div className="mb-12 space-y-5 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              This project followed an <strong className="font-medium text-text">Agile UX methodology</strong> — a hybrid of Lean UX thinking and Scrum sprint cadence. Rather than front-loading research before any design work, we ran <strong className="font-medium text-text">parallel discovery and delivery tracks</strong> within each sprint.
+              This project followed an <strong className="font-medium text-text">Agile UX methodology</strong>, a hybrid of Lean UX thinking and Scrum sprint cadence. Rather than front-loading research before any design work, we ran <strong className="font-medium text-text">parallel discovery and delivery tracks</strong> within each sprint.
             </p>
             <p className="font-mono text-base leading-relaxed text-text-secondary">
               Every Monday, the full cross-functional team convened for a structured sprint call: designers presented findings and prototypes, engineers flagged technical constraints, and the Microsoft Reston dev reviewer provided implementation-level feedback. <strong className="font-medium text-text">Stakeholder interviews with Aaryan Patel</strong> (Recruitment Manager) were embedded into Sprint 1 and 2, ensuring the applicant-side redesign stayed aligned with recruiter-side backend requirements.
@@ -696,7 +696,7 @@ export default function HackImpactPage() {
 
           {/* Agile UX sprint diagram placeholder */}
           <Fade><div className="rounded-xl border border-border/50 bg-bg-alt p-8 md:p-10">
-            <p className="mb-6 font-mono text-[10px] uppercase tracking-widest text-text-muted">Agile UX Framework — Sprint Structure</p>
+            <p className="mb-6 font-mono text-[10px] uppercase tracking-widest text-text-muted">Agile UX Framework, Sprint Structure</p>
 
             {/* Sprint timeline */}
             <div className="relative">
@@ -750,7 +750,7 @@ export default function HackImpactPage() {
             </div>
 
             <p className="mt-8 font-mono text-xs text-text-muted border-t border-border/40 pt-6">
-              <strong className="font-medium text-text">Why Agile UX?</strong> — The project had hard sprint deadlines, an active engineering team writing code in parallel, and a dev reviewer who needed to sign off before each sprint closed. Waterfall wasn't an option. Agile UX let us validate with users early and course-correct without losing velocity.
+              <strong className="font-medium text-text">Why Agile UX?</strong>, The project had hard sprint deadlines, an active engineering team writing code in parallel, and a dev reviewer who needed to sign off before each sprint closed. Waterfall wasn't an option. Agile UX let us validate with users early and course-correct without losing velocity.
             </p>
 
             {/* Agile UX framework diagram */}

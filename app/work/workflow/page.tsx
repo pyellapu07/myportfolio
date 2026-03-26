@@ -36,7 +36,7 @@ function WhyThisMatters({ id, headline, points, nextHref, prevHref }: { id?: str
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-40px" }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="relative z-10 mx-auto my-0 max-w-[1000px] px-6 md:px-12" id={id}>
             <div className="relative mb-8 mt-12 overflow-hidden rounded-2xl p-6 md:p-8" style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.05) 0%, rgba(139,92,246,0.06) 30%, rgba(168,85,247,0.04) 60%, rgba(79,70,229,0.03) 100%)", boxShadow: "0 4px 32px rgba(99,102,241,0.06)" }}>
-                <div className="mb-4 flex items-center gap-2.5"><SparkIcon size={18} /><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary/70 font-semibold">Why This Matters — Recruiter Lens</p></div>
+                <div className="mb-4 flex items-center gap-2.5"><SparkIcon size={18} /><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary/70 font-semibold">Why This Matters, Recruiter Lens</p></div>
                 <p className="font-manrope text-base font-semibold text-text mb-4">{headline}</p>
                 <ul className="space-y-2">{points.map((p, i) => (<li key={i} className="flex items-start gap-2.5 font-mono text-sm text-text-secondary"><span className="mt-1 text-primary/50 shrink-0">→</span>{p}</li>))}</ul>
                 {(nextHref || prevHref) && (<div className="mt-6 flex items-center justify-between border-t border-primary/10 pt-4">{prevHref ? <a href={prevHref} className="font-mono text-[10px] font-bold uppercase tracking-widest text-primary/60 hover:text-primary">↑ Previous Lens</a> : <span />}{nextHref ? <a href={nextHref} className="font-mono text-[10px] font-bold uppercase tracking-widest text-primary/60 hover:text-primary">Next Lens ↓</a> : <span />}</div>)}
@@ -230,7 +230,7 @@ function ProjectSmartBar() {
         setIsExpanded(true); setLoading(true); setMessages(m => [...m, { role: "user", text }]); setInput("");
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            const res = await fetch(`${apiUrl}/api/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `[Context: Workflow — Faculty Workload Management UX Research. Led contextual interviews with 8 faculty members (A01-H01) and participatory design sessions with 5 of them. Research question: How do university faculty members manage and prioritize their workload across teaching, research, and service? Methods: semi-structured interviews, participatory design (weekly timeline mapping + dashboard co-design), affinity mapping, journey mapping, identity modeling. Key findings: fragmented tool usage, invisible labor in service work, promotion documentation gaps, desire for integrated dashboard. 120+ data points collected. Team: Pradeep (interviewer/note-taker), Hitarthi, Mansi, Saumya, Hansika. University of Maryland iSchool.] ${text}`, mode: isRecruiterMode ? "recruiter" : "general", conversationHistory: [] }) });
+            const res = await fetch(`${apiUrl}/api/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `[Context: Workflow, Faculty Workload Management UX Research. Led contextual interviews with 8 faculty members (A01-H01) and participatory design sessions with 5 of them. Research question: How do university faculty members manage and prioritize their workload across teaching, research, and service? Methods: semi-structured interviews, participatory design (weekly timeline mapping + dashboard co-design), affinity mapping, journey mapping, identity modeling. Key findings: fragmented tool usage, invisible labor in service work, promotion documentation gaps, desire for integrated dashboard. 120+ data points collected. Team: Pradeep (interviewer/note-taker), Hitarthi, Mansi, Saumya, Hansika. University of Maryland iSchool.] ${text}`, mode: isRecruiterMode ? "recruiter" : "general", conversationHistory: [] }) });
             const data = await res.json();
             setMessages(m => [...m, { role: "ai", text: data.content || "I can help answer that." }]);
         } catch { setMessages(m => [...m, { role: "ai", text: "I'm having trouble connecting right now. Try again?" }]); }
@@ -324,7 +324,7 @@ export default function WorkflowPage() {
                                     Faculty Workload<br /><span className="text-primary">Management Research.</span>
                                 </h1>
                                 <p className="max-w-xl font-mono text-base leading-relaxed text-text-secondary md:text-lg">
-                                    We interviewed <RecruiterHighlight>8 faculty members</RecruiterHighlight> and ran <RecruiterHighlight>5 participatory design sessions</RecruiterHighlight> to understand how university professors manage competing responsibilities across teaching, research, and service — and what a better support system could look like.
+                                    We interviewed <RecruiterHighlight>8 faculty members</RecruiterHighlight> and ran <RecruiterHighlight>5 participatory design sessions</RecruiterHighlight> to understand how university professors manage competing responsibilities across teaching, research, and service, and what a better support system could look like.
                                 </p>
                             </div>
 
@@ -351,7 +351,7 @@ export default function WorkflowPage() {
                 <div className="mx-auto max-w-[1000px] px-6 md:px-12">
                     <SectionHeading number="00 / CONTEXT" title="Understanding the problem space." />
                     <Fade><div className="space-y-5 max-w-2xl">
-                        <p className="font-mono text-base leading-relaxed text-text-secondary">Faculty members at research universities juggle an extraordinary range of responsibilities — from delivering lectures and mentoring students, to publishing research, sitting on committees, advising on policy, and preparing for promotion reviews. Despite the complexity, most rely on a patchwork of disconnected tools: personal calendars, sticky notes, spreadsheets, email threads, and mental bookkeeping.</p>
+                        <p className="font-mono text-base leading-relaxed text-text-secondary">Faculty members at research universities juggle an extraordinary range of responsibilities, from delivering lectures and mentoring students, to publishing research, sitting on committees, advising on policy, and preparing for promotion reviews. Despite the complexity, most rely on a patchwork of disconnected tools: personal calendars, sticky notes, spreadsheets, email threads, and mental bookkeeping.</p>
                         <p className="font-mono text-base leading-relaxed text-text-secondary">Our team set out to answer a single research question: <strong className="font-medium text-text">How do university faculty members manage and prioritize their workload across teaching, research, and service?</strong> We wanted to understand not just what tools they use, but how they think about their time, what falls through the cracks, and what kind of system would actually make their lives easier.</p>
                         <p className="font-mono text-base leading-relaxed text-text-secondary">This wasn&apos;t an academic exercise in the abstract. We conducted real interviews with real faculty, observed their workspaces, reviewed their calendars, and co-designed solutions with them. The findings directly informed a set of design recommendations for a tool we call <strong className="font-medium text-text">Workflow</strong>.</p>
                     </div></Fade>
@@ -433,32 +433,32 @@ export default function WorkflowPage() {
                 </div>
             </section>
 
-            <WhyThisMatters id="recruiter-lens-1" headline="Demonstrates end-to-end ownership of a qualitative research project — from study design through synthesis to actionable design recommendations." points={["Led contextual interviews as both moderator and note-taker across multiple sessions.", "Designed and iterated on a structured interview guide covering 4 thematic areas.", "Synthesized 120+ data points into an affinity diagram with 6 distinct clusters.", "Facilitated participatory design sessions that directly informed product concepts."]} nextHref="#recruiter-lens-2" />
+            <WhyThisMatters id="recruiter-lens-1" headline="Demonstrates end-to-end ownership of a qualitative research project, from study design through synthesis to actionable design recommendations." points={["Led contextual interviews as both moderator and note-taker across multiple sessions.", "Designed and iterated on a structured interview guide covering 4 thematic areas.", "Synthesized 120+ data points into an affinity diagram with 6 distinct clusters.", "Facilitated participatory design sessions that directly informed product concepts."]} nextHref="#recruiter-lens-2" />
 
             {/* ══ 01: METHODOLOGY ══ */}
             <section id="wf-methodology" className="relative z-10 border-t border-border/40 bg-white py-24 md:py-32">
                 <div className="mx-auto max-w-[1000px] px-6 md:px-12">
                     <SectionHeading number="01 / METHODOLOGY" title="How we structured the research." />
                     <Fade><div className="mb-12 space-y-5 max-w-2xl">
-                        <p className="font-mono text-base leading-relaxed text-text-secondary">We used a <strong className="font-medium text-text">two-phase mixed-methods approach</strong>. Phase 1 consisted of semi-structured contextual interviews with 8 faculty members. Phase 2 involved participatory design sessions with 5 of those same participants. The two phases were designed to build on each other — interviews surfaced pain points and behaviors, while participatory sessions explored potential solutions.</p>
-                        <p className="font-mono text-base leading-relaxed text-text-secondary">Our interview guide was structured around four thematic areas, each designed to progressively deepen our understanding of faculty work. We started broad — asking about daily tasks and routines — then narrowed into specific tool usage, personal goals, and the emotionally charged topic of promotion documentation.</p>
+                        <p className="font-mono text-base leading-relaxed text-text-secondary">We used a <strong className="font-medium text-text">two-phase mixed-methods approach</strong>. Phase 1 consisted of semi-structured contextual interviews with 8 faculty members. Phase 2 involved participatory design sessions with 5 of those same participants. The two phases were designed to build on each other, interviews surfaced pain points and behaviors, while participatory sessions explored potential solutions.</p>
+                        <p className="font-mono text-base leading-relaxed text-text-secondary">Our interview guide was structured around four thematic areas, each designed to progressively deepen our understanding of faculty work. We started broad, asking about daily tasks and routines, then narrowed into specific tool usage, personal goals, and the emotionally charged topic of promotion documentation.</p>
                     </div></Fade>
                     <div className="mb-12">
-                        <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Design Thinking Framework — Double Diamond</p>
+                        <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Design Thinking Framework, Double Diamond</p>
                         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-40px" }} transition={{ duration: 0.5 }} className="relative w-full overflow-hidden rounded-xl border border-border/50 bg-white p-6">
                             <Image src="/Faculty Dashboard/Design-thinking-double-diamond-1024x277.png" alt="Double Diamond Design Thinking Framework" width={1024} height={277} className="w-full h-auto" />
                         </motion.div>
-                        <p className="mt-3 font-mono text-xs text-text-muted">Our research followed the Double Diamond framework — diverging to explore the problem space through contextual interviews, converging through affinity mapping, then diverging again in participatory design before converging on validated design recommendations.</p>
+                        <p className="mt-3 font-mono text-xs text-text-muted">Our research followed the Double Diamond framework, diverging to explore the problem space through contextual interviews, converging through affinity mapping, then diverging again in participatory design before converging on validated design recommendations.</p>
                     </div>
                     <Fade><div className="grid gap-5 md:grid-cols-2">
                         {[{ n: "Topic 1", title: "Daily Tasks & Responsibilities", body: "We explored how faculty structure their days, how tasks are assigned, whether they delegate, and what their calendar and workspace organization looks like. This gave us a baseline understanding of workload distribution." },
-                        { n: "Topic 2", title: "Tools Used for Workload Management", body: "We asked what tools faculty rely on — from Google Calendar to handwritten lists — what works, what doesn't, and what features they wish existed. We observed tool demonstrations and noted workarounds and duplications." },
+                        { n: "Topic 2", title: "Tools Used for Workload Management", body: "We asked what tools faculty rely on, from Google Calendar to handwritten lists, what works, what doesn't, and what features they wish existed. We observed tool demonstrations and noted workarounds and duplications." },
                         { n: "Topic 3", title: "Personal & Professional Goals", body: "We discussed long-term career aspirations, how personal commitments impact academic work, how success is measured during evaluations, and whether faculty feel their contributions are adequately recognized." },
                         { n: "Topic 4", title: "Documentation & Promotion Preparation", body: "We explored the promotion review process: what documentation is expected, how it's collected throughout the year, and whether faculty have experienced gaps or frustrations when assembling their dossiers." }
                         ].map(t => (<InsightCard key={t.n} label={t.n}><p className="font-manrope text-sm font-medium text-text mt-1">{t.title}</p><p className="mt-2 font-mono text-xs leading-relaxed text-text-muted">{t.body}</p></InsightCard>))}
                     </div></Fade>
                     <Fade><div className="mt-12 rounded-xl border border-border/50 bg-bg-alt p-6">
-                        <p className="font-mono text-xs text-text-secondary"><strong className="font-medium text-text">A note on iteration:</strong> Our original interview guide was significantly longer. After an internal review, we identified overlapping questions, reorganized around thematic clusters, and cut the guide down to a more focused structure. This reduced cognitive fatigue for participants and improved data quality. Similarly, our participatory design plan was initially loosely defined — we refined it after our first two interviews revealed that participants responded well to reflective prompts and visual organization.</p>
+                        <p className="font-mono text-xs text-text-secondary"><strong className="font-medium text-text">A note on iteration:</strong> Our original interview guide was significantly longer. After an internal review, we identified overlapping questions, reorganized around thematic clusters, and cut the guide down to a more focused structure. This reduced cognitive fatigue for participants and improved data quality. Similarly, our participatory design plan was initially loosely defined, we refined it after our first two interviews revealed that participants responded well to reflective prompts and visual organization.</p>
                     </div></Fade>
                     <div className="mt-8 flex flex-wrap gap-3">
                         <a href="https://miro.com/app/board/uXjVIMwuDLA=/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border/50 bg-white px-4 py-2.5 font-mono text-xs font-medium text-text transition-all hover:border-primary/40 hover:shadow-sm"><ExternalLink size={13} className="text-primary" />View Research Guide on Miro</a>
@@ -471,7 +471,7 @@ export default function WorkflowPage() {
                 <div className="mx-auto max-w-[1000px] px-6 md:px-12">
                     <SectionHeading number="02 / PARTICIPANTS" title="Who we spoke with." />
                     <Fade><div className="mb-10 max-w-2xl">
-                        <p className="font-mono text-base leading-relaxed text-text-secondary">We conducted contextual interviews with <RecruiterHighlight>8 faculty members</RecruiterHighlight> across a range of academic roles — teaching-focused, research-active, leadership, and advisory positions. We used study IDs (A01–H01) to maintain confidentiality. Each team member conducted at least one interview, and roles rotated between interviewer and note-taker to ensure consistency.</p>
+                        <p className="font-mono text-base leading-relaxed text-text-secondary">We conducted contextual interviews with <RecruiterHighlight>8 faculty members</RecruiterHighlight> across a range of academic roles, teaching-focused, research-active, leadership, and advisory positions. We used study IDs (A01–H01) to maintain confidentiality. Each team member conducted at least one interview, and roles rotated between interviewer and note-taker to ensure consistency.</p>
                     </div></Fade>
                     <Fade><div className="overflow-x-auto rounded-xl border border-border/50 bg-white">
                         <table className="w-full text-left font-mono text-xs">
@@ -490,7 +490,7 @@ export default function WorkflowPage() {
                 <div className="mx-auto max-w-[1000px] px-6 md:px-12">
                     <SectionHeading number="03 / DATA COLLECTION" title="How we captured and organized the data." />
                     <Fade><div className="mb-10 space-y-5 max-w-2xl">
-                        <p className="font-mono text-base leading-relaxed text-text-secondary">Each interview lasted 30–60 minutes and was recorded with participant consent. One team member led the conversation while the other took detailed notes. After each session, we ran interpretation sessions where the full team reviewed recordings to extract atomic insights — individual observations, quotes, and behavioral patterns — which we wrote onto digital affinity notes.</p>
+                        <p className="font-mono text-base leading-relaxed text-text-secondary">Each interview lasted 30–60 minutes and was recorded with participant consent. One team member led the conversation while the other took detailed notes. After each session, we ran interpretation sessions where the full team reviewed recordings to extract atomic insights, individual observations, quotes, and behavioral patterns, which we wrote onto digital affinity notes.</p>
                         <p className="font-mono text-base leading-relaxed text-text-secondary">We collected verbatim transcripts, observational notes, and digital artifacts from participatory sessions (sticky notes, sketches, and user-generated diagrams on FigJam). In total, we generated over <RecruiterHighlight>120 discrete data points</RecruiterHighlight>.</p>
                     </div></Fade>
                     <div className="space-y-8">
@@ -527,13 +527,13 @@ export default function WorkflowPage() {
                 <div className="mx-auto max-w-[1000px] px-6 md:px-12">
                     <SectionHeading number="04 / FINDINGS" title="What the data told us." />
                     <Fade><div className="mb-10 max-w-2xl">
-                        <p className="font-mono text-base leading-relaxed text-text-secondary">After organizing our 120+ affinity notes, six distinct thematic clusters emerged. Each cluster represents a core dimension of the faculty workload management experience — from how they handle digital tools to how they think about career growth and performance reviews.</p>
+                        <p className="font-mono text-base leading-relaxed text-text-secondary">After organizing our 120+ affinity notes, six distinct thematic clusters emerged. Each cluster represents a core dimension of the faculty workload management experience, from how they handle digital tools to how they think about career growth and performance reviews.</p>
                     </div></Fade>
                     <MediaPop><div className="mb-12 relative aspect-[16/8] w-full overflow-hidden rounded-xl border border-border/50 bg-white">
                         <Image src="/Faculty Dashboard/Workflow Affinity Diagram - Complete Affinity Diagram.jpg" alt="Complete Affinity Diagram" fill className="object-contain p-2" />
                     </div></MediaPop>
                     <Fade><div className="mb-10 flex items-center justify-between">
-                        <p className="font-mono text-xs text-text-muted">Complete affinity diagram — 120+ data points organized into 6 thematic clusters on Miro.</p>
+                        <p className="font-mono text-xs text-text-muted">Complete affinity diagram, 120+ data points organized into 6 thematic clusters on Miro.</p>
                         <a href="https://miro.com/app/board/uXjVIMwuDLA=/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border/50 bg-white px-4 py-2.5 font-mono text-xs font-medium text-text transition-all hover:border-primary/40 hover:shadow-sm shrink-0 ml-4"><ExternalLink size={13} className="text-primary" />View on Miro</a>
                     </div></Fade>
                     <Fade><div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -559,8 +559,8 @@ export default function WorkflowPage() {
                     <Fade><div className="mb-10 max-w-2xl">
                         <p className="font-mono text-base leading-relaxed text-text-secondary">Beyond the affinity diagram, we created two synthesis models to visualize our findings from different perspectives. The journey map traces a typical faculty member&apos;s week, highlighting emotional highs and lows. The identity model captures the roles, responsibilities, and social relationships that shape how faculty think about their work.</p>
                     </div></Fade>
-                    <MediaPop><div className="mb-8"><p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Journey Map — A Typical Faculty Week</p><div className="relative w-full overflow-hidden rounded-xl border border-border/50 bg-white"><Image src="/Faculty Dashboard/Affinity Notes INST 710 - Journey Map 1.png" alt="Journey Map" width={1800} height={900} className="w-full h-auto" /></div></div></MediaPop>
-                    <MediaPop><div><p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Identity Model — Faculty Roles & Relationships</p><div className="relative w-full overflow-hidden rounded-xl border border-border/50 bg-white"><Image src="/Faculty Dashboard/Affinity Notes INST 710 - Identity model 1.png" alt="Identity Model" width={1200} height={800} className="w-full h-auto" /></div></div></MediaPop>
+                    <MediaPop><div className="mb-8"><p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Journey Map, A Typical Faculty Week</p><div className="relative w-full overflow-hidden rounded-xl border border-border/50 bg-white"><Image src="/Faculty Dashboard/Affinity Notes INST 710 - Journey Map 1.png" alt="Journey Map" width={1800} height={900} className="w-full h-auto" /></div></div></MediaPop>
+                    <MediaPop><div><p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-text-muted">Identity Model, Faculty Roles & Relationships</p><div className="relative w-full overflow-hidden rounded-xl border border-border/50 bg-white"><Image src="/Faculty Dashboard/Affinity Notes INST 710 - Identity model 1.png" alt="Identity Model" width={1200} height={800} className="w-full h-auto" /></div></div></MediaPop>
                 </div>
             </section>
 
@@ -569,7 +569,7 @@ export default function WorkflowPage() {
                 <div className="mx-auto max-w-[1000px] px-6 md:px-12">
                     <SectionHeading number="06 / PARTICIPATORY DESIGN" title="Co-creating solutions with faculty." />
                     <Fade><div className="mb-12 space-y-5 max-w-2xl">
-                        <p className="font-mono text-base leading-relaxed text-text-secondary">After completing the contextual interviews, we facilitated participatory design sessions with 5 faculty members. These sessions were designed to move beyond understanding problems — we wanted faculty to actively shape solutions.</p>
+                        <p className="font-mono text-base leading-relaxed text-text-secondary">After completing the contextual interviews, we facilitated participatory design sessions with 5 faculty members. These sessions were designed to move beyond understanding problems, we wanted faculty to actively shape solutions.</p>
                         <p className="font-mono text-base leading-relaxed text-text-secondary">Each session included two structured activities conducted through FigJam. We walked participants through the tools, adapted the pace to their comfort level, and kept prompts intentionally open-ended to encourage diverse input.</p>
                     </div></Fade>
                     <Fade><div className="grid gap-8 md:grid-cols-2">
@@ -589,22 +589,22 @@ export default function WorkflowPage() {
                         />
                     </div></Fade>
                 </div>
-                {/* Infinite scroll loop — edge-to-edge */}
+                {/* Infinite scroll loop, edge-to-edge */}
                 <div className="mt-16">
                     <p className="mb-4 text-center font-mono text-[10px] uppercase tracking-widest text-text-muted">All Participatory Design Responses</p>
                     <InfiniteImageLoop images={ALL_PARTICIPATORY_IMAGES} onImageClick={setLightboxSrc} />
                 </div>
             </section>
 
-            <WhyThisMatters id="recruiter-lens-2" headline="The ability to facilitate participatory design sessions, transitioning from passive observation to active co-creation with stakeholders, demonstrates advanced research maturity." points={["Ran both structured interviews and open-ended co-design workshops with the same participants.", "Iterated on the participatory design plan based on early interview findings — not a fixed template.", "Synthesized qualitative data into actionable information architecture and feature priorities."]} prevHref="#recruiter-lens-1" />
+            <WhyThisMatters id="recruiter-lens-2" headline="The ability to facilitate participatory design sessions, transitioning from passive observation to active co-creation with stakeholders, demonstrates advanced research maturity." points={["Ran both structured interviews and open-ended co-design workshops with the same participants.", "Iterated on the participatory design plan based on early interview findings, not a fixed template.", "Synthesized qualitative data into actionable information architecture and feature priorities."]} prevHref="#recruiter-lens-1" />
 
             {/* ══ 07: INFORMATION ARCHITECTURE ══ */}
             <section id="wf-ia" className="relative z-10 border-t border-border/40 bg-white py-24 md:py-32">
                 <div className="mx-auto max-w-[1000px] px-6 md:px-12">
                     <SectionHeading number="07 / INFORMATION ARCHITECTURE" title="Structuring the Workflow tool." />
-                    <Fade><div className="mb-10 max-w-2xl"><p className="font-mono text-base leading-relaxed text-text-secondary">Based on our synthesis — affinity clusters, journey maps, and participatory design outputs — we developed an information architecture for the Workflow platform. The IA reflects the mental models faculty actually use, not an administratively imposed structure.</p></div></Fade>
+                    <Fade><div className="mb-10 max-w-2xl"><p className="font-mono text-base leading-relaxed text-text-secondary">Based on our synthesis, affinity clusters, journey maps, and participatory design outputs, we developed an information architecture for the Workflow platform. The IA reflects the mental models faculty actually use, not an administratively imposed structure.</p></div></Fade>
                     <Fade><div className="rounded-xl border border-border/50 bg-white p-8">
-                        <p className="mb-6 font-mono text-[10px] uppercase tracking-widest text-text-muted">Proposed IA — Workflow Faculty Dashboard</p>
+                        <p className="mb-6 font-mono text-[10px] uppercase tracking-widest text-text-muted">Proposed IA, Workflow Faculty Dashboard</p>
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                             {[{ section: "Dashboard Home", items: ["Today's Focus card", "Quick-add activity log", "Weekly calendar heatmap", "Active tasks by category", "Upcoming deadlines"] },
                             { section: "Activity Diary", items: ["Daily log with category tags", "Voice-to-text entry", "Auto-categorization (Teaching/Research/Service)", "Mood & energy check-in", "Linked document attachments"] },
@@ -631,7 +631,7 @@ export default function WorkflowPage() {
                         {[{ img: "lowfidmockupideationbasedonfeedback_idea1dashboardpage1.png", title: "Dashboard Overview" }, { img: "lowfidmockupideationbasedonfeedback_idea2diarypagepage2.png", title: "Activity Diary" }, { img: "lowfidmockupideationbasedonfeedback_idea4genaisupportpage3.png", title: "Gen AI Support" }, { img: "lowfidmockupideationbasedonfeedback_idea3personalisedrecommendationspage4.png", title: "Personalized Recommendations" }, { img: "lowfidmockupideationbasedonfeedback_idea5personalityspecificdashboardpage5.png", title: "Personality-Specific Dashboard" }].map(c => (
                             <MediaPop key={c.title}><div className="overflow-hidden rounded-xl border border-border/50 bg-white"><div className="relative aspect-[4/3] bg-[#F5F5F7]"><Image src={`/Faculty Dashboard/${c.img}`} alt={c.title} fill className="object-contain p-2" /></div><div className="px-5 py-3"><p className="font-mono text-xs font-medium text-text">{c.title}</p></div></div></MediaPop>))}
                     </div></Fade>
-                    <Fade><p className="mt-10 mb-6 font-mono text-[10px] uppercase tracking-widest text-text-muted">Mid-Fidelity Prototypes — Faculty Navigator 360</p></Fade>
+                    <Fade><p className="mt-10 mb-6 font-mono text-[10px] uppercase tracking-widest text-text-muted">Mid-Fidelity Prototypes, Faculty Navigator 360</p></Fade>
                     <Fade><div className="grid gap-4 md:grid-cols-2">
                         {[{ img: "faculty navigator 360 concept with personalized dashboard homepage_macbook mockup.png", title: "Homepage Dashboard" }, { img: "faculty navigator 360 concept with personalized dashboard diarylogpage_macbook mockup.png", title: "Diary Log Page" }, { img: "faculty navigator 360 concept with personalized dashboard documentspage_macbook mockup.png", title: "Documents Page" }, { img: "faculty navigator 360 concept onboarding plan_macbook mockup.png", title: "Onboarding Plan" }].map(c => (
                             <MediaPop key={c.title}><div className="overflow-hidden rounded-xl border border-border/50 bg-white"><div className="relative aspect-[16/10] bg-[#F0F0F2]"><Image src={`/Faculty Dashboard/${c.img}`} alt={c.title} fill className="object-contain p-4" /></div><div className="px-5 py-3"><p className="font-mono text-xs font-medium text-text">{c.title}</p></div></div></MediaPop>))}
@@ -674,14 +674,14 @@ export default function WorkflowPage() {
                     </div></Fade>
                     <Fade><div className="grid gap-5 md:grid-cols-3">
                         {[{ title: "Faculty labor is invisible by design", body: "Service work, mentoring, and committee participation consume significant time but are systematically undervalued in promotion reviews. Any support tool must make this labor visible." },
-                        { title: "Tools fail because they fragment attention", body: "Faculty don't need another app — they need integration. The most common complaint was toggling between 5–7 disconnected tools just to understand their own week." },
+                        { title: "Tools fail because they fragment attention", body: "Faculty don't need another app, they need integration. The most common complaint was toggling between 5–7 disconnected tools just to understand their own week." },
                         { title: "Co-design produces better outcomes", body: "The participatory design sessions generated insights that interviews alone could not. When you put the design tools in the hands of the people who will use them, the priorities become self-evident." }
                         ].map(r => (<InsightCard key={r.title} label="Reflection"><p className="mt-1 font-manrope text-sm font-medium text-text">{r.title}</p><p className="mt-2 font-mono text-xs leading-relaxed text-text-muted">{r.body}</p></InsightCard>))}
                     </div></Fade>
 
                     {/* UMD iSchool photo */}
                     <MediaPop><div className="mt-20">
-                        <p className="mb-5 text-center font-mono text-[10px] uppercase tracking-widest text-text-muted">University of Maryland — College of Information Studies</p>
+                        <p className="mb-5 text-center font-mono text-[10px] uppercase tracking-widest text-text-muted">University of Maryland - College of Information Studies</p>
                         <div className="relative aspect-[16/7] w-full overflow-hidden rounded-2xl border border-border grayscale transition-all duration-700 hover:grayscale-0">
                             <Image src="/Faculty Dashboard/UniversityofMaryland ischool.jpeg" alt="University of Maryland iSchool" fill className="object-cover" />
                         </div>

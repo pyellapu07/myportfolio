@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Pradeep Yellapu" }],
   openGraph: {
-    title: "Pradeep Yellapu — Product Designer & UX Researcher",
+    title: "Pradeep Yellapu, Product Designer & UX Researcher",
     description:
       "5+ years creating user-centered digital products. Reduced user friction by 40%, boosted engagement by 167%.",
     type: "website",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pradeep Yellapu — Product Designer",
+    title: "Pradeep Yellapu, Product Designer",
     description:
       "Product Designer & UX Researcher crafting user-centered digital experiences.",
   },
