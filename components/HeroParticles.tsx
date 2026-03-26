@@ -248,7 +248,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
   return (
     <div
       ref={containerRef}
-      className="pointer-events-none absolute inset-0 z-[5] hidden overflow-hidden md:block"
+      className="pointer-events-none absolute inset-0 z-[15] hidden overflow-hidden md:block"
     >
       {/* ── Glowing drop zone ─────────────────────────────────── */}
       <div
