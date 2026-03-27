@@ -188,7 +188,7 @@ function makeEnemies(H: number): GameEnemy[] {
     ...d,
     alive: true,
     px: d.x,
-    py: H - 60 - 24,
+    py: H - 80 - 44,
     vx: 1.2,
     squishTimer: 0,
     speechTimer: 0,
@@ -690,7 +690,7 @@ function drawBirds(
     const sy = bird.y;
 
     // Wing animation
-    const wingVal = Math.sin(frameCount * 0.15 + bird.wingPhase);
+    const wingVal = Math.sin(frameCount * 0.10 + bird.wingPhase);
     const wingAngle = wingVal * 4;
 
     ctx.save();
@@ -779,156 +779,166 @@ function drawPlatform(ctx: CanvasRenderingContext2D, p: PlatformDef, cameraX: nu
   }
 }
 
+function drawSparkles(
+  ctx: CanvasRenderingContext2D,
+  px: number,
+  py: number,
+  frame: number,
+  facingLeft: boolean
+) {
+  const trailDir = facingLeft ? 1 : -1;
+  const colors = ['#FFD700', '#FF5210', '#ffffff', '#FFB800'];
+  for (let i = 0; i < 4; i++) {
+    const age = (frame + i * 5) % 20;
+    if (age > 15) continue;
+    const alpha = 1 - age / 15;
+    const tx = px + trailDir * (age * 3 + i * 5) + 18;
+    const ty = py + 40 + Math.sin(age * 0.6 + i) * 4;
+    ctx.save();
+    ctx.globalAlpha = alpha * 0.8;
+    ctx.fillStyle = colors[i] ?? '#FFD700';
+    ctx.fillRect(tx,   ty,   1, 1);
+    ctx.fillRect(tx-1, ty,   1, 1);
+    ctx.fillRect(tx+1, ty,   1, 1);
+    ctx.fillRect(tx,   ty-1, 1, 1);
+    ctx.fillRect(tx,   ty+1, 1, 1);
+    ctx.restore();
+  }
+}
+
 function drawPlayer(
   ctx: CanvasRenderingContext2D,
   px: number,
   py: number,
-  facing: number,
-  frameCount: number,
+  frame: number,
+  velX: number,
+  velY: number,
   onGround: boolean,
-  vy: number,
+  facingLeft: boolean,
   flashRed: number,
   cameraX: number
 ) {
+  void velY;
   const sx = px - cameraX;
-  const isRunning = onGround && Math.abs(vy) < 1 && true; // keep running logic alive
-  void isRunning;
-  const isActuallyRunning = onGround;
+  const sy = py;
+  const S = 2; // pixelSize
+
+  const isIdle = velX === 0 && onGround;
+  const isRunning = Math.abs(velX) > 0 && onGround;
   const isJumping = !onGround;
-  const facingLeft = facing < 0;
-  const P = 2.5;
-  const x = sx;
-  const y = py;
+  void isIdle;
 
   if (flashRed > 0 && Math.floor(flashRed / 4) % 2 === 0) {
     ctx.save();
     ctx.globalAlpha = 0.5;
   }
 
+  // Breathe offset: slow 1px vertical, every 90 frames cycle
+  const breatheY = (velX === 0 && onGround) ? Math.floor((Math.sin(frame * 0.05) + 1) * 0.5) : 0;
+  // Blink: every 150 frames, 1-frame closure
+  const eyeH = frame % 150 < 2 ? 1 : 2;
+  // Run leg swap: every 8 frames alternate
+  const legPhase = isRunning ? Math.floor(frame / 8) % 2 : 0;
+  // Arm swing for running
+  const armFwdOffset = isRunning ? (legPhase === 0 ? -1 : 1) : 0;
+
+  // All drawing happens in canvas screen-space (logical units already scaled by game loop)
+  // sx, sy are in logical canvas units. We multiply by S=2 to get pixel positions on canvas.
+  // But the game loop applies a scale(H/CANVAS_H) so we draw in logical coords.
+  // The sprite is 18x28 logical pixels, each rendered as 2x2 = 36x56 screen pixels in logical space.
+  // So we draw at sx, sy and each 'block' is S=2 logical units wide/tall.
+
   ctx.save();
-  ctx.translate(x, y);
   if (facingLeft) {
+    // Mirror horizontally around center of sprite (center at sx + 18 logical units)
+    ctx.translate(2 * (sx + 18), 0);
     ctx.scale(-1, 1);
-    ctx.translate(-35, 0);
   }
 
-  // === HAIR (animated — slight wave) ===
-  const hairWave = isActuallyRunning ? Math.sin(frameCount * 0.3) * 1.5 : 0;
-  ctx.fillStyle = "#1a1a1a";
-  ctx.fillRect(3 * P, (0 + hairWave) * P, 9 * P, 3 * P);
-  ctx.fillRect(2 * P, 1 * P, 2 * P, 4 * P);
-  ctx.fillRect(11 * P, 1 * P, 2 * P, 3 * P);
-  ctx.fillStyle = "#333";
-  ctx.fillRect(4 * P, 0, 3 * P, P);
+  const bx = sx; // base x in logical coords (game loop scale handles rest)
+  const by = sy; // base y in logical coords
 
-  // === HEAD ===
-  ctx.fillStyle = "#F4C28A";
-  ctx.fillRect(3 * P, 3 * P, 9 * P, 7 * P);
-  ctx.fillRect(2 * P, 5 * P, 2 * P, 3 * P);
-  ctx.fillRect(11 * P, 5 * P, 2 * P, 3 * P);
-  ctx.fillStyle = "#e8a870";
-  ctx.fillRect(2 * P, 6 * P, P, 2 * P);
-
-  // === EYES ===
-  const blinkH = frameCount % 120 < 4 ? P : 3 * P;
-  ctx.fillStyle = "#1a1a1a";
-  ctx.fillRect(5 * P, 5 * P, 2 * P, blinkH);
-  ctx.fillRect(8 * P, 5 * P, 2 * P, blinkH);
-  if (blinkH > P) {
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(6 * P, 5 * P, P, P);
-    ctx.fillRect(9 * P, 5 * P, P, P);
+  function p(lx: number, ly: number, w: number, h: number, color: string) {
+    ctx.fillStyle = color;
+    ctx.fillRect(bx + lx * S, by + ly * S, w * S, h * S);
   }
 
-  // === MOUTH ===
-  const breathe = Math.sin(frameCount * 0.05) * 0.5;
-  ctx.fillStyle = isActuallyRunning ? "#c0704a" : "#d4845a";
-  ctx.fillRect(6 * P, (8 + breathe) * P, 3 * P, P);
-  if (isActuallyRunning) {
-    ctx.fillRect(6 * P, (8 + breathe) * P, 3 * P, 2 * P);
-    ctx.fillStyle = "#8B1A1A";
-    ctx.fillRect(6 * P, (9 + breathe) * P, 3 * P, P);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(6 * P, (8 + breathe) * P, P, P);
-    ctx.fillRect(7 * P, (8 + breathe) * P, P, P);
-    ctx.fillRect(8 * P, (8 + breathe) * P, P, P);
+  // ── HEAD ──────────────────────────────────────────────────
+  p(6, 0 + breatheY, 9, 8, '#D4956A');           // Skull
+  p(5, 0 + breatheY, 10, 3, '#1a1a1a');           // Hair top
+  p(4, 1 + breatheY, 2, 5, '#1a1a1a');            // Hair left side
+  p(5, 3 + breatheY, 2, 2, '#2d2d2d');            // Hair highlight
+  p(14, 4 + breatheY, 2, 2, '#c07850');           // Nose
+  p(11, 3 + breatheY, 2, eyeH, '#1a1a1a');        // Eye
+  if (eyeH > 1) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(bx + 12 * S, by + (3 + breatheY) * S, S, S); // Eye shine
+  }
+  p(13, 6 + breatheY, 2, 1, '#c07850');           // Mouth
+  p(6, 4 + breatheY, 2, 3, '#c07850');            // Ear
+  p(7, 7 + breatheY, 7, 2, '#D4956A');            // Jaw line
+  p(9, 8 + breatheY, 4, 2, '#D4956A');            // Neck
+
+  // ── BODY ──────────────────────────────────────────────────
+  const bodyY = 10 + breatheY;
+  p(7, bodyY, 9, 8, '#FF5210');                   // Torso
+  p(7, bodyY, 1, 8, '#ff6b35');                   // Jacket highlight left
+  p(15, bodyY, 1, 8, '#cc4200');                  // Jacket shadow right
+  p(8, bodyY + 6, 7, 2, '#ffffff');               // White shirt at bottom
+  p(13, bodyY + 1, 2, 2, '#cc4200');              // Chest pocket
+  p(13, bodyY + 2, 2, 1, '#FFD700');              // Badge
+
+  // ── ARMS ──────────────────────────────────────────────────
+  const backArmY = bodyY + (isRunning ? -armFwdOffset : 0);
+  p(15, backArmY, 3, 7, '#e04800');               // Back arm
+  p(15, backArmY + 6, 3, 2, '#c07850');           // Back hand
+
+  const frontArmY = bodyY + (isRunning ? armFwdOffset : 0);
+  p(7, frontArmY, 3, 7, '#FF5210');               // Front arm
+  p(7, frontArmY + 6, 3, 3, '#D4956A');           // Front hand
+  ctx.fillStyle = '#c07850';
+  ctx.fillRect(bx + 7 * S, by + (frontArmY + 8) * S, S, S);  // Finger detail
+  ctx.fillRect(bx + 9 * S, by + (frontArmY + 8) * S, S, S);
+
+  // ── LEGS ──────────────────────────────────────────────────
+  const legsBaseY = 18 + breatheY;
+  if (isJumping) {
+    p(10, legsBaseY + 2, 4, 5, '#283593');        // Back leg bent
+    p(8,  legsBaseY + 2, 4, 5, '#1a237e');        // Front leg bent
+    p(8,  legsBaseY + 2, 1, 5, '#3949AB');        // Jeans highlight
+  } else if (isRunning) {
+    const frontLegY = legsBaseY + (legPhase === 0 ? -1 : 1);
+    const backLegY  = legsBaseY + (legPhase === 0 ? 1 : -1);
+    p(10, backLegY,  4, 7, '#283593');            // Back leg
+    p(8,  frontLegY, 4, 7, '#1a237e');            // Front leg
+    p(8,  frontLegY, 1, 7, '#3949AB');            // Jeans highlight
+    p(8,  frontLegY + 4, 1, 3, '#1a237e');        // Calf detail
+  } else {
+    p(10, legsBaseY, 4, 7, '#283593');            // Back leg
+    p(8,  legsBaseY, 4, 7, '#1a237e');            // Front leg
+    p(8,  legsBaseY, 1, 7, '#3949AB');            // Jeans highlight
+    p(8,  legsBaseY + 4, 1, 3, '#1a237e');        // Calf detail
   }
 
-  // === NECK ===
-  ctx.fillStyle = "#F4C28A";
-  ctx.fillRect(6 * P, 10 * P, 3 * P, 2 * P);
+  // ── SHOES ──────────────────────────────────────────────────
+  const shoeY = 24 + breatheY;
+  p(9, shoeY, 5, 3, '#f5f5f5');                   // Back shoe
+  p(7, shoeY, 6, 3, '#f5f5f5');                   // Front shoe
+  p(7, shoeY + 2, 6, 1, '#cccccc');               // Sole
+  p(7, shoeY + 1, 6, 1, '#FF5210');               // Orange stripe
+  p(13, shoeY, 1, 2, '#e0e0e0');                  // Toe cap
 
-  // === BODY / JACKET ===
-  const breatheBody = Math.sin(frameCount * 0.05) * 0.3;
-  ctx.fillStyle = "#FF5210";
-  ctx.fillRect(3 * P, (12 + breatheBody) * P, 9 * P, 7 * P);
-  ctx.fillStyle = "#ff6b35";
-  ctx.fillRect(3 * P, (12 + breatheBody) * P, P, 7 * P);
-  ctx.fillRect(3 * P, (12 + breatheBody) * P, 9 * P, P);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(6 * P, (13 + breatheBody) * P, 3 * P, 5 * P);
-  ctx.fillStyle = "#1a1a1a";
-  ctx.fillRect(4 * P, (14 + breatheBody) * P, 2 * P, 2 * P);
-  ctx.fillStyle = "#FFD700";
-  ctx.fillRect(4 * P, (14 + breatheBody) * P, P, P);
+  ctx.restore(); // end facingLeft transform
 
-  // === ARMS ===
-  const armSwing = isActuallyRunning ? Math.sin(frameCount * 0.25) * 3 : 0;
-  ctx.fillStyle = "#FF5210";
-  ctx.fillRect(P, (13 + armSwing) * P, 3 * P, 5 * P);
-  ctx.fillRect(11 * P, (13 - armSwing) * P, 3 * P, 5 * P);
-  ctx.fillStyle = "#F4C28A";
-  ctx.fillRect(P, (17 + armSwing) * P, 3 * P, 2 * P);
-  ctx.fillRect(11 * P, (17 - armSwing) * P, 3 * P, 2 * P);
-  ctx.fillStyle = "#e8a870";
-  ctx.fillRect(P, (19 + armSwing) * P, P, P);
-  ctx.fillRect(2 * P, (19 + armSwing) * P, P, P);
-  ctx.fillRect(3 * P, (18 + armSwing) * P, P, P);
-
-  // === LEGS ===
-  const legCycle = isActuallyRunning ? Math.sin(frameCount * 0.25) * 4 : 0;
-  const leg2Cycle = isActuallyRunning ? Math.sin(frameCount * 0.25 + Math.PI) * 4 : 0;
-  ctx.fillStyle = "#1a237e";
-  ctx.fillRect(4 * P, (19 + legCycle) * P, 3 * P, 5 * P);
-  ctx.fillRect(8 * P, (19 + leg2Cycle) * P, 3 * P, 5 * P);
-  ctx.fillStyle = "#283593";
-  ctx.fillRect(4 * P, (19 + legCycle) * P, P, 5 * P);
-  ctx.fillRect(8 * P, (19 + leg2Cycle) * P, P, 5 * P);
-
-  // === SHOES ===
-  ctx.fillStyle = "#f5f5f5";
-  ctx.fillRect(3 * P, (24 + legCycle) * P, 4 * P, 2 * P);
-  ctx.fillRect(7 * P, (24 + leg2Cycle) * P, 4 * P, 2 * P);
-  ctx.fillStyle = "#FF5210";
-  ctx.fillRect(3 * P, (25 + legCycle) * P, 4 * P, P);
-  ctx.fillRect(7 * P, (25 + leg2Cycle) * P, 4 * P, P);
-
-  ctx.restore();
-
-  // === SPARKLES / WIND when running ===
-  if (isActuallyRunning && !isJumping) {
-    const particleX = facingLeft ? x + 35 : x;
-    for (let s = 0; s < 3; s++) {
-      const age = (frameCount + s * 7) % 15;
-      const alpha = 1 - age / 15;
-      const dirX = facingLeft ? 1 : -1;
-      const spx = particleX + dirX * (age * 2 + s * 6);
-      const spy = y + 30 + Math.sin(age * 0.8 + s) * 5;
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = s % 2 === 0 ? "#FFD700" : "#FF5210";
-      ctx.fillRect(spx, spy, 2, 2);
-      ctx.fillRect(spx - 1, spy + 1, 4, 1);
-      ctx.fillRect(spx + 1, spy - 1, 1, 4);
-      ctx.restore();
-    }
+  // Sparkles trail when running
+  if (isRunning) {
+    drawSparkles(ctx, sx, sy, frame, facingLeft);
   }
 
   if (flashRed > 0 && Math.floor(flashRed / 4) % 2 === 0) {
     ctx.restore();
   }
 }
-
 function drawEnemy(
   ctx: CanvasRenderingContext2D,
   enemy: GameEnemy,
@@ -957,8 +967,8 @@ function drawEnemy(
   }
 
   // === TAIL (animated) ===
-  const tailWave = Math.sin(frameCount * 0.15) * 8;
-  const tailWave2 = Math.sin(frameCount * 0.15 + 1) * 6;
+  const tailWave = Math.sin(frameCount * 0.10) * 8;
+  const tailWave2 = Math.sin(frameCount * 0.10 + 1) * 6;
   ctx.strokeStyle = enemy.color;
   ctx.lineWidth = 3;
   ctx.beginPath();
@@ -973,7 +983,7 @@ function drawEnemy(
   ctx.fillRect(-8 * P - 2, (10 + tailWave) * P - 2, 4, 4);
 
   // === LEGS ===
-  const legPhase = Math.sin(frameCount * 0.2) * 3;
+  const legPhase = Math.sin(frameCount * 0.12) * 3;
   ctx.fillStyle = darkenColor(enemy.color, 20);
   ctx.fillRect(3 * P, 12 * P, 3 * P, 4 * P);
   ctx.fillRect(7 * P, 12 * P, 3 * P, 4 * P);
@@ -998,7 +1008,7 @@ function drawEnemy(
   ctx.fillRect(5 * P, 3 * P, 4 * P, 2 * P);
 
   // === ARMS ===
-  const armSwing = Math.sin(frameCount * 0.2) * 2;
+  const armSwing = Math.sin(frameCount * 0.12) * 2;
   ctx.fillStyle = darkenColor(enemy.color, 10);
   ctx.fillRect(0, (7 + armSwing) * P, 3 * P, 4 * P);
   ctx.fillRect(11 * P, (7 - armSwing) * P, 3 * P, 4 * P);
@@ -1078,39 +1088,73 @@ function drawCollectible(
   ctx.restore();
 }
 
+function wrapText(text: string, maxChars: number): string[] {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let current = '';
+  for (const word of words) {
+    if ((current + ' ' + word).trim().length > maxChars) {
+      if (current) lines.push(current.trim());
+      current = word;
+    } else {
+      current = (current + ' ' + word).trim();
+    }
+  }
+  if (current) lines.push(current.trim());
+  return lines;
+}
+
 function drawDialogueBubble(
   ctx: CanvasRenderingContext2D,
   bubble: DialogueBubble,
-  cameraX: number
+  cameraX: number,
+  canvasW: number
 ) {
-  const sx = bubble.x - cameraX;
   const alpha = Math.min(1, bubble.life / 30) * Math.min(1, (bubble.maxLife - bubble.life) / 30);
-  const floatY = bubble.y - (1 - bubble.life / bubble.maxLife) * 40;
+  // Player screen x (center of head) — bubble.x is world coord of player center
+  const px = bubble.x - cameraX;
+  const py = bubble.y;
 
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  const text = bubble.text;
-  ctx.font = "bold 9px monospace";
-  const tw = ctx.measureText(text).width;
-  const bw = tw + 16;
-  const bh = 22;
-  const bx = sx - bw / 2;
-  const by = floatY - bh - 12;
+  const lines = wrapText(bubble.text, 22);
+  const lineH = 14;
+  const padX = 8, padY = 6;
+  const bw = 180;
+  const bh = lines.length * lineH + padY * 2;
+  const bx = Math.max(4, Math.min(px + 18 - bw / 2, canvasW - bw - 4));
+  const by = py - bh - 18;
 
-  ctx.fillStyle = "rgba(255,255,255,0.95)";
-  ctx.fillRect(bx + 3, by, bw - 6, bh);
-  ctx.fillRect(bx, by + 3, bw, bh - 6);
-  ctx.fillRect(bx + 3, by, 1, 1);
-  ctx.fillRect(bx + bw - 4, by, 1, 1);
+  // White box
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(bx, by, bw, bh);
+  ctx.strokeStyle = '#333333';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(bx, by, bw, bh);
 
-  ctx.fillStyle = "rgba(255,255,255,0.95)";
-  ctx.fillRect(bx + 6, by + bh, 6, 4);
-  ctx.fillRect(bx + 6, by + bh + 4, 4, 2);
-  ctx.fillRect(bx + 6, by + bh + 6, 2, 2);
+  // Arrow pointing down at player head center
+  const arrowX = Math.min(Math.max(px + 18, bx + 10), bx + bw - 10);
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(arrowX - 6, by + bh);
+  ctx.lineTo(arrowX + 6, by + bh);
+  ctx.lineTo(arrowX, by + bh + 10);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = '#333';
+  ctx.beginPath();
+  ctx.moveTo(arrowX - 6, by + bh + 1);
+  ctx.lineTo(arrowX, by + bh + 10);
+  ctx.lineTo(arrowX + 6, by + bh + 1);
+  ctx.stroke();
 
-  ctx.fillStyle = "#111";
-  ctx.fillText(text, bx + 8, by + 14);
+  // Text
+  ctx.fillStyle = '#222222';
+  ctx.font = 'bold 9px monospace';
+  lines.forEach((line, i) => {
+    ctx.fillText(line, bx + padX, by + padY + 10 + i * lineH);
+  });
 
   ctx.restore();
 }
@@ -1253,152 +1297,166 @@ function MessengerPhase({ onStart }: MessengerPhaseProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex overflow-hidden"
-      style={{ background: "#0d0d0d", fontFamily: "monospace", cursor: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M2 1 L2 15 L5 12 L7.5 17.5 L9.5 16.5 L7 11 L11 11 Z' fill='white' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E\") 2 1, auto" }}
+      className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden"
+      style={{ background: "#0d0d0d", fontFamily: "monospace", cursor: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M2 1 L2 15 L5 12 L7.5 17.5 L9.5 16.5 L7 11 L11 11 Z' fill='white' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E\") 2 1, auto", position: "relative" }}
     >
-      <div className="flex flex-col items-center justify-start pt-16 pl-8 pr-4" style={{ width: 160, flexShrink: 0 }}>
-        <div className="relative">
-          <div
-            style={{
-              width: 60,
-              height: 60,
-              background: "#4A90D9",
-              position: "relative",
-              imageRendering: "pixelated",
-            }}
-          >
-            <div style={{ position: "absolute", top: 18, left: 10, width: 8, height: 8, background: "#111" }} />
-            <div style={{ position: "absolute", top: 18, left: 30, width: 8, height: 8, background: "#111" }} />
-            <div style={{ position: "absolute", bottom: 12, left: 14, width: 20, height: 4, background: "#111" }} />
-            <div style={{ position: "absolute", bottom: 8, left: 18, width: 12, height: 3, background: "#111" }} />
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              top: -4,
-              right: -4,
-              width: 12,
-              height: 12,
-              background: "#e74c3c",
-              borderRadius: "50%",
-              border: "2px solid #0d0d0d",
-            }}
-          />
-        </div>
-        <div style={{ marginTop: 8, textAlign: "center" }}>
-          <div style={{ color: "#fff", fontSize: 11, fontWeight: "bold" }}>Pete</div>
-          <div style={{ color: "#888", fontSize: 9 }}>Head of Product</div>
-          <div style={{ color: "#4A90D9", fontSize: 9 }}>@ PixelCo</div>
-        </div>
-      </div>
-
-      <div
-        className="flex flex-col flex-1 overflow-y-auto pb-8 pt-8 pr-8"
-        style={{ gap: 8 }}
+      <button
+        onClick={onStart}
+        style={{
+          position: "absolute", top: 20, right: 24,
+          background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)",
+          color: "#aaa", fontFamily: "monospace", fontSize: 11,
+          padding: "6px 14px", borderRadius: 4, cursor: "pointer",
+          letterSpacing: "0.05em", zIndex: 10,
+        }}
       >
-        <div style={{ color: "#555", fontSize: 10, marginBottom: 8, textAlign: "center" }}>
-          Today · Design Rescue Mission
+        skip →
+      </button>
+
+      <div style={{ maxWidth: 520, width: "100%", margin: "0 auto", padding: 24, display: "flex", flexDirection: "column", height: "100%", maxHeight: "100vh", overflow: "hidden" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, paddingTop: 48 }}>
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                background: "#4A90D9",
+                position: "relative",
+                imageRendering: "pixelated",
+              }}
+            >
+              <div style={{ position: "absolute", top: 14, left: 8, width: 6, height: 6, background: "#111" }} />
+              <div style={{ position: "absolute", top: 14, left: 24, width: 6, height: 6, background: "#111" }} />
+              <div style={{ position: "absolute", bottom: 9, left: 11, width: 16, height: 3, background: "#111" }} />
+              <div style={{ position: "absolute", bottom: 6, left: 14, width: 10, height: 2, background: "#111" }} />
+            </div>
+            <div
+              style={{
+                position: "absolute",
+                top: -3,
+                right: -3,
+                width: 10,
+                height: 10,
+                background: "#e74c3c",
+                borderRadius: "50%",
+                border: "2px solid #0d0d0d",
+              }}
+            />
+          </div>
+          <div>
+            <div style={{ color: "#fff", fontSize: 11, fontWeight: "bold" }}>Pete</div>
+            <div style={{ color: "#888", fontSize: 9 }}>Head of Product @ PixelCo</div>
+          </div>
         </div>
 
-        <AnimatePresence>
-          {PETE_MESSAGES.slice(0, visibleMessages).map((msg, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              style={{ display: "flex", justifyContent: "flex-start", marginBottom: 4 }}
-            >
-              <div
-                style={{
-                  background: "#2a2a2a",
-                  color: "#eee",
-                  padding: "8px 12px",
-                  borderRadius: "2px 12px 12px 12px",
-                  fontSize: 13,
-                  maxWidth: "75%",
-                  lineHeight: 1.5,
-                }}
-              >
-                {msg}
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        <div
+          className="flex flex-col flex-1 overflow-y-auto pb-8"
+          style={{ gap: 8 }}
+        >
+          <div style={{ color: "#555", fontSize: 10, marginBottom: 8, textAlign: "center" }}>
+            Today · Design Rescue Mission
+          </div>
 
-        {showTyping && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            style={{ display: "flex", gap: 4, alignItems: "center", paddingLeft: 4 }}
-          >
-            {[0, 1, 2].map((i) => (
+          <AnimatePresence>
+            {PETE_MESSAGES.slice(0, visibleMessages).map((msg, i) => (
               <motion.div
                 key={i}
-                style={{ width: 6, height: 6, background: "#555", borderRadius: "50%" }}
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.15 }}
-              />
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+                style={{ display: "flex", justifyContent: "flex-start", marginBottom: 4 }}
+              >
+                <div
+                  style={{
+                    background: "#2a2a2a",
+                    color: "#eee",
+                    padding: "8px 12px",
+                    borderRadius: "2px 12px 12px 12px",
+                    fontSize: 13,
+                    maxWidth: 320,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {msg}
+                </div>
+              </motion.div>
             ))}
-            <span style={{ color: "#555", fontSize: 10, marginLeft: 4 }}>Pete is typing...</span>
-          </motion.div>
-        )}
+          </AnimatePresence>
 
-        <AnimatePresence>
-          {showReply && (
+          {showTyping && (
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              style={{ display: "flex", gap: 4, alignItems: "center", paddingLeft: 4 }}
             >
-              <div
-                style={{
-                  background: "#FF5210",
-                  color: "#fff",
-                  padding: "8px 12px",
-                  borderRadius: "12px 2px 12px 12px",
-                  fontSize: 13,
-                  maxWidth: "75%",
-                  lineHeight: 1.5,
-                  fontWeight: "bold",
-                }}
-              >
-                {PLAYER_REPLY}
-              </div>
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  style={{ width: 6, height: 6, background: "#555", borderRadius: "50%" }}
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.15 }}
+                />
+              ))}
+              <span style={{ color: "#555", fontSize: 10, marginLeft: 4 }}>Pete is typing...</span>
             </motion.div>
           )}
-        </AnimatePresence>
 
-        <AnimatePresence>
-          {showButton && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, ease: "backOut" }}
-              style={{ display: "flex", justifyContent: "center", marginTop: 24 }}
-            >
-              <button
-                onClick={onStart}
-                style={{
-                  background: "#FF5210",
-                  color: "#fff",
-                  fontFamily: "monospace",
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  padding: "12px 32px",
-                  border: "3px solid #ff7a40",
-                  boxShadow: "4px 4px 0px #a33000",
-                  cursor: "pointer",
-                  letterSpacing: 1,
-                  textTransform: "uppercase",
-                }}
+          <AnimatePresence>
+            {showReply && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+                style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}
               >
-                START MISSION →
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <div
+                  style={{
+                    background: "#FF5210",
+                    color: "#fff",
+                    padding: "8px 12px",
+                    borderRadius: "12px 2px 12px 12px",
+                    fontSize: 13,
+                    maxWidth: 320,
+                    lineHeight: 1.5,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {PLAYER_REPLY}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {showButton && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, ease: "backOut" }}
+                style={{ display: "flex", justifyContent: "center", marginTop: 24 }}
+              >
+                <button
+                  onClick={onStart}
+                  style={{
+                    background: "#FF5210",
+                    color: "#fff",
+                    fontFamily: "monospace",
+                    fontSize: 14,
+                    fontWeight: "bold",
+                    padding: "12px 32px",
+                    border: "3px solid #ff7a40",
+                    boxShadow: "4px 4px 0px #a33000",
+                    cursor: "pointer",
+                    letterSpacing: 1,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  START MISSION →
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
@@ -1692,7 +1750,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
     setHudCollectibles(colls);
     return {
       playerX: 150,
-      playerY: H - 60 - 42,
+      playerY: H - 80 - 56,
       playerVX: 0,
       playerVY: 0,
       playerOnGround: false,
@@ -1851,17 +1909,17 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
 
       gs.playerX = Math.max(0, Math.min(gs.playerX, LEVEL_W - 20));
 
-      const groundY = CANVAS_H - 60 - 42;
+      const groundY = CANVAS_H - 80; // grass top is at H-80, player feet at bottom of 56px sprite
 
       gs.playerOnGround = false;
-      if (gs.playerY >= groundY) {
-        gs.playerY = groundY;
+      if (gs.playerY + 56 >= groundY) {
+        gs.playerY = groundY - 56;
         gs.playerVY = 0;
         gs.playerOnGround = true;
         gs.playerJumpsLeft = 2;
       }
 
-      const playerBottom = gs.playerY + 42;
+      const playerBottom = gs.playerY + 56;
       const playerLeft = gs.playerX;
       const playerRight = gs.playerX + 20;
 
@@ -1873,7 +1931,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
           playerRight > plat.x + 4 &&
           playerLeft < plat.x + plat.w - 4
         ) {
-          gs.playerY = plat.y - 42;
+          gs.playerY = plat.y - 56;
           gs.playerVY = 0;
           gs.playerOnGround = true;
           gs.playerJumpsLeft = 2;
@@ -1889,7 +1947,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         const cx = c.x + 10;
         const cy = c.y + Math.sin(gs.frameCount * 0.05 + c.bobOffset) * 5 + 10;
         const px = gs.playerX + 10;
-        const py = gs.playerY + 21;
+        const py = gs.playerY + 28;
         const dist = Math.hypot(cx - px, cy - py);
         if (dist < 22) {
           c.collected = true;
@@ -1926,8 +1984,8 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         enemy.dir = enemy.vx < 0 ? -1 : 1;
 
         // Enemy on ground or platform
-        const eBottom = enemy.py + 24;
-        const eGroundY = CANVAS_H - 60 - 24;
+        const eBottom = enemy.py + 44;
+        const eGroundY = CANVAS_H - 80 - 44; // grass at H-80, enemy feet at bottom of 44px sprite
         if (enemy.py < eGroundY) {
           enemy.py = Math.min(enemy.py + 2, eGroundY);
         }
@@ -1938,7 +1996,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
             enemy.px + 20 > plat.x &&
             enemy.px < plat.x + plat.w
           ) {
-            enemy.py = plat.y - 24;
+            enemy.py = plat.y - 44;
           }
         }
 
@@ -1964,7 +2022,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         const pLeft = gs.playerX;
         const pRight = gs.playerX + 20;
         const pTop = gs.playerY;
-        const pBot = gs.playerY + 42;
+        const pBot = gs.playerY + 56;
 
         const overlap =
           eRight > pLeft + 4 &&
@@ -1991,7 +2049,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
               gs.gameOver = true;
             } else {
               gs.playerX = gs.checkpointX;
-              gs.playerY = groundY;
+              gs.playerY = groundY - 56;
               gs.playerVX = 0;
               gs.playerVY = 0;
             }
@@ -2013,7 +2071,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         gs.dialogueBubble = {
           text: line,
           x: gs.playerX + 10,
-          y: gs.playerY - 10,
+          y: gs.playerY,
           life: 180,
           maxLife: 180,
         };
@@ -2021,6 +2079,9 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
       }
       if (gs.dialogueBubble) {
         gs.dialogueBubble.life -= 1;
+        // Track player position
+        gs.dialogueBubble.x = gs.playerX + 10;
+        gs.dialogueBubble.y = gs.playerY;
         if (gs.dialogueBubble.life <= 0) gs.dialogueBubble = null;
       }
 
@@ -2067,17 +2128,18 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         ctx,
         gs.playerX,
         gs.playerY,
-        gs.playerFacing,
         gs.frameCount,
-        gs.playerOnGround,
+        gs.playerVX,
         gs.playerVY,
+        gs.playerOnGround,
+        gs.playerFacing < 0,
         gs.playerFlashRed,
         gs.cameraX
       );
 
       // Dialogue bubble
       if (gs.dialogueBubble) {
-        drawDialogueBubble(ctx, gs.dialogueBubble, gs.cameraX);
+        drawDialogueBubble(ctx, gs.dialogueBubble, gs.cameraX, lw);
       }
 
       // HUD on canvas
