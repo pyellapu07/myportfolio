@@ -399,7 +399,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
                     zIndex: 100,
                     fontFamily: "monospace", fontSize: 9, color: "#555",
                     letterSpacing: "0.04em", fontWeight: 500,
-                    textAlign: "center", lineHeight: 1.6,
+                    textAlign: "center", lineHeight: 1.6, whiteSpace: "pre",
                   }}>
                     MLSA&apos;s Vinci di UI<br />Design Challenge Winner
                   </div>
