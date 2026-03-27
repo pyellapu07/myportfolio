@@ -281,7 +281,7 @@ export default function TerpsEsportsPage() {
           <div className="mt-10 border-t border-border/40 py-8">
             <span className="mb-3 block font-mono text-[10px] uppercase tracking-widest text-text-muted">Collaborators</span>
             <p className="font-mono text-sm leading-relaxed text-text-secondary">
-              Coach Sergio Brack, Creative Director Erica Javapor, Videographer Seth, Player AnPhu, Co-Ed Valorant team, 9-game rosters
+              Coach Sergio Brack, Creative Director Erica Javadpour, Videographer Seth, Player AnPhu, Co-Ed Valorant team, 9-game rosters
             </p>
           </div>
         </div>
@@ -375,7 +375,7 @@ export default function TerpsEsportsPage() {
           <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
             <Fade>
               <p className="font-mono text-base leading-relaxed text-text-secondary">
-                When <strong className="text-text">Erica Javapor</strong> came on as manager of the standalone creatives department, she brought a new strategic lens to the work. Under her leadership, we moved beyond individual graphics and started thinking about Terps Esports as a <strong className="text-text">cohesive visual brand</strong>.
+                When <strong className="text-text">Erica Javadpour</strong> came on as manager of the standalone creatives department, she brought a new strategic lens to the work. Under her leadership, we moved beyond individual graphics and started thinking about Terps Esports as a <strong className="text-text">cohesive visual brand</strong>.
               </p>
               <p className="mt-4 font-mono text-base leading-relaxed text-text-secondary">
                 We audited our existing assets, aligned on a shared visual language, and pushed the question: <em>"What makes Terps Esports immediately recognizable?"</em> The answer wasn't just colors or logos. It was <strong className="text-text">narrative consistency</strong> across every touchpoint.
