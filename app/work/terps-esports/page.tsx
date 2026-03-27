@@ -4,6 +4,9 @@ import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { Caveat } from "next/font/google";
+
+const caveat = Caveat({ subsets: ["latin"], weight: ["400", "600"] });
 import {
   ArrowLeft,
   Camera,
@@ -88,6 +91,41 @@ function Tag({ children }: { children: string }) {
     <span className="rounded-full border border-border px-3 py-1 font-mono text-[11px] text-text-secondary">
       {children}
     </span>
+  );
+}
+
+function PolaroidImage({
+  src,
+  caption,
+  rotation = 0,
+  alt = "",
+  dark = false,
+}: {
+  src: string;
+  caption: string;
+  rotation?: number;
+  alt?: string;
+  dark?: boolean;
+}) {
+  return (
+    <div
+      className="inline-block bg-white shadow-xl transition-transform duration-300 hover:scale-[1.03] hover:shadow-2xl"
+      style={{
+        transform: `rotate(${rotation}deg)`,
+        padding: "10px 10px 36px 10px",
+        borderRadius: 4,
+      }}
+    >
+      <div className="relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
+        <Image src={src} alt={alt || caption} fill className="object-cover" sizes="(max-width: 768px) 90vw, 400px" />
+      </div>
+      <p
+        className={`mt-2 text-center leading-tight ${caveat.className}`}
+        style={{ fontSize: 15, color: "#444", lineHeight: 1.3 }}
+      >
+        {caption}
+      </p>
+    </div>
   );
 }
 
@@ -187,7 +225,7 @@ export default function TerpsEsportsPage() {
           <h1 className="font-manrope text-4xl font-bold tracking-tight text-text md:text-5xl lg:text-6xl">
             Terps Esports
           </h1>
-          <p className="mt-2 font-manrope text-3xl font-bold md:text-4xl" style={{ color: GOLD }}>
+          <p className="mt-2 font-manrope text-3xl font-bold md:text-4xl" style={{ color: "#A07800" }}>
             Where Design Meets the Arena.
           </p>
           <p className="mt-5 max-w-2xl font-mono text-sm leading-relaxed text-text-secondary">
@@ -414,28 +452,18 @@ export default function TerpsEsportsPage() {
             </div>
           </Fade>
 
-          {/* BTS images */}
-          <Fade className="mb-4">
+          {/* BTS images — polaroids */}
+          <Fade className="mb-6">
             <p className="font-mono text-[10px] uppercase tracking-widest text-white/30">Behind the Scenes</p>
           </Fade>
-          <div className="mb-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mb-16 flex flex-wrap justify-center gap-8 sm:gap-10 lg:gap-12">
             {[
-              { src: "/Esports/me explaining seth the camera man for the camera angles.jpeg", caption: "Explaining camera angles to Seth" },
-              { src: "/Esports/Me and Camera man Seth in the picture me explaining to the players.jpeg", caption: "Briefing Seth and the players on set" },
-              { src: "/Esports/Me hustling days and nights editing the footage from the office post production.jpeg", caption: "Late-night post-production edit session" },
+              { src: "/Esports/me explaining seth the camera man for the camera angles.jpeg",          caption: "Explaining camera angles to Seth",      rotation: -3 },
+              { src: "/Esports/Me and Camera man Seth in the picture me explaining to the players.jpeg", caption: "Briefing Seth & the players on set",    rotation: 1.5 },
+              { src: "/Esports/Me hustling days and nights editing the footage from the office post production.jpeg", caption: "Late nights in post-production", rotation: -2 },
             ].map((img, i) => (
-              <MediaPop key={i} delay={i * 0.08} className="overflow-hidden rounded-xl border border-white/10">
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image
-                    src={img.src}
-                    alt={img.caption}
-                    fill
-                    className="object-cover transition-transform duration-500 hover:scale-[1.04]"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                    <p className="font-mono text-[10px] text-white/70">{img.caption}</p>
-                  </div>
-                </div>
+              <MediaPop key={i} delay={i * 0.1}>
+                <PolaroidImage src={img.src} caption={img.caption} rotation={img.rotation} />
               </MediaPop>
             ))}
           </div>
@@ -491,7 +519,7 @@ export default function TerpsEsportsPage() {
       ══════════════════════════════════════════════ */}
       <section id="te-campaign" className="relative z-10 py-24 md:py-32">
         <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-          <SectionHeading number="05" title="UMD Giving Day — I Drowned Myself for Donations." />
+          <SectionHeading number="05" title="UMD Giving Day: I Drowned Myself for Donations." />
 
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <Fade>
@@ -603,32 +631,20 @@ export default function TerpsEsportsPage() {
             </p>
           </Fade>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <MediaPop className="overflow-hidden rounded-2xl border border-border col-span-full lg:col-span-2">
-              <div className="relative aspect-[16/9] overflow-hidden">
-                <Image
-                  src="/Esports/TeamPicturewiththecrew.jpg"
-                  alt="The full Terps Esports crew"
-                  fill
-                  className="object-cover transition-transform duration-700 hover:scale-[1.02]"
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-5">
-                  <p className="font-mono text-xs text-white/70">The full crew after the Co-Ed Valorant shoot</p>
-                </div>
-              </div>
+          <div className="flex flex-wrap justify-center gap-10 lg:gap-14">
+            <MediaPop>
+              <PolaroidImage
+                src="/Esports/TeamPicturewiththecrew.jpg"
+                caption="The full crew after the Co-Ed Valorant shoot"
+                rotation={-2}
+              />
             </MediaPop>
-            <MediaPop delay={0.1} className="overflow-hidden rounded-2xl border border-border">
-              <div className="relative aspect-[4/5] overflow-hidden">
-                <Image
-                  src="/Esports/Funtimewiththeteam.jpg"
-                  alt="Fun time with the Terps Esports team"
-                  fill
-                  className="object-cover transition-transform duration-700 hover:scale-[1.02]"
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-5">
-                  <p className="font-mono text-xs text-white/70">Good times with the team</p>
-                </div>
-              </div>
+            <MediaPop delay={0.1}>
+              <PolaroidImage
+                src="/Esports/Funtimewiththeteam.jpg"
+                caption="Good times with the team"
+                rotation={2.5}
+              />
             </MediaPop>
           </div>
         </div>
