@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Download, Bell } from "lucide-react";
@@ -8,73 +8,6 @@ import RecruiterToggle from "./RecruiterToggle";
 import { NAV_LINKS, SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-/* Fully manual rAF animation — no Framer Motion, no CSS keyframes */
-const DoodleCircle = memo(function DoodleCircle() {
-  const pathRef = useRef<SVGPathElement>(null);
-
-  useEffect(() => {
-    const path = pathRef.current;
-    if (!path) return;
-
-    const len = path.getTotalLength();
-    path.style.strokeDasharray = String(len);
-    path.style.strokeDashoffset = String(len);
-    path.style.opacity = "0";
-
-    const DURATION = 1100;
-    let rafId: number;
-
-    const timer = setTimeout(() => {
-      let startTs: number | null = null;
-
-      const tick = (ts: number) => {
-        if (!startTs) startTs = ts;
-        const p = Math.min((ts - startTs) / DURATION, 1);
-        // ease-in-out cubic
-        const e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
-        path.style.strokeDashoffset = String(len * (1 - e));
-        path.style.opacity = "1";
-        if (p < 1) rafId = requestAnimationFrame(tick);
-      };
-
-      rafId = requestAnimationFrame(tick);
-    }, 1200);
-
-    return () => {
-      clearTimeout(timer);
-      cancelAnimationFrame(rafId);
-    };
-  }, []); // fires once on mount, never again
-
-  return (
-    <svg
-      className="pointer-events-none absolute"
-      style={{
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: 155,
-        height: 52,
-        overflow: "visible",
-        zIndex: 10,
-      }}
-      viewBox="0 0 155 52"
-      fill="none"
-      aria-hidden
-    >
-      {/* Ellipse overshoots past start — endpoint crosses origin like a real pen */}
-      <path
-        ref={pathRef}
-        d="M 22,10 C 38,-5 118,-4 136,12 C 150,26 146,42 128,48 C 106,54 36,56 16,42 C 2,32 4,16 22,10 C 23,9 25,7 30,5"
-        stroke="#3B82F6"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  );
-});
 
 export default function Header({ initialDark = false }: { initialDark?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
@@ -140,11 +73,7 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
 
           {/* Right side */}
           <div className="hidden items-center gap-5 md:flex" data-tour="recruiter">
-            {/* Doodle circle around recruiter toggle */}
-            <div className="relative inline-flex items-center">
-              <RecruiterToggle size="sm" dark={!isDarkText} />
-              <DoodleCircle />
-            </div>
+            <RecruiterToggle size="sm" dark={!isDarkText} />
             <a
               href={SITE.resumeUrl}
               target="_blank"
