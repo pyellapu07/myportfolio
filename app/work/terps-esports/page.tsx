@@ -129,6 +129,47 @@ function PolaroidImage({
   );
 }
 
+function PolaroidVideo({
+  src,
+  caption,
+  rotation = 0,
+  aspectRatio = "4/3",
+}: {
+  src: string;
+  caption: string;
+  rotation?: number;
+  aspectRatio?: string;
+}) {
+  return (
+    <div
+      className="block w-full bg-white shadow-xl transition-transform duration-300 hover:scale-[1.02] hover:shadow-2xl"
+      style={{
+        transform: `rotate(${rotation}deg)`,
+        padding: "12px 12px 52px 12px",
+        borderRadius: 4,
+      }}
+    >
+      <div className="relative overflow-hidden" style={{ aspectRatio }}>
+        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+        <video
+          src={src}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </div>
+      <p
+        className={`mt-3 text-center leading-tight ${caveat.className}`}
+        style={{ fontSize: 18, color: "#444", lineHeight: 1.3 }}
+      >
+        {caption}
+      </p>
+    </div>
+  );
+}
+
 /* ─────────────────────────────────────────────────────────────
    SECTION NAV — scroll-aware
 ───────────────────────────────────────────────────────────── */
@@ -479,9 +520,9 @@ export default function TerpsEsportsPage() {
           </Fade>
           <div className="mb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { src: "/Esports/me explaining seth the camera man for the camera angles.jpeg",          caption: "Explaining camera angles to Seth",      rotation: -3 },
-              { src: "/Esports/Me and Camera man Seth in the picture me explaining to the players.jpeg", caption: "Briefing Seth & the players on set",    rotation: 1.5 },
-              { src: "/Esports/Me hustling days and nights editing the footage from the office post production.jpeg", caption: "Late nights in post-production", rotation: -2 },
+              { src: "/Esports/me explaining seth the camera man for the camera angles.jpeg",          caption: "Seth, the camera goes THIS way. (I said it 4 times.)", rotation: -3 },
+              { src: "/Esports/Me and Camera man Seth in the picture me explaining to the players.jpeg", caption: "Director mode activated. Players mildly confused.", rotation: 1.5 },
+              { src: "/Esports/Me hustling days and nights editing the footage from the office post production.jpeg", caption: "3am. Cold coffee. 47 unreviewed takes.", rotation: -2 },
             ].map((img, i) => (
               <MediaPop key={i} delay={i * 0.1} className="flex">
                 <PolaroidImage src={img.src} caption={img.caption} rotation={img.rotation} />
@@ -665,21 +706,67 @@ export default function TerpsEsportsPage() {
             </p>
           </Fade>
 
-          <div className="grid gap-8 sm:grid-cols-2">
-            <MediaPop className="flex">
-              <PolaroidImage
-                src="/Esports/TeamPicturewiththecrew.jpg"
-                caption="The full crew after the Co-Ed Valorant shoot"
-                rotation={-2}
-              />
-            </MediaPop>
-            <MediaPop delay={0.1} className="flex">
-              <PolaroidImage
-                src="/Esports/Funtimewiththeteam.jpg"
-                caption="Good times with the team"
-                rotation={2.5}
-              />
-            </MediaPop>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                type: "image",
+                src: "/Esports/TeamPicturewiththecrew.jpg",
+                caption: "The whole squad after surviving 6 hours of green screen chaos",
+                rotation: -2,
+              },
+              {
+                type: "image",
+                src: "/Esports/Funtimewiththeteam.jpg",
+                caption: "Just vibing. Definitely not procrastinating edits.",
+                rotation: 2,
+              },
+              {
+                type: "image",
+                src: "/Esports/Meetup right after the chilly winter.jpeg",
+                caption: "First meetup of the semester. Still thawing out.",
+                rotation: -1.5,
+              },
+              {
+                type: "image",
+                src: "/Esports/Team activity smores event.jpeg",
+                caption: "S'mores > strategy meetings. Official team policy.",
+                rotation: 3,
+              },
+              {
+                type: "image",
+                src: "/Esports/Smores event.jpeg",
+                caption: "The real fuel behind every deadline we ever hit.",
+                rotation: -2.5,
+              },
+              {
+                type: "image",
+                src: "/Esports/Team bonding wall climbing me.jpeg",
+                caption: "Me, pretending I'm not afraid of heights. The wall knew.",
+                rotation: 1.5,
+              },
+              {
+                type: "video",
+                src: "/Esports/Climbing Wall fun team activity - not me trying not to slip down lol1.mp4",
+                caption: "Definitely not slipping. That's called a controlled descent.",
+                rotation: -3,
+              },
+            ].map((item, i) => (
+              <MediaPop key={i} delay={i * 0.07} className="flex">
+                {item.type === "video" ? (
+                  <PolaroidVideo
+                    src={item.src}
+                    caption={item.caption}
+                    rotation={item.rotation}
+                  />
+                ) : (
+                  <PolaroidImage
+                    src={item.src}
+                    caption={item.caption}
+                    rotation={item.rotation}
+                  />
+                )}
+              </MediaPop>
+            ))}
           </div>
         </div>
       </section>
