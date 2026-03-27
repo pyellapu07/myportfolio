@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Download, Bell } from "lucide-react";
@@ -8,50 +8,71 @@ import RecruiterToggle from "./RecruiterToggle";
 import { NAV_LINKS, SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-/* Pure CSS animation — runs once, stays drawn, never re-triggers on re-render */
+/* Fully manual rAF animation — no Framer Motion, no CSS keyframes */
 const DoodleCircle = memo(function DoodleCircle() {
+  const pathRef = useRef<SVGPathElement>(null);
+
+  useEffect(() => {
+    const path = pathRef.current;
+    if (!path) return;
+
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = String(len);
+    path.style.strokeDashoffset = String(len);
+    path.style.opacity = "0";
+
+    const DURATION = 1100;
+    let rafId: number;
+
+    const timer = setTimeout(() => {
+      let startTs: number | null = null;
+
+      const tick = (ts: number) => {
+        if (!startTs) startTs = ts;
+        const p = Math.min((ts - startTs) / DURATION, 1);
+        // ease-in-out cubic
+        const e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+        path.style.strokeDashoffset = String(len * (1 - e));
+        path.style.opacity = "1";
+        if (p < 1) rafId = requestAnimationFrame(tick);
+      };
+
+      rafId = requestAnimationFrame(tick);
+    }, 1200);
+
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(rafId);
+    };
+  }, []); // fires once on mount, never again
+
   return (
-    <>
-      <style>{`
-        @keyframes drawDoodle {
-          from { stroke-dashoffset: 500; opacity: 0; }
-          8%   { opacity: 1; }
-          to   { stroke-dashoffset: 0; opacity: 1; }
-        }
-        .doodle-path {
-          stroke-dasharray: 500;
-          stroke-dashoffset: 500;
-          opacity: 0;
-          animation: drawDoodle 1.1s cubic-bezier(0.4, 0, 0.2, 1) 1.2s forwards;
-        }
-      `}</style>
-      <svg
-        className="pointer-events-none absolute"
-        style={{
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 155,
-          height: 52,
-          overflow: "visible",
-          zIndex: 10,
-        }}
-        viewBox="0 0 155 52"
+    <svg
+      className="pointer-events-none absolute"
+      style={{
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: 155,
+        height: 52,
+        overflow: "visible",
+        zIndex: 10,
+      }}
+      viewBox="0 0 155 52"
+      fill="none"
+      aria-hidden
+    >
+      {/* Ellipse overshoots past start — endpoint crosses origin like a real pen */}
+      <path
+        ref={pathRef}
+        d="M 22,10 C 38,-5 118,-4 136,12 C 150,26 146,42 128,48 C 106,54 36,56 16,42 C 2,32 4,16 22,10 C 23,9 25,7 30,5"
+        stroke="#3B82F6"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         fill="none"
-        aria-hidden
-      >
-        {/* Ellipse overshoots past start — endpoint crosses origin like a real pen stroke */}
-        <path
-          className="doodle-path"
-          d="M 22,10 C 38,-5 118,-4 136,12 C 150,26 146,42 128,48 C 106,54 36,56 16,42 C 2,32 4,16 22,10 C 23,9 25,7 30,5"
-          stroke="#3B82F6"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-      </svg>
-    </>
+      />
+    </svg>
   );
 });
 
