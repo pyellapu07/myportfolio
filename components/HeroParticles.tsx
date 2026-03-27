@@ -138,10 +138,13 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   // One-time drag hint on load — tilt all stickers then snap back
+  // On first visit the loading screen covers for ~3300ms, so delay until after it lifts
   const [hintActive, setHintActive] = useState(false);
   useEffect(() => {
-    const t1 = setTimeout(() => setHintActive(true),  900);
-    const t2 = setTimeout(() => setHintActive(false), 1700);
+    const isFirstVisit = !sessionStorage.getItem("loadingSeen");
+    const delay = isFirstVisit ? 3800 : 900;
+    const t1 = setTimeout(() => setHintActive(true),  delay);
+    const t2 = setTimeout(() => setHintActive(false), delay + 800);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
