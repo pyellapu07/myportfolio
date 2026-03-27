@@ -72,7 +72,33 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
 
           {/* Right side */}
           <div className="hidden items-center gap-5 md:flex" data-tour="recruiter">
-            <RecruiterToggle size="sm" dark={!isDarkText} />
+            {/* Doodle circle around recruiter toggle */}
+            <div className="relative inline-flex items-center">
+              <RecruiterToggle size="sm" dark={!isDarkText} />
+              {/* SVG uses overflow:visible so path can extend beyond its 0×0 box */}
+              <svg
+                className="pointer-events-none absolute"
+                style={{ top: "-10px", left: "-14px", width: "calc(100% + 28px)", height: "calc(100% + 20px)", overflow: "visible" }}
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                {/* Hand-drawn wobbly ellipse in normalised 100×100 space */}
+                <motion.path
+                  d="M 16,10 C 26,-4 78,-5 90,10 C 103,26 100,76 86,90 C 70,104 28,106 12,90 C -2,76 2,26 16,10 Z"
+                  stroke="#3B82F6"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                  vectorEffect="non-scaling-stroke"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ duration: 0.9, ease: "easeInOut", delay: 1.0 }}
+                />
+              </svg>
+            </div>
             <a
               href={SITE.resumeUrl}
               target="_blank"
