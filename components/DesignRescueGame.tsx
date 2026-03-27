@@ -63,6 +63,12 @@ interface SpeechBubble {
   timer: number;
 }
 
+interface WaterSplash {
+  active: boolean;
+  x: number;
+  frame: number;
+}
+
 interface GameState {
   playerX: number;
   playerY: number;
@@ -87,6 +93,8 @@ interface GameState {
   gameOver: boolean;
   won: boolean;
   invincibleTimer: number;
+  waterSplash: WaterSplash | null;
+  prevPlayerOnGround: boolean;
 }
 
 /* ─── Constants ──────────────────────────────────────────────── */
@@ -100,14 +108,25 @@ const MAX_FALL = 14;
 
 const DIALOGUE_LINES = [
   "I hope this is a recruiter playing 👀",
-  "one interview would be great right?? hehe",
-  "no stress at all. really. REALLY.",
+  "one interview would be great rn hehe",
+  "no stress at all. REALLY. I'm fine.",
   "if you wanna reach out... 2406107815 📱",
   "another dark pattern? I've seen worse.",
   "scope creep. my old nemesis.",
   "this would look great in a case study 😏",
   "UX saves lives. well, products. same thing.",
   "I ship things that users actually use 🎯",
+  "5 years of this and I still love it tbh",
+  "a good designer never blames the user 💡",
+  "dark patterns are just evil. full stop.",
+  "lorem ipsum is a war crime in design",
+  "deploy on friday? hold my figma file",
+  "the user always wins. always.",
+  "stakeholder: 'make it pop' me: 🙃",
+  "accessibility is not optional. period.",
+  "my portfolio is literally right there →",
+  "hire me and I promise no lorem ipsum",
+  "what if the real UX was the friends we made",
 ];
 
 // Water bodies (level X positions, 120px wide each)
@@ -188,7 +207,7 @@ function makeEnemies(H: number): GameEnemy[] {
     ...d,
     alive: true,
     px: d.x,
-    py: H - 80 - 44,
+    py: H - 80 - 40,
     vx: 1.2,
     squishTimer: 0,
     speechTimer: 0,
@@ -675,71 +694,66 @@ function getGroundSegments(
   return segments;
 }
 
+function drawSingleBird(
+  ctx: CanvasRenderingContext2D,
+  sx: number,
+  sy: number,
+  frameCount: number,
+  wingPhase: number
+) {
+  const wingPhaseVal = Math.sin(frameCount * 0.10 + wingPhase);
+
+  ctx.save();
+  ctx.translate(sx, sy);
+
+  // Body (white/light gray) — bird flies LEFT, so beak on left
+  ctx.fillStyle = '#f8f8f0';
+  ctx.fillRect(0, 2, 8, 3);
+  // Wings flap up and down
+  const wingY = wingPhaseVal > 0 ? -2 : 2;
+  ctx.fillStyle = '#e8e8e0';
+  ctx.fillRect(-2, 2 + wingY, 5, 2); // left wing
+  ctx.fillRect(5, 2 + wingY, 5, 2);  // right wing
+  // Wing tips darker
+  ctx.fillStyle = '#555';
+  ctx.fillRect(-3, 2 + wingY, 2, 1);
+  ctx.fillRect(9, 2 + wingY, 2, 1);
+  // Beak on left (front of bird flying left)
+  ctx.fillStyle = '#FFB800';
+  ctx.fillRect(-2, 3, 3, 2);
+  // Eye near beak
+  ctx.fillStyle = '#111';
+  ctx.fillRect(1, 2, 1, 1);
+  // Tail on right
+  ctx.fillStyle = '#ddd';
+  ctx.fillRect(7, 3, 3, 2);
+
+  ctx.restore();
+}
+
 function drawBirds(
   ctx: CanvasRenderingContext2D,
   cameraX: number,
   frameCount: number
 ) {
+  const logicalW = ctx.canvas.width / (ctx.canvas.height / CANVAS_H);
   for (let i = 0; i < BIRD_DEFS.length; i++) {
     const bird = BIRD_DEFS[i];
     if (!bird) continue;
-    // Birds drift left slowly in world space, wrap around level
+    // Birds fly LEFT — worldX decreases each frame, wraps from right
     const worldX = ((bird.x - frameCount * bird.speed * 0.5) % (LEVEL_W + 200) + LEVEL_W + 200) % (LEVEL_W + 200);
     const sx = worldX - cameraX * 0.4;
-    if (sx < -20 || sx > ctx.canvas.width / (ctx.canvas.height / CANVAS_H) + 20) continue;
+    if (sx < -50 || sx > logicalW + 50) continue;
     const sy = bird.y;
 
-    // Wing animation
-    const wingVal = Math.sin(frameCount * 0.10 + bird.wingPhase);
-    const wingAngle = wingVal * 4;
+    drawSingleBird(ctx, sx, sy, frameCount, bird.wingPhase);
 
-    ctx.save();
-    ctx.translate(sx, sy);
-    // Body
-    ctx.fillStyle = "#e8e8e8";
-    ctx.fillRect(-4, -2, 8, 4);
-    // Left wing
-    ctx.fillStyle = "#d0d0d0";
-    ctx.save();
-    ctx.translate(-4, 0);
-    ctx.rotate(-wingAngle * 0.3);
-    ctx.fillRect(-6, -1, 6, 2);
-    ctx.restore();
-    // Right wing
-    ctx.save();
-    ctx.translate(4, 0);
-    ctx.rotate(wingAngle * 0.3);
-    ctx.fillRect(0, -1, 6, 2);
-    ctx.restore();
-    // Beak
-    ctx.fillStyle = "#FFD700";
-    ctx.fillRect(4, -1, 2, 2);
-    // Eye
-    ctx.fillStyle = "#111";
-    ctx.fillRect(2, -1, 1, 1);
-    ctx.restore();
-
-    // Formation buddies
+    // Formation buddies trailing behind (to the right since flying left)
     for (let f = 1; f <= 2; f++) {
-      const bsx = sx + f * 14;
-      const bsy = sy + f * 5;
-      if (bsx > ctx.canvas.width / (ctx.canvas.height / CANVAS_H) + 10) continue;
-      ctx.save();
-      ctx.translate(bsx, bsy);
-      ctx.fillStyle = "#e0e0e0";
-      ctx.fillRect(-3, -2, 7, 3);
-      ctx.fillStyle = "#ccc";
-      ctx.save();
-      ctx.translate(-3, 0);
-      ctx.rotate(-wingAngle * 0.3);
-      ctx.fillRect(-5, -1, 5, 2);
-      ctx.restore();
-      ctx.save();
-      ctx.translate(4, 0);
-      ctx.rotate(wingAngle * 0.3);
-      ctx.fillRect(0, -1, 5, 2);
-      ctx.restore();
-      ctx.restore();
+      const bsx = sx + f * 16;
+      const bsy = sy + f * 6;
+      if (bsx > logicalW + 20) continue;
+      drawSingleBird(ctx, bsx, bsy, frameCount, bird.wingPhase + f * 0.4);
     }
   }
 }
@@ -901,32 +915,62 @@ function drawPlayer(
   ctx.fillRect(bx + 9 * S, by + (frontArmY + 8) * S, S, S);
 
   // ── LEGS ──────────────────────────────────────────────────
+  const walkFrame4 = Math.floor(frame / 8) % 4;
   const legsBaseY = 18 + breatheY;
+
   if (isJumping) {
     p(10, legsBaseY + 2, 4, 5, '#283593');        // Back leg bent
     p(8,  legsBaseY + 2, 4, 5, '#1a237e');        // Front leg bent
     p(8,  legsBaseY + 2, 1, 5, '#3949AB');        // Jeans highlight
+    // Shoes for jump
+    p(9, legsBaseY + 7, 5, 2, '#f5f5f5');
+    p(7, legsBaseY + 7, 6, 2, '#f5f5f5');
+    p(7, legsBaseY + 8, 6, 1, '#FF5210');
   } else if (isRunning) {
-    const frontLegY = legsBaseY + (legPhase === 0 ? -1 : 1);
-    const backLegY  = legsBaseY + (legPhase === 0 ? 1 : -1);
-    p(10, backLegY,  4, 7, '#283593');            // Back leg
-    p(8,  frontLegY, 4, 7, '#1a237e');            // Front leg
-    p(8,  frontLegY, 1, 7, '#3949AB');            // Jeans highlight
-    p(8,  frontLegY + 4, 1, 3, '#1a237e');        // Calf detail
+    const frontLegForward = (walkFrame4 === 0 || walkFrame4 === 1);
+    const fLegOffset = frontLegForward ? S : -S;
+    const bLegOffset = -fLegOffset;
+
+    // Back leg (jeans, slightly darker)
+    ctx.fillStyle = '#283593';
+    const bUpperX = bx + (8 * S) + bLegOffset;
+    ctx.fillRect(bUpperX, by + 18 * S, 3 * S, 4 * S);
+    const bKneeX = bUpperX + (bLegOffset > 0 ? S : -S);
+    ctx.fillRect(bKneeX, by + 22 * S, 3 * S, 3 * S);
+    // Back shoe
+    ctx.fillStyle = '#e0e0e0';
+    ctx.fillRect(bKneeX - S, by + 25 * S, 4 * S, 2 * S);
+    ctx.fillStyle = '#FF5210';
+    ctx.fillRect(bKneeX - S, by + 26 * S, 4 * S, S);
+
+    // Front leg (darker jeans)
+    ctx.fillStyle = '#1a237e';
+    const fUpperX = bx + (7 * S) + fLegOffset;
+    ctx.fillRect(fUpperX, by + 18 * S, 3 * S, 4 * S);
+    const fKneeX = fUpperX + (fLegOffset > 0 ? 0 : -S);
+    ctx.fillRect(fKneeX, by + 22 * S, 3 * S, 3 * S);
+    // Front shoe
+    ctx.fillStyle = '#f5f5f5';
+    ctx.fillRect(fKneeX, by + 25 * S, 5 * S, 2 * S);
+    ctx.fillStyle = '#FF5210';
+    ctx.fillRect(fKneeX, by + 26 * S, 5 * S, S);
   } else {
-    p(10, legsBaseY, 4, 7, '#283593');            // Back leg
-    p(8,  legsBaseY, 4, 7, '#1a237e');            // Front leg
-    p(8,  legsBaseY, 1, 7, '#3949AB');            // Jeans highlight
-    p(8,  legsBaseY + 4, 1, 3, '#1a237e');        // Calf detail
+    // Idle: both legs together, static
+    ctx.fillStyle = '#1a237e';
+    ctx.fillRect(bx + 7 * S, by + 18 * S, 3 * S, 7 * S);
+    ctx.fillStyle = '#283593';
+    ctx.fillRect(bx + 9 * S, by + 18 * S, 3 * S, 7 * S);
+    // Shoes
+    ctx.fillStyle = '#f5f5f5';
+    ctx.fillRect(bx + 6 * S, by + 24 * S, 5 * S, 2 * S);
+    ctx.fillRect(bx + 9 * S, by + 24 * S, 4 * S, 2 * S);
+    ctx.fillStyle = '#FF5210';
+    ctx.fillRect(bx + 6 * S, by + 25 * S, 5 * S, S);
+    ctx.fillRect(bx + 9 * S, by + 25 * S, 4 * S, S);
   }
 
-  // ── SHOES ──────────────────────────────────────────────────
-  const shoeY = 24 + breatheY;
-  p(9, shoeY, 5, 3, '#f5f5f5');                   // Back shoe
-  p(7, shoeY, 6, 3, '#f5f5f5');                   // Front shoe
-  p(7, shoeY + 2, 6, 1, '#cccccc');               // Sole
-  p(7, shoeY + 1, 6, 1, '#FF5210');               // Orange stripe
-  p(13, shoeY, 1, 2, '#e0e0e0');                  // Toe cap
+  // (Shoes for non-running/non-jumping handled inline above)
+  void walkFrame4;
 
   ctx.restore(); // end facingLeft transform
 
@@ -939,6 +983,30 @@ function drawPlayer(
     ctx.restore();
   }
 }
+function drawEnemyNameTag(
+  ctx: CanvasRenderingContext2D,
+  screenX: number,
+  screenY: number,
+  name: string
+) {
+  const padding = 4;
+  ctx.font = 'bold 8px monospace';
+  const tw = ctx.measureText(name).width;
+  const bw = tw + padding * 2;
+  const bh = 14;
+  const bx = screenX - bw / 2;
+  const by = screenY - bh - 6;
+  // Dark pill background
+  ctx.fillStyle = 'rgba(20,20,20,0.85)';
+  ctx.fillRect(bx, by, bw, bh);
+  // Colored left border
+  ctx.fillStyle = '#FF5210';
+  ctx.fillRect(bx, by, 2, bh);
+  // Text
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(name, bx + padding + 2, by + bh - 4);
+}
+
 function drawEnemy(
   ctx: CanvasRenderingContext2D,
   enemy: GameEnemy,
@@ -947,112 +1015,111 @@ function drawEnemy(
 ) {
   if (!enemy.alive && enemy.squishTimer <= 0) return;
   const sx = enemy.px - cameraX;
-  const P = 2.2;
+  const S = 2;
+  // enemyHeight = 40; sy = top of sprite, feet at sy + 40 = groundY
+  const sy = enemy.py;
 
   ctx.save();
 
-  let scaleY = 1;
   if (enemy.squishTimer > 0) {
-    scaleY = enemy.squishTimer / 30;
-    ctx.translate(sx + 15, enemy.py + 24);
+    const scaleY = enemy.squishTimer / 30;
+    ctx.translate(sx + 14, sy + 20);
     ctx.scale(1, scaleY);
-    ctx.translate(-(sx + 15), -(enemy.py + 24));
+    ctx.translate(-(sx + 14), -(sy + 20));
   }
 
-  const facingLeft = enemy.dir < 0;
-  ctx.translate(sx, enemy.py);
-  if (!facingLeft) {
+  ctx.translate(sx, sy);
+  // Alien faces LEFT by default (toward player who comes from left)
+  // If enemy moving right (vx > 0), flip
+  if (enemy.vx > 0) {
     ctx.scale(-1, 1);
-    ctx.translate(-30, 0);
+    ctx.translate(-28, 0);
   }
 
-  // === TAIL (animated) ===
-  const tailWave = Math.sin(frameCount * 0.10) * 8;
-  const tailWave2 = Math.sin(frameCount * 0.10 + 1) * 6;
+  const walkFrame = Math.floor(frameCount / 8) % 4;
+
+  // === TAIL (sinuous, side view) ===
   ctx.strokeStyle = enemy.color;
-  ctx.lineWidth = 3;
+  ctx.lineWidth = S;
+  ctx.lineCap = 'round';
+  const tw2 = Math.sin(frameCount * 0.10) * 5;
   ctx.beginPath();
-  ctx.moveTo(2 * P, 14 * P);
-  ctx.bezierCurveTo(
-    -2 * P, (14 + tailWave) * P,
-    -5 * P, (12 + tailWave2) * P,
-    -8 * P, (10 + tailWave) * P
-  );
+  ctx.moveTo(12 * S, 14 * S);
+  ctx.quadraticCurveTo(8 * S, (16 + tw2) * S, 4 * S, (18 + tw2 * 0.5) * S);
+  ctx.quadraticCurveTo(1 * S, (19 + tw2) * S, 0, (17 + tw2 * 0.8) * S);
   ctx.stroke();
   ctx.fillStyle = darkenColor(enemy.color, 30);
-  ctx.fillRect(-8 * P - 2, (10 + tailWave) * P - 2, 4, 4);
+  ctx.fillRect(0, (17 + tw2 * 0.8) * S - S, S, S * 2);
 
-  // === LEGS ===
-  const legPhase = Math.sin(frameCount * 0.12) * 3;
-  ctx.fillStyle = darkenColor(enemy.color, 20);
-  ctx.fillRect(3 * P, 12 * P, 3 * P, 4 * P);
-  ctx.fillRect(7 * P, 12 * P, 3 * P, 4 * P);
-  ctx.fillRect(3 * P, (16 + legPhase) * P, 2 * P, 3 * P);
-  ctx.fillRect(8 * P, (16 - legPhase) * P, 2 * P, 3 * P);
-  ctx.fillStyle = "#222";
-  ctx.fillRect(2 * P, (19 + legPhase) * P, 4 * P, 2 * P);
-  ctx.fillRect(2 * P, (19 + legPhase) * P, P, 3 * P);
-  ctx.fillRect(4 * P, (19 + legPhase) * P, P, 2 * P);
-  ctx.fillRect(7 * P, (19 - legPhase) * P, 4 * P, 2 * P);
-  ctx.fillRect(7 * P, (19 - legPhase) * P, P, 3 * P);
-  ctx.fillRect(9 * P, (19 - legPhase) * P, P, 2 * P);
+  // === BACK LEG (side profile, alternating walk) ===
+  const backLegPhase = (walkFrame === 0 || walkFrame === 1) ? 1 : -1;
+  const frontLegPhase = -backLegPhase;
 
-  // === BODY ===
+  ctx.fillStyle = darkenColor(enemy.color, 25);
+  const bUpperY = 13 * S + backLegPhase * S;
+  ctx.fillRect(6 * S, bUpperY, 2 * S, 4 * S);
+  const bKneeX = 6 * S + (backLegPhase > 0 ? S : -S);
+  ctx.fillRect(bKneeX, bUpperY + 4 * S, 2 * S, 3 * S);
+  ctx.fillStyle = '#222';
+  ctx.fillRect(bKneeX - S, bUpperY + 7 * S, 3 * S, S);
+
+  // === BODY (hunched, side profile) ===
   ctx.fillStyle = enemy.color;
-  ctx.fillRect(2 * P, 5 * P, 10 * P, 8 * P);
-  ctx.fillStyle = lightenColor(enemy.color, 30);
-  ctx.fillRect(3 * P, 5 * P, 2 * P, 6 * P);
-  ctx.fillRect(2 * P, 5 * P, 10 * P, P);
-  ctx.fillStyle = darkenColor(enemy.color, 40);
-  ctx.fillRect(4 * P, 5 * P, 6 * P, 2 * P);
-  ctx.fillRect(5 * P, 3 * P, 4 * P, 2 * P);
+  ctx.fillRect(4 * S, 5 * S, 8 * S, 9 * S);
+  ctx.fillRect(3 * S, 6 * S, 2 * S, 5 * S);
+  ctx.fillStyle = darkenColor(enemy.color, 35);
+  ctx.fillRect(4 * S, 5 * S, 8 * S, S);
+  ctx.fillRect(4 * S, 7 * S, 8 * S, S);
+  ctx.fillRect(4 * S, 9 * S, 6 * S, S);
+  ctx.fillStyle = lightenColor(enemy.color, 35);
+  ctx.fillRect(3 * S, 6 * S, S, 4 * S);
 
-  // === ARMS ===
+  // === FRONT LEG (side profile) ===
+  ctx.fillStyle = darkenColor(enemy.color, 15);
+  const fUpperY = 13 * S + frontLegPhase * S;
+  ctx.fillRect(7 * S, fUpperY, 2 * S, 4 * S);
+  const fKneeX = 7 * S + (frontLegPhase > 0 ? S : -S);
+  ctx.fillRect(fKneeX, fUpperY + 4 * S, 2 * S, 3 * S);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(fKneeX, fUpperY + 7 * S, 3 * S, S);
+  ctx.fillRect(fKneeX + 2 * S, fUpperY + 7 * S, S, S + 1);
+
+  // === FRONT ARM ===
   const armSwing = Math.sin(frameCount * 0.12) * 2;
   ctx.fillStyle = darkenColor(enemy.color, 10);
-  ctx.fillRect(0, (7 + armSwing) * P, 3 * P, 4 * P);
-  ctx.fillRect(11 * P, (7 - armSwing) * P, 3 * P, 4 * P);
-  ctx.fillStyle = "#111";
-  ctx.fillRect(-P, (11 + armSwing) * P, 2 * P, P);
-  ctx.fillRect(-P, (11 + armSwing) * P, P, 2 * P);
-  ctx.fillRect(11 * P, (11 - armSwing) * P, 2 * P, P);
-  ctx.fillRect(13 * P, (11 - armSwing) * P, P, 2 * P);
+  ctx.fillRect(10 * S, (7 + armSwing) * S, 3 * S, 4 * S);
+  ctx.fillRect(11 * S, (10 + armSwing + 1) * S, 2 * S, 3 * S);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(10 * S, (12 + armSwing + 1) * S, S, S);
+  ctx.fillRect(12 * S, (12 + armSwing) * S, S, S);
 
-  // === HEAD ===
+  // === HEAD (elongated dome, side profile) ===
+  const headBob = (walkFrame === 1 || walkFrame === 3) ? S : 0;
   ctx.fillStyle = lightenColor(enemy.color, 10);
-  ctx.fillRect(3 * P, 0, 8 * P, 6 * P);
-  ctx.fillRect(4 * P, -2 * P, 6 * P, 3 * P);
-  ctx.fillRect(5 * P, -4 * P, 4 * P, 3 * P);
-  ctx.fillStyle = lightenColor(enemy.color, 50);
-  ctx.fillRect(4 * P, 0, 2 * P, 3 * P);
-
-  // === FACE ===
-  ctx.fillStyle = "#00ff88";
-  ctx.fillRect(4 * P, 2 * P, 2 * P, 2 * P);
-  ctx.fillRect(8 * P, 2 * P, 2 * P, 2 * P);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(4 * P, 2 * P, P, P);
-  ctx.fillRect(8 * P, 2 * P, P, P);
-  const mandPhase = Math.sin(frameCount * 0.1);
-  ctx.fillStyle = "#111";
-  ctx.fillRect(4 * P, (5 + mandPhase) * P, 2 * P, 2 * P);
-  ctx.fillRect(8 * P, (5 + mandPhase) * P, 2 * P, 2 * P);
-  ctx.fillRect(5 * P, (7 + mandPhase) * P, P, 2 * P);
-  ctx.fillRect(8 * P, (7 + mandPhase) * P, P, 2 * P);
-
-  // Name tag above
-  ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform to draw label
-  const label = enemy.label;
-  ctx.font = "bold 7px monospace";
-  const tw = ctx.measureText(label).width;
-  const tagX = sx + 15 - tw / 2 - 4;
-  const tagY = enemy.py - 14;
-  ctx.fillStyle = "rgba(0,0,0,0.75)";
-  ctx.fillRect(tagX, tagY, tw + 8, 11);
-  ctx.fillStyle = "#fff";
-  ctx.fillText(label, tagX + 4, tagY + 8);
+  ctx.fillRect(6 * S, headBob, 7 * S, 6 * S);
+  ctx.fillRect(7 * S, headBob - S, 5 * S, S);
+  ctx.fillRect(8 * S, headBob - 2 * S, 3 * S, S);
+  ctx.fillStyle = lightenColor(enemy.color, 45);
+  ctx.fillRect(6 * S, headBob, S, 4 * S);
+  ctx.fillRect(7 * S, headBob - S, 2 * S, S);
+  // Glowing eye
+  ctx.fillStyle = '#00ff88';
+  ctx.fillRect(10 * S, (2 + headBob / S) * S, 2 * S, 2 * S);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(11 * S, (2 + headBob / S) * S, S, S);
+  // Mandible
+  const mandPhase = Math.sin(frameCount * 0.10);
+  ctx.fillStyle = darkenColor(enemy.color, 20);
+  ctx.fillRect(11 * S, (5 + mandPhase) * S, 2 * S, 2 * S);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(12 * S, (6 + mandPhase) * S, S, S);
 
   ctx.restore();
+
+  // Draw name tag directly above enemy, using current screen position
+  // screenX = center of sprite = sx + 14, screenY = top of sprite = sy
+  // But we need absolute screen coords (post-transform). We saved and restored so coords are back.
+  drawEnemyNameTag(ctx, sx + 14, sy - 2, enemy.label);
 }
 
 function drawCollectible(
@@ -1186,28 +1253,88 @@ function drawSpeechBubble(
   ctx.restore();
 }
 
-function drawHUDCanvas(
+function drawWaterSplash(
   ctx: CanvasRenderingContext2D,
-  lives: number,
-  collectedCount: number,
-  W: number
+  sx: number,
+  sy: number,
+  splashFrame: number
 ) {
+  if (splashFrame > 20) return;
+  const alpha = 1 - splashFrame / 20;
   ctx.save();
-  ctx.font = "bold 12px monospace";
-  ctx.fillStyle = "rgba(0,0,0,0.5)";
-  ctx.fillRect(W - 80, 8, 72, 22);
-  ctx.fillStyle = "#FF5210";
-  const hearts = "♥".repeat(lives) + "♡".repeat(Math.max(0, 3 - lives));
-  ctx.fillText(hearts, W - 74, 24);
+  ctx.globalAlpha = alpha;
+  // Left spray
+  for (let d = 0; d < 5; d++) {
+    const t = splashFrame * 0.15 + d;
+    const dx = -8 + d * 4 + Math.sin(t) * 3;
+    const dy = -(splashFrame * 1.5) + d * 2;
+    ctx.fillStyle = d % 2 === 0 ? '#64B5F6' : '#ffffff';
+    ctx.fillRect(sx + dx - 12, sy + dy, 3, 3);
+  }
+  // Right spray (mirror)
+  for (let d = 0; d < 5; d++) {
+    const t = splashFrame * 0.15 + d;
+    const dx = 8 - d * 4 + Math.sin(t) * 3;
+    const dy = -(splashFrame * 1.5) + d * 2;
+    ctx.fillStyle = d % 2 === 0 ? '#64B5F6' : '#ffffff';
+    ctx.fillRect(sx + dx + 12, sy + dy, 3, 3);
+  }
   ctx.restore();
+}
 
-  ctx.save();
-  ctx.font = "bold 11px monospace";
-  ctx.fillStyle = "rgba(0,0,0,0.5)";
-  ctx.fillRect(8, 8, 90, 22);
-  ctx.fillStyle = "#FF5210";
-  ctx.fillText(`PIECES: ${collectedCount}/10`, 12, 24);
-  ctx.restore();
+function drawPiecesHUD(
+  ctx: CanvasRenderingContext2D,
+  collectibles: GameCollectible[],
+  canvasW: number
+) {
+  const total = collectibles.length;
+  const spacing = canvasW / (total + 1);
+
+  collectibles.forEach((item, i) => {
+    const cx = spacing * (i + 1);
+    const cy = 28;
+    const collected = item.collected;
+
+    // Coin shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(cx - 8, cy - 8, 17, 17);
+
+    // Coin body
+    ctx.fillStyle = collected ? item.color : '#888';
+    ctx.fillRect(cx - 9, cy - 9, 18, 18);
+    // Coin border
+    ctx.fillStyle = collected ? darkenColor(item.color, 30) : '#555';
+    ctx.fillRect(cx - 9, cy - 9, 18, 2);
+    ctx.fillRect(cx - 9, cy + 7, 18, 2);
+    ctx.fillRect(cx - 9, cy - 9, 2, 18);
+    ctx.fillRect(cx + 7, cy - 9, 2, 18);
+    // Inner coin
+    ctx.fillStyle = collected ? lightenColor(item.color, 20) : '#999';
+    ctx.fillRect(cx - 6, cy - 6, 12, 12);
+    // Shine dot
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.fillRect(cx - 5, cy - 5, 3, 3);
+
+    if (collected) {
+      ctx.fillStyle = '#00e676';
+      ctx.fillRect(cx - 3, cy + 1, 2, 3);
+      ctx.fillRect(cx - 1, cy + 3, 2, 2);
+      ctx.fillRect(cx + 1, cy, 2, 4);
+    }
+
+    // Full label below coin — split into 2 lines if long
+    ctx.font = 'bold 7px monospace';
+    ctx.textAlign = 'center';
+    const label = item.label;
+    const words = label.split(' ');
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillText(words[0] ?? '', cx + 1, cy + 16);
+    if (words[1]) ctx.fillText(words.slice(1).join(' '), cx + 1, cy + 24);
+    ctx.fillStyle = collected ? '#ffffff' : '#aaaaaa';
+    ctx.fillText(words[0] ?? '', cx, cy + 15);
+    if (words[1]) ctx.fillText(words.slice(1).join(' '), cx, cy + 23);
+    ctx.textAlign = 'left';
+  });
 }
 
 /* ─── Confetti component ─────────────────────────────────────── */
@@ -1471,6 +1598,8 @@ interface HUDProps {
 }
 
 function HUD({ collectedIds, lives, collectibles }: HUDProps) {
+  void collectibles;
+  void collectedIds;
   return (
     <div
       style={{
@@ -1478,59 +1607,18 @@ function HUD({ collectedIds, lives, collectibles }: HUDProps) {
         top: 0,
         left: 0,
         right: 0,
-        height: 48,
-        background: "rgba(0,0,0,0.75)",
+        height: 64,
+        background: "transparent",
         display: "flex",
-        alignItems: "center",
-        padding: "0 16px",
+        alignItems: "flex-start",
+        padding: "8px 16px 0",
         zIndex: 200,
         fontFamily: "monospace",
         gap: 12,
+        pointerEvents: "none",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 4, flex: 1 }}>
-        <span style={{ color: "#FF5210", fontSize: 10, fontWeight: "bold", marginRight: 6, letterSpacing: 1 }}>
-          PIECES
-        </span>
-        {collectibles.map((c) => (
-          <motion.div
-            key={c.id}
-            animate={collectedIds.has(c.id) ? { scale: [1.3, 1], y: [0, -4, 0] } : {}}
-            transition={{ duration: 0.3 }}
-            style={{
-              width: 16,
-              height: 16,
-              background: collectedIds.has(c.id) ? c.color : "#333",
-              border: collectedIds.has(c.id) ? `2px solid ${c.color}` : "2px solid #555",
-              borderRadius: 2,
-              position: "relative",
-              boxShadow: collectedIds.has(c.id) ? `0 0 6px ${c.color}` : "none",
-            }}
-            title={c.label}
-          >
-            {collectedIds.has(c.id) && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: -4,
-                  right: -4,
-                  width: 8,
-                  height: 8,
-                  background: "#4CAF50",
-                  borderRadius: "50%",
-                  fontSize: 6,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#fff",
-                }}
-              >
-                ✓
-              </div>
-            )}
-          </motion.div>
-        ))}
-      </div>
+      <div style={{ flex: 1 }} />
 
       <div
         style={{
@@ -1538,18 +1626,19 @@ function HUD({ collectedIds, lives, collectibles }: HUDProps) {
           fontSize: 14,
           fontWeight: "bold",
           letterSpacing: 2,
-          textShadow: "0 0 8px #FF5210",
+          textShadow: "0 0 8px #FF5210, 1px 1px 0 #000",
           whiteSpace: "nowrap",
+          marginTop: 4,
         }}
       >
         DESIGN BOUNTY
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end", flex: 1 }}>
-        <span style={{ color: "#FF5210", fontSize: 14 }}>
+        <span style={{ color: "#FF5210", fontSize: 14, textShadow: "1px 1px 0 #000" }}>
           {"♥".repeat(lives)}{"♡".repeat(Math.max(0, 3 - lives))}
         </span>
-        <span style={{ color: "#fff", fontSize: 10, fontWeight: "bold", letterSpacing: 1 }}>PRADEEP</span>
+        <span style={{ color: "#fff", fontSize: 10, fontWeight: "bold", letterSpacing: 1, textShadow: "1px 1px 0 #000" }}>PRADEEP</span>
       </div>
     </div>
   );
@@ -1772,6 +1861,8 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
       gameOver: false,
       won: false,
       invincibleTimer: 0,
+      waterSplash: null,
+      prevPlayerOnGround: false,
     };
   }, []);
 
@@ -1983,9 +2074,9 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
 
         enemy.dir = enemy.vx < 0 ? -1 : 1;
 
-        // Enemy on ground or platform
-        const eBottom = enemy.py + 44;
-        const eGroundY = CANVAS_H - 80 - 44; // grass at H-80, enemy feet at bottom of 44px sprite
+        // Enemy on ground or platform (enemyHeight = 40)
+        const eBottom = enemy.py + 40;
+        const eGroundY = CANVAS_H - 80 - 40; // grass at H-80, enemy feet at bottom of 40px sprite
         if (enemy.py < eGroundY) {
           enemy.py = Math.min(enemy.py + 2, eGroundY);
         }
@@ -1996,7 +2087,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
             enemy.px + 20 > plat.x &&
             enemy.px < plat.x + plat.w
           ) {
-            enemy.py = plat.y - 44;
+            enemy.py = plat.y - 40;
           }
         }
 
@@ -2004,7 +2095,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         let onPlat = false;
         for (const plat of platforms) {
           if (
-            Math.abs(eBottom - plat.y) < 4 &&
+            Math.abs(eBottom - plat.y) < 6 &&
             enemy.px + 20 > plat.x &&
             enemy.px < plat.x + plat.w
           ) {
@@ -2055,6 +2146,26 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
             }
           }
         }
+      }
+
+      // ── Water splash ──────────────────────────────────────
+      const playerGroundY = CANVAS_H - 80;
+      const playerFeetY = gs.playerY + 56;
+      const playerCenterX = gs.playerX + 10;
+      // Detect landing on ground while over a water body
+      if (gs.playerOnGround && !gs.prevPlayerOnGround) {
+        for (const wb of WATER_BODIES) {
+          if (playerCenterX >= wb.x && playerCenterX <= wb.x + wb.w) {
+            gs.waterSplash = { active: true, x: playerCenterX, frame: 0 };
+          }
+        }
+      }
+      gs.prevPlayerOnGround = gs.playerOnGround;
+      void playerFeetY; void playerGroundY;
+      // Advance splash frame
+      if (gs.waterSplash) {
+        gs.waterSplash.frame += 1;
+        if (gs.waterSplash.frame > 20) gs.waterSplash = null;
       }
 
       // ── Checkpoint ────────────────────────────────────────
@@ -2137,13 +2248,20 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         gs.cameraX
       );
 
+      // Water splash
+      if (gs.waterSplash) {
+        const splashScreenX = gs.waterSplash.x - gs.cameraX;
+        const splashScreenY = CANVAS_H - 80;
+        drawWaterSplash(ctx, splashScreenX, splashScreenY, gs.waterSplash.frame);
+      }
+
       // Dialogue bubble
       if (gs.dialogueBubble) {
         drawDialogueBubble(ctx, gs.dialogueBubble, gs.cameraX, lw);
       }
 
-      // HUD on canvas
-      drawHUDCanvas(ctx, gs.lives, gs.collectedIds.size, lw);
+      // Pieces HUD (coin row at top of canvas — drawn last so it's on top)
+      drawPiecesHUD(ctx, gs.collectibles, lw);
 
       ctx.restore();
 
