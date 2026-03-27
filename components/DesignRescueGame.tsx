@@ -2050,6 +2050,8 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
   const [hudCollectibles, setHudCollectibles] = useState<GameCollectible[]>([]);
   const [lives, setLives] = useState(3);
   const [winStats, setWinStats] = useState({ collected: 0, enemies: 0, elapsed: 0 });
+  const [paused, setPaused] = useState(false);
+  const pausedRef = useRef(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -2124,6 +2126,8 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
   }, [initGameState]);
 
   const handleRestart = useCallback(() => {
+    pausedRef.current = false;
+    setPaused(false);
     gameStateRef.current = initGameState();
     setPhase("playing");
     setCollectedIds(new Set());
@@ -2161,7 +2165,12 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
     function onKeyDown(e: KeyboardEvent) {
       ensureAudio();
       keysRef.current[e.code] = true;
-      if (e.code === "Escape") onExit();
+      if (e.code === "Escape" || e.code === "KeyP") {
+        pausedRef.current = !pausedRef.current;
+        setPaused(pausedRef.current);
+        return;
+      }
+      if (pausedRef.current) return;
       if (
         (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") &&
         gs!.playerJumpsLeft > 0
@@ -2213,6 +2222,11 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
 
     function gameLoop() {
       if (!canvas || !gs) return;
+      // If paused, keep RAF alive so we can unpause, but don't update game state
+      if (pausedRef.current) {
+        rafRef.current = requestAnimationFrame(gameLoop);
+        return;
+      }
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
@@ -2780,23 +2794,91 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
             lives={lives}
             collectibles={hudCollectibles}
           />
-          <button
-            onClick={onExit}
-            style={{
-              position: "fixed",
-              top: 12,
-              right: 16,
-              zIndex: 250,
-              background: "transparent",
-              border: "none",
-              color: "#666",
-              fontFamily: "monospace",
-              fontSize: 11,
-              cursor: WHITE_CURSOR,
-            }}
-          >
-            ✕ exit
-          </button>
+          {/* Top-right controls: pause + exit */}
+          <div style={{ position: "fixed", top: 12, right: 16, zIndex: 250, display: "flex", gap: 8 }}>
+            <button
+              onClick={() => { pausedRef.current = !pausedRef.current; setPaused(pausedRef.current); }}
+              style={{
+                background: "rgba(0,0,0,0.45)",
+                border: "1px solid rgba(255,255,255,0.18)",
+                borderRadius: 6,
+                color: "#fff",
+                fontFamily: "monospace",
+                fontSize: 11,
+                padding: "3px 10px",
+                cursor: WHITE_CURSOR,
+              }}
+            >
+              {paused ? "▶ resume" : "⏸ pause"}
+            </button>
+            <button
+              onClick={onExit}
+              style={{
+                background: "rgba(0,0,0,0.45)",
+                border: "1px solid rgba(255,255,255,0.18)",
+                borderRadius: 6,
+                color: "#aaa",
+                fontFamily: "monospace",
+                fontSize: 11,
+                padding: "3px 10px",
+                cursor: WHITE_CURSOR,
+              }}
+            >
+              ✕ exit
+            </button>
+          </div>
+
+          {/* Pause menu overlay */}
+          {paused && (
+            <div style={{
+              position: "fixed", inset: 0, zIndex: 300,
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              background: "rgba(0,0,0,0.72)",
+              backdropFilter: "blur(3px)",
+            }}>
+              <div style={{
+                background: "#1a1a2e",
+                border: "2px solid #FF5210",
+                borderRadius: 12,
+                padding: "36px 48px",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 20,
+                fontFamily: "monospace",
+                boxShadow: "0 0 40px rgba(255,82,16,0.25)",
+              }}>
+                <div style={{ fontSize: 13, letterSpacing: "0.2em", color: "#FF5210", textTransform: "uppercase" }}>
+                  — paused —
+                </div>
+                {[
+                  { label: "▶  Resume", sub: "P / Esc", action: () => { pausedRef.current = false; setPaused(false); } },
+                  { label: "↺  Restart", sub: "from beginning", action: handleRestart },
+                  { label: "✕  Exit", sub: "back to portfolio", action: onExit },
+                ].map(({ label, sub, action }) => (
+                  <button
+                    key={label}
+                    onClick={action}
+                    style={{
+                      width: 220,
+                      background: "transparent",
+                      border: "1px solid rgba(255,255,255,0.15)",
+                      borderRadius: 8,
+                      color: "#fff",
+                      fontFamily: "monospace",
+                      fontSize: 14,
+                      padding: "12px 0",
+                      cursor: WHITE_CURSOR,
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+                      transition: "border-color 0.15s, background 0.15s",
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,82,16,0.15)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "#FF5210"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.15)"; }}
+                  >
+                    <span>{label}</span>
+                    <span style={{ fontSize: 10, color: "#666" }}>{sub}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
 
