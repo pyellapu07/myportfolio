@@ -99,29 +99,27 @@ function PolaroidImage({
   caption,
   rotation = 0,
   alt = "",
-  dark = false,
 }: {
   src: string;
   caption: string;
   rotation?: number;
   alt?: string;
-  dark?: boolean;
 }) {
   return (
     <div
-      className="inline-block bg-white shadow-xl transition-transform duration-300 hover:scale-[1.03] hover:shadow-2xl"
+      className="block w-full bg-white shadow-xl transition-transform duration-300 hover:scale-[1.02] hover:shadow-2xl"
       style={{
         transform: `rotate(${rotation}deg)`,
-        padding: "10px 10px 36px 10px",
+        padding: "12px 12px 52px 12px",
         borderRadius: 4,
       }}
     >
       <div className="relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
-        <Image src={src} alt={alt || caption} fill className="object-cover" sizes="(max-width: 768px) 90vw, 400px" />
+        <Image src={src} alt={alt || caption} fill className="object-cover" sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 380px" />
       </div>
       <p
-        className={`mt-2 text-center leading-tight ${caveat.className}`}
-        style={{ fontSize: 15, color: "#444", lineHeight: 1.3 }}
+        className={`mt-3 text-center leading-tight ${caveat.className}`}
+        style={{ fontSize: 18, color: "#444", lineHeight: 1.3 }}
       >
         {caption}
       </p>
@@ -456,13 +454,13 @@ export default function TerpsEsportsPage() {
           <Fade className="mb-6">
             <p className="font-mono text-[10px] uppercase tracking-widest text-white/30">Behind the Scenes</p>
           </Fade>
-          <div className="mb-16 flex flex-wrap justify-center gap-8 sm:gap-10 lg:gap-12">
+          <div className="mb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               { src: "/Esports/me explaining seth the camera man for the camera angles.jpeg",          caption: "Explaining camera angles to Seth",      rotation: -3 },
               { src: "/Esports/Me and Camera man Seth in the picture me explaining to the players.jpeg", caption: "Briefing Seth & the players on set",    rotation: 1.5 },
               { src: "/Esports/Me hustling days and nights editing the footage from the office post production.jpeg", caption: "Late nights in post-production", rotation: -2 },
             ].map((img, i) => (
-              <MediaPop key={i} delay={i * 0.1}>
+              <MediaPop key={i} delay={i * 0.1} className="flex">
                 <PolaroidImage src={img.src} caption={img.caption} rotation={img.rotation} />
               </MediaPop>
             ))}
@@ -581,13 +579,13 @@ export default function TerpsEsportsPage() {
                     {["Photoshop", "UMD Brand Colors", "Seasonal Design", "Social Media"].map(t => <Tag key={t}>{t}</Tag>)}
                   </div>
                 </div>
-                {/* Image constrained to card height — no overflow */}
-                <div className="relative min-h-[380px] overflow-hidden bg-black/5 lg:h-full lg:min-h-[440px]">
-                  <Image
+                {/* Blossom poster as polaroid */}
+                <div className="flex items-center justify-center p-10 bg-[#fafafa]">
+                  <PolaroidImage
                     src="/Esports/blossom poster OW5_1.5x.png"
                     alt="Blossom Poster - Overwatch 5"
-                    fill
-                    className="object-contain transition-transform duration-700 hover:scale-[1.02]"
+                    caption="Spring Blossoms · OW5"
+                    rotation={3}
                   />
                 </div>
               </div>
@@ -604,13 +602,15 @@ export default function TerpsEsportsPage() {
               { src: "/Esports/phone to phone thumbanail_2x.png",               alt: "Phone to phone thumbnail" },
               { src: "/Esports/thumbnail giving day.png",                        alt: "Giving Day thumbnail" },
             ].map((img, i) => (
-              <MediaPop key={i} delay={i * 0.05} className="overflow-hidden rounded-xl border border-border bg-white">
+              <MediaPop key={i} delay={i * 0.05} className="overflow-hidden rounded-xl">
                 <Image
                   src={img.src}
                   alt={img.alt}
-                  width={400}
-                  height={300}
-                  className="w-full h-auto object-cover transition-transform duration-500 hover:scale-[1.04]"
+                  width={0}
+                  height={0}
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 25vw"
+                  style={{ width: "100%", height: "auto" }}
+                  className="block transition-transform duration-500 hover:scale-[1.04]"
                 />
               </MediaPop>
             ))}
@@ -631,15 +631,15 @@ export default function TerpsEsportsPage() {
             </p>
           </Fade>
 
-          <div className="flex flex-wrap justify-center gap-10 lg:gap-14">
-            <MediaPop>
+          <div className="grid gap-8 sm:grid-cols-2">
+            <MediaPop className="flex">
               <PolaroidImage
                 src="/Esports/TeamPicturewiththecrew.jpg"
                 caption="The full crew after the Co-Ed Valorant shoot"
                 rotation={-2}
               />
             </MediaPop>
-            <MediaPop delay={0.1}>
+            <MediaPop delay={0.1} className="flex">
               <PolaroidImage
                 src="/Esports/Funtimewiththeteam.jpg"
                 caption="Good times with the team"

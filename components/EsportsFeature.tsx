@@ -4,8 +4,11 @@ import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Film, Pen, Palette } from "lucide-react";
+import { Film, Pen, Palette, Play } from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
+import { Caveat } from "next/font/google";
+
+const caveat = Caveat({ subsets: ["latin"], weight: ["400", "600"] });
 
 const PHOTOS = [
   "/Esports/NJC valorant thumbnail_1.5x.png",
@@ -50,7 +53,7 @@ function PhotoStrip() {
   );
 }
 
-/* ── Black folder sticker with fanned images ── */
+/* ── Blue folder sticker with fanned images ── */
 function FolderSticker() {
   const imgs = [
     "/Esports/blossom poster OW5_1.5x.png",
@@ -63,7 +66,7 @@ function FolderSticker() {
     "translateY(8px) rotate(2.5deg)",
   ];
   return (
-    <div className="inline-flex flex-col items-center gap-1" style={{ transform: "rotate(-7deg)" }}>
+    <div className="inline-flex flex-col items-center gap-1" style={{ transform: "rotate(-5deg)" }}>
       <div className="relative" style={{ width: 72, height: 58, overflow: "visible" }}>
         {imgs.map((src, i) => (
           <div
@@ -85,17 +88,38 @@ function FolderSticker() {
             <img src={src} alt="" draggable={false} style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
           </div>
         ))}
-        {/* Black folder SVG on top */}
+        {/* Blue folder SVG on top */}
         <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
           <svg width="72" height="57.6" viewBox="0 0 60 48" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 14C4 11.8 5.8 10 8 10H22L26.5 14H4Z" fill="#111" />
-            <rect x="4" y="14" width="52" height="30" rx="4" fill="#111" />
-            <rect x="4" y="17" width="52" height="27" rx="3" fill="#1c1c1c" />
-            <rect x="4" y="17" width="52" height="8" rx="3" fill="rgba(255,255,255,0.07)" />
+            <path d="M4 14C4 11.8 5.8 10 8 10H22L26.5 14H4Z" fill="#1d4ed8" />
+            <rect x="4" y="14" width="52" height="30" rx="4" fill="#1d4ed8" />
+            <rect x="4" y="17" width="52" height="27" rx="3" fill="#2563eb" />
+            <rect x="4" y="17" width="52" height="8" rx="3" fill="rgba(255,255,255,0.12)" />
           </svg>
         </div>
       </div>
-      <span className="font-mono text-[9px] font-medium tracking-wide text-neutral-400">creative-work/</span>
+      <span className={`text-[9px] font-medium tracking-wide text-neutral-400 ${caveat.className}`}>creative-work/</span>
+    </div>
+  );
+}
+
+/* ── Small blossom polaroid sticker ── */
+function BlossomPolaroid() {
+  return (
+    <div
+      className="inline-block bg-white shadow-lg flex-shrink-0"
+      style={{ transform: "rotate(-4deg)", padding: "7px 7px 30px 7px", borderRadius: 3 }}
+    >
+      <div className="relative overflow-hidden" style={{ width: 88, height: 88 }}>
+        <Image
+          src="/Esports/blossom poster OW5_1.5x.png"
+          alt="Blossom Poster"
+          fill
+          className="object-cover"
+          sizes="88px"
+        />
+      </div>
+      <p className={`mt-1.5 text-center text-[11px] text-gray-500 ${caveat.className}`}>blossom ow5</p>
     </div>
   );
 }
@@ -130,7 +154,7 @@ export default function EsportsFeature() {
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         className="grid grid-cols-1 gap-6 lg:grid-cols-2"
       >
-        {/* LEFT: card stack — same width as right */}
+        {/* LEFT: card stack */}
         <div className="flex flex-col gap-3">
           {/* Big featured card */}
           <Link href="/work/terps-esports">
@@ -138,13 +162,10 @@ export default function EsportsFeature() {
               className="relative flex flex-col justify-between overflow-hidden rounded-[28px] p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
               style={{ backgroundColor: "#E21833", minHeight: 230 }}
             >
-              {/* Title top */}
               <div className="relative z-10">
                 <p className="font-bold text-white text-lg leading-tight">Graphic Designer</p>
                 <p className="mt-0.5 font-sans text-sm text-white/80">@ Terps Esports</p>
               </div>
-
-              {/* Bottom row: pill + logo aligned */}
               <div className="relative z-10 mt-6 flex items-end justify-between">
                 <div
                   className="inline-block rounded-full px-3 py-1 text-sm font-medium text-white"
@@ -152,7 +173,6 @@ export default function EsportsFeature() {
                 >
                   Nov 2024 – Present
                 </div>
-                {/* Yellow/white Terps logo */}
                 <div className="relative h-16 w-24 opacity-90">
                   <Image
                     src="/Esports/terpsesportslogo yellow white version.webp"
@@ -185,8 +205,8 @@ export default function EsportsFeature() {
           ))}
         </div>
 
-        {/* RIGHT: description + folder sticker + strip + badge */}
-        <div className="flex flex-col justify-between gap-6">
+        {/* RIGHT: description + strip + stickers row */}
+        <div className="flex flex-col gap-5">
           {/* Description */}
           <div>
             <p className="font-sans text-sm leading-relaxed text-text-muted">
@@ -197,28 +217,41 @@ export default function EsportsFeature() {
             </p>
           </div>
 
-          {/* Folder sticker + strip row */}
-          <div className="relative">
-            <PhotoStrip />
-            {/* Folder sticker floats above strip, right side */}
-            <div className="absolute -top-6 right-6 z-10">
-              <FolderSticker />
-            </div>
-          </div>
+          {/* Photo strip — no floating folder */}
+          <PhotoStrip />
 
-          {/* Badge card */}
-          <div className="flex justify-end">
+          {/* Bottom sticker row: blossom polaroid + blue folder + Watch the Film */}
+          <div className="flex items-end justify-between gap-3">
+            {/* Blossom polaroid */}
+            <BlossomPolaroid />
+
+            {/* Blue folder */}
+            <FolderSticker />
+
+            {/* Watch the Film card */}
             <Link
               href="/work/terps-esports#te-coed"
-              className="group relative overflow-hidden rounded-2xl bg-[#0a0a0a] p-5 transition-all duration-300 hover:rotate-0 hover:shadow-lg"
-              style={{ transform: "rotate(8deg)", width: 160 }}
+              className="group relative overflow-hidden rounded-2xl bg-[#0a0a0a] p-4 transition-all duration-300 hover:rotate-0 hover:shadow-lg flex-shrink-0"
+              style={{ transform: "rotate(6deg)", width: 148 }}
             >
-              <div className="relative mb-3 h-16 w-full overflow-hidden rounded-xl">
-                <Image src="/Esports/NJC valorant thumbnail_1.5x.png" alt="Co-Ed Valorant Film" fill className="object-cover" />
+              {/* Image with play button overlay */}
+              <div className="relative mb-3 h-[72px] w-full overflow-hidden rounded-xl">
+                <Image
+                  src="/Esports/me explaining seth the camera man for the camera angles.jpeg"
+                  alt="Co-Ed Valorant Film"
+                  fill
+                  className="object-cover"
+                  sizes="148px"
+                />
+                {/* Play button */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/35">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md transition-transform duration-200 group-hover:scale-110">
+                    <Play size={11} className="ml-0.5 text-gray-900" fill="currentColor" />
+                  </div>
+                </div>
               </div>
               <p className="text-center font-sans text-[11px] font-bold text-white">Watch the Film</p>
               <p className="mt-0.5 text-center font-sans text-[9px] text-white/50">Co-Ed Valorant Intro</p>
-              <ArrowUpRight size={12} className="absolute right-3 top-3 text-white/40 transition-colors group-hover:text-white" />
             </Link>
           </div>
         </div>
