@@ -61,39 +61,23 @@ interface SlotItem {
 }
 
 const SLOTS: SlotItem[] = [
-  // ── TOP EDGE ───────────────────────────────────────────────────────
-  { file: "navbar figma.png", left: 72, top: 12, depth: 0.10, rotation: -1, opacity: 0.48, anchor: "tl" },
-  { file: "color figma.png", left: 84, top: 18, depth: 0.07, rotation: 2, opacity: 0.52, anchor: "tl" },
-  { file: "componentfigma.png", left: 62, top: 22, depth: 0.13, rotation: -2, opacity: 0.50, anchor: "tl" },
-
   // ── RIGHT EDGE ─────────────────────────────────────────────────────
-  { file: "exportwindow figma.png", left: 97, top: 28, depth: 0.18, rotation: 3, opacity: 0.46, anchor: "tr" },
-  { file: "filterby miro.png", left: 99, top: 48, depth: 0.14, rotation: -4, opacity: 0.50, anchor: "tr" },
-  { file: "figmacomment.png", left: 98, top: 64, depth: 0.16, rotation: 2, opacity: 0.48, anchor: "tr" },
-  { file: "alert component.png", left: 99, top: 78, depth: 0.19, rotation: -3, opacity: 0.44, anchor: "tr" },
+  { file: "exportwindow figma.png", left: 97, top: 18, depth: 0.18, rotation: 3,  opacity: 0.46, anchor: "tr" },
+  { file: "figmacomment.png",       left: 98, top: 42, depth: 0.16, rotation: 2,  opacity: 0.48, anchor: "tr" },
+  { file: "filterby miro.png",      left: 99, top: 64, depth: 0.14, rotation: -4, opacity: 0.50, anchor: "tr" },
+  { file: "alert component.png",    left: 99, top: 82, depth: 0.19, rotation: -3, opacity: 0.44, anchor: "tr" },
 
-  // ── BOTTOM EDGE ────────────────────────────────────────────────────
-  { file: "salesviz.png", left: 62, top: 94, depth: 0.20, rotation: -3, opacity: 0.50, anchor: "bl" },
-  { file: "miro PeopleBar.png", left: 76, top: 97, depth: 0.17, rotation: 1, opacity: 0.48, anchor: "bl" },
-  { file: "togglefigma.png", left: 88, top: 92, depth: 0.12, rotation: -2, opacity: 0.52, anchor: "bl" },
+  // ── BOTTOM ─────────────────────────────────────────────────────────
+  { file: "salesviz.png",           left: 60, top: 94, depth: 0.20, rotation: -3, opacity: 0.50, anchor: "bl" },
+  { file: "miro PeopleBar.png",     left: 80, top: 97, depth: 0.17, rotation: 1,  opacity: 0.48, anchor: "bl" },
 
   // ── LEFT EDGE ──────────────────────────────────────────────────────
-  { file: "CreationBarmiro.png", left: 0, top: 28, depth: 0.09, rotation: -5, opacity: 0.42, anchor: "tl" },
-  { file: "conversionviz.png", left: 2, top: 52, depth: 0.14, rotation: 4, opacity: 0.40, anchor: "tl" },
-  { file: "self emoticon.png", left: 3, top: 38, depth: 0.12, rotation: -6, opacity: 0.55, anchor: "tl" },
-  { file: "variants figma.png", left: 1, top: 72, depth: 0.11, rotation: -3, opacity: 0.38, anchor: "tl" },
+  { file: "CreationBarmiro.png",    left: 0,  top: 22, depth: 0.09, rotation: -5, opacity: 0.42, anchor: "tl" },
+  { file: "self emoticon.png",      left: 2,  top: 44, depth: 0.12, rotation: -6, opacity: 0.55, anchor: "tl" },
+  { file: "conversionviz.png",      left: 1,  top: 68, depth: 0.14, rotation: 4,  opacity: 0.40, anchor: "tl" },
 
   // ── MICROSOFT BADGE ────────────────────────────────────────────────
-  { file: "microsoft-logo.png", left: 13, top: 20, depth: 0.13, rotation: 6, opacity: 1, anchor: "tl" },
-
-  // ── TOP-LEFT ───────────────────────────────────────────────────────
-  { file: "Cursor miro.png", left: 3, top: 12, depth: 0.06, rotation: 8, opacity: 0.38, anchor: "tl" },
-  { file: "maincomponent figma.png", left: 5, top: 17, depth: 0.08, rotation: -3, opacity: 0.40, anchor: "tl" },
-
-  // ── BOTTOM-LEFT ────────────────────────────────────────────────────
-  { file: "pagination figma.png", left: 2, top: 96, depth: 0.11, rotation: 2, opacity: 0.44, anchor: "bl" },
-  { file: "search figma.png", left: 20, top: 98, depth: 0.14, rotation: -1, opacity: 0.46, anchor: "bl" },
-  { file: "findbarfigma.png", left: 38, top: 97, depth: 0.15, rotation: 1, opacity: 0.44, anchor: "bl" },
+  { file: "microsoft-logo.png",     left: 13, top: 20, depth: 0.13, rotation: 6,  opacity: 1,    anchor: "tl" },
 ];
 
 /* ── Helpers ────────────────────────────────────────────────────────── */
