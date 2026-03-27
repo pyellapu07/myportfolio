@@ -388,26 +388,19 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
                     />
                   </div>
 
-                  {/* Hover tooltip */}
+                  {/* Hover tooltip — plain text below the logo */}
                   <div style={{
                     position: "absolute",
-                    bottom: "calc(100% + 4px)",
+                    top: "calc(100% + 6px)",
                     left: "50%",
-                    transform: `translateX(-50%) translateY(${isHovered ? "0px" : "6px"})`,
+                    transform: `translateX(-50%) translateY(${isHovered ? "0px" : "-4px"})`,
                     opacity: isHovered ? 1 : 0,
                     transition: "opacity 0.22s ease, transform 0.22s ease",
                     whiteSpace: "nowrap", zIndex: 100,
+                    fontFamily: "monospace", fontSize: 9, color: "#555",
+                    letterSpacing: "0.04em", fontWeight: 500,
                   }}>
-                    <div style={{
-                      background: "rgba(255,255,255,0.96)", backdropFilter: "blur(10px)",
-                      borderRadius: 8, padding: "5px 10px",
-                      border: "1px solid rgba(0,0,0,0.07)",
-                      boxShadow: "0 4px 20px rgba(0,0,0,0.10)",
-                      fontFamily: "monospace", fontSize: 9, color: "#333",
-                      letterSpacing: "0.04em", fontWeight: 500,
-                    }}>
-                      1st Place · MLSA Vinci Di UI · 2021
-                    </div>
+                    MLSA&apos;s Vinci di UI Design Challenge Winner
                   </div>
                 </div>
               </>
