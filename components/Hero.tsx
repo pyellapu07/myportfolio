@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRecruiter } from "@/lib/recruiter-context";
 import { ROTATING_WORDS, TICKER_ITEMS } from "@/lib/constants";
 import HeroParticles from "./HeroParticles";
-import PacDesignerGame from "./PacDesignerGame";
+import DesignRescueGame from "./DesignRescueGame";
 import MacFinderWindow, { MacFolderIcon } from "./MacFinderWindow";
 import { Volume2, VolumeX } from "lucide-react";
 
@@ -247,7 +247,7 @@ export default function Hero() {
 
       {/* UX Audit Game overlay */}
       <AnimatePresence>
-        {gameActive && <PacDesignerGame onExit={handleGameExit} />}
+        {gameActive && <DesignRescueGame onExit={handleGameExit} />}
       </AnimatePresence>
 
       {/* ── Mac folder sticker — desktop only easter egg ──────────── */}
