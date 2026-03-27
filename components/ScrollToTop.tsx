@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowUp } from "lucide-react";
 
 export default function ScrollToTop() {
   const [visible, setVisible] = useState(false);
@@ -26,29 +25,32 @@ export default function ScrollToTop() {
   return (
     <AnimatePresence>
       {visible && (
-        <motion.button
+        <motion.div
           key="scroll-to-top"
-          initial={{ opacity: 0, y: 16, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0,  scale: 1   }}
-          exit={{    opacity: 0, y: 16, scale: 0.9 }}
-          transition={{ type: "spring", stiffness: 340, damping: 26 }}
-          onClick={scrollToTop}
-          aria-label="Scroll to top"
-          className="fixed bottom-6 right-6 z-[9999] flex items-center gap-2 rounded-full px-4 py-2.5 text-white shadow-xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0  }}
+          exit={{    opacity: 0, y: 20 }}
+          transition={{ type: "spring", stiffness: 340, damping: 28 }}
+          className="fixed bottom-6 right-6 z-[9999] flex items-center gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2"
           style={{
-            background: "linear-gradient(135deg, #E21833 0%, #c4102a 100%)",
-            boxShadow: "0 4px 24px rgba(226,24,51,0.40), 0 1px 4px rgba(0,0,0,0.18)",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
           }}
         >
-          <span className="text-[11px] font-semibold leading-none tracking-wide whitespace-nowrap">
+          {/* Left label */}
+          <span className="text-[12px] font-medium text-neutral-500 whitespace-nowrap select-none">
             You&apos;ve made it to the end
           </span>
-          <span className="h-3.5 w-px bg-white/30" />
-          <span className="flex items-center gap-1 text-[11px] font-bold leading-none whitespace-nowrap">
+
+          {/* Jump to Top button */}
+          <button
+            onClick={scrollToTop}
+            aria-label="Jump to top"
+            className="rounded-md px-3 py-1.5 text-[12px] font-semibold text-white whitespace-nowrap transition-all duration-150 hover:brightness-110 active:scale-95"
+            style={{ backgroundColor: "#6366f1" }}
+          >
             Jump to Top
-            <ArrowUp size={11} strokeWidth={2.5} />
-          </span>
-        </motion.button>
+          </button>
+        </motion.div>
       )}
     </AnimatePresence>
   );
