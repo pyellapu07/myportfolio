@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Search, Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX } from "lucide-react";
 
 /* ── Natural dimensions (px) ────────────────────────────────────────── */
 const NATURAL: Record<string, [number, number]> = {
@@ -268,13 +268,53 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
           height: `${DROP_ZONE.height}%`,
         }}
       >
-        <div className="drop-zone-ring relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-accent/40">
-          <div className="drop-zone-pulse absolute inset-0 rounded-full border-2 border-accent/20" />
-          <Search size={20} className="text-accent/50" />
+        {/* Pixel character face */}
+        <div className="drop-zone-ring relative flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-accent/50" style={{ background: "rgba(255,82,16,0.08)" }}>
+          <div className="drop-zone-pulse absolute inset-0 rounded-xl border-2 border-accent/20" />
+          {/* Pixel art face using CSS grid of divs */}
+          <div style={{ position: "relative", width: 28, height: 36, imageRendering: "pixelated", flexShrink: 0 }}>
+            {/* Hair */}
+            <div style={{ position:"absolute", top:0, left:2, width:24, height:6, background:"#1a1a1a", borderRadius:1 }} />
+            <div style={{ position:"absolute", top:2, left:0, width:4, height:8, background:"#1a1a1a" }} />
+            {/* Head */}
+            <div style={{ position:"absolute", top:4, left:2, width:22, height:14, background:"#D4956A" }} />
+            {/* Visor / cap brim */}
+            <div style={{ position:"absolute", top:6, left:2, width:22, height:3, background:"#FF5210" }} />
+            {/* Eyes */}
+            <div style={{ position:"absolute", top:10, left:6, width:4, height:4, background:"#1a1a1a" }} />
+            <div style={{ position:"absolute", top:10, left:16, width:4, height:4, background:"#1a1a1a" }} />
+            {/* Eye shines */}
+            <div style={{ position:"absolute", top:10, left:8, width:1, height:1, background:"#fff" }} />
+            <div style={{ position:"absolute", top:10, left:18, width:1, height:1, background:"#fff" }} />
+            {/* Smile */}
+            <div style={{ position:"absolute", top:15, left:7, width:12, height:2, background:"#c07850" }} />
+            <div style={{ position:"absolute", top:17, left:8, width:10, height:1, background:"#8B4513" }} />
+            {/* Body */}
+            <div style={{ position:"absolute", top:18, left:4, width:18, height:10, background:"#FF5210" }} />
+            {/* Badge */}
+            <div style={{ position:"absolute", top:20, left:11, width:4, height:3, background:"#FFD700", border:"1px solid #cc8800" }} />
+            {/* Legs */}
+            <div style={{ position:"absolute", top:28, left:4, width:8, height:8, background:"#1a237e" }} />
+            <div style={{ position:"absolute", top:28, left:14, width:8, height:8, background:"#283593" }} />
+          </div>
         </div>
-        <span className="font-mono text-[10px] tracking-wider text-neutral-400 text-center leading-tight">
-          Drop a sticker
-        </span>
+        {/* Game badge */}
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
+          <div style={{
+            background:"#FF5210", color:"#fff",
+            fontFamily:"monospace", fontSize:8, fontWeight:700,
+            padding:"2px 6px", borderRadius:3, letterSpacing:"0.08em",
+            textTransform:"uppercase", border:"1px solid #cc4200",
+          }}>
+            🎮 GAME
+          </div>
+          <span className="font-mono text-[9px] font-bold tracking-wider text-accent text-center leading-tight">
+            Save PixelCo
+          </span>
+          <span className="font-mono text-[8px] tracking-wide text-neutral-400 text-center leading-tight">
+            drop sticker here
+          </span>
+        </div>
       </div>
       {SLOTS.map((item, i) => {
         const w = DISPLAY_W[item.file];

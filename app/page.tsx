@@ -20,7 +20,7 @@ export default function Home() {
   return (
     <RecruiterProvider>
       <CustomCursor />
-      <TestimonialToast />
+      {/* <TestimonialToast /> */}
       <OnboardingTour />
       <RecruiterSplash />
       <Header initialDark />

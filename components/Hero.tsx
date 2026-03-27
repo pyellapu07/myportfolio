@@ -226,7 +226,7 @@ export default function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: gameActive ? 0 : 1 }}
         transition={{ delay: gameActive ? 0 : 0.8, duration: 0.8 }}
-        className="relative z-10 border-t border-neutral-200 bg-white/30 backdrop-blur-sm"
+        className="relative z-[20] border-t border-neutral-200 bg-white/40 backdrop-blur-md"
       >
         <div className="overflow-hidden py-7">
           <div className="ticker-scroll flex items-center gap-16 whitespace-nowrap">
