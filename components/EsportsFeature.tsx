@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -53,56 +53,97 @@ function PhotoStrip() {
   );
 }
 
-/* ── Blue folder sticker with fanned images ── */
+/* card configs — default loop oscillation + hover fan-out */
+const CARD_IMGS = [
+  "/Esports/blossom poster OW5_1.5x.png",
+  "/Esports/TerpsEsportsGraphic.jpeg",
+  "/Esports/valorant premier 2_1.5x_2x.jpg",
+];
+
+const DEFAULT_ANIM = [
+  { x: [-6, -10, -6], y: [-4, -8,  -4], rotate: [-8,  -14, -8]  },
+  { x: [0,   0,   0], y: [-3, -8,  -3], rotate: [0,    0,   0]  },
+  { x: [6,  10,   6], y: [-4, -8,  -4], rotate: [8,   14,   8]  },
+];
+
+const HOVER_ANIM = [
+  { x: -22, y: -22, rotate: -22 },
+  { x:   0, y: -28, rotate:   0 },
+  { x:  22, y: -22, rotate:  22 },
+];
+
+/* ── Blue folder sticker with animated fanned cards ── */
 function FolderSticker() {
-  const imgs = [
-    "/Esports/blossom poster OW5_1.5x.png",
-    "/Esports/TerpsEsportsGraphic.jpeg",
-    "/Esports/valorant premier 2_1.5x_2x.jpg",
-  ];
-  const transforms = [
-    "translateY(2.76px) rotate(-5.56deg)",
-    "translateY(8px)",
-    "translateY(8px) rotate(2.5deg)",
-  ];
+  const [hovered, setHovered] = useState(false);
+
   return (
-    <div className="inline-flex flex-col items-center gap-1" style={{ transform: "rotate(-5deg)" }}>
-      <div className="relative" style={{ width: 72, height: 58, overflow: "visible" }}>
-        {imgs.map((src, i) => (
-          <div
+    <div
+      className="inline-flex flex-col items-center gap-1 cursor-pointer select-none"
+      style={{ transform: "rotate(-5deg)" }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div className="relative" style={{ width: 72, height: 64, overflow: "visible" }}>
+        {CARD_IMGS.map((src, i) => (
+          <motion.div
             key={i}
             style={{
               position: "absolute",
-              width: 42, height: 33,
+              width: 42,
+              height: 33,
               borderRadius: 5,
               overflow: "hidden",
-              left: "50%", top: "8%",
+              left: "50%",
+              top: "12%",
               marginLeft: -21,
               zIndex: i + 2,
-              boxShadow: "rgba(0,0,0,0.28) 0px 2px 10px",
-              transform: transforms[i],
-              opacity: 0.85,
+              boxShadow: "rgba(0,0,0,0.30) 0px 3px 12px",
+              originX: "50%",
+              originY: "100%",
             }}
+            animate={
+              hovered
+                ? HOVER_ANIM[i]
+                : DEFAULT_ANIM[i]
+            }
+            transition={
+              hovered
+                ? { type: "spring", stiffness: 260, damping: 18 }
+                : {
+                    duration: 2.2 + i * 0.35,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.2,
+                  }
+            }
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt="" draggable={false} style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
-          </div>
+            <img
+              src={src}
+              alt=""
+              draggable={false}
+              style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
+            />
+          </motion.div>
         ))}
-        {/* Blue folder SVG on top */}
+
+        {/* Blue folder SVG — always on top */}
         <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
           <svg width="72" height="57.6" viewBox="0 0 60 48" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 14C4 11.8 5.8 10 8 10H22L26.5 14H4Z" fill="#1d4ed8" />
             <rect x="4" y="14" width="52" height="30" rx="4" fill="#1d4ed8" />
             <rect x="4" y="17" width="52" height="27" rx="3" fill="#2563eb" />
-            <rect x="4" y="17" width="52" height="8" rx="3" fill="rgba(255,255,255,0.12)" />
+            <rect x="4" y="17" width="52" height="8"  rx="3" fill="rgba(255,255,255,0.12)" />
           </svg>
         </div>
       </div>
-      <span className={`text-[9px] font-medium tracking-wide text-neutral-400 ${caveat.className}`}>creative-work/</span>
+
+      <span className={`text-[9px] font-medium tracking-wide text-neutral-400 ${caveat.className}`}>
+        creative-work/
+      </span>
     </div>
   );
 }
-
 
 export default function EsportsFeature() {
   return (
@@ -136,7 +177,6 @@ export default function EsportsFeature() {
       >
         {/* LEFT: card stack */}
         <div className="flex flex-col gap-3">
-          {/* Big featured card */}
           <Link href="/work/terps-esports">
             <div
               className="relative flex flex-col justify-between overflow-hidden rounded-[28px] p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
@@ -165,7 +205,6 @@ export default function EsportsFeature() {
             </div>
           </Link>
 
-          {/* Small secondary cards */}
           {[
             { icon: <Film size={18} />,    role: "Video Director",  org: "@ Co-Ed Valorant Film" },
             { icon: <Pen size={18} />,     role: "Script Writer",   org: "@ Co-Ed Film" },
@@ -187,7 +226,6 @@ export default function EsportsFeature() {
 
         {/* RIGHT: description + strip + stickers row */}
         <div className="flex flex-col gap-5">
-          {/* Description */}
           <div>
             <p className="font-sans text-sm leading-relaxed text-text-muted">
               Designed game day graphics, directed a full green-screen Valorant intro film, and built the visual brand for UMD's competitive esports program.
@@ -197,39 +235,39 @@ export default function EsportsFeature() {
             </p>
           </div>
 
-          {/* Photo strip — no floating folder */}
           <PhotoStrip />
 
-          {/* Bottom sticker row: blue folder + Watch the Film */}
-          <div className="flex items-end justify-between gap-3">
-            {/* Blue folder */}
+          {/* Bottom row: folder + Watch the Film card — both right-aligned, side by side */}
+          <div className="flex items-end justify-end gap-4">
             <FolderSticker />
 
-            {/* Watch the Film card */}
-            <Link
-              href="/work/terps-esports#te-coed"
-              className="group relative overflow-hidden rounded-2xl bg-[#0a0a0a] p-4 transition-all duration-300 hover:rotate-0 hover:shadow-lg flex-shrink-0"
+            {/* Watch the Film — outer wrapper for play button positioning */}
+            <div
+              className="relative flex-shrink-0 transition-all duration-300 hover:rotate-0"
               style={{ transform: "rotate(6deg)", width: 148 }}
             >
-              {/* Image */}
-              <div className="relative mb-3 h-[72px] w-full overflow-hidden rounded-xl">
-                <Image
-                  src="/Esports/me explaining seth the camera man for the camera angles.jpeg"
-                  alt="Co-Ed Valorant Film"
-                  fill
-                  className="object-cover"
-                  sizes="148px"
-                />
-              </div>
-              {/* Play button — bottom right of card */}
-              <div className="absolute bottom-10 right-3">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 shadow-md transition-transform duration-200 group-hover:scale-110">
-                  <Play size={10} className="ml-0.5 text-gray-900" fill="currentColor" />
+              <Link
+                href="/work/terps-esports#te-coed"
+                className="group block overflow-hidden rounded-2xl bg-[#0a0a0a] p-4 transition-shadow duration-300 hover:shadow-xl"
+              >
+                <div className="relative mb-3 h-[72px] w-full overflow-hidden rounded-xl">
+                  <Image
+                    src="/Esports/me explaining seth the camera man for the camera angles.jpeg"
+                    alt="Co-Ed Valorant Film"
+                    fill
+                    className="object-cover"
+                    sizes="148px"
+                  />
                 </div>
+                <p className="text-center font-sans text-[11px] font-bold text-white">Watch the Film</p>
+                <p className="mt-0.5 text-center font-sans text-[9px] text-white/50">Co-Ed Valorant Intro</p>
+              </Link>
+
+              {/* Play button pinned to exterior bottom-right corner of the card */}
+              <div className="pointer-events-none absolute -bottom-3 -right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-lg">
+                <Play size={11} className="ml-0.5 text-gray-900" fill="currentColor" />
               </div>
-              <p className="text-center font-sans text-[11px] font-bold text-white">Watch the Film</p>
-              <p className="mt-0.5 text-center font-sans text-[9px] text-white/50">Co-Ed Valorant Intro</p>
-            </Link>
+            </div>
           </div>
         </div>
       </motion.div>
