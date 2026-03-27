@@ -1,57 +1,57 @@
 "use client";
 
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, memo } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence, useAnimation } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Download, Bell } from "lucide-react";
 import RecruiterToggle from "./RecruiterToggle";
 import { NAV_LINKS, SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-/* Isolated so header scroll re-renders never restart the animation */
+/* Pure CSS animation — runs once, stays drawn, never re-triggers on re-render */
 const DoodleCircle = memo(function DoodleCircle() {
-  const controls = useAnimation();
-  useEffect(() => {
-    const t = setTimeout(() => {
-      controls.start({ pathLength: 1, opacity: 1 });
-    }, 1200);
-    return () => clearTimeout(t);
-  }, []); // runs exactly once on mount
-
   return (
-    /*
-      Fixed 150×50 px SVG, centered over the toggle via transform.
-      Path is drawn in those exact pixel coordinates so no scaling math needed.
-      overflow:visible lets the overshoot tail escape the SVG box.
-    */
-    <svg
-      className="pointer-events-none absolute"
-      style={{
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: 150,
-        height: 50,
-        overflow: "visible",
-        zIndex: 10,
-      }}
-      viewBox="0 0 150 50"
-      fill="none"
-      aria-hidden
-    >
-      {/* Full ellipse that overshoots past the start — no Z close */}
-      <motion.path
-        d="M 20,10 C 36,-4 116,-4 134,12 C 148,24 144,40 126,46 C 104,52 34,54 16,42 C 2,32 4,18 20,10 C 21,9 23,8 28,6"
-        stroke="#3B82F6"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+    <>
+      <style>{`
+        @keyframes drawDoodle {
+          from { stroke-dashoffset: 500; opacity: 0; }
+          8%   { opacity: 1; }
+          to   { stroke-dashoffset: 0; opacity: 1; }
+        }
+        .doodle-path {
+          stroke-dasharray: 500;
+          stroke-dashoffset: 500;
+          opacity: 0;
+          animation: drawDoodle 1.1s cubic-bezier(0.4, 0, 0.2, 1) 1.2s forwards;
+        }
+      `}</style>
+      <svg
+        className="pointer-events-none absolute"
+        style={{
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 155,
+          height: 52,
+          overflow: "visible",
+          zIndex: 10,
+        }}
+        viewBox="0 0 155 52"
         fill="none"
-        initial={{ pathLength: 0, opacity: 0 }}
-        animate={controls}
-        transition={{ duration: 1.0, ease: [0.25, 0.1, 0.25, 1] }}
-      />
-    </svg>
+        aria-hidden
+      >
+        {/* Ellipse overshoots past start — endpoint crosses origin like a real pen stroke */}
+        <path
+          className="doodle-path"
+          d="M 22,10 C 38,-5 118,-4 136,12 C 150,26 146,42 128,48 C 106,54 36,56 16,42 C 2,32 4,16 22,10 C 23,9 25,7 30,5"
+          stroke="#3B82F6"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+      </svg>
+    </>
   );
 });
 
