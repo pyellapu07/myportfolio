@@ -16,40 +16,54 @@ const DoodleCircle = memo(function DoodleCircle() {
     if (!path) return;
 
     const len = path.getTotalLength();
-    path.style.strokeDasharray = String(len);
-    path.style.strokeDashoffset = String(len);
 
-    const DRAW = 1300;  // ms to draw the full stroke
-    const HOLD = 600;   // ms to hold fully drawn
-    const CYCLE = DRAW + HOLD;
+    // 4-phase cycle totalling exactly 5 seconds:
+    // 1. Draw in  (stroke tip travels from start → end)  : 1.5s
+    // 2. Hold fully drawn                                 : 0.5s
+    // 3. Draw out (tip retraces back end → start)         : 1.5s
+    // 4. Pause (invisible)                                : 1.5s
+    const DRAW_IN  = 1500;
+    const HOLD     = 500;
+    const DRAW_OUT = 1500;
+    const PAUSE    = 1500;
+    const CYCLE    = DRAW_IN + HOLD + DRAW_OUT + PAUSE; // 5000 ms
 
     let rafId: number;
     let startTs: number | null = null;
 
-    // ease-in-out cubic
     const ease = (p: number) =>
       p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
 
     const tick = (ts: number) => {
       if (!startTs) startTs = ts;
-      const elapsed = (ts - startTs) % CYCLE;
+      const t = (ts - startTs) % CYCLE;
 
-      if (elapsed < DRAW) {
-        const e = ease(elapsed / DRAW);
+      if (t < DRAW_IN) {
+        // Phase 1 — draw in: dashoffset len → 0, dasharray fixed at len
+        const e = ease(t / DRAW_IN);
+        path.style.strokeDasharray = String(len);
         path.style.strokeDashoffset = String(len * (1 - e));
-      } else {
-        // hold fully drawn, then next cycle snaps back invisibly
+
+      } else if (t < DRAW_IN + HOLD) {
+        // Phase 2 — hold: fully visible
+        path.style.strokeDasharray = String(len);
         path.style.strokeDashoffset = "0";
-        if (elapsed > CYCLE - 16) {
-          // one frame before next cycle: reset so draw starts clean
-          path.style.strokeDashoffset = String(len);
-        }
+
+      } else if (t < DRAW_IN + HOLD + DRAW_OUT) {
+        // Phase 3 — draw out: shrink dasharray len → 0 (erases from the tip back)
+        const e = ease((t - DRAW_IN - HOLD) / DRAW_OUT);
+        path.style.strokeDasharray = String(len * (1 - e));
+        path.style.strokeDashoffset = "0";
+
+      } else {
+        // Phase 4 — pause: fully hidden, ready for next cycle
+        path.style.strokeDasharray = "0";
+        path.style.strokeDashoffset = "0";
       }
 
       rafId = requestAnimationFrame(tick);
     };
 
-    // slight initial delay so it doesn't fire before page settles
     const timer = setTimeout(() => {
       rafId = requestAnimationFrame(tick);
     }, 800);
