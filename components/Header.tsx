@@ -25,8 +25,8 @@ const DoodleCircle = memo(function DoodleCircle() {
     const DRAW_IN  = 1500;
     const HOLD     = 500;
     const DRAW_OUT = 1500;
-    const PAUSE    = 1500;
-    const CYCLE    = DRAW_IN + HOLD + DRAW_OUT + PAUSE; // 5000 ms
+    const PAUSE    = 5000;
+    const CYCLE    = DRAW_IN + HOLD + DRAW_OUT + PAUSE; // 8500 ms
 
     let rafId: number;
     let startTs: number | null = null;
