@@ -170,79 +170,78 @@ export default function TerpsEsportsPage() {
       {/* ══════════════════════════════════════════════
           HERO — full-bleed, no overlapping text
       ══════════════════════════════════════════════ */}
-      <section className="relative z-10 overflow-hidden">
-        {/* Full viewport image — no padding, starts from top edge */}
-        <div className="relative h-[70vh] min-h-[480px] w-full">
-          <Image
-            src="/Esports/TeamPicturewiththecrew.jpg"
-            alt="Terps Esports crew"
-            fill
-            className="object-cover object-center"
-            priority
-          />
-          {/* Subtle vignette only — no text blocking the image */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/20" />
-          {/* Breadcrumb overlaid top-left — minimal */}
-          <div className="absolute top-20 left-0 right-0 px-6 md:px-12">
-            <Link href="/#work" className="group inline-flex items-center gap-2 font-mono text-xs text-white/70 transition-colors hover:text-white">
+      <section className="relative z-10 overflow-hidden bg-[#FAFAFA]">
+        {/* Top: breadcrumb + title — light background */}
+        <div className="mx-auto max-w-[1280px] px-6 pt-28 pb-10 md:px-12 md:pt-32">
+          <div className="mb-6 flex items-center gap-3">
+            <Link href="/#work" className="group inline-flex items-center gap-2 font-mono text-xs text-text-muted transition-colors hover:text-text">
               <ArrowLeft size={12} className="transition-transform group-hover:-translate-x-0.5" />
               Back to Work
             </Link>
-          </div>
-          {/* Category tag bottom-left */}
-          <div className="absolute bottom-6 left-6 md:left-12">
-            <span className="rounded-full bg-black/40 px-3 py-1 font-mono text-[10px] uppercase tracking-widest backdrop-blur-sm" style={{ color: GOLD }}>
+            <span className="h-1 w-1 rounded-full bg-border" />
+            <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: RED }}>
               Creative Direction · Visual Branding
             </span>
           </div>
+
+          <h1 className="font-manrope text-4xl font-bold tracking-tight text-text md:text-5xl lg:text-6xl">
+            Terps Esports
+          </h1>
+          <p className="mt-2 font-manrope text-3xl font-bold md:text-4xl" style={{ color: GOLD }}>
+            Where Design Meets the Arena.
+          </p>
+          <p className="mt-5 max-w-2xl font-mono text-sm leading-relaxed text-text-secondary">
+            Graphic designer, video director, and content strategist for the University of Maryland's competitive esports program. From game day graphics to a green-screen Valorant intro film built from scratch.
+          </p>
         </div>
 
-        {/* Title block — below the image, dark background */}
-        <div className="bg-[#0a0a0a] px-6 py-12 md:px-12 md:py-16" style={{ cursor: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='4' fill='white' /%3E%3C/svg%3E\") 12 12, auto" }}>
-          <div className="mx-auto max-w-[1280px]">
-            <h1 className="font-manrope text-4xl font-bold leading-tight tracking-tight text-white md:text-6xl lg:text-7xl">
-              Terps Esports
-              <br />
-              <span style={{ color: GOLD }}>Where Design Meets the Arena.</span>
-            </h1>
-            <p className="mt-6 max-w-2xl font-mono text-sm leading-relaxed text-white/60 md:text-base">
-              Graphic designer, video director, and content strategist for the University of Maryland's competitive esports program. From game day graphics to a green-screen Valorant intro film built from scratch.
-            </p>
+        {/* Full image + metrics side by side */}
+        <div className="mx-auto max-w-[1280px] px-6 pb-0 md:px-12">
+          <div className="grid gap-8 lg:grid-cols-[1fr_260px] lg:items-start">
+            {/* Full centred image */}
+            <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-border/30">
+              <Image
+                src="/Esports/TeamPicturewiththecrew.jpg"
+                alt="Terps Esports crew"
+                fill
+                className="object-cover object-center"
+                priority
+              />
+            </div>
+            {/* Metrics sidebar */}
+            <div className="space-y-6 lg:pt-2">
+              <DetailRow label="Role" value="Graphic Designer · Video Director · Content Strategist" />
+              <DetailRow label="Organisation" value="Terps Esports, University of Maryland" />
+              <DetailRow label="Timeline" value="Nov 2024 – Present" />
+              <DetailRow label="Status" value={
+                <span className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                  Active
+                </span>
+              } />
+              <div>
+                <span className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-text-muted">Responsibilities</span>
+                <p className="font-mono text-sm leading-relaxed text-text-secondary">
+                  Brand identity, game day graphics, video direction, script writing, green screen production, MailChimp newsletters, social content
+                </p>
+              </div>
+              <div>
+                <span className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-text-muted">Tools</span>
+                <p className="font-mono text-sm leading-relaxed text-text-secondary">
+                  Premiere Pro, After Effects, Photoshop, Illustrator, MailChimp, DSLR, Lighting rigs
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Meta strip */}
+        {/* Collaborators strip */}
         <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-          <div className="grid gap-8 border-b border-border/40 py-10 md:grid-cols-4">
-            <DetailRow label="Role" value="Graphic Designer · Video Director · Content Strategist" />
-            <DetailRow label="Organisation" value="Terps Esports, University of Maryland" />
-            <DetailRow label="Timeline" value="Nov 2024 – Present" />
-            <DetailRow label="Status" value={
-              <span className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                Active
-              </span>
-            } />
-          </div>
-          <div className="grid gap-8 border-b border-border/40 py-8 md:grid-cols-3">
-            <div>
-              <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-muted">Responsibilities</p>
-              <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                Brand identity, game day graphics, video direction and editing, script writing, green screen production, MailChimp newsletters, social media content, photo direction
-              </p>
-            </div>
-            <div>
-              <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-muted">Collaborators</p>
-              <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                Coach Sergio Brack, Creative Director Erica Javapor, Videographer Seth, Player AnPhu, Co-Ed Valorant team, 9-game rosters
-              </p>
-            </div>
-            <div>
-              <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-muted">Tools and Stack</p>
-              <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                Adobe Premiere Pro, After Effects, Photoshop, Illustrator, MailChimp, Green Screen / Chroma Key, Lighting rigs, DSLR camera
-              </p>
-            </div>
+          <div className="mt-10 border-t border-border/40 py-8">
+            <span className="mb-3 block font-mono text-[10px] uppercase tracking-widest text-text-muted">Collaborators</span>
+            <p className="font-mono text-sm leading-relaxed text-text-secondary">
+              Coach Sergio Brack, Creative Director Erica Javapor, Videographer Seth, Player AnPhu, Co-Ed Valorant team, 9-game rosters
+            </p>
           </div>
         </div>
       </section>
@@ -257,13 +256,13 @@ export default function TerpsEsportsPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <Fade>
               <p className="font-mono text-base leading-relaxed text-text-secondary">
-                In November 2024, I reached out cold to <strong className="text-text">Coach Sergio Brack</strong> — no introduction, no connection, just a direct message expressing my interest in supporting the program's visual identity. Sergio was kind enough to sit down for an interview, and I walked in with a clear vision of what I could bring.
+                In November 2024, I reached out cold to <strong className="text-text">Coach Sergio Brack</strong>, with no introduction, no prior connection, just a direct message expressing my interest in supporting the program's visual identity. Sergio was kind enough to sit down for an interview, and I walked in with a clear vision of what I could bring.
               </p>
               <p className="mt-4 font-mono text-base leading-relaxed text-text-secondary">
                 I got in. Starting from scratch, learning the rosters, the games, the culture, and immediately jumping into designing <strong className="text-text">Game Day graphics</strong> for match days.
               </p>
               <p className="mt-4 font-mono text-base leading-relaxed text-text-secondary">
-                What I didn't know at the time was that this cold email would lead to one of the most creatively fulfilling projects of my life — directing a full-scale, green-screen Valorant character intro film with real players, real lights, and real stakes.
+                What I didn't know at the time was that this cold email would lead to one of the most creatively fulfilling projects of my life, directing a full-scale, green-screen Valorant character intro film with real players, real lights, and real stakes.
               </p>
             </Fade>
 
@@ -285,11 +284,11 @@ export default function TerpsEsportsPage() {
       ══════════════════════════════════════════════ */}
       <section id="te-gameday" className="relative z-10 bg-[#f5f5f5] py-24 md:py-32">
         <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-          <SectionHeading number="02" title="Game Day Graphics — Setting the Visual Tone." />
+          <SectionHeading number="02" title="Game Day Graphics: Setting the Visual Tone." />
 
           <Fade className="mb-12 max-w-2xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              My first contribution was designing graphics for match days — thumbnails, hype posts, and event visuals that needed to feel <strong className="text-text">competitive, collegiate, and on-brand</strong> simultaneously. Every piece had to honor UMD's brand guidelines while pushing the esports aesthetic.
+              My first contribution was designing graphics for match days: thumbnails, hype posts, and event visuals that needed to feel <strong className="text-text">competitive, collegiate, and on-brand</strong> simultaneously. Every piece had to honor UMD's brand guidelines while pushing the esports aesthetic.
             </p>
             <p className="mt-4 font-mono text-sm leading-relaxed text-text-secondary">
               Strict rules applied: <strong className="text-text">no AI-generated imagery</strong>, strict adherence to{" "}
@@ -336,7 +335,7 @@ export default function TerpsEsportsPage() {
                 When <strong className="text-text">Erica Javapor</strong> came on as manager of the standalone creatives department, she brought a new strategic lens to the work. Under her leadership, we moved beyond individual graphics and started thinking about Terps Esports as a <strong className="text-text">cohesive visual brand</strong>.
               </p>
               <p className="mt-4 font-mono text-base leading-relaxed text-text-secondary">
-                We audited our existing assets, aligned on a shared visual language, and pushed the question: <em>"What makes Terps Esports immediately recognizable?"</em> The answer wasn't just colors or logos — it was <strong className="text-text">narrative consistency</strong> across every touchpoint.
+                We audited our existing assets, aligned on a shared visual language, and pushed the question: <em>"What makes Terps Esports immediately recognizable?"</em> The answer wasn't just colors or logos. It was <strong className="text-text">narrative consistency</strong> across every touchpoint.
               </p>
               <p className="mt-4 font-mono text-base leading-relaxed text-text-secondary">
                 One breakthrough idea: evolve the traditional game day photo shoot into something cinematic. Each team could bring their own concept, set their own scene, and tell their own story, adding a video layer to what was previously static photography.
@@ -345,7 +344,7 @@ export default function TerpsEsportsPage() {
 
             <div className="space-y-4">
               {[
-                { icon: <Palette size={18} />, title: "Brand Constraints as Creative Fuel", desc: "No AI tools. UMD brand colors only. These weren't limitations — they became the creative challenge that sharpened every decision." },
+                { icon: <Palette size={18} />, title: "Brand Constraints as Creative Fuel", desc: "No AI tools. UMD brand colors only. These weren't limitations; they became the creative challenge that sharpened every decision." },
                 { icon: <Users size={18} />, title: "Student-Led, Coach-Approved", desc: "Every design went through a feedback loop with coaches and team managers, making collaboration part of the process, not an afterthought." },
                 { icon: <Film size={18} />, title: "From Photography to Film", desc: "The pivot from static shoots to scripted video productions was the conceptual leap that changed everything for the program's visual identity." },
               ].map((item, i) => (
@@ -380,7 +379,7 @@ export default function TerpsEsportsPage() {
           {/* Story arc cards */}
           <div className="mb-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: <BookOpen size={18} />, step: "01", label: "The Script", desc: "Spent days writing the narrative arc — player introductions, character reveals, timing beats. Every second of the film was planned on paper first." },
+              { icon: <BookOpen size={18} />, step: "01", label: "The Script", desc: "Spent days writing the narrative arc: player introductions, character reveals, timing beats. Every second of the film was planned on paper first." },
               { icon: <Clapperboard size={18} />, step: "02", label: "The Storyboard", desc: "Scene-by-scene visual breakdown: camera angles, lighting moods, green screen placements, transition cues. Shared with the team before a single frame was shot." },
               { icon: <Camera size={18} />, step: "03", label: "The Shoot", desc: "Set up green screens, positioned lighting rigs, directed each player through their scenes. Did mock runs with Seth the videographer and player AnPhu." },
               { icon: <MonitorPlay size={18} />, step: "04", label: "The Edit", desc: "Post-production in Premiere Pro and After Effects: chroma key, character compositing, motion graphics, color grading, and sound design. Late nights in the office." },
@@ -555,12 +554,12 @@ export default function TerpsEsportsPage() {
                   </div>
                 </div>
                 {/* Image constrained to card height — no overflow */}
-                <div className="relative h-[380px] overflow-hidden lg:h-full lg:min-h-[400px]">
+                <div className="relative min-h-[380px] overflow-hidden bg-black/5 lg:h-full lg:min-h-[440px]">
                   <Image
                     src="/Esports/blossom poster OW5_1.5x.png"
                     alt="Blossom Poster - Overwatch 5"
                     fill
-                    className="object-cover object-top transition-transform duration-700 hover:scale-[1.02]"
+                    className="object-contain transition-transform duration-700 hover:scale-[1.02]"
                   />
                 </div>
               </div>
@@ -600,7 +599,7 @@ export default function TerpsEsportsPage() {
 
           <Fade className="mb-10 max-w-xl">
             <p className="font-mono text-base leading-relaxed text-text-secondary">
-              This project was built on collaboration — students, coaches, managers, and players all pulling in the same direction. These are the people that made it happen.
+              This project was built on collaboration: students, coaches, managers, and players all pulling in the same direction. These are the people that made it happen.
             </p>
           </Fade>
 
@@ -640,18 +639,18 @@ export default function TerpsEsportsPage() {
       ══════════════════════════════════════════════ */}
       <section id="te-newsletters" className="relative z-10 bg-[#f5f5f5] py-24 md:py-32">
         <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-          <SectionHeading number="08" title="Newsletters — Reaching Beyond the Arena." />
+          <SectionHeading number="08" title="Newsletters: Reaching Beyond the Arena." />
 
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <Fade>
               <p className="font-mono text-base leading-relaxed text-text-secondary">
-                One of my ongoing responsibilities is designing the <strong className="text-text">seasonal MailChimp newsletters</strong> for Terps Esports — sent to players, alumni, coaches, donors, and fans.
+                One of my ongoing responsibilities is designing the <strong className="text-text">seasonal MailChimp newsletters</strong> for Terps Esports, sent to players, alumni, coaches, donors, and fans.
               </p>
               <p className="mt-4 font-mono text-base leading-relaxed text-text-secondary">
-                Each newsletter covers future plans, season achievements, director's notes, and upcoming events. The goal is to <strong className="text-text">build community beyond game day</strong> — reaching people who care about the program but may never sit in the arena.
+                Each newsletter covers future plans, season achievements, director's notes, and upcoming events. The goal is to <strong className="text-text">build community beyond game day</strong>, reaching people who care about the program but may never sit in the arena.
               </p>
               <p className="mt-4 font-mono text-base leading-relaxed text-text-secondary">
-                Designed to feel editorial, not transactional — structured with hierarchy, seasonal imagery, and consistent brand voice.
+                Designed to feel editorial, not transactional. Structured with hierarchy, seasonal imagery, and consistent brand voice.
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
                 {["MailChimp", "Email Design", "Copywriting", "Brand Voice", "Community Building"].map(t => <Tag key={t}>{t}</Tag>)}
@@ -731,10 +730,10 @@ export default function TerpsEsportsPage() {
                 This project pushed me in directions I didn't expect. I came in as a graphic designer and ended up writing scripts, directing camera angles, explaining lighting setups to players, and editing footage at 2am.
               </p>
               <p className="mt-4 font-mono text-base leading-relaxed text-white/60">
-                What it reinforced: <strong className="text-white">design is storytelling</strong>. Whether it's a poster, a newsletter, or a 90-second film — the question is always the same: <em>"What do we want people to feel?"</em>
+                What it reinforced: <strong className="text-white">design is storytelling</strong>. Whether it's a poster, a newsletter, or a 90-second film. The question is always the same: <em>"What do we want people to feel?"</em>
               </p>
               <p className="mt-4 font-mono text-base leading-relaxed text-white/60">
-                And working within constraints — no AI, strict brand guidelines, student budgets, college schedules — made every output more intentional. Limitation is a design tool.
+                And working within constraints: no AI, strict brand guidelines, student budgets, college schedules. Every output more intentional. Limitation is a design tool.
               </p>
             </div>
           </Fade>
