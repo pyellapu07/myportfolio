@@ -137,6 +137,14 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
   // Hover state
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
+  // One-time drag hint on load — tilt all stickers then snap back
+  const [hintActive, setHintActive] = useState(false);
+  useEffect(() => {
+    const t1 = setTimeout(() => setHintActive(true),  900);
+    const t2 = setTimeout(() => setHintActive(false), 1700);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
   // Drag state — all in refs so rAF loop stays stable
   const dragRef = useRef<{
     idx: number;
@@ -290,9 +298,11 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
         // Don't apply parallax to dragged item — feels more grounded
         const txParallax = isDragging ? 0 : 0;
         const tyParallax = isDragging ? 0 : -parallaxDrift;
+        // Hint tilt: alternates direction per sticker, staggered by index
+        const hintRot = hintActive ? (i % 2 === 0 ? 10 : -10) : 0;
         const rot = isDragging
-          ? item.rotation                          // no extra spin while dragging
-          : item.rotation + parallaxRotate;
+          ? item.rotation
+          : item.rotation + parallaxRotate + hintRot;
 
         return (
           <div
@@ -309,8 +319,8 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
               zIndex: isDragging ? 50 : isHovered ? 20 : 5,
               willChange: "transform, opacity",
               transition: isDragging
-                ? "opacity 0.15s, filter 0.15s"   // no transform transition while dragging
-                : "transform 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.25s, filter 0.25s",
+                ? "opacity 0.15s, filter 0.15s"
+                : `transform 0.45s cubic-bezier(0.34,1.56,0.64,1) ${hintActive ? `${i * 0.04}s` : "0s"}, opacity 0.25s, filter 0.25s`,
             }}
             onPointerDown={(e) => onPointerDown(e, i)}
             onPointerEnter={() => setHoveredIdx(i)}
