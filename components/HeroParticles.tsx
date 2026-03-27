@@ -393,7 +393,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
                     position: "absolute",
                     top: "calc(100% + 6px)",
                     left: "50%",
-                    transform: `translateX(-50%) translateY(${isHovered ? "0px" : "-4px"})`,
+                    transform: `translateX(-50%) translateY(${isHovered ? "0px" : "-4px"}) rotate(-6deg)`,
                     opacity: isHovered ? 1 : 0,
                     transition: "opacity 0.22s ease, transform 0.22s ease",
                     whiteSpace: "nowrap", zIndex: 100,
