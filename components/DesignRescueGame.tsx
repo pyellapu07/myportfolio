@@ -45,6 +45,7 @@ interface GameEnemy extends EnemyDef {
   speechTimer: number;
   speechText: string;
   dir: number;
+  spawnX: number;
 }
 
 interface DialogueBubble {
@@ -109,28 +110,50 @@ const DIALOGUE_LINES = [
   "I ship things that users actually use 🎯",
 ];
 
+// Water bodies (level X positions, 120px wide each)
+const WATER_BODIES = [
+  { x: 1050, w: 120 },
+  { x: 2800, w: 120 },
+  { x: 4200, w: 120 },
+];
+
+// Background tree positions
+const TREE_POSITIONS = [250, 900, 1500, 2100, 2700, 3300, 3900, 4500, 5100, 5700, 600, 1200, 1800, 2400, 3000];
+
+// Bird definitions (world coords)
+const BIRD_DEFS = [
+  { x: 200,  y: 80,  speed: 0.8,  wingPhase: 0 },
+  { x: 800,  y: 120, speed: 0.6,  wingPhase: 1 },
+  { x: 1400, y: 60,  speed: 1.0,  wingPhase: 0.5 },
+  { x: 2000, y: 100, speed: 0.7,  wingPhase: 1.5 },
+  { x: 2600, y: 140, speed: 0.9,  wingPhase: 0.3 },
+  { x: 3200, y: 75,  speed: 0.5,  wingPhase: 0.8 },
+  { x: 3800, y: 110, speed: 0.8,  wingPhase: 1.2 },
+  { x: 4400, y: 90,  speed: 0.6,  wingPhase: 0.6 },
+];
+
 function makePlatforms(H: number): PlatformDef[] {
   return [
-    { x: 400, y: H - 160, w: 120, h: 18, c: "#c8742a" },
-    { x: 600, y: H - 200, w: 100, h: 18, c: "#c8742a" },
-    { x: 800, y: H - 150, w: 140, h: 18, c: "#c8742a" },
-    { x: 1050, y: H - 220, w: 80, h: 18, c: "#c8742a" },
-    { x: 1200, y: H - 170, w: 120, h: 18, c: "#c8742a" },
-    { x: 1400, y: H - 200, w: 100, h: 18, c: "#c8742a" },
-    { x: 1600, y: H - 160, w: 160, h: 18, c: "#c8742a" },
-    { x: 1900, y: H - 230, w: 90, h: 18, c: "#c8742a" },
-    { x: 2100, y: H - 180, w: 110, h: 18, c: "#c8742a" },
-    { x: 2350, y: H - 210, w: 130, h: 18, c: "#c8742a" },
-    { x: 2600, y: H - 160, w: 100, h: 18, c: "#c8742a" },
-    { x: 2800, y: H - 240, w: 80, h: 18, c: "#c8742a" },
-    { x: 3000, y: H - 190, w: 120, h: 18, c: "#c8742a" },
-    { x: 3300, y: H - 220, w: 100, h: 18, c: "#c8742a" },
-    { x: 3500, y: H - 170, w: 140, h: 18, c: "#c8742a" },
-    { x: 3800, y: H - 200, w: 90, h: 18, c: "#c8742a" },
-    { x: 4100, y: H - 160, w: 120, h: 18, c: "#c8742a" },
-    { x: 4400, y: H - 230, w: 100, h: 18, c: "#c8742a" },
-    { x: 4700, y: H - 190, w: 130, h: 18, c: "#c8742a" },
-    { x: 5000, y: H - 210, w: 110, h: 18, c: "#c8742a" },
+    { x: 400, y: H - 160, w: 120, h: 18, c: "#6b3a1f" },
+    { x: 600, y: H - 200, w: 100, h: 18, c: "#6b3a1f" },
+    { x: 800, y: H - 150, w: 140, h: 18, c: "#6b3a1f" },
+    { x: 1050, y: H - 220, w: 80, h: 18, c: "#6b3a1f" },
+    { x: 1200, y: H - 170, w: 120, h: 18, c: "#6b3a1f" },
+    { x: 1400, y: H - 200, w: 100, h: 18, c: "#6b3a1f" },
+    { x: 1600, y: H - 160, w: 160, h: 18, c: "#6b3a1f" },
+    { x: 1900, y: H - 230, w: 90, h: 18, c: "#6b3a1f" },
+    { x: 2100, y: H - 180, w: 110, h: 18, c: "#6b3a1f" },
+    { x: 2350, y: H - 210, w: 130, h: 18, c: "#6b3a1f" },
+    { x: 2600, y: H - 160, w: 100, h: 18, c: "#6b3a1f" },
+    { x: 2800, y: H - 240, w: 80, h: 18, c: "#6b3a1f" },
+    { x: 3000, y: H - 190, w: 120, h: 18, c: "#6b3a1f" },
+    { x: 3300, y: H - 220, w: 100, h: 18, c: "#6b3a1f" },
+    { x: 3500, y: H - 170, w: 140, h: 18, c: "#6b3a1f" },
+    { x: 3800, y: H - 200, w: 90, h: 18, c: "#6b3a1f" },
+    { x: 4100, y: H - 160, w: 120, h: 18, c: "#6b3a1f" },
+    { x: 4400, y: H - 230, w: 100, h: 18, c: "#6b3a1f" },
+    { x: 4700, y: H - 190, w: 130, h: 18, c: "#6b3a1f" },
+    { x: 5000, y: H - 210, w: 110, h: 18, c: "#6b3a1f" },
   ];
 }
 
@@ -166,11 +189,12 @@ function makeEnemies(H: number): GameEnemy[] {
     alive: true,
     px: d.x,
     py: H - 60 - 24,
-    vx: -1.5,
+    vx: 1.2,
     squishTimer: 0,
     speechTimer: 0,
     speechText: "",
-    dir: -1,
+    dir: 1,
+    spawnX: d.x,
   }));
 }
 
@@ -244,14 +268,71 @@ function playWin(actx: AudioContext) {
   } catch (_) { /* ignore */ }
 }
 
-/* ─── Canvas draw helpers ────────────────────────────────────── */
+/* ─── Color helpers ──────────────────────────────────────────── */
+
+function lightenColor(hex: string, amount: number): string {
+  const cleaned = hex.replace("#", "");
+  const num = parseInt(cleaned, 16);
+  const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+  const g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + amount));
+  const b = Math.min(255, Math.max(0, (num & 0xff) + amount));
+  return "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
+}
 
 function darkenColor(hex: string, amount = 40): string {
-  const num = parseInt(hex.replace("#", ""), 16);
-  const r = Math.max(0, (num >> 16) - amount);
-  const g = Math.max(0, ((num >> 8) & 0xff) - amount);
-  const b = Math.max(0, (num & 0xff) - amount);
-  return `rgb(${r},${g},${b})`;
+  return lightenColor(hex, -amount);
+}
+
+/* ─── Canvas draw helpers ────────────────────────────────────── */
+
+function drawPixelCloud(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  scale: number
+) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  ctx.fillStyle = "rgba(255,255,255,0.92)";
+  ctx.fillRect(10, 10, 40, 16);
+  ctx.fillRect(6, 6, 20, 12);
+  ctx.fillRect(24, 4, 18, 14);
+  ctx.fillRect(40, 8, 14, 12);
+  ctx.fillStyle = "rgba(200,220,240,0.6)";
+  ctx.fillRect(10, 24, 40, 3);
+  ctx.fillRect(12, 27, 36, 2);
+  ctx.restore();
+}
+
+function drawBackgroundTree(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  groundY: number,
+  heightMod: number
+) {
+  const trunkH = 30 + heightMod * 10;
+  const trunkX = x - 5;
+  // Trunk
+  ctx.fillStyle = "#6b3a1f";
+  ctx.fillRect(trunkX, groundY - trunkH, 10, trunkH);
+  ctx.fillStyle = "#8B5523";
+  ctx.fillRect(trunkX, groundY - trunkH, 2, trunkH);
+
+  // Foliage layers
+  const topY = groundY - trunkH;
+  ctx.fillStyle = "#2d6a2d";
+  ctx.fillRect(trunkX - 12, topY - 20, 34, 20);
+  ctx.fillStyle = "#3d8b37";
+  ctx.fillRect(trunkX - 8, topY - 36, 26, 18);
+  ctx.fillStyle = "#4CAF50";
+  ctx.fillRect(trunkX - 4, topY - 48, 18, 14);
+  // Highlights
+  ctx.fillStyle = "#6dbf67";
+  ctx.fillRect(trunkX - 10, topY - 19, 2, 2);
+  ctx.fillRect(trunkX - 6, topY - 35, 2, 2);
+  ctx.fillRect(trunkX - 2, topY - 47, 2, 2);
+  ctx.fillRect(trunkX + 2, topY - 48, 2, 2);
 }
 
 function drawBackground(
@@ -259,18 +340,23 @@ function drawBackground(
   cameraX: number,
   W: number,
   H: number,
-  frameCount: number
+  frameCount: number,
+  bgImg: HTMLImageElement | null
 ) {
-  // Sky gradient
-  const sky = ctx.createLinearGradient(0, 0, 0, H);
-  sky.addColorStop(0, "#87CEEB");
-  sky.addColorStop(1, "#c9e8ff");
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, W, H);
+  // Background image or gradient fallback
+  if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+    ctx.drawImage(bgImg, 0, 0, W, H);
+  } else {
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, "#87CEEB");
+    sky.addColorStop(1, "#c9e8ff");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
+  }
 
-  // Distant hills (parallax 0.1)
+  // Distant hills (parallax 0.1) - still drawn for depth
   const hillOffsetFar = cameraX * 0.1;
-  ctx.fillStyle = "#6dbf67";
+  ctx.fillStyle = "rgba(109,191,103,0.5)";
   for (let i = 0; i < 5; i++) {
     const hx = (i * 700 - (hillOffsetFar % 700) + LEVEL_W) % (W + 700) - 350;
     ctx.beginPath();
@@ -279,8 +365,8 @@ function drawBackground(
   }
 
   // Closer hills (parallax 0.2)
+  ctx.fillStyle = "rgba(76,175,80,0.45)";
   const hillOffsetNear = cameraX * 0.2;
-  ctx.fillStyle = "#4CAF50";
   for (let i = 0; i < 5; i++) {
     const hx = (i * 550 - (hillOffsetNear % 550) + LEVEL_W) % (W + 550) - 275;
     ctx.beginPath();
@@ -288,51 +374,408 @@ function drawBackground(
     ctx.fill();
   }
 
-  // Clouds (parallax 0.3)
-  const cloudOffset = cameraX * 0.3;
-  ctx.fillStyle = "rgba(255,255,255,0.9)";
-  const clouds = [
-    { bx: 150, by: 70, r: 30 },
-    { bx: 420, by: 55, r: 28 },
-    { bx: 700, by: 80, r: 35 },
-    { bx: 980, by: 50, r: 26 },
-    { bx: 1250, by: 75, r: 32 },
-    { bx: 1550, by: 60, r: 29 },
+  // Background trees (parallax 0.6)
+  const groundY = H - 80;
+  for (let i = 0; i < TREE_POSITIONS.length; i++) {
+    const treeWorldX = TREE_POSITIONS[i] ?? 0;
+    const treeScreenX = treeWorldX - cameraX * 0.6;
+    if (treeScreenX > -60 && treeScreenX < W + 60) {
+      drawBackgroundTree(ctx, treeScreenX, groundY, i % 3);
+    }
+  }
+
+  // Pixel art clouds (parallax 0.15) on top of everything
+  const cloudOffset = cameraX * 0.15;
+  const cloudDefs = [
+    { bx: 150, by: 55, scale: 0.9 },
+    { bx: 420, by: 40, scale: 1.1 },
+    { bx: 700, by: 65, scale: 0.8 },
+    { bx: 980, by: 35, scale: 1.0 },
+    { bx: 1250, by: 60, scale: 1.2 },
+    { bx: 1550, by: 45, scale: 0.85 },
+    { bx: 1850, by: 70, scale: 0.95 },
+    { bx: 2100, by: 38, scale: 1.05 },
   ];
-  clouds.forEach((c) => {
-    const cx = ((c.bx - cloudOffset % (W + 400) + W + 400) % (W + 400)) - 200;
-    ctx.beginPath();
-    ctx.arc(cx, c.by, c.r, 0, Math.PI * 2);
-    ctx.arc(cx + c.r * 0.8, c.by - c.r * 0.3, c.r * 0.75, 0, Math.PI * 2);
-    ctx.arc(cx - c.r * 0.8, c.by - c.r * 0.2, c.r * 0.65, 0, Math.PI * 2);
-    ctx.fill();
+  const cloudSpan = W + 400;
+  cloudDefs.forEach((c) => {
+    const cx = ((c.bx - cloudOffset % cloudSpan + cloudSpan) % cloudSpan) - 200;
+    drawPixelCloud(ctx, cx, c.by, c.scale);
   });
 
-  // Subtle bob using frameCount for clouds
   void frameCount;
+}
 
-  // Ground
-  ctx.fillStyle = "#5cb85c";
-  ctx.fillRect(0, H - 60, W, 8);
-  ctx.fillStyle = "#8B6914";
-  ctx.fillRect(0, H - 52, W, 52);
+function drawGround(
+  ctx: CanvasRenderingContext2D,
+  cameraX: number,
+  W: number,
+  H: number,
+  frameCount: number
+) {
+  // Determine visible world X range
+  const visLeft = cameraX;
+  const visRight = cameraX + W;
+
+  // Check if a given world-x is in a water body
+  function isWater(wx: number): boolean {
+    for (const wb of WATER_BODIES) {
+      if (wx >= wb.x && wx < wb.x + wb.w) return true;
+    }
+    return false;
+  }
+
+  // --- Layer A: Underground (dark brown base) ---
+  const ugY = H - 50;
+  ctx.fillStyle = "#3d1f00";
+  ctx.fillRect(0, ugY, W, 50);
+
+  // Underground details at fixed world positions
+  // Fossil bones
+  const fossilXs = [300, 1200, 2400, 3600, 4800];
+  for (const wx of fossilXs) {
+    const sx = wx - cameraX;
+    if (sx > -40 && sx < W + 40) {
+      ctx.fillStyle = "#e8dcc0";
+      for (let rib = 0; rib < 5; rib++) {
+        ctx.beginPath();
+        ctx.arc(sx + rib * 4, ugY + 12, 3, Math.PI, 0);
+        ctx.strokeStyle = "#c8bb99";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+      // Spine
+      ctx.fillStyle = "#c8bb99";
+      ctx.fillRect(sx - 2, ugY + 10, 22, 2);
+    }
+  }
+
+  // Retro CRT monitors underground
+  const crtXs = [700, 2000, 3300, 4500];
+  for (const wx of crtXs) {
+    const sx = wx - cameraX;
+    if (sx > -40 && sx < W + 40) {
+      ctx.fillStyle = "#666";
+      ctx.fillRect(sx, ugY + 4, 22, 16);
+      ctx.fillStyle = "#222";
+      ctx.fillRect(sx + 3, ugY + 6, 13, 9);
+      ctx.fillStyle = "#444";
+      ctx.fillRect(sx + 9, ugY + 19, 4, 4);
+      ctx.fillRect(sx + 7, ugY + 22, 8, 2);
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.fillRect(sx + 4, ugY + 7, 2, 2);
+      ctx.fillRect(sx + 7, ugY + 7, 2, 2);
+    }
+  }
+
+  // Rocks scattered every ~400px
+  for (let wx = 100; wx < LEVEL_W; wx += 400) {
+    const sx = wx - cameraX;
+    if (sx > -20 && sx < W + 20) {
+      ctx.fillStyle = "#5a3a20";
+      ctx.fillRect(sx, ugY + 8, 6, 4);
+      ctx.fillRect(sx + 3, ugY + 6, 4, 3);
+      ctx.fillStyle = "#7a5a3a";
+      ctx.fillRect(sx, ugY + 8, 2, 2);
+    }
+  }
+
+  // Sleeping pixel dog
+  const dogXs = [1600, 4000];
+  for (const wx of dogXs) {
+    const sx = wx - cameraX;
+    if (sx > -40 && sx < W + 40) {
+      // Body
+      ctx.fillStyle = "#8B5523";
+      ctx.fillRect(sx, ugY + 12, 16, 8);
+      // Head
+      ctx.fillRect(sx + 12, ugY + 10, 8, 8);
+      // Ears
+      ctx.fillStyle = "#6b3a1f";
+      ctx.fillRect(sx + 13, ugY + 8, 3, 3);
+      ctx.fillRect(sx + 17, ugY + 9, 2, 3);
+      // Closed eye
+      ctx.fillStyle = "#1a1a1a";
+      ctx.fillRect(sx + 14, ugY + 13, 3, 1);
+      // Curled tail
+      ctx.fillStyle = "#8B5523";
+      ctx.fillRect(sx - 3, ugY + 12, 4, 2);
+      ctx.fillRect(sx - 4, ugY + 11, 2, 2);
+      // ZZZ
+      ctx.fillStyle = "rgba(200,220,255,0.7)";
+      ctx.font = "6px monospace";
+      ctx.fillText("zzz", sx + 8, ugY + 6);
+    }
+  }
+
+  // Root tendrils from top of underground
+  for (let wx = 50; wx < LEVEL_W; wx += 180) {
+    const sx = wx - cameraX;
+    if (sx > -10 && sx < W + 10) {
+      ctx.strokeStyle = "#5a3010";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(sx, ugY);
+      ctx.bezierCurveTo(sx - 3, ugY + 8, sx + 2, ugY + 14, sx - 1, ugY + 22);
+      ctx.stroke();
+    }
+  }
+
+  // --- Layer B: Soil strip ---
+  const soilY = H - 60;
+  ctx.fillStyle = "#6b3a1f";
+  ctx.fillRect(0, soilY, W, 10);
+  ctx.fillStyle = "#4a2810";
+  for (let sx = 4; sx < W - 4; sx += 8) {
+    ctx.fillRect(sx, soilY + 3, 3, 2);
+  }
+
+  // --- Layer C: Grass top (with water gaps) ---
+  const grassY = H - 80;
+  const grassH = 20;
+
+  // Draw grass in segments, skipping water body ranges
+  let drawX = 0;
+  while (drawX < W) {
+    const worldX = drawX + cameraX;
+    // Check if in water
+    let inWater = false;
+    let waterEnd = drawX;
+    for (const wb of WATER_BODIES) {
+      if (worldX >= wb.x && worldX < wb.x + wb.w) {
+        inWater = true;
+        waterEnd = wb.x + wb.w - cameraX;
+        break;
+      }
+    }
+    if (inWater) {
+      drawX = waterEnd;
+      continue;
+    }
+    // Next water start
+    let segEnd = W;
+    for (const wb of WATER_BODIES) {
+      const wbScreenX = wb.x - cameraX;
+      if (wbScreenX > drawX && wbScreenX < segEnd) {
+        segEnd = wbScreenX;
+      }
+    }
+
+    // Draw grass segment
+    ctx.fillStyle = "#3d8b37";
+    ctx.fillRect(drawX, grassY, segEnd - drawX, grassH);
+
+    // Grass bumps
+    let bx = drawX;
+    let bump = 0;
+    while (bx < segEnd) {
+      const r = bump % 2 === 0 ? 14 : 10;
+      ctx.fillStyle = "#3d8b37";
+      ctx.beginPath();
+      ctx.arc(bx + r, grassY, r, Math.PI, 0);
+      ctx.fill();
+      // Highlights on bump
+      ctx.fillStyle = "#4CAF50";
+      ctx.fillRect(bx + 2, grassY - r + 2, 4, 2);
+      // Grass blades between bumps
+      ctx.fillStyle = "#4CAF50";
+      for (let blade = 0; blade < 3; blade++) {
+        ctx.fillRect(bx + r * 2 + blade * 3, grassY - 3, 1, 4);
+      }
+      bx += r * 2 + 4;
+      bump++;
+    }
+
+    // Darker pixel dots on grass for texture
+    ctx.fillStyle = "#2d6a2d";
+    for (let tx = drawX + 2; tx < segEnd - 2; tx += 12) {
+      ctx.fillRect(tx, grassY + 4, 2, 2);
+    }
+
+    drawX = segEnd;
+  }
+
+  // --- Layer D: Top highlight line ---
+  ctx.fillStyle = "#6dbf67";
+  // Draw the highlight line, also skipping water
+  for (const seg of getGroundSegments(cameraX, W)) {
+    ctx.fillRect(seg.sx, grassY, seg.w, 2);
+  }
+
+  // --- Water bodies ---
+  for (const wb of WATER_BODIES) {
+    const wsx = wb.x - cameraX;
+    if (wsx + wb.w < 0 || wsx > W) continue;
+
+    const wWid = wb.w;
+    const waterY = grassY;
+
+    // Base water
+    ctx.fillStyle = "#1a6fa8";
+    ctx.fillRect(wsx, waterY, wWid, 22);
+
+    // Animated waves
+    const time = frameCount * 0.04;
+    ctx.strokeStyle = "rgba(255,255,255,0.6)";
+    ctx.lineWidth = 1.5;
+    for (let wi = 0; wi < 3; wi++) {
+      ctx.beginPath();
+      for (let ax = wsx; ax <= wsx + wWid; ax += 4) {
+        const wy = waterY + 5 + wi * 5 + Math.sin(time * 2 + ax * 0.1 + wi) * 2;
+        if (ax === wsx) ctx.moveTo(ax, wy);
+        else ctx.lineTo(ax, wy);
+      }
+      ctx.stroke();
+    }
+
+    // Shimmer lines
+    ctx.fillStyle = "rgba(255,255,255,0.25)";
+    for (let sh = 0; sh < 4; sh++) {
+      const shX = wsx + ((sh * 23 + Math.floor(frameCount * 0.02)) % (wWid - 4));
+      ctx.fillRect(shX, waterY + 3, 2, 8);
+    }
+
+    // Pixel foam at edges
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.fillRect(wsx, waterY, 3, 3);
+    ctx.fillRect(wsx + wWid - 3, waterY, 3, 3);
+    ctx.fillRect(wsx + 6, waterY + 1, 3, 3);
+    ctx.fillRect(wsx + wWid - 9, waterY + 1, 3, 3);
+  }
+}
+
+function getGroundSegments(
+  cameraX: number,
+  W: number
+): Array<{ sx: number; w: number }> {
+  const segments: Array<{ sx: number; w: number }> = [];
+  let cur = 0;
+  while (cur < W) {
+    const worldX = cur + cameraX;
+    let inWater = false;
+    let waterEnd = cur;
+    for (const wb of WATER_BODIES) {
+      if (worldX >= wb.x && worldX < wb.x + wb.w) {
+        inWater = true;
+        waterEnd = wb.x + wb.w - cameraX;
+        break;
+      }
+    }
+    if (inWater) {
+      cur = waterEnd;
+      continue;
+    }
+    let segEnd = W;
+    for (const wb of WATER_BODIES) {
+      const wbSx = wb.x - cameraX;
+      if (wbSx > cur && wbSx < segEnd) segEnd = wbSx;
+    }
+    segments.push({ sx: cur, w: segEnd - cur });
+    cur = segEnd;
+  }
+  return segments;
+}
+
+function drawBirds(
+  ctx: CanvasRenderingContext2D,
+  cameraX: number,
+  frameCount: number
+) {
+  for (let i = 0; i < BIRD_DEFS.length; i++) {
+    const bird = BIRD_DEFS[i];
+    if (!bird) continue;
+    // Birds drift left slowly in world space, wrap around level
+    const worldX = ((bird.x - frameCount * bird.speed * 0.5) % (LEVEL_W + 200) + LEVEL_W + 200) % (LEVEL_W + 200);
+    const sx = worldX - cameraX * 0.4;
+    if (sx < -20 || sx > ctx.canvas.width / (ctx.canvas.height / CANVAS_H) + 20) continue;
+    const sy = bird.y;
+
+    // Wing animation
+    const wingVal = Math.sin(frameCount * 0.15 + bird.wingPhase);
+    const wingAngle = wingVal * 4;
+
+    ctx.save();
+    ctx.translate(sx, sy);
+    // Body
+    ctx.fillStyle = "#e8e8e8";
+    ctx.fillRect(-4, -2, 8, 4);
+    // Left wing
+    ctx.fillStyle = "#d0d0d0";
+    ctx.save();
+    ctx.translate(-4, 0);
+    ctx.rotate(-wingAngle * 0.3);
+    ctx.fillRect(-6, -1, 6, 2);
+    ctx.restore();
+    // Right wing
+    ctx.save();
+    ctx.translate(4, 0);
+    ctx.rotate(wingAngle * 0.3);
+    ctx.fillRect(0, -1, 6, 2);
+    ctx.restore();
+    // Beak
+    ctx.fillStyle = "#FFD700";
+    ctx.fillRect(4, -1, 2, 2);
+    // Eye
+    ctx.fillStyle = "#111";
+    ctx.fillRect(2, -1, 1, 1);
+    ctx.restore();
+
+    // Formation buddies
+    for (let f = 1; f <= 2; f++) {
+      const bsx = sx + f * 14;
+      const bsy = sy + f * 5;
+      if (bsx > ctx.canvas.width / (ctx.canvas.height / CANVAS_H) + 10) continue;
+      ctx.save();
+      ctx.translate(bsx, bsy);
+      ctx.fillStyle = "#e0e0e0";
+      ctx.fillRect(-3, -2, 7, 3);
+      ctx.fillStyle = "#ccc";
+      ctx.save();
+      ctx.translate(-3, 0);
+      ctx.rotate(-wingAngle * 0.3);
+      ctx.fillRect(-5, -1, 5, 2);
+      ctx.restore();
+      ctx.save();
+      ctx.translate(4, 0);
+      ctx.rotate(wingAngle * 0.3);
+      ctx.fillRect(0, -1, 5, 2);
+      ctx.restore();
+      ctx.restore();
+    }
+  }
 }
 
 function drawPlatform(ctx: CanvasRenderingContext2D, p: PlatformDef, cameraX: number) {
   const sx = p.x - cameraX;
-  // Main surface
-  ctx.fillStyle = p.c;
-  ctx.fillRect(sx, p.y, p.w, p.h);
-  // Top highlight
-  ctx.fillStyle = "#e8993a";
-  ctx.fillRect(sx, p.y, p.w, 4);
-  // Bottom shadow
-  ctx.fillStyle = darkenColor(p.c, 40);
-  ctx.fillRect(sx, p.y + p.h - 4, p.w, 4);
-  // Pixel brick lines
-  ctx.fillStyle = darkenColor(p.c, 20);
-  for (let bx = sx; bx < sx + p.w; bx += 20) {
-    ctx.fillRect(bx, p.y + 4, 1, p.h - 8);
+  const x = sx;
+  const y = p.y;
+  const w = p.w;
+  const h = p.h;
+
+  // Soil body
+  ctx.fillStyle = "#6b3a1f";
+  ctx.fillRect(x, y + 8, w, h - 8);
+  // Soil texture dots
+  ctx.fillStyle = "#4a2810";
+  for (let tx = x + 4; tx < x + w - 4; tx += 10) {
+    ctx.fillRect(tx, y + 12, 3, 2);
+    ctx.fillRect(tx + 5, y + 16, 2, 2);
+  }
+  // Soil highlight
+  ctx.fillStyle = "#8B5523";
+  ctx.fillRect(x, y + 8, w, 2);
+  ctx.fillRect(x, y + 8, 2, h - 8);
+
+  // Grass top
+  ctx.fillStyle = "#3d8b37";
+  ctx.fillRect(x, y, w, 10);
+  // Grass highlight
+  ctx.fillStyle = "#4CAF50";
+  ctx.fillRect(x, y, w, 3);
+  // Grass top pixel bumps
+  ctx.fillStyle = "#2d6a2d";
+  for (let bx = x; bx < x + w; bx += 8) {
+    ctx.fillRect(bx, y - 2, 4, 3);
+    ctx.fillRect(bx + 4, y - 1, 3, 2);
   }
 }
 
@@ -348,55 +791,142 @@ function drawPlayer(
   cameraX: number
 ) {
   const sx = px - cameraX;
-  const isRunning = onGround && Math.abs(vy) < 1;
-  const legFrame = Math.floor(frameCount / 6) % 2;
-  const idleBob = onGround ? Math.sin(frameCount / 30) * 1 : 0;
-  const sy = py + idleBob;
-
-  ctx.save();
-  if (facing < 0) {
-    ctx.translate(sx + 10, 0);
-    ctx.scale(-1, 1);
-    ctx.translate(-10, 0);
-  }
+  const isRunning = onGround && Math.abs(vy) < 1 && true; // keep running logic alive
+  void isRunning;
+  const isActuallyRunning = onGround;
+  const isJumping = !onGround;
+  const facingLeft = facing < 0;
+  const P = 2.5;
+  const x = sx;
+  const y = py;
 
   if (flashRed > 0 && Math.floor(flashRed / 4) % 2 === 0) {
+    ctx.save();
     ctx.globalAlpha = 0.5;
   }
 
-  // Hair
+  ctx.save();
+  ctx.translate(x, y);
+  if (facingLeft) {
+    ctx.scale(-1, 1);
+    ctx.translate(-35, 0);
+  }
+
+  // === HAIR (animated — slight wave) ===
+  const hairWave = isActuallyRunning ? Math.sin(frameCount * 0.3) * 1.5 : 0;
   ctx.fillStyle = "#1a1a1a";
-  ctx.fillRect(sx + 3, sy, 14, 4);
+  ctx.fillRect(3 * P, (0 + hairWave) * P, 9 * P, 3 * P);
+  ctx.fillRect(2 * P, 1 * P, 2 * P, 4 * P);
+  ctx.fillRect(11 * P, 1 * P, 2 * P, 3 * P);
+  ctx.fillStyle = "#333";
+  ctx.fillRect(4 * P, 0, 3 * P, P);
 
-  // Head
-  ctx.fillStyle = "#E8A87C";
-  ctx.fillRect(sx + 3, sy + 4, 14, 12);
+  // === HEAD ===
+  ctx.fillStyle = "#F4C28A";
+  ctx.fillRect(3 * P, 3 * P, 9 * P, 7 * P);
+  ctx.fillRect(2 * P, 5 * P, 2 * P, 3 * P);
+  ctx.fillRect(11 * P, 5 * P, 2 * P, 3 * P);
+  ctx.fillStyle = "#e8a870";
+  ctx.fillRect(2 * P, 6 * P, P, 2 * P);
 
-  // Visor
-  ctx.fillStyle = "#FF5210";
-  ctx.fillRect(sx + 3, sy + 9, 14, 3);
-
-  // Body
-  ctx.fillStyle = "#2c2c2c";
-  ctx.fillRect(sx + 2, sy + 16, 16, 14);
-
-  // Chest badge
-  ctx.fillStyle = "#FF5210";
-  ctx.fillRect(sx + 7, sy + 19, 6, 4);
-
-  // Legs
-  const legOff = isRunning ? (legFrame === 0 ? 3 : -3) : 0;
+  // === EYES ===
+  const blinkH = frameCount % 120 < 4 ? P : 3 * P;
   ctx.fillStyle = "#1a1a1a";
-  ctx.fillRect(sx + 2, sy + 30, 7, 8 + legOff);
-  ctx.fillRect(sx + 9, sy + 30, 7, 8 - legOff);
+  ctx.fillRect(5 * P, 5 * P, 2 * P, blinkH);
+  ctx.fillRect(8 * P, 5 * P, 2 * P, blinkH);
+  if (blinkH > P) {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(6 * P, 5 * P, P, P);
+    ctx.fillRect(9 * P, 5 * P, P, P);
+  }
 
-  // Feet/boots
+  // === MOUTH ===
+  const breathe = Math.sin(frameCount * 0.05) * 0.5;
+  ctx.fillStyle = isActuallyRunning ? "#c0704a" : "#d4845a";
+  ctx.fillRect(6 * P, (8 + breathe) * P, 3 * P, P);
+  if (isActuallyRunning) {
+    ctx.fillRect(6 * P, (8 + breathe) * P, 3 * P, 2 * P);
+    ctx.fillStyle = "#8B1A1A";
+    ctx.fillRect(6 * P, (9 + breathe) * P, 3 * P, P);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(6 * P, (8 + breathe) * P, P, P);
+    ctx.fillRect(7 * P, (8 + breathe) * P, P, P);
+    ctx.fillRect(8 * P, (8 + breathe) * P, P, P);
+  }
+
+  // === NECK ===
+  ctx.fillStyle = "#F4C28A";
+  ctx.fillRect(6 * P, 10 * P, 3 * P, 2 * P);
+
+  // === BODY / JACKET ===
+  const breatheBody = Math.sin(frameCount * 0.05) * 0.3;
   ctx.fillStyle = "#FF5210";
-  ctx.fillRect(sx + 1, sy + 30 + 8 + legOff, 8, 4);
-  ctx.fillRect(sx + 9, sy + 30 + 8 - legOff, 8, 4);
+  ctx.fillRect(3 * P, (12 + breatheBody) * P, 9 * P, 7 * P);
+  ctx.fillStyle = "#ff6b35";
+  ctx.fillRect(3 * P, (12 + breatheBody) * P, P, 7 * P);
+  ctx.fillRect(3 * P, (12 + breatheBody) * P, 9 * P, P);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(6 * P, (13 + breatheBody) * P, 3 * P, 5 * P);
+  ctx.fillStyle = "#1a1a1a";
+  ctx.fillRect(4 * P, (14 + breatheBody) * P, 2 * P, 2 * P);
+  ctx.fillStyle = "#FFD700";
+  ctx.fillRect(4 * P, (14 + breatheBody) * P, P, P);
 
-  ctx.globalAlpha = 1;
+  // === ARMS ===
+  const armSwing = isActuallyRunning ? Math.sin(frameCount * 0.25) * 3 : 0;
+  ctx.fillStyle = "#FF5210";
+  ctx.fillRect(P, (13 + armSwing) * P, 3 * P, 5 * P);
+  ctx.fillRect(11 * P, (13 - armSwing) * P, 3 * P, 5 * P);
+  ctx.fillStyle = "#F4C28A";
+  ctx.fillRect(P, (17 + armSwing) * P, 3 * P, 2 * P);
+  ctx.fillRect(11 * P, (17 - armSwing) * P, 3 * P, 2 * P);
+  ctx.fillStyle = "#e8a870";
+  ctx.fillRect(P, (19 + armSwing) * P, P, P);
+  ctx.fillRect(2 * P, (19 + armSwing) * P, P, P);
+  ctx.fillRect(3 * P, (18 + armSwing) * P, P, P);
+
+  // === LEGS ===
+  const legCycle = isActuallyRunning ? Math.sin(frameCount * 0.25) * 4 : 0;
+  const leg2Cycle = isActuallyRunning ? Math.sin(frameCount * 0.25 + Math.PI) * 4 : 0;
+  ctx.fillStyle = "#1a237e";
+  ctx.fillRect(4 * P, (19 + legCycle) * P, 3 * P, 5 * P);
+  ctx.fillRect(8 * P, (19 + leg2Cycle) * P, 3 * P, 5 * P);
+  ctx.fillStyle = "#283593";
+  ctx.fillRect(4 * P, (19 + legCycle) * P, P, 5 * P);
+  ctx.fillRect(8 * P, (19 + leg2Cycle) * P, P, 5 * P);
+
+  // === SHOES ===
+  ctx.fillStyle = "#f5f5f5";
+  ctx.fillRect(3 * P, (24 + legCycle) * P, 4 * P, 2 * P);
+  ctx.fillRect(7 * P, (24 + leg2Cycle) * P, 4 * P, 2 * P);
+  ctx.fillStyle = "#FF5210";
+  ctx.fillRect(3 * P, (25 + legCycle) * P, 4 * P, P);
+  ctx.fillRect(7 * P, (25 + leg2Cycle) * P, 4 * P, P);
+
   ctx.restore();
+
+  // === SPARKLES / WIND when running ===
+  if (isActuallyRunning && !isJumping) {
+    const particleX = facingLeft ? x + 35 : x;
+    for (let s = 0; s < 3; s++) {
+      const age = (frameCount + s * 7) % 15;
+      const alpha = 1 - age / 15;
+      const dirX = facingLeft ? 1 : -1;
+      const spx = particleX + dirX * (age * 2 + s * 6);
+      const spy = y + 30 + Math.sin(age * 0.8 + s) * 5;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = s % 2 === 0 ? "#FFD700" : "#FF5210";
+      ctx.fillRect(spx, spy, 2, 2);
+      ctx.fillRect(spx - 1, spy + 1, 4, 1);
+      ctx.fillRect(spx + 1, spy - 1, 1, 4);
+      ctx.restore();
+    }
+  }
+
+  if (flashRed > 0 && Math.floor(flashRed / 4) % 2 === 0) {
+    ctx.restore();
+  }
 }
 
 function drawEnemy(
@@ -407,56 +937,105 @@ function drawEnemy(
 ) {
   if (!enemy.alive && enemy.squishTimer <= 0) return;
   const sx = enemy.px - cameraX;
-  const legFrame = Math.floor(frameCount / 6) % 2;
+  const P = 2.2;
 
   ctx.save();
+
   let scaleY = 1;
   if (enemy.squishTimer > 0) {
     scaleY = enemy.squishTimer / 30;
-    ctx.translate(sx + 10, enemy.py + 24);
+    ctx.translate(sx + 15, enemy.py + 24);
     ctx.scale(1, scaleY);
-    ctx.translate(-(sx + 10), -(enemy.py + 24));
+    ctx.translate(-(sx + 15), -(enemy.py + 24));
   }
 
-  if (enemy.dir < 0) {
-    ctx.translate(sx + 10, 0);
+  const facingLeft = enemy.dir < 0;
+  ctx.translate(sx, enemy.py);
+  if (!facingLeft) {
     ctx.scale(-1, 1);
-    ctx.translate(-10, 0);
+    ctx.translate(-30, 0);
   }
 
-  // Head circle
-  ctx.fillStyle = enemy.color;
+  // === TAIL (animated) ===
+  const tailWave = Math.sin(frameCount * 0.15) * 8;
+  const tailWave2 = Math.sin(frameCount * 0.15 + 1) * 6;
+  ctx.strokeStyle = enemy.color;
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.arc(sx + 10, enemy.py + 7, 7, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Angry eyes (white rects with black pupils)
-  ctx.fillStyle = "white";
-  ctx.fillRect(sx + 4, enemy.py + 4, 4, 3);
-  ctx.fillRect(sx + 12, enemy.py + 4, 4, 3);
-  ctx.fillStyle = "#111";
-  ctx.fillRect(sx + 5, enemy.py + 5, 2, 2);
-  ctx.fillRect(sx + 13, enemy.py + 5, 2, 2);
-  // Angry eyebrows
-  ctx.fillStyle = "#111";
-  ctx.fillRect(sx + 3, enemy.py + 2, 5, 1);
-  ctx.fillRect(sx + 12, enemy.py + 2, 5, 1);
-
-  // Body
+  ctx.moveTo(2 * P, 14 * P);
+  ctx.bezierCurveTo(
+    -2 * P, (14 + tailWave) * P,
+    -5 * P, (12 + tailWave2) * P,
+    -8 * P, (10 + tailWave) * P
+  );
+  ctx.stroke();
   ctx.fillStyle = darkenColor(enemy.color, 30);
-  ctx.fillRect(sx + 4, enemy.py + 14, 12, 10);
+  ctx.fillRect(-8 * P - 2, (10 + tailWave) * P - 2, 4, 4);
 
-  // Legs
-  const lOff = legFrame === 0 ? 2 : -2;
-  ctx.fillStyle = darkenColor(enemy.color, 50);
-  ctx.fillRect(sx + 4, enemy.py + 24, 5, 6 + lOff);
-  ctx.fillRect(sx + 11, enemy.py + 24, 5, 6 - lOff);
+  // === LEGS ===
+  const legPhase = Math.sin(frameCount * 0.2) * 3;
+  ctx.fillStyle = darkenColor(enemy.color, 20);
+  ctx.fillRect(3 * P, 12 * P, 3 * P, 4 * P);
+  ctx.fillRect(7 * P, 12 * P, 3 * P, 4 * P);
+  ctx.fillRect(3 * P, (16 + legPhase) * P, 2 * P, 3 * P);
+  ctx.fillRect(8 * P, (16 - legPhase) * P, 2 * P, 3 * P);
+  ctx.fillStyle = "#222";
+  ctx.fillRect(2 * P, (19 + legPhase) * P, 4 * P, 2 * P);
+  ctx.fillRect(2 * P, (19 + legPhase) * P, P, 3 * P);
+  ctx.fillRect(4 * P, (19 + legPhase) * P, P, 2 * P);
+  ctx.fillRect(7 * P, (19 - legPhase) * P, 4 * P, 2 * P);
+  ctx.fillRect(7 * P, (19 - legPhase) * P, P, 3 * P);
+  ctx.fillRect(9 * P, (19 - legPhase) * P, P, 2 * P);
+
+  // === BODY ===
+  ctx.fillStyle = enemy.color;
+  ctx.fillRect(2 * P, 5 * P, 10 * P, 8 * P);
+  ctx.fillStyle = lightenColor(enemy.color, 30);
+  ctx.fillRect(3 * P, 5 * P, 2 * P, 6 * P);
+  ctx.fillRect(2 * P, 5 * P, 10 * P, P);
+  ctx.fillStyle = darkenColor(enemy.color, 40);
+  ctx.fillRect(4 * P, 5 * P, 6 * P, 2 * P);
+  ctx.fillRect(5 * P, 3 * P, 4 * P, 2 * P);
+
+  // === ARMS ===
+  const armSwing = Math.sin(frameCount * 0.2) * 2;
+  ctx.fillStyle = darkenColor(enemy.color, 10);
+  ctx.fillRect(0, (7 + armSwing) * P, 3 * P, 4 * P);
+  ctx.fillRect(11 * P, (7 - armSwing) * P, 3 * P, 4 * P);
+  ctx.fillStyle = "#111";
+  ctx.fillRect(-P, (11 + armSwing) * P, 2 * P, P);
+  ctx.fillRect(-P, (11 + armSwing) * P, P, 2 * P);
+  ctx.fillRect(11 * P, (11 - armSwing) * P, 2 * P, P);
+  ctx.fillRect(13 * P, (11 - armSwing) * P, P, 2 * P);
+
+  // === HEAD ===
+  ctx.fillStyle = lightenColor(enemy.color, 10);
+  ctx.fillRect(3 * P, 0, 8 * P, 6 * P);
+  ctx.fillRect(4 * P, -2 * P, 6 * P, 3 * P);
+  ctx.fillRect(5 * P, -4 * P, 4 * P, 3 * P);
+  ctx.fillStyle = lightenColor(enemy.color, 50);
+  ctx.fillRect(4 * P, 0, 2 * P, 3 * P);
+
+  // === FACE ===
+  ctx.fillStyle = "#00ff88";
+  ctx.fillRect(4 * P, 2 * P, 2 * P, 2 * P);
+  ctx.fillRect(8 * P, 2 * P, 2 * P, 2 * P);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(4 * P, 2 * P, P, P);
+  ctx.fillRect(8 * P, 2 * P, P, P);
+  const mandPhase = Math.sin(frameCount * 0.1);
+  ctx.fillStyle = "#111";
+  ctx.fillRect(4 * P, (5 + mandPhase) * P, 2 * P, 2 * P);
+  ctx.fillRect(8 * P, (5 + mandPhase) * P, 2 * P, 2 * P);
+  ctx.fillRect(5 * P, (7 + mandPhase) * P, P, 2 * P);
+  ctx.fillRect(8 * P, (7 + mandPhase) * P, P, 2 * P);
 
   // Name tag above
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform to draw label
   const label = enemy.label;
   ctx.font = "bold 7px monospace";
   const tw = ctx.measureText(label).width;
-  const tagX = sx + 10 - tw / 2 - 4;
+  const tagX = sx + 15 - tw / 2 - 4;
   const tagY = enemy.py - 14;
   ctx.fillStyle = "rgba(0,0,0,0.75)";
   ctx.fillRect(tagX, tagY, tw + 8, 11);
@@ -490,7 +1069,6 @@ function drawCollectible(
 
   ctx.shadowBlur = 0;
 
-  // Label below
   ctx.font = "bold 8px monospace";
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
@@ -520,14 +1098,12 @@ function drawDialogueBubble(
   const bx = sx - bw / 2;
   const by = floatY - bh - 12;
 
-  // Bubble background (pixel corners)
   ctx.fillStyle = "rgba(255,255,255,0.95)";
   ctx.fillRect(bx + 3, by, bw - 6, bh);
   ctx.fillRect(bx, by + 3, bw, bh - 6);
   ctx.fillRect(bx + 3, by, 1, 1);
   ctx.fillRect(bx + bw - 4, by, 1, 1);
 
-  // Pointer triangle at bottom left
   ctx.fillStyle = "rgba(255,255,255,0.95)";
   ctx.fillRect(bx + 6, by + bh, 6, 4);
   ctx.fillRect(bx + 6, by + bh + 4, 4, 2);
@@ -572,7 +1148,6 @@ function drawHUDCanvas(
   collectedCount: number,
   W: number
 ) {
-  // Small lives display bottom right
   ctx.save();
   ctx.font = "bold 12px monospace";
   ctx.fillStyle = "rgba(0,0,0,0.5)";
@@ -582,7 +1157,6 @@ function drawHUDCanvas(
   ctx.fillText(hearts, W - 74, 24);
   ctx.restore();
 
-  // Collected count bottom left
   ctx.save();
   ctx.font = "bold 11px monospace";
   ctx.fillStyle = "rgba(0,0,0,0.5)";
@@ -653,17 +1227,13 @@ function MessengerPhase({ onStart }: MessengerPhaseProps) {
   const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
-    let timeouts: ReturnType<typeof setTimeout>[] = [];
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
     let delay = 500;
 
     for (let i = 0; i < PETE_MESSAGES.length; i++) {
       const capturedI = i;
-      // Show typing
-      timeouts.push(
-        setTimeout(() => setShowTyping(true), delay)
-      );
+      timeouts.push(setTimeout(() => setShowTyping(true), delay));
       delay += 700;
-      // Show message
       timeouts.push(
         setTimeout(() => {
           setShowTyping(false);
@@ -673,7 +1243,6 @@ function MessengerPhase({ onStart }: MessengerPhaseProps) {
       delay += 800;
     }
 
-    // Player reply after pause
     delay += 1000;
     timeouts.push(setTimeout(() => setShowReply(true), delay));
     delay += 800;
@@ -687,10 +1256,8 @@ function MessengerPhase({ onStart }: MessengerPhaseProps) {
       className="fixed inset-0 z-[100] flex overflow-hidden"
       style={{ background: "#0d0d0d", cursor: "default", fontFamily: "monospace" }}
     >
-      {/* Left: Pete avatar */}
       <div className="flex flex-col items-center justify-start pt-16 pl-8 pr-4" style={{ width: 160, flexShrink: 0 }}>
         <div className="relative">
-          {/* Pixel head */}
           <div
             style={{
               width: 60,
@@ -700,14 +1267,11 @@ function MessengerPhase({ onStart }: MessengerPhaseProps) {
               imageRendering: "pixelated",
             }}
           >
-            {/* Eyes */}
             <div style={{ position: "absolute", top: 18, left: 10, width: 8, height: 8, background: "#111" }} />
             <div style={{ position: "absolute", top: 18, left: 30, width: 8, height: 8, background: "#111" }} />
-            {/* Mouth */}
             <div style={{ position: "absolute", bottom: 12, left: 14, width: 20, height: 4, background: "#111" }} />
             <div style={{ position: "absolute", bottom: 8, left: 18, width: 12, height: 3, background: "#111" }} />
           </div>
-          {/* Red notification dot */}
           <div
             style={{
               position: "absolute",
@@ -728,7 +1292,6 @@ function MessengerPhase({ onStart }: MessengerPhaseProps) {
         </div>
       </div>
 
-      {/* Right: Chat */}
       <div
         className="flex flex-col flex-1 overflow-y-auto pb-8 pt-8 pr-8"
         style={{ gap: 8 }}
@@ -744,11 +1307,7 @@ function MessengerPhase({ onStart }: MessengerPhaseProps) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
-              style={{
-                display: "flex",
-                justifyContent: "flex-start",
-                marginBottom: 4,
-              }}
+              style={{ display: "flex", justifyContent: "flex-start", marginBottom: 4 }}
             >
               <div
                 style={{
@@ -871,7 +1430,6 @@ function HUD({ collectedIds, lives, collectibles }: HUDProps) {
         gap: 12,
       }}
     >
-      {/* Left: pieces */}
       <div style={{ display: "flex", alignItems: "center", gap: 4, flex: 1 }}>
         <span style={{ color: "#FF5210", fontSize: 10, fontWeight: "bold", marginRight: 6, letterSpacing: 1 }}>
           PIECES
@@ -916,7 +1474,6 @@ function HUD({ collectedIds, lives, collectibles }: HUDProps) {
         ))}
       </div>
 
-      {/* Center: title */}
       <div
         style={{
           color: "#FF5210",
@@ -930,7 +1487,6 @@ function HUD({ collectedIds, lives, collectibles }: HUDProps) {
         DESIGN BOUNTY
       </div>
 
-      {/* Right: lives + name */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end", flex: 1 }}>
         <span style={{ color: "#FF5210", fontSize: 14 }}>
           {"♥".repeat(lives)}{"♡".repeat(Math.max(0, 3 - lives))}
@@ -1118,8 +1674,8 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
   const keysRef = useRef<Record<string, boolean>>({});
   const gameStateRef = useRef<GameState | null>(null);
   const touchRef = useRef<{ x: number; y: number } | null>(null);
+  const bgImgRef = useRef<HTMLImageElement | null>(null);
 
-  // Initialize audio context on first interaction
   const ensureAudio = useCallback(() => {
     if (!audioCtxRef.current) {
       audioCtxRef.current = new AudioContext();
@@ -1175,6 +1731,15 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
     setLives(3);
   }, [initGameState]);
 
+  // Load background image once
+  useEffect(() => {
+    const img = new Image();
+    img.src = "/Game/Blue sky background.jpg";
+    img.onload = () => {
+      bgImgRef.current = img;
+    };
+  }, []);
+
   useEffect(() => {
     if (phase !== "playing") return;
 
@@ -1194,7 +1759,6 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    // Key handlers
     function onKeyDown(e: KeyboardEvent) {
       ensureAudio();
       keysRef.current[e.code] = true;
@@ -1215,7 +1779,6 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
       keysRef.current[e.code] = false;
     }
 
-    // Touch handlers
     function onTouchStart(e: TouchEvent) {
       ensureAudio();
       const t = e.touches[0];
@@ -1256,9 +1819,6 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
 
       const W = canvas.width;
       const H = canvas.height;
-      const scaleX = W / window.innerWidth;
-      const scaleY = H / CANVAS_H;
-      void scaleX;
 
       // Scale so game is always CANVAS_H tall
       const scale = H / CANVAS_H;
@@ -1289,12 +1849,10 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
       gs.playerX += gs.playerVX;
       gs.playerY += gs.playerVY;
 
-      // Clamp player X in level
       gs.playerX = Math.max(0, Math.min(gs.playerX, LEVEL_W - 20));
 
       const groundY = CANVAS_H - 60 - 42;
 
-      // Ground collision
       gs.playerOnGround = false;
       if (gs.playerY >= groundY) {
         gs.playerY = groundY;
@@ -1303,7 +1861,6 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         gs.playerJumpsLeft = 2;
       }
 
-      // Platform collision (from above only)
       const playerBottom = gs.playerY + 42;
       const playerLeft = gs.playerX;
       const playerRight = gs.playerX + 20;
@@ -1324,9 +1881,6 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
       }
 
       // ── Camera ────────────────────────────────────────────
-      const targetCam = gs.playerX - lw * 0.35;
-      gs.cameraX = Math.max(0, Math.min(targetCam, LEVEL_W - lw));
-      gs.cameraX += (targetCam - gs.cameraX) * 0;
       gs.cameraX = Math.max(0, Math.min(gs.playerX - lw * 0.35, LEVEL_W - lw));
 
       // ── Collectibles ──────────────────────────────────────
@@ -1360,13 +1914,16 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
           continue;
         }
 
-        // Enemy movement
+        // Patrol behavior
         enemy.px += enemy.vx;
-        enemy.dir = enemy.vx < 0 ? -1 : 1;
-
-        // Bounce off level edges and platform edges
+        if (enemy.px < enemy.spawnX - 200 || enemy.px > enemy.spawnX + 200) {
+          enemy.vx *= -1;
+        }
+        // Also reverse if hitting level bounds
         if (enemy.px < 10) { enemy.px = 10; enemy.vx = Math.abs(enemy.vx); }
         if (enemy.px > LEVEL_W - 30) { enemy.px = LEVEL_W - 30; enemy.vx = -Math.abs(enemy.vx); }
+
+        enemy.dir = enemy.vx < 0 ? -1 : 1;
 
         // Enemy on ground or platform
         const eBottom = enemy.py + 24;
@@ -1374,7 +1931,6 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         if (enemy.py < eGroundY) {
           enemy.py = Math.min(enemy.py + 2, eGroundY);
         }
-        // Check platform under enemy
         for (const plat of platforms) {
           if (
             eBottom >= plat.y &&
@@ -1386,7 +1942,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
           }
         }
 
-        // Bounce at platform edges (crude)
+        // Bounce at platform edges
         let onPlat = false;
         for (const plat of platforms) {
           if (
@@ -1395,7 +1951,6 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
             enemy.px < plat.x + plat.w
           ) {
             onPlat = true;
-            // Turn around at plat edge
             if (enemy.px <= plat.x + 2 && enemy.vx < 0) enemy.vx = Math.abs(enemy.vx);
             if (enemy.px + 20 >= plat.x + plat.w - 2 && enemy.vx > 0) enemy.vx = -Math.abs(enemy.vx);
           }
@@ -1418,19 +1973,16 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
           eTop < pBot - 4;
 
         if (overlap) {
-          // Stomped from above?
           if (gs.playerVY > 0 && pBot - gs.playerVY <= eTop + 6) {
-            // Kill enemy
             enemy.alive = false;
             enemy.squishTimer = 30;
             enemy.speechTimer = 120;
             enemy.speechText = `✓ ${enemy.method}`;
             gs.enemiesDefeated += 1;
-            gs.playerVY = -8; // bounce up
+            gs.playerVY = -8;
             const ac = ensureAudio();
             playKill(ac);
           } else if (gs.invincibleTimer === 0) {
-            // Player hit
             gs.lives -= 1;
             gs.playerFlashRed = 60;
             gs.invincibleTimer = 90;
@@ -1438,7 +1990,6 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
             if (gs.lives <= 0) {
               gs.gameOver = true;
             } else {
-              // Respawn at checkpoint
               gs.playerX = gs.checkpointX;
               gs.playerY = groundY;
               gs.playerVX = 0;
@@ -1474,7 +2025,15 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
       }
 
       // ── Draw ──────────────────────────────────────────────
-      drawBackground(ctx, gs.cameraX, lw, CANVAS_H, gs.frameCount);
+
+      // Background (sky image + parallax hills + trees + clouds)
+      drawBackground(ctx, gs.cameraX, lw, CANVAS_H, gs.frameCount, bgImgRef.current);
+
+      // Birds (parallax 0.4)
+      drawBirds(ctx, gs.cameraX, gs.frameCount);
+
+      // Ground (layered: underground, soil, grass + water)
+      drawGround(ctx, gs.cameraX, lw, CANVAS_H, gs.frameCount);
 
       // Platforms
       for (const p of platforms) {
@@ -1521,7 +2080,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         drawDialogueBubble(ctx, gs.dialogueBubble, gs.cameraX);
       }
 
-      // HUD on canvas (lives + piece count in corner)
+      // HUD on canvas
       drawHUDCanvas(ctx, gs.lives, gs.collectedIds.size, lw);
 
       ctx.restore();
