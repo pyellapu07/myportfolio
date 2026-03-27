@@ -2751,7 +2751,16 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
   const WHITE_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M2 1 L2 15 L5 12 L7.5 17.5 L9.5 16.5 L7 11 L11 11 Z' fill='white' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E") 2 1, auto`;
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 100, cursor: WHITE_CURSOR }}>
+    <div className="design-rescue-root" style={{ position: "fixed", inset: 0, zIndex: 100, cursor: WHITE_CURSOR }}>
+      {/* Force white cursor on every child element across all game phases */}
+      <style>{`
+        .design-rescue-root, .design-rescue-root * {
+          cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M2 1 L2 15 L5 12 L7.5 17.5 L9.5 16.5 L7 11 L11 11 Z' fill='white' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E") 2 1, auto !important;
+        }
+        .design-rescue-root button, .design-rescue-root a {
+          cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M2 1 L2 15 L5 12 L7.5 17.5 L9.5 16.5 L7 11 L11 11 Z' fill='white' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E") 2 1, pointer !important;
+        }
+      `}</style>
       <AnimatePresence mode="wait">
         {phase === "messenger" && (
           <motion.div key="messenger" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
