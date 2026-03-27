@@ -14,35 +14,42 @@ const DoodleCircle = memo(function DoodleCircle() {
   useEffect(() => {
     const t = setTimeout(() => {
       controls.start({ pathLength: 1, opacity: 1 });
-    }, 1000);
+    }, 1200);
     return () => clearTimeout(t);
-  }, []); // runs exactly once
+  }, []); // runs exactly once on mount
 
   return (
+    /*
+      Fixed 150×50 px SVG, centered over the toggle via transform.
+      Path is drawn in those exact pixel coordinates so no scaling math needed.
+      overflow:visible lets the overshoot tail escape the SVG box.
+    */
     <svg
       className="pointer-events-none absolute"
-      style={{ top: "-10px", left: "-14px", width: "calc(100% + 28px)", height: "calc(100% + 20px)", overflow: "visible" }}
-      viewBox="0 0 100 100"
-      preserveAspectRatio="none"
+      style={{
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: 150,
+        height: 50,
+        overflow: "visible",
+        zIndex: 10,
+      }}
+      viewBox="0 0 150 50"
       fill="none"
       aria-hidden
     >
-      {/*
-        Path draws a full ellipse then overshoots ~15% past the start —
-        the endpoint curls inward slightly so it looks like a real pen stroke.
-        No closing Z — open path only.
-      */}
+      {/* Full ellipse that overshoots past the start — no Z close */}
       <motion.path
-        d="M 22,11 C 38,-5 76,-4 90,12 C 105,30 101,74 84,90 C 66,106 28,107 12,90 C -3,74 1,30 18,14 C 19,13 20,12 26,8"
+        d="M 20,10 C 36,-4 116,-4 134,12 C 148,24 144,40 126,46 C 104,52 34,54 16,42 C 2,32 4,18 20,10 C 21,9 23,8 28,6"
         stroke="#3B82F6"
-        strokeWidth="2.2"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"
-        vectorEffect="non-scaling-stroke"
         initial={{ pathLength: 0, opacity: 0 }}
         animate={controls}
-        transition={{ duration: 1.0, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 1.0, ease: [0.25, 0.1, 0.25, 1] }}
       />
     </svg>
   );
@@ -113,7 +120,7 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
           {/* Right side */}
           <div className="hidden items-center gap-5 md:flex" data-tour="recruiter">
             {/* Doodle circle around recruiter toggle */}
-            <div className="relative inline-flex items-center" style={{ overflow: "visible" }}>
+            <div className="relative inline-flex items-center">
               <RecruiterToggle size="sm" dark={!isDarkText} />
               <DoodleCircle />
             </div>
