@@ -99,11 +99,13 @@ function PolaroidImage({
   caption,
   rotation = 0,
   alt = "",
+  aspectRatio = "4/3",
 }: {
   src: string;
   caption: string;
   rotation?: number;
   alt?: string;
+  aspectRatio?: string;
 }) {
   return (
     <div
@@ -114,7 +116,7 @@ function PolaroidImage({
         borderRadius: 4,
       }}
     >
-      <div className="relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
+      <div className="relative overflow-hidden" style={{ aspectRatio }}>
         <Image src={src} alt={alt || caption} fill className="object-cover" sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 380px" />
       </div>
       <p
@@ -223,7 +225,7 @@ export default function TerpsEsportsPage() {
           <h1 className="font-manrope text-4xl font-bold tracking-tight text-text md:text-5xl lg:text-6xl">
             Terps Esports
           </h1>
-          <p className="mt-2 font-manrope text-3xl font-bold md:text-4xl" style={{ color: "#A07800" }}>
+          <p className="mt-2 font-manrope text-3xl font-bold md:text-4xl" style={{ color: RED }}>
             Where Design Meets the Arena.
           </p>
           <p className="mt-5 max-w-2xl font-mono text-sm leading-relaxed text-text-secondary">
@@ -236,12 +238,11 @@ export default function TerpsEsportsPage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_260px] lg:items-start">
             {/* Full centred image */}
             <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-border/30">
-              <Image
-                src="/Esports/TeamPicturewiththecrew.jpg"
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/Esports/displaygif.gif"
                 alt="Terps Esports crew"
-                fill
-                className="object-cover object-center"
-                priority
+                className="absolute inset-0 h-full w-full object-cover object-center"
               />
             </div>
             {/* Metrics sidebar */}
@@ -335,7 +336,7 @@ export default function TerpsEsportsPage() {
             </p>
           </Fade>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 items-start">
             {[
               { src: "/Esports/NJC valorant thumbnail_1.5x.png",     alt: "NJC Valorant thumbnail" },
               { src: "/Esports/hype up overwatch bec2_1.5x.png",     alt: "Overwatch hype graphic" },
@@ -348,9 +349,11 @@ export default function TerpsEsportsPage() {
                 <Image
                   src={img.src}
                   alt={img.alt}
-                  width={600}
-                  height={400}
-                  className="w-full h-auto object-cover transition-transform duration-500 hover:scale-[1.03]"
+                  width={0}
+                  height={0}
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 33vw"
+                  style={{ width: "100%", height: "auto" }}
+                  className="block transition-transform duration-500 hover:scale-[1.03]"
                 />
               </MediaPop>
             ))}
@@ -432,6 +435,22 @@ export default function TerpsEsportsPage() {
               </Fade>
             ))}
           </div>
+
+          {/* Teaser video */}
+          <Fade className="mb-12">
+            <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-white/30">The Teaser</p>
+            <div className="overflow-hidden rounded-2xl border border-white/10">
+              <video
+                controls
+                preload="metadata"
+                className="w-full block"
+                style={{ maxHeight: "70vh" }}
+              >
+                <source src="/Esports/Teasertothe introvideo.mov" type="video/mp4" />
+                <source src="/Esports/Teasertothe introvideo.mov" type="video/quicktime" />
+              </video>
+            </div>
+          </Fade>
 
           {/* Storyboard embed */}
           <Fade className="mb-12">
@@ -579,21 +598,32 @@ export default function TerpsEsportsPage() {
                     {["Photoshop", "UMD Brand Colors", "Seasonal Design", "Social Media"].map(t => <Tag key={t}>{t}</Tag>)}
                   </div>
                 </div>
-                {/* Blossom poster as polaroid */}
-                <div className="flex items-center justify-center p-10 bg-[#fafafa]">
-                  <PolaroidImage
-                    src="/Esports/blossom poster OW5_1.5x.png"
-                    alt="Blossom Poster - Overwatch 5"
-                    caption="Spring Blossoms · OW5"
-                    rotation={3}
-                  />
+                {/* Blossom poster — tall portrait polaroid */}
+                <div className="flex items-center justify-center bg-[#f0f0f0] p-10">
+                  <div
+                    className="bg-white shadow-2xl"
+                    style={{ transform: "rotate(3deg)", padding: "12px 12px 56px 12px", borderRadius: 4, maxWidth: 320, width: "100%" }}
+                  >
+                    <div className="relative overflow-hidden" style={{ aspectRatio: "2/3" }}>
+                      <Image
+                        src="/Esports/blossom poster OW5_1.5x.png"
+                        alt="Blossom Poster - Overwatch 5"
+                        fill
+                        className="object-cover"
+                        sizes="320px"
+                      />
+                    </div>
+                    <p className={`mt-3 text-center leading-tight ${caveat.className}`} style={{ fontSize: 20, color: "#444" }}>
+                      Spring Blossoms · OW5
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </Fade>
 
           {/* Graphics grid */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 items-start">
             {[
               { src: "/Esports/RL lan event Grand Chanmpions poster@1.5x.png", alt: "Rocket League LAN Event Grand Champions" },
               { src: "/Esports/mariokart lan event.png",                        alt: "Mario Kart LAN Event" },
