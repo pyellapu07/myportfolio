@@ -396,11 +396,12 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
                     transform: `translateX(-50%) translateY(${isHovered ? "0px" : "-4px"}) rotate(-6deg)`,
                     opacity: isHovered ? 1 : 0,
                     transition: "opacity 0.22s ease, transform 0.22s ease",
-                    whiteSpace: "nowrap", zIndex: 100,
+                    zIndex: 100,
                     fontFamily: "monospace", fontSize: 9, color: "#555",
                     letterSpacing: "0.04em", fontWeight: 500,
+                    textAlign: "center", lineHeight: 1.6,
                   }}>
-                    MLSA&apos;s Vinci di UI Design Challenge Winner
+                    MLSA&apos;s Vinci di UI<br />Design Challenge Winner
                   </div>
                 </div>
               </>
