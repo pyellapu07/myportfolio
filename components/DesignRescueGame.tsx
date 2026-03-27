@@ -41,11 +41,14 @@ interface GameEnemy extends EnemyDef {
   px: number;
   py: number;
   vx: number;
+  velY: number;
+  onGround: boolean;
   squishTimer: number;
   speechTimer: number;
   speechText: string;
   dir: number;
   spawnX: number;
+  jumpTimer: number;
 }
 
 interface DialogueBubble {
@@ -67,6 +70,40 @@ interface WaterSplash {
   active: boolean;
   x: number;
   frame: number;
+}
+
+interface Companion {
+  id: 'scooby' | 'walle';
+  x: number;
+  y: number;
+  velY: number;
+  alive: boolean;
+  frame: number;
+  state: 'follow' | 'scared' | 'attack';
+  shootCooldown: number;
+}
+
+interface PowerUp {
+  x: number;
+  y: number;
+  type: 'teamup';
+  collected: boolean;
+  bobOffset: number;
+}
+
+interface Bullet {
+  x: number;
+  y: number;
+  vx: number;
+  active: boolean;
+}
+
+interface HelicopterDrop {
+  active: boolean;
+  x: number;
+  y: number;
+  frame: number;
+  phase: 'descend' | 'drop' | 'ascend';
 }
 
 interface GameState {
@@ -95,6 +132,16 @@ interface GameState {
   invincibleTimer: number;
   waterSplash: WaterSplash | null;
   prevPlayerOnGround: boolean;
+  idleTimer: number;
+  idleAction: string | null;
+  idleActionFrame: number;
+  blushTimer: number;
+  lastDialogue: string;
+  companions: Companion[];
+  powerUps: PowerUp[];
+  playerBullets: number;
+  bullets: Bullet[];
+  helicopterDrop: HelicopterDrop | null;
 }
 
 /* ─── Constants ──────────────────────────────────────────────── */
@@ -209,11 +256,14 @@ function makeEnemies(H: number): GameEnemy[] {
     px: d.x,
     py: H - 80 - 40,
     vx: 1.2,
+    velY: 0,
+    onGround: true,
     squishTimer: 0,
     speechTimer: 0,
     speechText: "",
     dir: 1,
     spawnX: d.x,
+    jumpTimer: 0,
   }));
 }
 
@@ -835,20 +885,18 @@ function drawPlayer(
   void velY;
   const sx = px - cameraX;
   const sy = py;
-  const S = 2; // pixelSize
+  const S = 1.8; // pixelSize — smaller, cuter Mario-style
 
-  const isIdle = velX === 0 && onGround;
   const isRunning = Math.abs(velX) > 0 && onGround;
   const isJumping = !onGround;
-  void isIdle;
 
   if (flashRed > 0 && Math.floor(flashRed / 4) % 2 === 0) {
     ctx.save();
     ctx.globalAlpha = 0.5;
   }
 
-  // Breathe offset: slow 1px vertical, every 90 frames cycle
-  const breatheY = (velX === 0 && onGround) ? Math.floor((Math.sin(frame * 0.05) + 1) * 0.5) : 0;
+  // Breathing: always active slow sin wave on body
+  const breatheY = Math.sin(frame * 0.04) * 0.8;
   // Blink: every 150 frames, 1-frame closure
   const eyeH = frame % 150 < 2 ? 1 : 2;
   // Run leg swap: every 8 frames alternate
@@ -856,125 +904,106 @@ function drawPlayer(
   // Arm swing for running
   const armFwdOffset = isRunning ? (legPhase === 0 ? -1 : 1) : 0;
 
-  // All drawing happens in canvas screen-space (logical units already scaled by game loop)
-  // sx, sy are in logical canvas units. We multiply by S=2 to get pixel positions on canvas.
-  // But the game loop applies a scale(H/CANVAS_H) so we draw in logical coords.
-  // The sprite is 18x28 logical pixels, each rendered as 2x2 = 36x56 screen pixels in logical space.
-  // So we draw at sx, sy and each 'block' is S=2 logical units wide/tall.
+  // Total height = 44px. Head 40% = 17.6, Body 30% = 13.2, Legs 30% = 13.2
+  // In S units: Head≈10S, Body≈7S, Legs≈7S total = 24S = 43.2px ≈ 44px
 
   ctx.save();
   if (facingLeft) {
-    // Mirror horizontally around center of sprite (center at sx + 18 logical units)
-    ctx.translate(2 * (sx + 18), 0);
+    ctx.translate(2 * (sx + 16 * S / 2), 0);
     ctx.scale(-1, 1);
   }
 
-  const bx = sx; // base x in logical coords (game loop scale handles rest)
-  const by = sy; // base y in logical coords
+  const bx = sx;
+  const by = sy + breatheY;
 
   function p(lx: number, ly: number, w: number, h: number, color: string) {
     ctx.fillStyle = color;
     ctx.fillRect(bx + lx * S, by + ly * S, w * S, h * S);
   }
 
-  // ── HEAD ──────────────────────────────────────────────────
-  p(6, 0 + breatheY, 9, 8, '#D4956A');           // Skull
-  p(5, 0 + breatheY, 10, 3, '#1a1a1a');           // Hair top
-  p(4, 1 + breatheY, 2, 5, '#1a1a1a');            // Hair left side
-  p(5, 3 + breatheY, 2, 2, '#2d2d2d');            // Hair highlight
-  p(14, 4 + breatheY, 2, 2, '#c07850');           // Nose
-  p(11, 3 + breatheY, 2, eyeH, '#1a1a1a');        // Eye
+  // ── HEAD (big, cute — 40% of 44px = ~17px = ~9.5S) ────────
+  p(3, 0, 10, 10, '#D4956A');          // Big round skull
+  p(2, 0,  11, 4, '#1a1a1a');          // Hair top wide
+  p(2, 1,  2,  6, '#1a1a1a');          // Hair left side
+  p(3, 4,  2,  2, '#2d2d2d');          // Hair highlight
+  p(11, 5, 2,  2, '#c07850');          // Nose
+  p(8,  4, 2,  eyeH, '#1a1a1a');       // Eye
   if (eyeH > 1) {
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(bx + 12 * S, by + (3 + breatheY) * S, S, S); // Eye shine
+    ctx.fillRect(bx + 9 * S, by + 4 * S, S, S);
   }
-  p(13, 6 + breatheY, 2, 1, '#c07850');           // Mouth
-  p(6, 4 + breatheY, 2, 3, '#c07850');            // Ear
-  p(7, 7 + breatheY, 7, 2, '#D4956A');            // Jaw line
-  p(9, 8 + breatheY, 4, 2, '#D4956A');            // Neck
+  p(10, 7, 2, 1, '#c07850');           // Mouth
+  p(2,  5, 2, 3, '#c07850');           // Ear
+  p(4,  9, 6, 1, '#D4956A');           // Jaw
+  p(6, 10, 3, 1, '#D4956A');           // Neck
 
-  // ── BODY ──────────────────────────────────────────────────
-  const bodyY = 10 + breatheY;
-  p(7, bodyY, 9, 8, '#FF5210');                   // Torso
-  p(7, bodyY, 1, 8, '#ff6b35');                   // Jacket highlight left
-  p(15, bodyY, 1, 8, '#cc4200');                  // Jacket shadow right
-  p(8, bodyY + 6, 7, 2, '#ffffff');               // White shirt at bottom
-  p(13, bodyY + 1, 2, 2, '#cc4200');              // Chest pocket
-  p(13, bodyY + 2, 2, 1, '#FFD700');              // Badge
+  // ── BODY (30% of 44px = ~13px = ~7S) ───────────────────────
+  const bodyY = 11;
+  p(4, bodyY,   8, 7, '#FF5210');      // Torso
+  p(4, bodyY,   1, 7, '#ff6b35');      // Jacket left highlight
+  p(11,bodyY,   1, 7, '#cc4200');      // Jacket right shadow
+  p(5, bodyY+5, 6, 2, '#ffffff');      // White shirt bottom
+  p(9, bodyY+1, 2, 2, '#cc4200');      // Chest pocket
+  p(9, bodyY+2, 2, 1, '#FFD700');      // Badge
 
-  // ── ARMS ──────────────────────────────────────────────────
+  // ── ARMS ───────────────────────────────────────────────────
   const backArmY = bodyY + (isRunning ? -armFwdOffset : 0);
-  p(15, backArmY, 3, 7, '#e04800');               // Back arm
-  p(15, backArmY + 6, 3, 2, '#c07850');           // Back hand
+  p(12, backArmY,   2, 6, '#e04800'); // Back arm
+  p(12, backArmY+5, 2, 2, '#c07850'); // Back hand
 
   const frontArmY = bodyY + (isRunning ? armFwdOffset : 0);
-  p(7, frontArmY, 3, 7, '#FF5210');               // Front arm
-  p(7, frontArmY + 6, 3, 3, '#D4956A');           // Front hand
-  ctx.fillStyle = '#c07850';
-  ctx.fillRect(bx + 7 * S, by + (frontArmY + 8) * S, S, S);  // Finger detail
-  ctx.fillRect(bx + 9 * S, by + (frontArmY + 8) * S, S, S);
+  p(2,  frontArmY,   2, 6, '#FF5210'); // Front arm
+  p(2,  frontArmY+5, 2, 2, '#D4956A'); // Front hand
 
-  // ── LEGS ──────────────────────────────────────────────────
+  // ── LEGS (30% of 44px = ~13px = ~7S) ──────────────────────
   const walkFrame4 = Math.floor(frame / 8) % 4;
-  const legsBaseY = 18 + breatheY;
+  const legsBaseY = 18;
 
   if (isJumping) {
-    p(10, legsBaseY + 2, 4, 5, '#283593');        // Back leg bent
-    p(8,  legsBaseY + 2, 4, 5, '#1a237e');        // Front leg bent
-    p(8,  legsBaseY + 2, 1, 5, '#3949AB');        // Jeans highlight
-    // Shoes for jump
-    p(9, legsBaseY + 7, 5, 2, '#f5f5f5');
-    p(7, legsBaseY + 7, 6, 2, '#f5f5f5');
-    p(7, legsBaseY + 8, 6, 1, '#FF5210');
+    p(6, legsBaseY+1, 3, 4, '#283593');
+    p(4, legsBaseY+1, 3, 4, '#1a237e');
+    p(4, legsBaseY+4, 4, 2, '#f5f5f5');
+    p(6, legsBaseY+4, 3, 2, '#f5f5f5');
+    p(4, legsBaseY+5, 4, 1, '#FF5210');
   } else if (isRunning) {
     const frontLegForward = (walkFrame4 === 0 || walkFrame4 === 1);
     const fLegOffset = frontLegForward ? S : -S;
     const bLegOffset = -fLegOffset;
-
-    // Back leg (jeans, slightly darker)
     ctx.fillStyle = '#283593';
-    const bUpperX = bx + (8 * S) + bLegOffset;
-    ctx.fillRect(bUpperX, by + 18 * S, 3 * S, 4 * S);
+    const bUpperX = bx + (5 * S) + bLegOffset;
+    ctx.fillRect(bUpperX, by + 18 * S, 3 * S, 3 * S);
     const bKneeX = bUpperX + (bLegOffset > 0 ? S : -S);
-    ctx.fillRect(bKneeX, by + 22 * S, 3 * S, 3 * S);
-    // Back shoe
+    ctx.fillRect(bKneeX, by + 21 * S, 3 * S, 3 * S);
     ctx.fillStyle = '#e0e0e0';
-    ctx.fillRect(bKneeX - S, by + 25 * S, 4 * S, 2 * S);
+    ctx.fillRect(bKneeX - S, by + 24 * S, 4 * S, 2 * S);
     ctx.fillStyle = '#FF5210';
-    ctx.fillRect(bKneeX - S, by + 26 * S, 4 * S, S);
-
-    // Front leg (darker jeans)
+    ctx.fillRect(bKneeX - S, by + 25 * S, 4 * S, S);
     ctx.fillStyle = '#1a237e';
     const fUpperX = bx + (7 * S) + fLegOffset;
-    ctx.fillRect(fUpperX, by + 18 * S, 3 * S, 4 * S);
+    ctx.fillRect(fUpperX, by + 18 * S, 3 * S, 3 * S);
     const fKneeX = fUpperX + (fLegOffset > 0 ? 0 : -S);
-    ctx.fillRect(fKneeX, by + 22 * S, 3 * S, 3 * S);
-    // Front shoe
+    ctx.fillRect(fKneeX, by + 21 * S, 3 * S, 3 * S);
     ctx.fillStyle = '#f5f5f5';
-    ctx.fillRect(fKneeX, by + 25 * S, 5 * S, 2 * S);
+    ctx.fillRect(fKneeX, by + 24 * S, 4 * S, 2 * S);
     ctx.fillStyle = '#FF5210';
-    ctx.fillRect(fKneeX, by + 26 * S, 5 * S, S);
+    ctx.fillRect(fKneeX, by + 25 * S, 4 * S, S);
   } else {
-    // Idle: both legs together, static
     ctx.fillStyle = '#1a237e';
-    ctx.fillRect(bx + 7 * S, by + 18 * S, 3 * S, 7 * S);
+    ctx.fillRect(bx + 4 * S, by + 18 * S, 3 * S, 6 * S);
     ctx.fillStyle = '#283593';
-    ctx.fillRect(bx + 9 * S, by + 18 * S, 3 * S, 7 * S);
-    // Shoes
+    ctx.fillRect(bx + 7 * S, by + 18 * S, 3 * S, 6 * S);
     ctx.fillStyle = '#f5f5f5';
-    ctx.fillRect(bx + 6 * S, by + 24 * S, 5 * S, 2 * S);
-    ctx.fillRect(bx + 9 * S, by + 24 * S, 4 * S, 2 * S);
+    ctx.fillRect(bx + 3 * S, by + 23 * S, 4 * S, 2 * S);
+    ctx.fillRect(bx + 7 * S, by + 23 * S, 4 * S, 2 * S);
     ctx.fillStyle = '#FF5210';
-    ctx.fillRect(bx + 6 * S, by + 25 * S, 5 * S, S);
-    ctx.fillRect(bx + 9 * S, by + 25 * S, 4 * S, S);
+    ctx.fillRect(bx + 3 * S, by + 24 * S, 4 * S, S);
+    ctx.fillRect(bx + 7 * S, by + 24 * S, 4 * S, S);
   }
 
-  // (Shoes for non-running/non-jumping handled inline above)
   void walkFrame4;
 
-  ctx.restore(); // end facingLeft transform
+  ctx.restore();
 
-  // Sparkles trail when running
   if (isRunning) {
     drawSparkles(ctx, sx, sy, frame, facingLeft);
   }
@@ -1030,10 +1059,12 @@ function drawEnemy(
 
   ctx.translate(sx, sy);
   // Alien faces LEFT by default (toward player who comes from left)
-  // If enemy moving right (vx > 0), flip
+  // If enemy moving RIGHT (vx > 0), flip so it still faces the direction of travel
+  // vx < 0 = moving left = faces left (normal, no flip)
+  // vx > 0 = moving right = flip to face right
   if (enemy.vx > 0) {
+    ctx.translate(28, 0);
     ctx.scale(-1, 1);
-    ctx.translate(-28, 0);
   }
 
   const walkFrame = Math.floor(frameCount / 8) % 4;
@@ -1282,6 +1313,47 @@ function drawWaterSplash(
   ctx.restore();
 }
 
+function drawCoin(ctx: CanvasRenderingContext2D, cx: number, cy: number, color: string, collected: boolean) {
+  const r = 10;
+  const c = collected ? color : '#666';
+  const light = collected ? lightenColor(color, 40) : '#888';
+  const dark = collected ? darkenColor(color, 40) : '#444';
+
+  // Coin outer ring (pixel circle approximation)
+  ctx.fillStyle = dark;
+  ctx.fillRect(cx-4, cy-r-1, 8, 3);
+  ctx.fillRect(cx-4, cy+r-2, 8, 3);
+  ctx.fillRect(cx-r-1, cy-4, 3, 8);
+  ctx.fillRect(cx+r-2, cy-4, 3, 8);
+  ctx.fillRect(cx-7, cy-8, 2, 2);
+  ctx.fillRect(cx+5, cy-8, 2, 2);
+  ctx.fillRect(cx-7, cy+6, 2, 2);
+  ctx.fillRect(cx+5, cy+6, 2, 2);
+
+  // Coin face fill
+  ctx.fillStyle = c;
+  ctx.fillRect(cx-8, cy-7, 16, 14);
+  ctx.fillRect(cx-6, cy-9, 12, 18);
+  ctx.fillRect(cx-9, cy-5, 18, 10);
+
+  // Inner highlight
+  ctx.fillStyle = light;
+  ctx.fillRect(cx-5, cy-6, 4, 8);
+  ctx.fillRect(cx-5, cy-6, 8, 3);
+
+  // Shine
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.fillRect(cx-6, cy-7, 3, 2);
+  ctx.fillRect(cx-7, cy-5, 2, 3);
+
+  if (collected) {
+    ctx.fillStyle = '#00e676';
+    ctx.fillRect(cx-3, cy+2, 2, 4);
+    ctx.fillRect(cx-1, cy+4, 2, 2);
+    ctx.fillRect(cx+1, cy, 2, 5);
+  }
+}
+
 function drawPiecesHUD(
   ctx: CanvasRenderingContext2D,
   collectibles: GameCollectible[],
@@ -1295,32 +1367,7 @@ function drawPiecesHUD(
     const cy = 28;
     const collected = item.collected;
 
-    // Coin shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.fillRect(cx - 8, cy - 8, 17, 17);
-
-    // Coin body
-    ctx.fillStyle = collected ? item.color : '#888';
-    ctx.fillRect(cx - 9, cy - 9, 18, 18);
-    // Coin border
-    ctx.fillStyle = collected ? darkenColor(item.color, 30) : '#555';
-    ctx.fillRect(cx - 9, cy - 9, 18, 2);
-    ctx.fillRect(cx - 9, cy + 7, 18, 2);
-    ctx.fillRect(cx - 9, cy - 9, 2, 18);
-    ctx.fillRect(cx + 7, cy - 9, 2, 18);
-    // Inner coin
-    ctx.fillStyle = collected ? lightenColor(item.color, 20) : '#999';
-    ctx.fillRect(cx - 6, cy - 6, 12, 12);
-    // Shine dot
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.fillRect(cx - 5, cy - 5, 3, 3);
-
-    if (collected) {
-      ctx.fillStyle = '#00e676';
-      ctx.fillRect(cx - 3, cy + 1, 2, 3);
-      ctx.fillRect(cx - 1, cy + 3, 2, 2);
-      ctx.fillRect(cx + 1, cy, 2, 4);
-    }
+    drawCoin(ctx, cx, cy, item.color, collected);
 
     // Full label below coin — split into 2 lines if long
     ctx.font = 'bold 7px monospace';
@@ -1335,6 +1382,195 @@ function drawPiecesHUD(
     if (words[1]) ctx.fillText(words.slice(1).join(' '), cx, cy + 23);
     ctx.textAlign = 'left';
   });
+}
+
+function drawPowerUp(ctx: CanvasRenderingContext2D, sx: number, sy: number, frame: number) {
+  ctx.save();
+  ctx.shadowBlur = 12;
+  ctx.shadowColor = '#FF5210';
+  // Helicopter body
+  ctx.fillStyle = '#FF5210';
+  ctx.fillRect(sx-2, sy+2, 14, 6);
+  ctx.fillStyle = '#cc4200';
+  ctx.fillRect(sx-2, sy+2, 14, 2);
+  // Rotor
+  ctx.fillStyle = '#fff';
+  if (Math.floor(frame * 0.3) % 2 === 0) {
+    ctx.fillRect(sx-6, sy, 22, 2);
+  } else {
+    ctx.fillRect(sx+5, sy-5, 2, 12);
+  }
+  // Tail
+  ctx.fillStyle = '#FF5210';
+  ctx.fillRect(sx+12, sy+3, 6, 3);
+  ctx.fillRect(sx+16, sy+1, 2, 5);
+  // Landing skids
+  ctx.fillStyle = '#888';
+  ctx.fillRect(sx, sy+8, 10, 1);
+  ctx.restore();
+  // Label
+  ctx.font = 'bold 7px monospace';
+  ctx.fillStyle = '#FFD700';
+  ctx.textAlign = 'center';
+  ctx.fillText('TEAM COLLAB', sx + 5, sy + 20);
+  ctx.textAlign = 'left';
+}
+
+function drawScooby(ctx: CanvasRenderingContext2D, sx: number, sy: number, frame: number, scared: boolean) {
+  const S = 1.5;
+  const shake = scared ? Math.sin(frame * 0.5) * 2 : 0;
+  ctx.save();
+  ctx.translate(sx + shake, sy);
+  // Body
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(2*S, 6*S, 12*S, 8*S);
+  ctx.fillRect(4*S, 4*S, 10*S, 5*S);
+  ctx.fillStyle = '#D2691E';
+  ctx.fillRect(4*S, 9*S, 8*S, 5*S);
+  // Head
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(8*S, 0, 9*S, 8*S);
+  ctx.fillRect(10*S, -S, 6*S, 3*S);
+  // Ear
+  ctx.fillRect(6*S, S, 4*S, 6*S);
+  ctx.fillStyle = '#A0522D';
+  ctx.fillRect(6*S, 2*S, 3*S, 5*S);
+  // Eye
+  ctx.fillStyle = scared ? '#ffff00' : '#ffffff';
+  ctx.fillRect(13*S, 2*S, 3*S, 3*S);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(14*S, 2*S, 2*S, 2*S);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(14*S, 2*S, S, S);
+  // Nose
+  ctx.fillStyle = '#111';
+  ctx.fillRect(16*S, 5*S, 2*S, S);
+  // Collar
+  ctx.fillStyle = '#00BCD4';
+  ctx.fillRect(9*S, 7*S, 7*S, 2*S);
+  ctx.fillStyle = '#FFD700';
+  ctx.fillRect(12*S, 8*S, 2*S, 2*S);
+  // Legs
+  const lw = Math.sin(frame * 0.15) * 2;
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect((3 + lw)*S, 13*S, 3*S, 4*S);
+  ctx.fillRect((8 - lw)*S, 13*S, 3*S, 4*S);
+  // Tail
+  const tailWag = Math.sin(frame * 0.2) * 3;
+  ctx.strokeStyle = '#8B4513';
+  ctx.lineWidth = 2*S;
+  ctx.beginPath();
+  ctx.moveTo(2*S, 8*S);
+  ctx.quadraticCurveTo(0, (5 + tailWag)*S, 2*S, (2 + tailWag)*S);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawWallE(ctx: CanvasRenderingContext2D, sx: number, sy: number, frame: number, shooting: boolean) {
+  void frame;
+  const S = 1.6;
+  ctx.save();
+  ctx.translate(sx, sy);
+  // Tracks
+  ctx.fillStyle = '#5D4037';
+  ctx.fillRect(0, 13*S, 14*S, 5*S);
+  ctx.fillStyle = '#3E2723';
+  ctx.fillRect(S, 14*S, 12*S, 3*S);
+  ctx.fillStyle = '#111';
+  [2,5,8,11].forEach(wx => ctx.fillRect(wx*S, 14*S, S, 2*S));
+  // Body
+  ctx.fillStyle = '#8D6E63';
+  ctx.fillRect(2*S, 7*S, 10*S, 7*S);
+  ctx.fillStyle = '#795548';
+  ctx.fillRect(2*S, 7*S, 10*S, 2*S);
+  // Chest panel
+  ctx.fillStyle = '#333';
+  ctx.fillRect(4*S, 9*S, 6*S, 4*S);
+  ctx.fillStyle = '#e53935';
+  ctx.fillRect(5*S, 10*S, 2*S, 2*S);
+  ctx.fillStyle = '#FF8F00';
+  ctx.fillRect(8*S, 10*S, 2*S, 2*S);
+  // Neck
+  ctx.fillStyle = '#8D6E63';
+  ctx.fillRect(5*S, 4*S, 4*S, 4*S);
+  // Head
+  ctx.fillStyle = '#6D4C41';
+  ctx.fillRect(S, S, 12*S, 5*S);
+  // Left eye
+  ctx.fillStyle = '#333';
+  ctx.fillRect(S, 0, 5*S, 5*S);
+  ctx.fillStyle = '#e0e0e0';
+  ctx.fillRect(2*S, S, 3*S, 3*S);
+  ctx.fillStyle = '#555';
+  ctx.fillRect(3*S, 2*S, S, S);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(2*S, S, S, S);
+  // Right eye
+  ctx.fillStyle = '#333';
+  ctx.fillRect(8*S, 0, 5*S, 5*S);
+  ctx.fillStyle = '#e0e0e0';
+  ctx.fillRect(9*S, S, 3*S, 3*S);
+  ctx.fillStyle = '#555';
+  ctx.fillRect(10*S, 2*S, S, S);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(9*S, S, S, S);
+  // Arm
+  if (shooting) {
+    ctx.fillStyle = '#555';
+    ctx.fillRect(13*S, 8*S, 5*S, 2*S);
+    ctx.fillStyle = '#FF5210';
+    ctx.fillRect(18*S, 8*S, 2*S, 2*S);
+  } else {
+    ctx.fillStyle = '#8D6E63';
+    ctx.fillRect(13*S, 9*S, 3*S, 3*S);
+  }
+  ctx.restore();
+}
+
+function drawHelicopterDrop(ctx: CanvasRenderingContext2D, hd: HelicopterDrop, frame: number) {
+  const sx = hd.x - 20;
+  const sy = hd.y;
+  ctx.save();
+  ctx.shadowBlur = 16;
+  ctx.shadowColor = '#FF5210';
+  // Body
+  ctx.fillStyle = '#FF5210';
+  ctx.fillRect(sx, sy+6, 40, 14);
+  ctx.fillStyle = '#cc4200';
+  ctx.fillRect(sx, sy+6, 40, 4);
+  // Rotor
+  ctx.fillStyle = '#fff';
+  if (Math.floor(frame * 0.3) % 2 === 0) {
+    ctx.fillRect(sx-10, sy+2, 60, 4);
+  } else {
+    ctx.fillRect(sx+18, sy-8, 4, 24);
+  }
+  // Tail
+  ctx.fillStyle = '#FF5210';
+  ctx.fillRect(sx+40, sy+8, 14, 6);
+  ctx.fillRect(sx+52, sy+4, 4, 14);
+  // Windows
+  ctx.fillStyle = '#87CEEB';
+  ctx.fillRect(sx+6, sy+8, 10, 8);
+  ctx.fillRect(sx+20, sy+8, 10, 8);
+  // Skids
+  ctx.fillStyle = '#888';
+  ctx.fillRect(sx+4, sy+20, 32, 2);
+  ctx.restore();
+}
+
+function drawBigPixelText(ctx: CanvasRenderingContext2D, text: string, cx: number, cy: number, color: string, pixelSize: number) {
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = 'rgba(0,0,0,0.8)';
+  ctx.font = `bold ${pixelSize * 8}px monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillText(text, cx + 3, cy + 3);
+  ctx.fillStyle = darkenColor(color, 50);
+  ctx.fillText(text, cx + 1, cy + 1);
+  ctx.fillStyle = color;
+  ctx.fillText(text, cx, cy);
+  ctx.restore();
 }
 
 /* ─── Confetti component ─────────────────────────────────────── */
@@ -1837,9 +2073,10 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
     const H = CANVAS_H;
     const colls = makeCollectibles(H);
     setHudCollectibles(colls);
+    const groundY = H - 80;
     return {
       playerX: 150,
-      playerY: H - 80 - 56,
+      playerY: groundY - 44,
       playerVX: 0,
       playerVY: 0,
       playerOnGround: false,
@@ -1863,6 +2100,19 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
       invincibleTimer: 0,
       waterSplash: null,
       prevPlayerOnGround: false,
+      idleTimer: 0,
+      idleAction: null,
+      idleActionFrame: 0,
+      blushTimer: 0,
+      lastDialogue: '',
+      companions: [],
+      powerUps: [
+        { x: 2600, y: groundY - 60, type: 'teamup', collected: false, bobOffset: 0 },
+        { x: 5200, y: groundY - 60, type: 'teamup', collected: false, bobOffset: 1.5 },
+      ],
+      playerBullets: 0,
+      bullets: [],
+      helicopterDrop: null,
     };
   }, []);
 
@@ -2000,17 +2250,18 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
 
       gs.playerX = Math.max(0, Math.min(gs.playerX, LEVEL_W - 20));
 
-      const groundY = CANVAS_H - 80; // grass top is at H-80, player feet at bottom of 56px sprite
+      const groundY = CANVAS_H - 80; // grass top is at H-80, player feet at bottom of 44px sprite
+      const PLAYER_H = 44;
 
       gs.playerOnGround = false;
-      if (gs.playerY + 56 >= groundY) {
-        gs.playerY = groundY - 56;
+      if (gs.playerY + PLAYER_H >= groundY) {
+        gs.playerY = groundY - PLAYER_H;
         gs.playerVY = 0;
         gs.playerOnGround = true;
         gs.playerJumpsLeft = 2;
       }
 
-      const playerBottom = gs.playerY + 56;
+      const playerBottom = gs.playerY + PLAYER_H;
       const playerLeft = gs.playerX;
       const playerRight = gs.playerX + 20;
 
@@ -2022,7 +2273,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
           playerRight > plat.x + 4 &&
           playerLeft < plat.x + plat.w - 4
         ) {
-          gs.playerY = plat.y - 56;
+          gs.playerY = plat.y - PLAYER_H;
           gs.playerVY = 0;
           gs.playerOnGround = true;
           gs.playerJumpsLeft = 2;
@@ -2113,7 +2364,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         const pLeft = gs.playerX;
         const pRight = gs.playerX + 20;
         const pTop = gs.playerY;
-        const pBot = gs.playerY + 56;
+        const pBot = gs.playerY + PLAYER_H;
 
         const overlap =
           eRight > pLeft + 4 &&
@@ -2140,7 +2391,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
               gs.gameOver = true;
             } else {
               gs.playerX = gs.checkpointX;
-              gs.playerY = groundY - 56;
+              gs.playerY = groundY - PLAYER_H;
               gs.playerVX = 0;
               gs.playerVY = 0;
             }
@@ -2148,9 +2399,159 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         }
       }
 
+      // ── Idle animations (FIX 4) ───────────────────────────
+      if (gs.playerVX === 0 && gs.playerOnGround) {
+        gs.idleTimer++;
+        if (gs.idleTimer > 200 + Math.random() * 80) {
+          gs.idleTimer = 0;
+          const actions = ["excited","lookaround","stretch","wave"];
+          gs.idleAction = actions[Math.floor(Math.random() * actions.length)] ?? null;
+          gs.idleActionFrame = 0;
+        }
+        gs.idleActionFrame++;
+        if (gs.idleActionFrame > 40) { gs.idleAction = null; gs.idleActionFrame = 0; }
+      } else {
+        gs.idleTimer = 0;
+        gs.idleAction = null;
+      }
+      // Blush from dialogue
+      if (gs.lastDialogue && (gs.lastDialogue.includes('hire') || gs.lastDialogue.includes('recruiter') || gs.lastDialogue.includes('interview'))) {
+        gs.blushTimer = 180;
+      }
+      if (gs.blushTimer > 0) gs.blushTimer--;
+
+      // ── Enemy AI upgrade when companions present (FIX 7) ──
+      const hasCompanions = gs.companions.some(c => c.alive);
+      if (hasCompanions) {
+        for (const enemy of gs.enemies) {
+          if (!enemy.alive) continue;
+          enemy.jumpTimer = (enemy.jumpTimer || 0) + 1;
+          if (enemy.jumpTimer > 200 + Math.floor(Math.random() * 100)) {
+            const distToPlayer = Math.abs(enemy.px - gs.playerX);
+            if (distToPlayer < 300 && enemy.onGround) {
+              enemy.velY = -10;
+              enemy.jumpTimer = 0;
+            }
+          }
+          // Apply gravity to enemy
+          enemy.velY = Math.min((enemy.velY || 0) + GRAVITY, MAX_FALL);
+          enemy.py += enemy.velY;
+          const eGroundY2 = CANVAS_H - 80 - 40;
+          if (enemy.py >= eGroundY2) {
+            enemy.py = eGroundY2;
+            enemy.velY = 0;
+            enemy.onGround = true;
+          } else {
+            enemy.onGround = false;
+          }
+        }
+      }
+
+      // ── Power-ups (FIX 5) ─────────────────────────────────
+      for (const pu of gs.powerUps) {
+        if (pu.collected) continue;
+        const dist = Math.hypot((pu.x + 8) - (gs.playerX + 10), (pu.y + 8) - (gs.playerY + 22));
+        if (dist < 28) {
+          pu.collected = true;
+          // Start helicopter drop
+          gs.helicopterDrop = {
+            active: true,
+            x: gs.playerX - gs.cameraX + 10,
+            y: -80,
+            frame: 0,
+            phase: 'descend',
+          };
+        }
+      }
+
+      // ── Helicopter drop animation ──────────────────────────
+      if (gs.helicopterDrop && gs.helicopterDrop.active) {
+        const hd = gs.helicopterDrop;
+        hd.frame++;
+        if (hd.phase === 'descend') {
+          hd.y += 3;
+          if (hd.y >= 100) { hd.phase = 'drop'; }
+        } else if (hd.phase === 'drop') {
+          if (hd.frame % 60 === 0 && gs.companions.length < 2) {
+            // Drop companions
+            const worldX = gs.playerX;
+            gs.companions = [
+              { id: 'scooby', x: worldX - 40, y: groundY - 36, velY: 0, alive: true, frame: 0, state: 'follow', shootCooldown: 0 },
+              { id: 'walle', x: worldX + 60, y: groundY - 36, velY: 0, alive: true, frame: 60, state: 'attack', shootCooldown: 0 },
+            ];
+            gs.playerBullets = 5;
+            hd.phase = 'ascend';
+          }
+        } else if (hd.phase === 'ascend') {
+          hd.y -= 3;
+          if (hd.y < -100) hd.active = false;
+        }
+      }
+
+      // ── Companion AI ──────────────────────────────────────
+      for (const comp of gs.companions) {
+        if (!comp.alive) continue;
+        comp.frame++;
+        if (comp.id === 'scooby') {
+          const targetX = gs.playerX - 50;
+          const dxComp = targetX - comp.x;
+          comp.x += dxComp * 0.08;
+          // Scared if enemy within 120px
+          let scared = false;
+          for (const en of gs.enemies) {
+            if (en.alive && Math.abs(en.px - comp.x) < 120) { scared = true; break; }
+          }
+          comp.state = scared ? 'scared' : 'follow';
+          if (scared) comp.x -= 0.5; // run away
+        } else if (comp.id === 'walle') {
+          let nearestEnemy: GameEnemy | null = null;
+          let nearestDist = Infinity;
+          for (const en of gs.enemies) {
+            if (!en.alive) continue;
+            const d = Math.abs(en.px - comp.x);
+            if (d < nearestDist) { nearestDist = d; nearestEnemy = en; }
+          }
+          if (nearestEnemy && nearestDist < 300) {
+            comp.x += (nearestEnemy.px > comp.x ? 1 : -1) * 0.8;
+            comp.shootCooldown--;
+            if (comp.shootCooldown <= 0) {
+              gs.bullets.push({ x: comp.x, y: comp.y - 10, vx: nearestEnemy.px > comp.x ? 4 : -4, active: true });
+              comp.shootCooldown = 60;
+            }
+          } else {
+            comp.x += 0.5;
+          }
+        }
+        // Keep companion on ground
+        comp.velY = Math.min(comp.velY + GRAVITY, MAX_FALL);
+        comp.y += comp.velY;
+        if (comp.y >= groundY - 36) { comp.y = groundY - 36; comp.velY = 0; }
+      }
+
+      // ── Bullets ───────────────────────────────────────────
+      for (const bullet of gs.bullets) {
+        if (!bullet.active) continue;
+        bullet.x += bullet.vx;
+        if (bullet.x < 0 || bullet.x > LEVEL_W) { bullet.active = false; continue; }
+        for (const en of gs.enemies) {
+          if (!en.alive) continue;
+          if (Math.abs(bullet.x - en.px) < 20 && Math.abs(bullet.y - en.py) < 40) {
+            en.alive = false;
+            en.squishTimer = 30;
+            en.speechTimer = 120;
+            en.speechText = `✓ ${en.method}`;
+            gs.enemiesDefeated += 1;
+            bullet.active = false;
+            const ac2 = ensureAudio();
+            playKill(ac2);
+          }
+        }
+      }
+      gs.bullets = gs.bullets.filter(b => b.active);
+
       // ── Water splash ──────────────────────────────────────
       const playerGroundY = CANVAS_H - 80;
-      const playerFeetY = gs.playerY + 56;
+      const playerFeetY = gs.playerY + PLAYER_H;
       const playerCenterX = gs.playerX + 10;
       // Detect landing on ground while over a water body
       if (gs.playerOnGround && !gs.prevPlayerOnGround) {
@@ -2179,6 +2580,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
       gs.nextDialogueIn -= 1;
       if (gs.nextDialogueIn <= 0 && !gs.dialogueBubble) {
         const line = DIALOGUE_LINES[Math.floor(Math.random() * DIALOGUE_LINES.length)] ?? DIALOGUE_LINES[0]!;
+        gs.lastDialogue = line;
         gs.dialogueBubble = {
           text: line,
           x: gs.playerX + 10,
@@ -2217,6 +2619,27 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         drawCollectible(ctx, c, gs.frameCount, gs.cameraX);
       }
 
+      // Power-ups
+      for (const pu of gs.powerUps) {
+        if (pu.collected) continue;
+        const bob = Math.sin(gs.frameCount * 0.05 + pu.bobOffset) * 4;
+        const puSx = pu.x - gs.cameraX;
+        drawPowerUp(ctx, puSx, pu.y + bob, gs.frameCount);
+      }
+
+      // Companions (Scooby + Wall-E)
+      for (const comp of gs.companions) {
+        if (!comp.alive) continue;
+        const csx = comp.x - gs.cameraX;
+        const csy = comp.y;
+        if (comp.id === 'scooby') {
+          drawScooby(ctx, csx, csy, comp.frame, comp.state === 'scared');
+        } else {
+          const isShooting = comp.shootCooldown > 55;
+          drawWallE(ctx, csx, csy, comp.frame, isShooting);
+        }
+      }
+
       // Enemies
       for (const enemy of gs.enemies) {
         drawEnemy(ctx, enemy, gs.frameCount, gs.cameraX);
@@ -2234,6 +2657,16 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         }
       }
 
+      // Bullets
+      for (const bullet of gs.bullets) {
+        if (!bullet.active) continue;
+        const bsx = bullet.x - gs.cameraX;
+        ctx.fillStyle = '#FF5210';
+        ctx.fillRect(bsx - 3, bullet.y - 2, 6, 4);
+        ctx.fillStyle = '#FFD700';
+        ctx.fillRect(bsx - 2, bullet.y - 1, 4, 2);
+      }
+
       // Player
       drawPlayer(
         ctx,
@@ -2248,11 +2681,27 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         gs.cameraX
       );
 
+      // Bullet count HUD near player
+      if (gs.playerBullets > 0) {
+        const plrSx = gs.playerX - gs.cameraX;
+        const plrSy = gs.playerY;
+        ctx.font = 'bold 8px monospace';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText(`\uD83D\uDD2B ${gs.playerBullets}`, plrSx + 10, plrSy - 10);
+        ctx.textAlign = 'left';
+      }
+
       // Water splash
       if (gs.waterSplash) {
         const splashScreenX = gs.waterSplash.x - gs.cameraX;
         const splashScreenY = CANVAS_H - 80;
         drawWaterSplash(ctx, splashScreenX, splashScreenY, gs.waterSplash.frame);
+      }
+
+      // Helicopter drop (screen-space)
+      if (gs.helicopterDrop && gs.helicopterDrop.active) {
+        drawHelicopterDrop(ctx, gs.helicopterDrop, gs.frameCount);
       }
 
       // Dialogue bubble
@@ -2299,8 +2748,10 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
     };
   }, [phase, onExit, ensureAudio]);
 
+  const WHITE_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M2 1 L2 15 L5 12 L7.5 17.5 L9.5 16.5 L7 11 L11 11 Z' fill='white' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E") 2 1, auto`;
+
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 100, cursor: "default" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 100, cursor: WHITE_CURSOR }}>
       <AnimatePresence mode="wait">
         {phase === "messenger" && (
           <motion.div key="messenger" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -2313,7 +2764,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
         <>
           <canvas
             ref={canvasRef}
-            style={{ display: "block", width: "100%", height: "100%", cursor: "default" }}
+            style={{ display: "block", width: "100%", height: "100%", cursor: WHITE_CURSOR }}
           />
           <HUD
             collectedIds={collectedIds}
@@ -2332,7 +2783,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
               color: "#666",
               fontFamily: "monospace",
               fontSize: 11,
-              cursor: "pointer",
+              cursor: WHITE_CURSOR,
             }}
           >
             ✕ exit
