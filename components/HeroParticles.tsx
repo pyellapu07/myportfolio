@@ -117,7 +117,7 @@ interface PlacedOffset {
 }
 
 /* ── Drop zone config ──────────────────────────────────────────────── */
-const DROP_ZONE = { left: 2, top: 82, width: 14, height: 14 }; // % of hero
+const DROP_ZONE = { left: 5, top: 70, width: 14, height: 14 }; // % of hero
 // Center exclusion: stickers dropped here won't trigger game
 const CENTER_ZONE = { left: 18, right: 82, top: 15, bottom: 85 };
 
