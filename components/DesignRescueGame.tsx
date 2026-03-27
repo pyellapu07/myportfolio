@@ -1254,7 +1254,7 @@ function MessengerPhase({ onStart }: MessengerPhaseProps) {
   return (
     <div
       className="fixed inset-0 z-[100] flex overflow-hidden"
-      style={{ background: "#0d0d0d", cursor: "default", fontFamily: "monospace" }}
+      style={{ background: "#0d0d0d", fontFamily: "monospace", cursor: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M2 1 L2 15 L5 12 L7.5 17.5 L9.5 16.5 L7 11 L11 11 Z' fill='white' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E\") 2 1, auto" }}
     >
       <div className="flex flex-col items-center justify-start pt-16 pl-8 pr-4" style={{ width: 160, flexShrink: 0 }}>
         <div className="relative">
@@ -1514,7 +1514,7 @@ function WinScreen({ collectedCount, enemiesDefeated, elapsed, onExit }: WinScre
   return (
     <div
       className="fixed inset-0 z-[300] flex flex-col items-center justify-center"
-      style={{ background: "rgba(0,0,0,0.92)", fontFamily: "monospace", cursor: "default" }}
+      style={{ background: "rgba(0,0,0,0.92)", fontFamily: "monospace", cursor: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M2 1 L2 15 L5 12 L7.5 17.5 L9.5 16.5 L7 11 L11 11 Z' fill='white' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E\") 2 1, auto" }}
     >
       <Confetti />
       <div className="relative z-10 flex flex-col items-center gap-6 text-center px-6 max-w-lg">
@@ -1615,7 +1615,7 @@ function GameOverScreen({ onRestart, onExit }: GameOverProps) {
   return (
     <div
       className="fixed inset-0 z-[300] flex flex-col items-center justify-center"
-      style={{ background: "rgba(0,0,0,0.92)", fontFamily: "monospace", cursor: "default" }}
+      style={{ background: "rgba(0,0,0,0.92)", fontFamily: "monospace", cursor: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M2 1 L2 15 L5 12 L7.5 17.5 L9.5 16.5 L7 11 L11 11 Z' fill='white' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E\") 2 1, auto" }}
     >
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
