@@ -79,7 +79,7 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
             : "bg-transparent"
         )}
       >
-        <nav className="mx-auto flex h-16 max-w-[1080px] items-center justify-between px-8 md:px-16 lg:px-24">
+        <nav className="mx-auto flex h-16 max-w-[1080px] items-center justify-between px-8 md:px-16 lg:px-24 overflow-visible">
           {/* Logo */}
           <a
             href="/"
@@ -113,7 +113,7 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
           {/* Right side */}
           <div className="hidden items-center gap-5 md:flex" data-tour="recruiter">
             {/* Doodle circle around recruiter toggle */}
-            <div className="relative inline-flex items-center">
+            <div className="relative inline-flex items-center" style={{ overflow: "visible" }}>
               <RecruiterToggle size="sm" dark={!isDarkText} />
               <DoodleCircle />
             </div>
