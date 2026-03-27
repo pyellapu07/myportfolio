@@ -103,26 +103,6 @@ function FolderSticker() {
   );
 }
 
-/* ── Small blossom polaroid sticker ── */
-function BlossomPolaroid() {
-  return (
-    <div
-      className="inline-block bg-white shadow-lg flex-shrink-0"
-      style={{ transform: "rotate(-4deg)", padding: "7px 7px 30px 7px", borderRadius: 3 }}
-    >
-      <div className="relative overflow-hidden" style={{ width: 88, height: 88 }}>
-        <Image
-          src="/Esports/blossom poster OW5_1.5x.png"
-          alt="Blossom Poster"
-          fill
-          className="object-cover"
-          sizes="88px"
-        />
-      </div>
-      <p className={`mt-1.5 text-center text-[11px] text-gray-500 ${caveat.className}`}>blossom ow5</p>
-    </div>
-  );
-}
 
 export default function EsportsFeature() {
   return (
@@ -220,11 +200,8 @@ export default function EsportsFeature() {
           {/* Photo strip — no floating folder */}
           <PhotoStrip />
 
-          {/* Bottom sticker row: blossom polaroid + blue folder + Watch the Film */}
+          {/* Bottom sticker row: blue folder + Watch the Film */}
           <div className="flex items-end justify-between gap-3">
-            {/* Blossom polaroid */}
-            <BlossomPolaroid />
-
             {/* Blue folder */}
             <FolderSticker />
 
@@ -234,7 +211,7 @@ export default function EsportsFeature() {
               className="group relative overflow-hidden rounded-2xl bg-[#0a0a0a] p-4 transition-all duration-300 hover:rotate-0 hover:shadow-lg flex-shrink-0"
               style={{ transform: "rotate(6deg)", width: 148 }}
             >
-              {/* Image with play button overlay */}
+              {/* Image */}
               <div className="relative mb-3 h-[72px] w-full overflow-hidden rounded-xl">
                 <Image
                   src="/Esports/me explaining seth the camera man for the camera angles.jpeg"
@@ -243,11 +220,11 @@ export default function EsportsFeature() {
                   className="object-cover"
                   sizes="148px"
                 />
-                {/* Play button */}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/35">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md transition-transform duration-200 group-hover:scale-110">
-                    <Play size={11} className="ml-0.5 text-gray-900" fill="currentColor" />
-                  </div>
+              </div>
+              {/* Play button — bottom right of card */}
+              <div className="absolute bottom-10 right-3">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 shadow-md transition-transform duration-200 group-hover:scale-110">
+                  <Play size={10} className="ml-0.5 text-gray-900" fill="currentColor" />
                 </div>
               </div>
               <p className="text-center font-sans text-[11px] font-bold text-white">Watch the Film</p>
