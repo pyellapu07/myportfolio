@@ -344,25 +344,20 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
                     width: 60,
                     height: 68,
                     zIndex: 10,
-                    transform: `scale(${isHovered ? 1.2 : 1}) rotate(${isHovered ? -6 : 0}deg)`,
+                    transform: `scale(${isHovered ? 1.2 : 1}) rotate(${isHovered ? 8 : 0}deg)`,
                     transformOrigin: "center bottom",
                     transition: "transform 0.4s cubic-bezier(0.34,1.56,0.64,1)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
                     {/* Confetti pieces — bigger, more spread */}
                     {([
-                      { a:"cf1",  c:"#FF5210", d:"0s",    w:8,  h:5,  r:false },
-                      { a:"cf2",  c:"#FFB800", d:"0.22s", w:6,  h:6,  r:true  },
-                      { a:"cf3",  c:"#8E60F0", d:"0.44s", w:9,  h:4,  r:false },
-                      { a:"cf4",  c:"#22C55E", d:"0.66s", w:6,  h:6,  r:true  },
-                      { a:"cf5",  c:"#FF5210", d:"0.88s", w:7,  h:4,  r:false },
-                      { a:"cf6",  c:"#FFB800", d:"0.11s", w:8,  h:5,  r:false },
-                      { a:"cf7",  c:"#8E60F0", d:"0.33s", w:5,  h:8,  r:false },
-                      { a:"cf8",  c:"#22C55E", d:"0.55s", w:7,  h:7,  r:true  },
-                      { a:"cf9",  c:"#FF5210", d:"0.77s", w:9,  h:5,  r:false },
-                      { a:"cf10", c:"#FFB800", d:"0.99s", w:6,  h:4,  r:true  },
-                      { a:"cf11", c:"#8E60F0", d:"0.15s", w:8,  h:6,  r:false },
-                      { a:"cf12", c:"#22C55E", d:"0.6s",  w:5,  h:5,  r:true  },
+                      { a:"cf1",  c:"#FF5210", d:"0s",    w:7,  h:4,  r:false },
+                      { a:"cf2",  c:"#FFB800", d:"0.5s",  w:5,  h:5,  r:true  },
+                      { a:"cf3",  c:"#8E60F0", d:"1.0s",  w:7,  h:3,  r:false },
+                      { a:"cf4",  c:"#22C55E", d:"1.5s",  w:5,  h:5,  r:true  },
+                      { a:"cf5",  c:"#FF5210", d:"0.75s", w:6,  h:3,  r:false },
+                      { a:"cf6",  c:"#FFB800", d:"1.25s", w:6,  h:4,  r:false },
+                      { a:"cf7",  c:"#8E60F0", d:"0.25s", w:4,  h:6,  r:false },
                     ] as {a:string;c:string;d:string;w:number;h:number;r:boolean}[]).map((p, idx) => (
                       <div key={idx} style={{
                         position: "absolute",
@@ -371,12 +366,12 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
                         marginTop: -(p.h/2), marginLeft: -(p.w/2),
                         borderRadius: p.r ? "50%" : "2px",
                         backgroundColor: p.c,
-                        animation: `${p.a} 1.4s ease-out ${p.d} infinite`,
+                        animation: `${p.a} 2.4s ease-out ${p.d} infinite`,
                       }}/>
                     ))}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/Trophy.png" alt="" draggable={false}
-                      style={{ width:"100%", height:"100%", objectFit:"contain", position:"relative", zIndex:5, filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.25))" }}
+                      style={{ width:"100%", height:"100%", objectFit:"contain", position:"relative", zIndex:5 }}
                     />
                   </div>
 
