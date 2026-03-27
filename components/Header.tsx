@@ -1,12 +1,52 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { Menu, X, Download, Bell } from "lucide-react";
 import RecruiterToggle from "./RecruiterToggle";
 import { NAV_LINKS, SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+
+/* Isolated so header scroll re-renders never restart the animation */
+const DoodleCircle = memo(function DoodleCircle() {
+  const controls = useAnimation();
+  useEffect(() => {
+    const t = setTimeout(() => {
+      controls.start({ pathLength: 1, opacity: 1 });
+    }, 1000);
+    return () => clearTimeout(t);
+  }, []); // runs exactly once
+
+  return (
+    <svg
+      className="pointer-events-none absolute"
+      style={{ top: "-10px", left: "-14px", width: "calc(100% + 28px)", height: "calc(100% + 20px)", overflow: "visible" }}
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      fill="none"
+      aria-hidden
+    >
+      {/*
+        Path draws a full ellipse then overshoots ~15% past the start —
+        the endpoint curls inward slightly so it looks like a real pen stroke.
+        No closing Z — open path only.
+      */}
+      <motion.path
+        d="M 22,11 C 38,-5 76,-4 90,12 C 105,30 101,74 84,90 C 66,106 28,107 12,90 C -3,74 1,30 18,14 C 19,13 20,12 26,8"
+        stroke="#3B82F6"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+        vectorEffect="non-scaling-stroke"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={controls}
+        transition={{ duration: 1.0, ease: [0.4, 0, 0.2, 1] }}
+      />
+    </svg>
+  );
+});
 
 export default function Header({ initialDark = false }: { initialDark?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
@@ -75,29 +115,7 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
             {/* Doodle circle around recruiter toggle */}
             <div className="relative inline-flex items-center">
               <RecruiterToggle size="sm" dark={!isDarkText} />
-              {/* SVG uses overflow:visible so path can extend beyond its 0×0 box */}
-              <svg
-                className="pointer-events-none absolute"
-                style={{ top: "-10px", left: "-14px", width: "calc(100% + 28px)", height: "calc(100% + 20px)", overflow: "visible" }}
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {/* Hand-drawn wobbly ellipse in normalised 100×100 space */}
-                <motion.path
-                  d="M 16,10 C 26,-4 78,-5 90,10 C 103,26 100,76 86,90 C 70,104 28,106 12,90 C -2,76 2,26 16,10 Z"
-                  stroke="#3B82F6"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                  vectorEffect="non-scaling-stroke"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ duration: 0.9, ease: "easeInOut", delay: 1.0 }}
-                />
-              </svg>
+              <DoodleCircle />
             </div>
             <a
               href={SITE.resumeUrl}
