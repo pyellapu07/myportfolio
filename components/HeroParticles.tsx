@@ -320,58 +320,63 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
               <>
                 {/* Confetti keyframes — injected once per render, cheap */}
                 <style>{`
-                  @keyframes cf1{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(-22px,-34px) rotate(220deg) scale(0);opacity:0}}
-                  @keyframes cf2{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(22px,-34px) rotate(-220deg) scale(0);opacity:0}}
-                  @keyframes cf3{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(-10px,-44px) rotate(140deg) scale(0);opacity:0}}
-                  @keyframes cf4{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(10px,-44px) rotate(-140deg) scale(0);opacity:0}}
-                  @keyframes cf5{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(-32px,-14px) rotate(310deg) scale(0);opacity:0}}
-                  @keyframes cf6{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(32px,-14px) rotate(-310deg) scale(0);opacity:0}}
-                  @keyframes cf7{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(-4px,-50px) rotate(360deg) scale(0);opacity:0}}
-                  @keyframes cf8{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(4px,-50px) rotate(-360deg) scale(0);opacity:0}}
-                  @keyframes cf9{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(-38px,-6px) rotate(200deg) scale(0);opacity:0}}
-                  @keyframes cf10{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(38px,-6px) rotate(-200deg) scale(0);opacity:0}}
+                  @keyframes cf1 {0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(-38px,-62px) rotate(280deg);opacity:0}}
+                  @keyframes cf2 {0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(34px,-68px) rotate(-260deg);opacity:0}}
+                  @keyframes cf3 {0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(-16px,-74px) rotate(190deg);opacity:0}}
+                  @keyframes cf4 {0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(18px,-70px) rotate(-190deg);opacity:0}}
+                  @keyframes cf5 {0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(-54px,-28px) rotate(330deg);opacity:0}}
+                  @keyframes cf6 {0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(52px,-32px) rotate(-330deg);opacity:0}}
+                  @keyframes cf7 {0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(-6px,-80px) rotate(400deg);opacity:0}}
+                  @keyframes cf8 {0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(8px,-76px) rotate(-400deg);opacity:0}}
+                  @keyframes cf9 {0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(-62px,-10px) rotate(240deg);opacity:0}}
+                  @keyframes cf10{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(60px,-14px) rotate(-240deg);opacity:0}}
+                  @keyframes cf11{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(-28px,-58px) rotate(160deg);opacity:0}}
+                  @keyframes cf12{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(26px,-54px) rotate(-160deg);opacity:0}}
                 `}</style>
 
                 <div style={{ width: "100%", height: "100%", position: "relative", overflow: "visible", pointerEvents: "none", userSelect: "none" }}>
 
-                  {/* Trophy + confetti — overlaps on top of the Microsoft logo */}
+                  {/* Trophy + confetti — top-right corner of Microsoft logo */}
                   <div style={{
                     position: "absolute",
-                    bottom: 12,
-                    left: "50%",
-                    width: 72,
-                    height: 80,
+                    bottom: 48,
+                    right: -10,
+                    width: 60,
+                    height: 68,
                     zIndex: 10,
-                    transform: `translateX(-50%) scale(${isHovered ? 1.2 : 1}) rotate(${isHovered ? -6 : 0}deg)`,
+                    transform: `scale(${isHovered ? 1.2 : 1}) rotate(${isHovered ? -6 : 0}deg)`,
+                    transformOrigin: "center bottom",
                     transition: "transform 0.4s cubic-bezier(0.34,1.56,0.64,1)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
-                    {/* Confetti pieces */}
+                    {/* Confetti pieces — bigger, more spread */}
                     {([
-                      { a:"cf1",  c:"#FF5210", d:"0s",    s:5, r:true  },
-                      { a:"cf2",  c:"#FFB800", d:"0.18s", s:4, r:false },
-                      { a:"cf3",  c:"#8E60F0", d:"0.36s", s:5, r:false },
-                      { a:"cf4",  c:"#22C55E", d:"0.54s", s:4, r:true  },
-                      { a:"cf5",  c:"#FF5210", d:"0.72s", s:3, r:true  },
-                      { a:"cf6",  c:"#FFB800", d:"0.9s",  s:4, r:false },
-                      { a:"cf7",  c:"#8E60F0", d:"0.12s", s:3, r:true  },
-                      { a:"cf8",  c:"#22C55E", d:"0.48s", s:5, r:false },
-                      { a:"cf9",  c:"#FF5210", d:"0.66s", s:4, r:true  },
-                      { a:"cf10", c:"#FFB800", d:"0.3s",  s:3, r:false },
-                    ] as {a:string;c:string;d:string;s:number;r:boolean}[]).map((p, idx) => (
+                      { a:"cf1",  c:"#FF5210", d:"0s",    w:8,  h:5,  r:false },
+                      { a:"cf2",  c:"#FFB800", d:"0.22s", w:6,  h:6,  r:true  },
+                      { a:"cf3",  c:"#8E60F0", d:"0.44s", w:9,  h:4,  r:false },
+                      { a:"cf4",  c:"#22C55E", d:"0.66s", w:6,  h:6,  r:true  },
+                      { a:"cf5",  c:"#FF5210", d:"0.88s", w:7,  h:4,  r:false },
+                      { a:"cf6",  c:"#FFB800", d:"0.11s", w:8,  h:5,  r:false },
+                      { a:"cf7",  c:"#8E60F0", d:"0.33s", w:5,  h:8,  r:false },
+                      { a:"cf8",  c:"#22C55E", d:"0.55s", w:7,  h:7,  r:true  },
+                      { a:"cf9",  c:"#FF5210", d:"0.77s", w:9,  h:5,  r:false },
+                      { a:"cf10", c:"#FFB800", d:"0.99s", w:6,  h:4,  r:true  },
+                      { a:"cf11", c:"#8E60F0", d:"0.15s", w:8,  h:6,  r:false },
+                      { a:"cf12", c:"#22C55E", d:"0.6s",  w:5,  h:5,  r:true  },
+                    ] as {a:string;c:string;d:string;w:number;h:number;r:boolean}[]).map((p, idx) => (
                       <div key={idx} style={{
                         position: "absolute",
                         top: "50%", left: "50%",
-                        width: p.s, height: p.s,
-                        marginTop: -(p.s/2), marginLeft: -(p.s/2),
-                        borderRadius: p.r ? "50%" : "1px",
+                        width: p.w, height: p.h,
+                        marginTop: -(p.h/2), marginLeft: -(p.w/2),
+                        borderRadius: p.r ? "50%" : "2px",
                         backgroundColor: p.c,
-                        animation: `${p.a} 1.7s ease-out ${p.d} infinite`,
+                        animation: `${p.a} 1.4s ease-out ${p.d} infinite`,
                       }}/>
                     ))}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/Trophy.png" alt="" draggable={false}
-                      style={{ width:"100%", height:"100%", objectFit:"contain", position:"relative", zIndex:5 }}
+                      style={{ width:"100%", height:"100%", objectFit:"contain", position:"relative", zIndex:5, filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.25))" }}
                     />
                   </div>
 
