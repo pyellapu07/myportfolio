@@ -84,7 +84,7 @@ const SLOTS: SlotItem[] = [
   { file: "variants figma.png", left: 1, top: 72, depth: 0.11, rotation: -3, opacity: 0.38, anchor: "tl" },
 
   // ── MICROSOFT BADGE ────────────────────────────────────────────────
-  { file: "microsoft-logo.png", left: 9, top: 26, depth: 0.13, rotation: 6, opacity: 1, anchor: "tl" },
+  { file: "microsoft-logo.png", left: 13, top: 20, depth: 0.13, rotation: 6, opacity: 1, anchor: "tl" },
 
   // ── TOP-LEFT ───────────────────────────────────────────────────────
   { file: "Cursor miro.png", left: 3, top: 12, depth: 0.06, rotation: 8, opacity: 0.38, anchor: "tl" },
