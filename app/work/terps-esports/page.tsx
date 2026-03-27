@@ -247,15 +247,19 @@ export default function TerpsEsportsPage() {
             </div>
             {/* Metrics sidebar */}
             <div className="space-y-6 lg:pt-2">
-              <DetailRow label="Role" value="Graphic Designer · Video Director · Content Strategist" />
-              <DetailRow label="Organisation" value="Terps Esports, University of Maryland" />
-              <DetailRow label="Timeline" value="Nov 2024 – Present" />
-              <DetailRow label="Status" value={
-                <span className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                  Active
-                </span>
-              } />
+              {/* 2-col grid for the 4 key stats */}
+              <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+                <DetailRow label="Role" value="Graphic Designer · Video Director · Content Strategist" />
+                <DetailRow label="Organisation" value="Terps Esports, University of Maryland" />
+                <DetailRow label="Timeline" value="Nov 2024 – Present" />
+                <DetailRow label="Status" value={
+                  <span className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                    Active
+                  </span>
+                } />
+              </div>
+              {/* Full-width below */}
               <div>
                 <span className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-text-muted">Responsibilities</span>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
