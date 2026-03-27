@@ -24,7 +24,7 @@ const NATURAL: Record<string, [number, number]> = {
   "togglefigma.png": [221, 115],
   "variants figma.png": [155, 239],
   "self emoticon.png": [1024, 1024],
-  "microsoft-logo.png": [400, 290],
+  "microsoft-logo.png": [100, 165],
 };
 
 const DISPLAY_W: Record<string, number> = {
@@ -47,7 +47,7 @@ const DISPLAY_W: Record<string, number> = {
   "togglefigma.png": 130,
   "variants figma.png": 100,
   "self emoticon.png": 90,
-  "microsoft-logo.png": 96,
+  "microsoft-logo.png": 88,
 };
 
 interface SlotItem {
@@ -84,7 +84,7 @@ const SLOTS: SlotItem[] = [
   { file: "variants figma.png", left: 1, top: 72, depth: 0.11, rotation: -3, opacity: 0.38, anchor: "tl" },
 
   // ── MICROSOFT BADGE ────────────────────────────────────────────────
-  { file: "microsoft-logo.png", left: 78, top: 58, depth: 0.13, rotation: -8, opacity: 1, anchor: "tr" },
+  { file: "microsoft-logo.png", left: 4, top: 55, depth: 0.13, rotation: 7, opacity: 1, anchor: "tl" },
 
   // ── TOP-LEFT ───────────────────────────────────────────────────────
   { file: "Cursor miro.png", left: 3, top: 12, depth: 0.06, rotation: 8, opacity: 0.38, anchor: "tl" },
@@ -317,46 +317,99 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
             onPointerLeave={() => { if (!isDragging) setHoveredIdx(null); }}
           >
             {item.file === "microsoft-logo.png" ? (
-              <div style={{
-                width: "100%", height: "100%",
-                display: "flex", flexDirection: "column",
-                alignItems: "center", justifyContent: "flex-start",
-                gap: 6, pointerEvents: "none", userSelect: "none",
-              }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/microsoft-logo.png"
-                  alt="Microsoft MLSA"
-                  draggable={false}
-                  style={{ width: "100%", height: "auto", display: "block" }}
-                />
-                {/* Achievement pill — fades in on hover, stays within sticker bounds */}
-                <div style={{
-                  opacity: isHovered ? 1 : 0,
-                  transform: isHovered ? "translateY(0px)" : "translateY(4px)",
-                  transition: "opacity 0.22s ease, transform 0.22s ease",
-                  background: "rgba(255,255,255,0.95)",
-                  backdropFilter: "blur(8px)",
-                  borderRadius: 6,
-                  padding: "4px 8px",
-                  border: "1px solid rgba(0,0,0,0.07)",
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-                  display: "flex", alignItems: "center", gap: 5,
-                  whiteSpace: "nowrap",
-                }}>
-                  <svg width="11" height="13" viewBox="0 0 20 26" fill="none">
-                    <rect x="0" y="0" width="3" height="7" rx="1.5" fill="#F5A623"/>
-                    <rect x="17" y="0" width="3" height="7" rx="1.5" fill="#F5A623"/>
-                    <path d="M3 0h14v9a7 7 0 01-14 0V0z" fill="#FFB800"/>
-                    <path d="M3 0h14v5a7 7 0 01-14 0V0z" fill="#FFC832"/>
-                    <rect x="8" y="16" width="4" height="5" rx="1" fill="#FFB800"/>
-                    <rect x="5" y="21" width="10" height="2.5" rx="1.25" fill="#F5A623"/>
-                  </svg>
-                  <span style={{ fontFamily: "monospace", fontSize: 9, color: "#333", letterSpacing: "0.04em", fontWeight: 500 }}>
-                    1st · MLSA Vinci Di UI · 2021
-                  </span>
+              <>
+                {/* Confetti keyframes — injected once per render, cheap */}
+                <style>{`
+                  @keyframes cf1{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(-22px,-34px) rotate(220deg) scale(0);opacity:0}}
+                  @keyframes cf2{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(22px,-34px) rotate(-220deg) scale(0);opacity:0}}
+                  @keyframes cf3{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(-10px,-44px) rotate(140deg) scale(0);opacity:0}}
+                  @keyframes cf4{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(10px,-44px) rotate(-140deg) scale(0);opacity:0}}
+                  @keyframes cf5{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(-32px,-14px) rotate(310deg) scale(0);opacity:0}}
+                  @keyframes cf6{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(32px,-14px) rotate(-310deg) scale(0);opacity:0}}
+                  @keyframes cf7{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(-4px,-50px) rotate(360deg) scale(0);opacity:0}}
+                  @keyframes cf8{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(4px,-50px) rotate(-360deg) scale(0);opacity:0}}
+                  @keyframes cf9{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(-38px,-6px) rotate(200deg) scale(0);opacity:0}}
+                  @keyframes cf10{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(38px,-6px) rotate(-200deg) scale(0);opacity:0}}
+                `}</style>
+
+                <div style={{ width: "100%", height: "100%", position: "relative", overflow: "visible", pointerEvents: "none", userSelect: "none" }}>
+
+                  {/* Trophy + confetti — always visible, bounces on hover */}
+                  <div style={{
+                    position: "absolute",
+                    top: 0,
+                    left: "50%",
+                    width: 72,
+                    height: 80,
+                    transform: `translateX(-50%) scale(${isHovered ? 1.2 : 1}) rotate(${isHovered ? -6 : 0}deg)`,
+                    transition: "transform 0.4s cubic-bezier(0.34,1.56,0.64,1)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    {/* Confetti pieces */}
+                    {([
+                      { a:"cf1",  c:"#FF5210", d:"0s",    s:5, r:true  },
+                      { a:"cf2",  c:"#FFB800", d:"0.18s", s:4, r:false },
+                      { a:"cf3",  c:"#8E60F0", d:"0.36s", s:5, r:false },
+                      { a:"cf4",  c:"#22C55E", d:"0.54s", s:4, r:true  },
+                      { a:"cf5",  c:"#FF5210", d:"0.72s", s:3, r:true  },
+                      { a:"cf6",  c:"#FFB800", d:"0.9s",  s:4, r:false },
+                      { a:"cf7",  c:"#8E60F0", d:"0.12s", s:3, r:true  },
+                      { a:"cf8",  c:"#22C55E", d:"0.48s", s:5, r:false },
+                      { a:"cf9",  c:"#FF5210", d:"0.66s", s:4, r:true  },
+                      { a:"cf10", c:"#FFB800", d:"0.3s",  s:3, r:false },
+                    ] as {a:string;c:string;d:string;s:number;r:boolean}[]).map((p, idx) => (
+                      <div key={idx} style={{
+                        position: "absolute",
+                        top: "50%", left: "50%",
+                        width: p.s, height: p.s,
+                        marginTop: -(p.s/2), marginLeft: -(p.s/2),
+                        borderRadius: p.r ? "50%" : "1px",
+                        backgroundColor: p.c,
+                        animation: `${p.a} 1.7s ease-out ${p.d} infinite`,
+                      }}/>
+                    ))}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/Trophy.png" alt="" draggable={false}
+                      style={{ width:"100%", height:"100%", objectFit:"contain", position:"relative", zIndex:5 }}
+                    />
+                  </div>
+
+                  {/* Microsoft logo — pops on hover */}
+                  <div style={{
+                    position: "absolute", bottom: 0, left: 0, right: 0,
+                    transform: `scale(${isHovered ? 1.1 : 1})`,
+                    transition: "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)",
+                    transformOrigin: "center bottom",
+                  }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/microsoft-logo.png" alt="Microsoft MLSA 1st Place" draggable={false}
+                      style={{ width:"100%", height:"auto", display:"block" }}
+                    />
+                  </div>
+
+                  {/* Hover tooltip */}
+                  <div style={{
+                    position: "absolute",
+                    bottom: "calc(100% + 4px)",
+                    left: "50%",
+                    transform: `translateX(-50%) translateY(${isHovered ? "0px" : "6px"})`,
+                    opacity: isHovered ? 1 : 0,
+                    transition: "opacity 0.22s ease, transform 0.22s ease",
+                    whiteSpace: "nowrap", zIndex: 100,
+                  }}>
+                    <div style={{
+                      background: "rgba(255,255,255,0.96)", backdropFilter: "blur(10px)",
+                      borderRadius: 8, padding: "5px 10px",
+                      border: "1px solid rgba(0,0,0,0.07)",
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.10)",
+                      fontFamily: "monospace", fontSize: 9, color: "#333",
+                      letterSpacing: "0.04em", fontWeight: 500,
+                    }}>
+                      1st Place · MLSA Vinci Di UI · 2021
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </>
             ) : item.file === "self emoticon.png" ? (
               <div className="relative" style={{ width: "100%", height: "100%" }}>
                 <video
