@@ -24,7 +24,7 @@ const NATURAL: Record<string, [number, number]> = {
   "togglefigma.png": [221, 115],
   "variants figma.png": [155, 239],
   "self emoticon.png": [1024, 1024],
-  "microsoft-logo.png": [100, 165],
+  "microsoft-logo.png": [100, 118],
 };
 
 const DISPLAY_W: Record<string, number> = {
@@ -47,7 +47,7 @@ const DISPLAY_W: Record<string, number> = {
   "togglefigma.png": 130,
   "variants figma.png": 100,
   "self emoticon.png": 90,
-  "microsoft-logo.png": 88,
+  "microsoft-logo.png": 118,
 };
 
 interface SlotItem {
@@ -84,7 +84,7 @@ const SLOTS: SlotItem[] = [
   { file: "variants figma.png", left: 1, top: 72, depth: 0.11, rotation: -3, opacity: 0.38, anchor: "tl" },
 
   // ── MICROSOFT BADGE ────────────────────────────────────────────────
-  { file: "microsoft-logo.png", left: 4, top: 55, depth: 0.13, rotation: 7, opacity: 1, anchor: "tl" },
+  { file: "microsoft-logo.png", left: 9, top: 26, depth: 0.13, rotation: 6, opacity: 1, anchor: "tl" },
 
   // ── TOP-LEFT ───────────────────────────────────────────────────────
   { file: "Cursor miro.png", left: 3, top: 12, depth: 0.06, rotation: 8, opacity: 0.38, anchor: "tl" },
@@ -334,13 +334,14 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
 
                 <div style={{ width: "100%", height: "100%", position: "relative", overflow: "visible", pointerEvents: "none", userSelect: "none" }}>
 
-                  {/* Trophy + confetti — always visible, bounces on hover */}
+                  {/* Trophy + confetti — overlaps on top of the Microsoft logo */}
                   <div style={{
                     position: "absolute",
-                    top: 0,
+                    bottom: 12,
                     left: "50%",
                     width: 72,
                     height: 80,
+                    zIndex: 10,
                     transform: `translateX(-50%) scale(${isHovered ? 1.2 : 1}) rotate(${isHovered ? -6 : 0}deg)`,
                     transition: "transform 0.4s cubic-bezier(0.34,1.56,0.64,1)",
                     display: "flex", alignItems: "center", justifyContent: "center",
