@@ -267,7 +267,7 @@ export default function About() {
           </p>
           <p>
             Oh, and also creative-directed{" "}
-            <PLink href="/work/terps-esports" label="Terps Esports" gif="/collabpreview.gif" />: motion graphics, brand identity, event shoots. Because apparently I don&apos;t say no. 🤷
+            <PLink href="/work/terps-esports" label="Terps Esports" gif="/Esports/displaygif.gif" />: motion graphics, brand identity, event shoots. Because apparently I don&apos;t say no. 🤷
           </p>
           <p>
             Off the clock: collecting{" "}
