@@ -131,15 +131,17 @@ function PolaroidLandscape({
 }
 
 /* ─── Data ──────────────────────────────────────────────────────────────── */
-const PHOTOS = [
-  { src: "/About m/Me smiling in the safari van 2.JPEG",                              caption: "zero wifi, max smiles 🦁",        rotate: -3 },
-  { src: "/About m/Me waving hand to a giraffe in kenya safari.JPEG",                 caption: "networking IRL 🦒",               rotate:  2 },
-  { src: "/About m/me wall climbing.JPEG",                                             caption: "when a deadline hits 🧗",          rotate: -2 },
-  { src: "/About m/Me with my all time go to Chai Latte starbucks.JPEG",              caption: "my real design partner ☕",        rotate:  3 },
-  { src: "/About m/me and gang at the midnight mile run terps umd.JPEG",              caption: "midnight chaos, UMD edition 🏃",   rotate: -1 },
-  { src: "/About m/me and my esports gang.JPEG",                                       caption: "not gamers, strategists 🎮",       rotate:  2 },
-  { src: "/About m/lego spidey and ghost rider photography by me.JPEG",               caption: "desk decor. totally. 🕷️",         rotate: -3 },
-  { src: "/About m/xylem lab team group picture.JPEG",                                 caption: "Nairobi, March 2026 🌍",           rotate:  1 },
+
+// Remaining photos not in the float column — shown in the loop strip
+const LOOP_PHOTOS = [
+  { src: "/About m/Me waving hand to a giraffe in kenya safari.JPEG",                              caption: "networking IRL 🦒",               rotate:  2  },
+  { src: "/About m/me and gang at the midnight mile run terps umd.JPEG",                           caption: "midnight chaos, UMD edition 🏃",   rotate: -1  },
+  { src: "/About m/lego spidey and ghost rider photography by me.JPEG",                            caption: "desk decor. totally. 🕷️",         rotate: -3  },
+  { src: "/About m/xylem lab team group picture.JPEG",                                              caption: "Nairobi, March 2026 🌍",           rotate:  1  },
+  { src: "/About m/Me smiling in the safari van.JPEG",                                             caption: "safari pt. 2 🦁",                  rotate: -2  },
+  { src: "/About m/Me and my friends' shadow photography on beach sand with coconuts chilling lol.JPEG", caption: "beach but make it arty 🎨",  rotate:  2  },
+  { src: "/About m/me with our mascot testudo.JPEG",                                               caption: "Testudo said we're valid ✅",       rotate: -1  },
+  { src: "/About m/me with gang bice flex lol.JPEG",                                               caption: "gym bros occasionally 💪",         rotate:  3  },
 ];
 
 const EXPERIENCES = [
@@ -315,6 +317,35 @@ export default function About() {
           ))}
         </div>
       </motion.div>
+
+      {/* ── Infinite photo loop ───────────────────────────────────────────── */}
+      <div className="mt-16 -mx-8 overflow-hidden md:-mx-16 lg:-mx-24">
+        <motion.div
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ duration: 45, ease: "linear", repeat: Infinity, repeatType: "loop" }}
+          className="flex gap-4"
+          style={{ width: "max-content" }}
+        >
+          {/* Duplicate array for seamless loop */}
+          {[...LOOP_PHOTOS, ...LOOP_PHOTOS].map((p, i) => (
+            <motion.div
+              key={i}
+              whileHover={{ scale: 1.06, rotate: 0, zIndex: 20 }}
+              transition={{ duration: 0.25 }}
+              style={{ rotate: `${p.rotate}deg`, minWidth: 200 }}
+              className="relative bg-white p-[9px] pb-8 shadow-md cursor-pointer flex-shrink-0"
+            >
+              <div className="w-[182px] aspect-square overflow-hidden bg-neutral-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.src} alt={p.caption} className="w-full h-full object-cover" />
+              </div>
+              <p className={`${caveat.className} absolute bottom-1 left-0 right-0 text-center text-[12px] text-neutral-500 px-1`}>
+                {p.caption}
+              </p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
 
     </SectionWrapper>
   );
