@@ -319,7 +319,13 @@ export default function About() {
       </motion.div>
 
       {/* ── Infinite photo loop ───────────────────────────────────────────── */}
-      <div className="mt-16 -mx-8 overflow-hidden md:-mx-16 lg:-mx-24">
+      <div
+        className="mt-16 -mx-8 overflow-hidden md:-mx-16 lg:-mx-24"
+        style={{
+          maskImage: "linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)",
+        }}
+      >
         <motion.div
           animate={{ x: ["0%", "-50%"] }}
           transition={{ duration: 45, ease: "linear", repeat: Infinity, repeatType: "loop" }}
