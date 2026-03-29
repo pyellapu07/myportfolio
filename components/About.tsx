@@ -62,7 +62,7 @@ function PLink({ href, label, gif }: { href: string; label: string; gif: string 
   );
 }
 
-/* ─── Polaroid card ─────────────────────────────────────────────────────── */
+/* ─── Polaroid — square ─────────────────────────────────────────────────── */
 function Polaroid({
   src,
   caption,
@@ -78,19 +78,52 @@ function Polaroid({
     <motion.div
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.05, rotate: 0, zIndex: 20 }}
+      whileHover={{ scale: 1.04, rotate: 0, zIndex: 20 }}
       viewport={{ once: true }}
       transition={{ delay, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       style={{ rotate: `${rotate}deg` }}
       className="relative bg-white p-[10px] pb-9 shadow-md cursor-pointer"
     >
-      <div className="relative w-full aspect-square overflow-hidden bg-neutral-100">
+      <div className="w-full aspect-square overflow-hidden bg-neutral-100">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt={caption} className="w-full h-full object-cover" />
       </div>
-      <p
-        className={`${caveat.className} absolute bottom-1.5 left-0 right-0 text-center text-[13px] text-neutral-500 px-1`}
-      >
+      <p className={`${caveat.className} absolute bottom-1.5 left-0 right-0 text-center text-[13px] text-neutral-500 px-1`}>
+        {caption}
+      </p>
+    </motion.div>
+  );
+}
+
+/* ─── Polaroid — landscape ──────────────────────────────────────────────── */
+function PolaroidLandscape({
+  src,
+  caption,
+  rotate = 0,
+  delay = 0,
+  aspectClass = "aspect-video",
+}: {
+  src: string;
+  caption: string;
+  rotate?: number;
+  delay?: number;
+  aspectClass?: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.03, rotate: 0, zIndex: 20 }}
+      viewport={{ once: true }}
+      transition={{ delay, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      style={{ rotate: `${rotate}deg` }}
+      className="relative bg-white p-[10px] pb-9 shadow-md cursor-pointer"
+    >
+      <div className={`w-full ${aspectClass} overflow-hidden bg-neutral-100`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt={caption} className="w-full h-full object-cover" />
+      </div>
+      <p className={`${caveat.className} absolute bottom-1.5 left-0 right-0 text-center text-[13px] text-neutral-500 px-1`}>
         {caption}
       </p>
     </motion.div>
@@ -148,10 +181,51 @@ export default function About() {
         </p>
       </motion.div>
 
-      {/* Story + first 4 polaroids */}
-      <div className="mt-12 grid gap-12 md:grid-cols-[3fr_2fr] md:items-start md:gap-16">
+      {/* Story + polaroids — float layout so text stretches full-width below photos */}
+      <div className="mt-12">
 
-        {/* Story */}
+        {/* Polaroid column — floated right, text wraps around it */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="float-right ml-10 mb-6 flex w-[300px] flex-col gap-5 md:w-[340px]"
+        >
+          {/* 1 — landscape esports team */}
+          <PolaroidLandscape
+            src="/About m/me and my esports gang.JPEG"
+            caption="not gamers, strategists 🎮"
+            rotate={-1.5}
+            delay={0.1}
+            aspectClass="aspect-video"
+          />
+          {/* 2 — big landscape safari */}
+          <PolaroidLandscape
+            src="/About m/Me smiling in the safari van 2.JPEG"
+            caption="zero wifi, max smiles 🦁"
+            rotate={2}
+            delay={0.18}
+            aspectClass="aspect-[3/2]"
+          />
+          {/* 3 — two square polaroids */}
+          <div className="grid grid-cols-2 gap-4">
+            <Polaroid
+              src="/About m/Me with my all time go to Chai Latte starbucks.JPEG"
+              caption="my design partner ☕"
+              rotate={-2.5}
+              delay={0.26}
+            />
+            <Polaroid
+              src="/About m/me wall climbing.JPEG"
+              caption="when deadlines hit 🧗"
+              rotate={2}
+              delay={0.32}
+            />
+          </div>
+        </motion.div>
+
+        {/* Story — stretches to full width once polaroid column ends */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -199,19 +273,8 @@ export default function About() {
           </p>
         </motion.div>
 
-        {/* Polaroids first 4 in 2×2 */}
-        <div className="grid grid-cols-2 gap-5">
-          {PHOTOS.slice(0, 4).map((p, i) => (
-            <Polaroid key={i} {...p} delay={0.08 * i} />
-          ))}
-        </div>
-      </div>
-
-      {/* Polaroids remaining 4 in a strip */}
-      <div className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-4">
-        {PHOTOS.slice(4).map((p, i) => (
-          <Polaroid key={i} {...p} delay={0.06 * i} />
-        ))}
+        {/* Clear float so experiences section sits below everything */}
+        <div className="clear-both" />
       </div>
 
       {/* Experiences */}
