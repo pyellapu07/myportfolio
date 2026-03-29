@@ -332,10 +332,10 @@ export default function About() {
               key={i}
               whileHover={{ scale: 1.06, rotate: 0, zIndex: 20 }}
               transition={{ duration: 0.25 }}
-              style={{ rotate: `${p.rotate}deg`, minWidth: 200 }}
-              className="relative bg-white p-[9px] pb-8 shadow-md cursor-pointer flex-shrink-0"
+              style={{ rotate: `${p.rotate}deg`, minWidth: 360 }}
+              className="relative bg-white p-[10px] pb-10 shadow-md cursor-pointer flex-shrink-0"
             >
-              <div className="w-[182px] aspect-square overflow-hidden bg-neutral-100">
+              <div className="w-[340px] aspect-[3/2] overflow-hidden bg-neutral-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={p.src} alt={p.caption} className="w-full h-full object-cover" />
               </div>
