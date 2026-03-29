@@ -320,7 +320,7 @@ export default function About() {
 
       {/* ── Infinite photo loop ───────────────────────────────────────────── */}
       <div
-        className="mt-16 -mx-8 overflow-hidden md:-mx-16 lg:-mx-24"
+        className="mt-16 -mx-8 overflow-hidden py-8 md:-mx-16 lg:-mx-24"
         style={{
           maskImage: "linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)",
           WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)",
