@@ -160,38 +160,38 @@ export default function About() {
           className="space-y-5 text-[15.5px] leading-[1.82] text-text-secondary"
         >
           <p>
-            Grew up in <Hi color="blue">Vizag</Hi> — a coastal city in India that runs on sea breeze, shells on the sand, and genuinely good vibes. Clean. Peaceful. Then I moved to Chennai for uni at SRM, and honestly? That&apos;s where things got{" "}
+            Grew up in <Hi color="blue">Vizag</Hi>, a coastal city in India that runs on sea breeze, shells on the sand, and genuinely good vibes. Clean. Peaceful. Then I moved to Chennai for uni at SRM, and honestly? That&apos;s where things got{" "}
             <Cur>interesting.</Cur>
           </p>
           <p>
-            Always been into storytelling — theatre, direction, art. There&apos;s something about <Cur>showing the world through your lens</Cur> that just hits different. My Movies &amp; Dramatics Club president saw it too and handed me his clothing brand startup to design. First challenge: the cart icon felt wrong. Nobody puts clothes in a cart —{" "}
-            <Hi color="yellow">they hang them.</Hi> So I drew a hanger icon from scratch with the pen tool (no icon libraries, I was very naive lol). Horizontal scroll felt like browsing through a real wardrobe. The hanger blew up. Calls started coming in from entrepreneurs and student clubs. And so it began.
+            Always been into storytelling: theatre, direction, art. There&apos;s something about <Cur>showing the world through your lens</Cur> that just hits different. My Movies &amp; Dramatics Club president saw it too and handed me his clothing brand startup to design. First challenge: the cart icon felt wrong. Nobody puts clothes in a cart.{" "}
+            <Hi color="yellow">They hang them.</Hi> So I drew a hanger icon from scratch with the pen tool (no icon libraries, I was very naive lol). Horizontal scroll felt like browsing through a real wardrobe. The hanger blew up. Calls started coming in from entrepreneurs and student clubs. And so it began.
           </p>
           <p>
-            As I grew — experience-wise, I mean 😭 — I realized:{" "}
+            As I grew (experience-wise, I mean 😭), I realized:{" "}
             <Hi color="pink">design isn&apos;t about what <em>I</em> like.</Hi> It&apos;s about what users need. Not everyone thinks the same way we do. A product is truly beautiful when a first-grader AND an 85-year-old grandma can use it without any help.{" "}
             <Cur>UX is not about us.</Cur>
           </p>
           <p>
             CS + Business Systems degree in hand, I thought I had it figured out... until I asked: where&apos;s the data? Research without evidence is just vibes. Started bridging{" "}
-            <Hi color="green">data analytics with product design.</Hi> Computacenter UK hired me during my senior year — a year of automation work later, my manager dropped a line that rewired my brain:{" "}
+            <Hi color="green">data analytics with product design.</Hi> Computacenter UK hired me during my senior year. A year of automation work later, my manager dropped a line that rewired my brain:{" "}
             <Cur>&ldquo;Why does this problem even exist?&rdquo;</Cur> Root cause over symptom chasing. Completely different game.
           </p>
           <p>
             Moved to the US for my MS in Data Science + UX Research at{" "}
             <Hi color="blue">University of Maryland.</Hi> Things escalated fast. Our faculty workload study earned a citation request from a senior professor. Joined{" "}
-            <PLink href="/work/hack4impact" label="Hack4Impact" gif="/hack4impactpreview.gif" /> as sole Product Designer — redesigned their full recruitment ecosystem for{" "}
+            <PLink href="/work/hack4impact" label="Hack4Impact" gif="/hack4impactpreview.gif" /> as sole Product Designer, redesigned their full recruitment ecosystem for{" "}
             <Hi color="yellow">750+ applicants/semester</Hi>, presented to stakeholders including Microsoft Reston and CMNS directors. Then interned at{" "}
-            <PLink href="/work/marketcrunch" label="MarketCrunch AI" gif="/marketcrunchaipreview.gif" /> in SF as their sole designer — audited, shipped new features, helped grow MAU ~16x.
+            <PLink href="/work/marketcrunch" label="MarketCrunch AI" gif="/marketcrunchaipreview.gif" /> in SF as their sole designer, audited, shipped new features, helped grow MAU ~16x.
           </p>
           <p>
             Post-internship, I cold-reached a NASA-affiliated data scientist after watching her TED talk. One coffee chat later, I was in her lab. Now building{" "}
-            <PLink href="/work/xylem-institute" label="Xylem Institute" gif="/xylemlabscreenrecording.gif" /> — automating 3-day satellite data pipelines into{" "}
-            <Hi color="green">30-minute policy bulletins.</Hi> Designed the brand, the UX, the full system. Got sponsored to <Cur>Nairobi, Kenya</Cur> in March 2026 to train professionals on the tools I built. Watching them use it effortlessly — no hand-holding — is the whole point.
+            <PLink href="/work/xylem-institute" label="Xylem Institute" gif="/xylemlabscreenrecording.gif" />, automating 3-day satellite data pipelines into{" "}
+            <Hi color="green">30-minute policy bulletins.</Hi> Designed the brand, the UX, the full system. Got sponsored to <Cur>Nairobi, Kenya</Cur> in March 2026 to train professionals on the tools I built. Watching them use it effortlessly, no hand-holding needed. That&apos;s the whole point.
           </p>
           <p>
             Oh, and also creative-directed{" "}
-            <PLink href="/work/terps-esports" label="Terps Esports" gif="/collabpreview.gif" /> — motion graphics, brand identity, event shoots. Because apparently I don&apos;t say no. 🤷
+            <PLink href="/work/terps-esports" label="Terps Esports" gif="/collabpreview.gif" />: motion graphics, brand identity, event shoots. Because apparently I don&apos;t say no. 🤷
           </p>
           <p>
             Off the clock: collecting{" "}
@@ -199,7 +199,7 @@ export default function About() {
           </p>
         </motion.div>
 
-        {/* Polaroids — first 4 in 2×2 */}
+        {/* Polaroids first 4 in 2×2 */}
         <div className="grid grid-cols-2 gap-5">
           {PHOTOS.slice(0, 4).map((p, i) => (
             <Polaroid key={i} {...p} delay={0.08 * i} />
@@ -207,7 +207,7 @@ export default function About() {
         </div>
       </div>
 
-      {/* Polaroids — remaining 4 in a strip */}
+      {/* Polaroids remaining 4 in a strip */}
       <div className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-4">
         {PHOTOS.slice(4).map((p, i) => (
           <Polaroid key={i} {...p} delay={0.06 * i} />
