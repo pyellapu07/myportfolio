@@ -453,9 +453,9 @@ function VerticalNav({ sections }: { sections: typeof SECTION_NAV }) {
 ───────────────────────────────────────────────────────────── */
 function AutoPilotDiagram() {
   const inputs = [
-    { label: "YieldWatch CSVs", sub: "Per-region · Per-crop · Per-season", color: "bg-[#D9EAD3] text-[#274E13]" },
-    { label: "Crop Calendars",  sub: "Season-aware · 11 countries",        color: "bg-[#D9EAD3] text-[#274E13]" },
-    { label: "Historical Bulletins", sub: "AGRA archive · PDF corpus",     color: "bg-[#D9EAD3] text-[#274E13]" },
+    { label: "YieldWatch CSVs", sub: "Per-region · Per-crop · Per-season", color: "bg-[#EEE7D5] text-[#2E170F]" },
+    { label: "Crop Calendars",  sub: "Season-aware · 11 countries",        color: "bg-[#EEE7D5] text-[#2E170F]" },
+    { label: "Historical Bulletins", sub: "AGRA archive · PDF corpus",     color: "bg-[#EEE7D5] text-[#2E170F]" },
     { label: "Country Config",  sub: "GEE project · Season map",           color: "bg-[#CFE2F3] text-[#01579B]" },
   ];
 
@@ -492,8 +492,8 @@ function AutoPilotDiagram() {
 
         {/* Arrow 1 */}
         <div className="flex flex-col items-center justify-start pt-10 gap-1 shrink-0">
-          <div className="h-[1px] w-8 bg-[#F9A825]" />
-          <span className="font-mono text-base text-[#F9A825] font-bold">→</span>
+          <div className="h-[1px] w-8 bg-[#D5DB3D]" />
+          <span className="font-mono text-base text-[#D5DB3D] font-bold">→</span>
         </div>
 
         {/* Engine */}
@@ -514,8 +514,8 @@ function AutoPilotDiagram() {
 
         {/* Arrow 2 */}
         <div className="flex flex-col items-center justify-start pt-10 gap-1 shrink-0">
-          <div className="h-[1px] w-8 bg-[#F9A825]" />
-          <span className="font-mono text-base text-[#F9A825] font-bold">→</span>
+          <div className="h-[1px] w-8 bg-[#D5DB3D]" />
+          <span className="font-mono text-base text-[#D5DB3D] font-bold">→</span>
         </div>
 
         {/* Outputs */}
@@ -615,11 +615,11 @@ function DesignSystemTokens({ org }: { org: "institute" | "lab" }) {
     name: "The Xylem Institute",
     sub: "Public-facing · Policy audience · Research institute",
     palette: [
-      { hex: "#1B5E20", label: "Primary Green",  desc: "Headings, CTAs, key actions" },
-      { hex: "#274E13", label: "Dark Green",      desc: "Subheadings, depth elements" },
-      { hex: "#616161", label: "Body Grey",       desc: "Body text, secondary labels" },
-      { hex: "#F9A825", label: "Amber Accent",    desc: "Dividers, highlights, status" },
-      { hex: "#F1F8E9", label: "Light Fill",      desc: "Country / section badges" },
+      { hex: "#2E170F", label: "Deep Brown",       desc: "Backgrounds, deep tone" },
+      { hex: "#6A9B35", label: "Primary Green",   desc: "Headings, CTAs, key actions" },
+      { hex: "#D5DB3D", label: "Yellow-Green",    desc: "Accents, highlights, dividers" },
+      { hex: "#EEE7D5", label: "Warm Cream",      desc: "Country / section badges, fills" },
+      { hex: "#ED3B4D", label: "Alert Red",       desc: "CTAs, status indicators" },
       { hex: "#FFFFFF", label: "White",            desc: "Card backgrounds, overlays" },
     ],
     type: [
@@ -632,12 +632,12 @@ function DesignSystemTokens({ org }: { org: "institute" | "lab" }) {
     name: "The Xylem Lab",
     sub: "Academic research lab · Scientific audience · University context",
     palette: [
-      { hex: "#0D3B1A", label: "Lab Deep Green",  desc: "Hero background, hero text" },
-      { hex: "#2E7D32", label: "Lab Mid Green",   desc: "Accent links, buttons" },
+      { hex: "#2E170F", label: "Deep Brown",       desc: "Hero background, hero text" },
+      { hex: "#6A9B35", label: "Primary Green",   desc: "Accent links, buttons" },
       { hex: "#FFFFFF", label: "White",            desc: "Primary text on dark bg" },
-      { hex: "#F9A825", label: "Amber",           desc: "Data callouts, badges" },
-      { hex: "#E8F5E9", label: "Light Mint",       desc: "Light section backgrounds" },
-      { hex: "#9CA3AF", label: "Grey-400",        desc: "Muted labels, captions" },
+      { hex: "#D5DB3D", label: "Yellow-Green",    desc: "Data callouts, badges" },
+      { hex: "#EEE7D5", label: "Warm Cream",      desc: "Light section backgrounds" },
+      { hex: "#ED3B4D", label: "Alert Red",       desc: "Muted labels, captions" },
     ],
     type: [
       { name: "Inter Bold",      size: "36pt", use: "Hero display heading" },
@@ -771,7 +771,7 @@ export default function XylemInstitutePage() {
           {/* Hero image, Nairobi conference */}
           <MediaPop>
             <div className="mt-8">
-              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-border/50 bg-[#1B5E20]">
+              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-border/50 bg-[#2E170F]">
                 <Image
                   src="/xylem/Nairobi%20conference%20day%201.JPG"
                   alt="AGRA RFBS Workshop, Nairobi, Kenya"
@@ -871,7 +871,7 @@ export default function XylemInstitutePage() {
           <Fade>
             <div className="mb-16">
               <div className="mb-4 flex items-center gap-3">
-                <span className="rounded-full bg-[#E8F5E9] px-3 py-1 font-mono text-[10px] font-semibold text-[#1B5E20] uppercase tracking-wider">xyleminstitute.org</span>
+                <span className="rounded-full bg-[#EEE7D5] px-3 py-1 font-mono text-[10px] font-semibold text-[#2E170F] uppercase tracking-wider">xyleminstitute.org</span>
                 <span className="font-mono text-xs text-text-muted">Public-facing · Policy audience</span>
               </div>
               <div className="grid gap-8 md:grid-cols-2 items-start">
@@ -897,7 +897,7 @@ export default function XylemInstitutePage() {
           <Fade delay={0.1}>
             <div>
               <div className="mb-4 flex items-center gap-3">
-                <span className="rounded-full bg-[#E8F5E9] px-3 py-1 font-mono text-[10px] font-semibold text-[#1B5E20] uppercase tracking-wider">Xylem Lab</span>
+                <span className="rounded-full bg-[#EEE7D5] px-3 py-1 font-mono text-[10px] font-semibold text-[#2E170F] uppercase tracking-wider">Xylem Lab</span>
                 <span className="font-mono text-xs text-text-muted">Research lab · Academic & scientific audience</span>
               </div>
               <div className="grid gap-8 md:grid-cols-2 items-start">
@@ -1099,7 +1099,7 @@ export default function XylemInstitutePage() {
               <div className="space-y-4">
                 <p className="font-mono text-[10px] uppercase tracking-widest text-text-muted">From the Design File</p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                  Both design systems were built and maintained in Figma with a shared component library: button variants, card patterns, badge/pill styles, section layout grids, and typography specimens. The amber accent (#F9A825) functions as a universal "action and emphasis" signal across both systems, appearing as slide dividers in presentations, badge highlights on the website, and status indicators in the pipeline UI.
+                  Both design systems were built and maintained in Figma with a shared component library: button variants, card patterns, badge/pill styles, section layout grids, and typography specimens. The yellow-green accent (#D5DB3D) functions as a universal "action and emphasis" signal across both systems, appearing as slide dividers in presentations, badge highlights on the website, and status indicators in the pipeline UI.
                 </p>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
                   The systems also extend into non-web assets: the AGRA workshop slide deck, London conference presentation, and bulletin HTML all inherit the same visual language.
@@ -1184,13 +1184,13 @@ export default function XylemInstitutePage() {
                     tag: "Live Website",
                     title: "Kenya 2026 Training Site",
                     desc: "HTML training site used as live reference during sessions. Analysts follow along in-browser. Covers pipeline setup, configuration, step-by-step cell execution, and troubleshooting.",
-                    color: "bg-[#E8F5E9] text-[#1B5E20]",
+                    color: "bg-[#EEE7D5] text-[#2E170F]",
                   },
                   {
                     tag: "Live Website",
                     title: "Wednesday Session Speaker Notes",
                     desc: "Structured HTML notes for the Day 2 afternoon deep-dive session. Covers GEE map generation, bulletin parameters, and Auto-Pilot demo. Designed to be both a live prompt and a post-workshop reference.",
-                    color: "bg-[#E8F5E9] text-[#1B5E20]",
+                    color: "bg-[#EEE7D5] text-[#2E170F]",
                   },
                   {
                     tag: "Presentation, 43 slides",

@@ -321,11 +321,11 @@ export default function Hero() {
             src="/Trusted Tester Badge.png"
             alt="DHS Trusted Tester Certified"
             draggable={false}
-            className="w-24 drop-shadow-xl"
+            className="w-36 drop-shadow-xl"
             style={{ pointerEvents: "none" }}
           />
           <span className="font-mono text-[9px] font-medium tracking-wide text-neutral-400">
-            legit btw 🫡
+            A DHS Trusted Tester 🫡
           </span>
         </motion.div>
       )}
