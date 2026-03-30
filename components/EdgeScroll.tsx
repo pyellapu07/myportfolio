@@ -3,21 +3,30 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const THRESHOLD = 0.05; // bottom / top 5% of viewport
-const MAX_SPEED  = 18;  // px per frame at the very edge
+const THRESHOLD  = 0.10; // top / bottom 10% of viewport
+const MAX_SPEED  = 18;   // px per frame at the very edge
 const STORAGE_KEY = "edgescroll-paused";
 
-export default function EdgeScroll() {
-  const rafRef   = useRef<number | null>(null);
-  const dirRef   = useRef<"up" | "down" | null>(null);
-  const speedRef = useRef(0);
-  const activeRef = useRef(false); // is mouse currently in an edge zone?
+// Elements that should pause edge-scrolling when hovered
+const INTERACTIVE = "a, button, [role='button'], [role='link'], input, textarea, select, label, [tabindex]";
 
-  const [paused, setPaused]   = useState(() => {
+function isOverInteractive(e: MouseEvent): boolean {
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  return !!(el?.closest(INTERACTIVE));
+}
+
+export default function EdgeScroll() {
+  const rafRef      = useRef<number | null>(null);
+  const dirRef      = useRef<"up" | "down" | null>(null);
+  const speedRef    = useRef(0);
+  const activeRef   = useRef(false); // cursor in edge zone?
+  const onButtonRef = useRef(false); // cursor over interactive element?
+
+  const [paused, setPaused] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem(STORAGE_KEY) === "true";
   });
-  const [visible, setVisible] = useState(false); // show toggle when in edge zone
+  const [visible, setVisible] = useState(false);
 
   const pausedRef = useRef(paused);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
@@ -32,13 +41,16 @@ export default function EdgeScroll() {
 
   useEffect(() => {
     function loop() {
-      if (!pausedRef.current && dirRef.current && speedRef.current > 0) {
+      const blocked = pausedRef.current || onButtonRef.current;
+      if (!blocked && dirRef.current && speedRef.current > 0) {
         window.scrollBy(0, dirRef.current === "down" ? speedRef.current : -speedRef.current);
       }
       rafRef.current = requestAnimationFrame(loop);
     }
 
     function onMouseMove(e: MouseEvent) {
+      onButtonRef.current = isOverInteractive(e);
+
       const h     = window.innerHeight;
       const ratio = e.clientY / h;
 
@@ -58,9 +70,10 @@ export default function EdgeScroll() {
     }
 
     function onMouseLeave() {
-      dirRef.current   = null;
-      speedRef.current = 0;
+      dirRef.current    = null;
+      speedRef.current  = 0;
       activeRef.current = false;
+      onButtonRef.current = false;
       setVisible(false);
     }
 
@@ -89,10 +102,7 @@ export default function EdgeScroll() {
           style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)" }}
           title={paused ? "Resume edge scroll" : "Pause edge scroll"}
         >
-          {/* icon */}
-          <span className="text-[10px] leading-none">
-            {paused ? "▶" : "⏸"}
-          </span>
+          <span className="text-[10px] leading-none">{paused ? "▶" : "⏸"}</span>
           <span>{paused ? "Resume auto-scroll" : "Pause auto-scroll"}</span>
         </motion.button>
       )}
