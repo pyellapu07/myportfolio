@@ -3,10 +3,74 @@
 import { useState, useEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Download, Bell } from "lucide-react";
+import { Menu, X, Download } from "lucide-react";
+import Image from "next/image";
 import RecruiterToggle from "./RecruiterToggle";
 import { NAV_LINKS, SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+
+/* ── Testimonial pills cluster ─────────────────────────────────────────── */
+const PILL_PEOPLE = [
+  { avatar: "/bhushan marketcrunch.jpeg", ring: "#FF6B6B", name: "Bhushan" },
+  { avatar: "/catherine nakalembe.webp", ring: "#A78BFA", name: "Catherine" },
+  { avatar: "/ravi kumar.jpeg",           ring: "#34D399", name: "Ravi" },
+];
+
+function TestimonialPills({ isDarkText }: { isDarkText: boolean }) {
+  const [hovered, setHovered] = useState(false);
+
+  function scrollToTestimonials() {
+    document.getElementById("testimonials")?.scrollIntoView({ behavior: "smooth" });
+  }
+
+  return (
+    <button
+      onClick={scrollToTestimonials}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="flex items-center focus:outline-none"
+      aria-label="Hear from real people"
+    >
+      {/* Overlapping avatars */}
+      <div className="flex items-center">
+        {PILL_PEOPLE.map((p, i) => (
+          <div
+            key={p.name}
+            className="relative h-7 w-7 overflow-hidden rounded-full"
+            style={{
+              marginLeft: i === 0 ? 0 : -9,
+              zIndex: PILL_PEOPLE.length - i,
+              boxShadow: `0 0 0 2px ${p.ring}, 0 0 0 3.5px white`,
+            }}
+          >
+            <Image src={p.avatar} alt={p.name} fill sizes="28px" className="object-cover" />
+          </div>
+        ))}
+      </div>
+
+      {/* Expanding label */}
+      <AnimatePresence>
+        {hovered && (
+          <motion.span
+            key="label"
+            initial={{ opacity: 0, width: 0, marginLeft: 0 }}
+            animate={{ opacity: 1, width: "auto", marginLeft: 10 }}
+            exit={{ opacity: 0, width: 0, marginLeft: 0 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className={cn(
+              "overflow-hidden whitespace-nowrap rounded-full px-3 py-[5px] font-mono text-[11px] font-semibold",
+              isDarkText
+                ? "bg-neutral-900 text-white"
+                : "bg-white text-neutral-900"
+            )}
+          >
+            Hear from Real People
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </button>
+  );
+}
 /* ── Doodle circle: red ink, loops forever, endpoint overshoots start ── */
 const DoodleCircle = memo(function DoodleCircle() {
   const pathRef = useRef<SVGPathElement>(null);
@@ -172,6 +236,7 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
 
           {/* Right side */}
           <div className="hidden items-center gap-5 md:flex" data-tour="recruiter">
+            <TestimonialPills isDarkText={isDarkText} />
             <div className="relative inline-flex items-center">
               <RecruiterToggle size="sm" dark={!isDarkText} />
               <DoodleCircle />

@@ -130,7 +130,7 @@ export default function Hero() {
             {isRecruiterMode ? (
               <>Hi recruiter, I&apos;m <span className="text-neutral-900">Pradeep</span></>
             ) : (
-              <>Heyy Bub, I&apos;m <span className="text-neutral-900">Pradeep</span></>
+              <>Hii! I&apos;m <span className="text-neutral-900">Pradeep</span></>
             )}
           </p>
 
