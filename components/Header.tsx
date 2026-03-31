@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Download } from "lucide-react";
+import { Menu, X, Download, Bell } from "lucide-react";
 import Image from "next/image";
 import RecruiterToggle from "./RecruiterToggle";
 import { NAV_LINKS, SITE } from "@/lib/constants";
