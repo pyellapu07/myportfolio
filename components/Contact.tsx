@@ -112,7 +112,7 @@ export default function Contact() {
           transition={{ delay: 0.1 }}
           className="mt-4 font-display text-3xl font-bold text-text md:text-4xl"
         >
-          Let&apos;s Connect
+          Here&apos;s your Bill
         </motion.h2>
 
         {/* ── Receipt card ────────────────────────────────────────────── */}
@@ -310,16 +310,6 @@ export default function Contact() {
                     >
                       {item.service}
                     </span>
-                    {/* Dotted fill */}
-                    <span
-                      style={{
-                        flex: 1,
-                        borderBottom: "1px dotted #d1d5db",
-                        marginBottom: 4,
-                        alignSelf: "flex-end",
-                        minWidth: 12,
-                      }}
-                    />
                     <span
                       style={{
                         fontSize: 11,
