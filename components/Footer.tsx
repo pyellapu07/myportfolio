@@ -80,6 +80,18 @@ export default function Footer() {
                   </a>
                 </li>
               ))}
+              <li>
+                <a
+                  href={SITE.medium}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-text-secondary transition-colors duration-200 hover:text-primary"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/Medium logo png.png" alt="" aria-hidden className="h-3.5 w-auto object-contain" style={{ filter: "invert(0.45)" }} />
+                  Medium Article
+                </a>
+              </li>
             </ul>
           </div>
 
