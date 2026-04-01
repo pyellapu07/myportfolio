@@ -174,43 +174,15 @@ export default function Hero() {
         </motion.h1>
 
         {/* Sub-description */}
-        <motion.div
+        <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-8 max-w-[520px] space-y-3"
+          className="mt-8 max-w-[520px] font-mono text-sm leading-relaxed text-neutral-400"
         >
-          {/* Echo line 1 */}
-          <div className="leading-none space-y-[3px]">
-            <p className="font-mono text-[13px] font-semibold tracking-tight text-neutral-800">Data-informed. Design-led.</p>
-            <p className="font-mono text-[13px] font-semibold tracking-tight text-neutral-800/[0.13] select-none" aria-hidden>Data-informed. Design-led.</p>
-          </div>
-
-          {/* Echo line 2 */}
-          <div className="leading-none space-y-[3px]">
-            <p className="font-mono text-[13px] font-semibold tracking-tight text-neutral-800">Interfaces built for people who don&apos;t read instructions.</p>
-            <p className="font-mono text-[13px] font-semibold tracking-tight text-neutral-800/[0.13] select-none" aria-hidden>Interfaces built for people who don&apos;t read instructions.</p>
-          </div>
-
-          {/* CTA */}
-          <p className="font-mono text-[11px] text-neutral-400">
-            ↳ open to full-time roles &nbsp;·&nbsp;{" "}
-            <a href="mailto:yellapupradeep@gmail.com" className="text-neutral-500 underline underline-offset-2 hover:text-neutral-900 transition-colors">
-              yellapupradeep@gmail.com
-            </a>
-          </p>
-
-          {/* Echo line 3 — affiliation */}
-          <div className="leading-none space-y-[3px]">
-            <p className="font-mono text-[11px] tracking-wide text-neutral-400">University of Maryland &nbsp;·&nbsp; NASA Harvest</p>
-            <p className="font-mono text-[11px] tracking-wide text-neutral-400/20 select-none" aria-hidden>University of Maryland &nbsp;·&nbsp; NASA Harvest</p>
-          </div>
-
-          {/* Bio */}
-          <p className="pt-1 font-mono text-[12.5px] leading-[1.75] text-neutral-400">
-            Pradeep is a product designer and UX researcher building interfaces for AI tools, satellite data systems, and civic platforms. He runs usability studies, reads the analytics, and ships work that holds up across every user type. Previously at MarketCrunch AI (San Francisco), NASA Harvest UMD, Computacenter UK. ✦
-          </p>
-        </motion.div>
+          5+ years creating user-centered digital products. Reduced friction by 40%,
+          boosted engagement by 167%. Currently at UMD.
+        </motion.p>
 
         {/* Mobile creative work folder tap ─ hidden on desktop */}
         <motion.button
