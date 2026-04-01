@@ -170,7 +170,7 @@ export default function Contact() {
   const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <SectionWrapper id="contact" alternate>
+    <SectionWrapper id="contact" alternate className="overflow-x-hidden">
 
       {/* Section label + heading */}
       <div className="mx-auto max-w-2xl text-center">
@@ -198,7 +198,7 @@ export default function Contact() {
         style={{
           marginTop: "2.5rem",
           position: "relative",
-          width: "100vw",
+          width: "min(1400px, 160vw)",
           left: "50%",
           transform: "translateX(-50%)",
         }}
