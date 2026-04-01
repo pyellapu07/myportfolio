@@ -11,9 +11,10 @@ import { cn } from "@/lib/utils";
 
 /* ── Testimonial pills cluster ─────────────────────────────────────────── */
 const PILL_PEOPLE = [
-  { avatar: "/bhushan marketcrunch.jpeg", ring: "#FF6B6B", name: "Bhushan" },
+  { avatar: "/Erica.jpeg",                ring: "#E63946", name: "Erica"     },
+  { avatar: "/bhushan marketcrunch.jpeg", ring: "#FF6B6B", name: "Bhushan"  },
   { avatar: "/catherine nakalembe.webp", ring: "#A78BFA", name: "Catherine" },
-  { avatar: "/ravi kumar.jpeg",           ring: "#34D399", name: "Ravi" },
+  { avatar: "/ravi kumar.jpeg",           ring: "#34D399", name: "Ravi"     },
 ];
 
 function TestimonialPills({ isDarkText }: { isDarkText: boolean }) {

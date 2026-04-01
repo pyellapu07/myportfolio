@@ -1,45 +1,105 @@
 "use client";
 
-import { useRef } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import SectionWrapper from "./SectionWrapper";
 
+/* ── Data ─────────────────────────────────────────────────────────────── */
 const TESTIMONIALS = [
+  {
+    name: "Erica Javadpur",
+    role: "Esports Coordinator",
+    company: "University of Maryland",
+    period: "2024 – Present",
+    avatar: "/Erica.jpeg",
+    accentColor: "#E63946",
+    defaultRotate: -18,
+    defaultX: -80,
+    quote:
+      "This website is incredibly impressive, engaging, and interesting. This will hook anyone in to really go through your site. One of the coolest portfolios I've ever seen.",
+  },
   {
     name: "Bhushan Suryavanshi",
     role: "Founder & CEO",
     company: "MarketCrunch AI",
-    sub: "x-Amazon · Wharton · CMU",
+    period: "Summer 2025",
     avatar: "/bhushan marketcrunch.jpeg",
-    color: "#FF6B6B",
+    accentColor: "#FF6B6B",
+    defaultRotate: -7,
+    defaultX: -27,
     quote:
-      "Pradeep joined us as a design intern and quickly became the backbone of our product redesign. His UX audit was thorough, his prototypes were polished, and his ability to run usability sessions and translate findings into actionable improvements was beyond what we expected. The numbers speak for themselves.",
+      "Pradeep became the backbone of our product redesign. His UX audit was thorough, his prototypes polished, and his ability to run usability sessions and translate findings into improvements was beyond what we expected. The numbers speak for themselves.",
   },
   {
     name: "Catherine Nakalembe (Ph.D.)",
     role: "NASA Harvest Africa Director",
-    company: "University of Maryland",
-    sub: "2025 TED Fellow · Africa Food Prize",
+    company: "Univ. of Maryland",
+    period: "2025 – Present",
     avatar: "/catherine nakalembe.webp",
-    color: "#A78BFA",
+    accentColor: "#A78BFA",
+    defaultRotate: 7,
+    defaultX: 27,
     quote:
-      "Working with Pradeep has been a genuine pleasure. He brought a rare blend of design sensibility and technical understanding to a domain that most designers shy away from — geospatial, climate, and agricultural data. He didn't just make things look good; he made complex information intuitive for analysts across 9 countries.",
+      "He made complex geospatial and climate data intuitive for analysts across 9 countries. A rare blend of design sensibility and technical depth that most designers shy away from.",
   },
   {
     name: "Ravi Kumar",
     role: "Service Delivery Manager",
     company: "Computacenter UK",
-    sub: "Managed Pradeep directly · 18 months",
+    period: "2023 – 2024",
     avatar: "/ravi kumar.jpeg",
-    color: "#34D399",
+    accentColor: "#34D399",
+    defaultRotate: 18,
+    defaultX: 80,
     quote:
-      "Happy to write this recommendation for Pradeep, post working very closely for 18 months. He is knowledgeable and easy going. Never delayed on any task assigned to him. A true team player, and a creative artist when it comes to editing or drawing. I wish him the best for his masters in the states.",
+      "Never delayed on any task assigned to him. A true team player, and a creative artist when it comes to editing or drawing. I wish him the best for his masters in the states.",
   },
 ];
 
+/* ── Component ─────────────────────────────────────────────────────────── */
 export default function Testimonials() {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+
+  function getCardStyle(i: number) {
+    const t = TESTIMONIALS[i];
+    const isActive = hovered === i;
+    const isIdle   = hovered === null;
+
+    if (isActive) {
+      return {
+        rotate: 0,
+        x: 0,
+        y: -28,
+        scale: 1.04,
+        zIndex: 50,
+        transition: { type: "spring", stiffness: 320, damping: 28 },
+      };
+    }
+
+    if (isIdle) {
+      return {
+        rotate: t.defaultRotate,
+        x: t.defaultX,
+        y: 0,
+        scale: 1,
+        zIndex: 10 - i,
+        transition: { type: "spring", stiffness: 300, damping: 30 },
+      };
+    }
+
+    // Fan away from the hovered card
+    const diff = i - hovered!;
+    const sign = diff > 0 ? 1 : -1;
+    return {
+      rotate: t.defaultRotate + sign * 14,
+      x: t.defaultX + sign * 90,
+      y: 12,
+      scale: 0.96,
+      zIndex: 5 - Math.abs(diff),
+      transition: { type: "spring", stiffness: 300, damping: 28 },
+    };
+  }
 
   return (
     <SectionWrapper id="testimonials">
@@ -48,7 +108,7 @@ export default function Testimonials() {
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="mb-12 flex items-start gap-4"
+        className="mb-4 flex items-start gap-4"
       >
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border bg-bg-alt text-2xl">
           💬
@@ -63,71 +123,107 @@ export default function Testimonials() {
         </div>
       </motion.div>
 
-      {/* Scrollable cards */}
-      <div
-        ref={scrollRef}
-        className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      >
-        {TESTIMONIALS.map((t, i) => (
-          <motion.div
-            key={t.name}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.1 }}
-            className="snap-start shrink-0 w-[300px] md:w-[340px] rounded-2xl border border-border bg-white p-6 flex flex-col justify-between shadow-[0_2px_12px_rgba(0,0,0,0.05)]"
-          >
-            {/* Quote */}
-            <div>
-              <div
-                className="mb-4 h-[2px] w-12 rounded-full"
-                style={{ backgroundColor: t.color }}
-              />
-              <p className="text-[13.5px] leading-relaxed text-text-secondary">
-                {t.quote}
-              </p>
-            </div>
+      {/* ── Deck ──────────────────────────────────────────────────────── */}
+      <div className="relative flex items-center justify-center"
+           style={{ height: 420, marginTop: 40 }}>
+        {TESTIMONIALS.map((t, i) => {
+          const style = getCardStyle(i);
+          const isActive = hovered === i;
 
-            {/* Person */}
-            <div className="mt-6 flex items-center gap-3 border-t border-border pt-4">
+          return (
+            <motion.div
+              key={t.name}
+              animate={style}
+              initial={{
+                rotate: t.defaultRotate,
+                x: t.defaultX,
+                y: 0,
+                scale: 1,
+                zIndex: 10 - i,
+              }}
+              onHoverStart={() => setHovered(i)}
+              onHoverEnd={() => setHovered(null)}
+              className="absolute cursor-pointer select-none"
+              style={{ width: 260 }}
+            >
+              {/* Card */}
               <div
-                className="relative h-9 w-9 shrink-0 rounded-full overflow-hidden"
-                style={{ boxShadow: `0 0 0 2px ${t.color}` }}
+                className="relative overflow-hidden rounded-[22px] p-6"
+                style={{
+                  background: "#111116",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  boxShadow: isActive
+                    ? "0 32px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.12)"
+                    : "0 8px 32px rgba(0,0,0,0.4)",
+                }}
               >
-                <Image
-                  src={t.avatar}
-                  alt={t.name}
-                  fill
-                  sizes="36px"
-                  className="object-cover"
+                {/* Accent top bar */}
+                <div
+                  className="absolute left-0 top-0 h-[2px] w-full transition-opacity duration-300"
+                  style={{
+                    background: `linear-gradient(to right, ${t.accentColor}, transparent)`,
+                    opacity: isActive ? 1 : 0.3,
+                  }}
                 />
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-[13px] font-semibold text-text">{t.name}</p>
-                <p className="truncate text-[11px] text-text-secondary">{t.role}</p>
-                <p className="truncate font-mono text-[10px] text-text-secondary/60">
-                  @ {t.company}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
 
-        {/* "More coming" placeholder */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3 }}
-          className="snap-start shrink-0 w-[200px] rounded-2xl border border-dashed border-border bg-bg-alt flex flex-col items-center justify-center gap-2 p-6 text-center"
-        >
-          <span className="text-2xl">🤝</span>
-          <p className="font-mono text-[11px] text-text-secondary/60">
-            More recommendations coming soon
-          </p>
-        </motion.div>
+                {/* Top row: period */}
+                <p className="mb-4 font-mono text-[10px] text-white/30 text-right">
+                  {t.period}
+                </p>
+
+                {/* Avatar */}
+                <div className="mb-4 flex items-center gap-3">
+                  <div
+                    className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full transition-all duration-500"
+                    style={{
+                      filter: isActive ? "grayscale(0%)" : "grayscale(100%)",
+                      boxShadow: isActive ? `0 0 0 2px ${t.accentColor}` : "0 0 0 2px rgba(255,255,255,0.1)",
+                    }}
+                  >
+                    <Image
+                      src={t.avatar}
+                      alt={t.name}
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-semibold text-white leading-tight">{t.name}</p>
+                    <p
+                      className="text-[10px] font-mono transition-colors duration-300"
+                      style={{ color: isActive ? t.accentColor : "rgba(255,255,255,0.35)" }}
+                    >
+                      {t.role}
+                    </p>
+                    <p className="text-[9px] font-mono text-white/20">{t.company}</p>
+                  </div>
+                </div>
+
+                {/* Quote */}
+                <p className="text-[12px] leading-relaxed text-white/50">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+
+                {/* Hover: subtle glow */}
+                {isActive && (
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded-[22px]"
+                    style={{
+                      background: `radial-gradient(ellipse at 50% 0%, ${t.accentColor}18 0%, transparent 65%)`,
+                    }}
+                  />
+                )}
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
+
+      {/* Hint */}
+      <p className="mt-6 text-center font-mono text-[11px] text-text-secondary/40">
+        hover a card to read
+      </p>
     </SectionWrapper>
   );
 }
