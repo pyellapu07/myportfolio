@@ -20,6 +20,8 @@ export default function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
   // Prevents entrance animation from re-running on finderOpen toggle
   const folderShownRef = useRef(false);
+  // After DHS badge entrance completes, drop the 3.2s delay so hover exit snaps back
+  const [dhsEntered, setDhsEntered] = useState(false);
 
   // Cards peek out of folder every ~4.5s, retract after 1.6s
   useEffect(() => {
@@ -257,7 +259,7 @@ export default function Hero() {
           dragElastic={0}
           data-tour="folder"
           className="absolute z-[25] hidden cursor-grab select-none flex-col items-center gap-1 md:flex active:cursor-grabbing"
-          style={{ right: "20%", top: "32%", filter: "drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(3px 6px 0px rgba(0,0,0,0.18))" }}
+          style={{ right: "20%", top: "32%" }}
           /* initial=false after first mount so finderOpen toggles don't re-run entrance */
           initial={folderShownRef.current ? false : { opacity: 0, rotate: -7, scale: 0.85 }}
           animate={{ opacity: 1, rotate: -7, scale: 1 }}
@@ -311,8 +313,9 @@ export default function Hero() {
           style={{ right: "5%", top: "54%", filter: "drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(3px 6px 0px rgba(0,0,0,0.18))" }}
           initial={{ opacity: 0, rotate: 8, scale: 0.8 }}
           animate={{ opacity: 1, rotate: 8, scale: 1 }}
-          transition={{ delay: 3.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          whileHover={{ scale: 1.1, rotate: 4, transition: { duration: 0.2 } }}
+          transition={dhsEntered ? { duration: 0.25, ease: "easeOut" } : { delay: 3.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          onAnimationComplete={() => setDhsEntered(true)}
+          whileHover={{ scale: 1.1, rotate: 4, transition: { duration: 0.2, type: "tween" } }}
           whileTap={{ scale: 0.96 }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
