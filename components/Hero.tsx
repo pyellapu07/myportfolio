@@ -338,7 +338,7 @@ export default function Hero() {
             alt="DHS Trusted Tester Certified"
             draggable={false}
             className="w-44"
-            style={{ pointerEvents: "none", filter: "drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(1px 1px 0px rgba(0,0,0,0.38))" }}
+            style={{ pointerEvents: "none", filter: "drop-shadow(4px 4px 4px rgba(0,0,0,0.15))" }}
           />
           <span className="font-mono text-[9px] font-medium tracking-wide text-neutral-400">
             A DHS Trusted Tester 🫡

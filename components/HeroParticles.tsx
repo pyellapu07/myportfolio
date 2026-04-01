@@ -347,8 +347,8 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
 
         const scale = isDragging ? 1.04 : isHovered ? 1.04 : 1;
         const shadow = "none";
-        const imgFilter = `drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(1px 1px 0px rgba(0,0,0,0.38))`;
-        const avatarFilter = `drop-shadow(1px 1px 0px rgba(0,0,0,0.38))`;
+        const imgFilter = `drop-shadow(4px 4px 4px rgba(0,0,0,0.15))`;
+        const avatarFilter = `drop-shadow(4px 4px 4px rgba(0,0,0,0.15))`;
 
         // Don't apply parallax to dragged item — feels more grounded
         const txParallax = isDragging ? 0 : 0;
@@ -399,7 +399,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
                   @keyframes cf12{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(26px,-54px) rotate(-160deg);opacity:0}}
                 `}</style>
 
-                <div style={{ width: "100%", height: "100%", position: "relative", overflow: "visible", pointerEvents: "none", userSelect: "none", filter: imgFilter }}>
+                <div style={{ width: "100%", height: "100%", position: "relative", overflow: "visible", pointerEvents: "none", userSelect: "none" }}>
 
                   {/* Trophy + confetti — top-right corner of Microsoft logo */}
                   <div style={{
@@ -449,7 +449,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
                   }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/microsoft-logo.png" alt="Microsoft MLSA 1st Place" draggable={false}
-                      style={{ width:"100%", height:"auto", display:"block" }}
+                      style={{ width:"100%", height:"auto", display:"block", filter: imgFilter }}
                     />
                   </div>
 
