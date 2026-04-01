@@ -25,10 +25,10 @@ export const NAV_LINKS = [
 /* Words that rotate in the hero */
 export const ROTATING_WORDS = [
   "enterprise SaaS",
-  "AI platforms",
+  "AI and Agentic Experience",
   "consumer apps",
   "design systems",
-  "data visualization",
+  "Mixed Methods Research",
 ];
 
 /* Infinite ticker - companies / clients / institutions */

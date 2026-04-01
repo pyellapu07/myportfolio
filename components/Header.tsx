@@ -3,11 +3,29 @@
 import { useState, useEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Download, Bell } from "lucide-react";
+import { Menu, X, Download } from "lucide-react";
 import Image from "next/image";
 import RecruiterToggle from "./RecruiterToggle";
 import { NAV_LINKS, SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+
+/* ── Smooth eased scroll (easeInOutCubic) ──────────────────────────────── */
+function smoothScrollTo(id: string) {
+  const target = document.getElementById(id);
+  if (!target) return;
+  const start  = window.scrollY;
+  const end    = target.getBoundingClientRect().top + window.scrollY - 72;
+  const duration = 900;
+  const t0 = performance.now();
+  const ease = (p: number) =>
+    p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+  const step = (now: number) => {
+    const p = Math.min((now - t0) / duration, 1);
+    window.scrollTo(0, start + (end - start) * ease(p));
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 
 /* ── Testimonial pills cluster ─────────────────────────────────────────── */
 const PILL_PEOPLE = [
@@ -25,7 +43,7 @@ function TestimonialPills({ isDarkText }: { isDarkText: boolean }) {
   const TOTAL  = PILL_PEOPLE.length;
 
   function scrollToTestimonials() {
-    document.getElementById("testimonials")?.scrollIntoView({ behavior: "smooth" });
+    smoothScrollTo("testimonials");
   }
 
   return (
@@ -294,19 +312,10 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
             </a>
           </div>
 
-          {/* Mobile: recruiter toggle + notification + menu button */}
+          {/* Mobile: recruiter toggle + testimonial circles + menu button */}
           <div className="flex items-center gap-3 md:hidden">
             <RecruiterToggle size="sm" dark={!isDarkText} />
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent("open-testimonials"))}
-              className={cn("relative", isDarkText ? "text-text" : "text-white")}
-              aria-label="Testimonials"
-            >
-              <Bell size={19} />
-              <span className="absolute -right-1.5 -top-1.5 flex h-[15px] w-[15px] items-center justify-center rounded-full bg-accent text-[8px] font-bold text-white">
-                3
-              </span>
-            </button>
+            <TestimonialPills isDarkText={isDarkText} />
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className={cn("relative z-50", isDarkText ? "text-text" : "text-white")}
