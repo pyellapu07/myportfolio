@@ -67,6 +67,12 @@ body {
   overflow-x: hidden;
 }
 
+/* Instrument Serif only has weight 400 — prevent browser from synthesizing bold */
+.font-display,
+.font-heading {
+  font-weight: 400 !important;
+}
+
 ::selection {
   background: rgba(99, 102, 241, 0.2);
   color: var(--color-primary);
