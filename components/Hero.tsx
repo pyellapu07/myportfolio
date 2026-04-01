@@ -257,7 +257,7 @@ export default function Hero() {
           dragElastic={0}
           data-tour="folder"
           className="absolute z-[25] hidden cursor-grab select-none flex-col items-center gap-1 md:flex active:cursor-grabbing"
-          style={{ right: "20%", top: "32%" }}
+          style={{ right: "20%", top: "32%", filter: "drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(3px 6px 0px rgba(0,0,0,0.18))" }}
           /* initial=false after first mount so finderOpen toggles don't re-run entrance */
           initial={folderShownRef.current ? false : { opacity: 0, rotate: -7, scale: 0.85 }}
           animate={{ opacity: 1, rotate: -7, scale: 1 }}
@@ -308,7 +308,7 @@ export default function Hero() {
           dragMomentum={false}
           dragElastic={0}
           className="absolute z-[25] hidden cursor-grab select-none flex-col items-center gap-1.5 md:flex active:cursor-grabbing"
-          style={{ right: "5%", top: "54%" }}
+          style={{ right: "5%", top: "54%", filter: "drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(3px 6px 0px rgba(0,0,0,0.18))" }}
           initial={{ opacity: 0, rotate: 8, scale: 0.8 }}
           animate={{ opacity: 1, rotate: 8, scale: 1 }}
           transition={{ delay: 3.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -320,7 +320,7 @@ export default function Hero() {
             src="/Trusted Tester Badge.png"
             alt="DHS Trusted Tester Certified"
             draggable={false}
-            className="w-44 drop-shadow-xl"
+            className="w-44"
             style={{ pointerEvents: "none" }}
           />
           <span className="font-mono text-[9px] font-medium tracking-wide text-neutral-400">

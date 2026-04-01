@@ -1625,9 +1625,10 @@ const PLAYER_REPLY = "consider it done. I'll find every missing piece. 🎯";
 
 interface MessengerPhaseProps {
   onStart: () => void;
+  onExit: () => void;
 }
 
-function MessengerPhase({ onStart }: MessengerPhaseProps) {
+function MessengerPhase({ onStart, onExit }: MessengerPhaseProps) {
   const [visibleMessages, setVisibleMessages] = useState<number>(0);
   const [showTyping, setShowTyping] = useState(false);
   const [showReply, setShowReply] = useState(false);
@@ -1663,6 +1664,18 @@ function MessengerPhase({ onStart }: MessengerPhaseProps) {
       className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden"
       style={{ background: "#0d0d0d", fontFamily: "monospace", cursor: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M2 1 L2 15 L5 12 L7.5 17.5 L9.5 16.5 L7 11 L11 11 Z' fill='white' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E\") 2 1, auto", position: "relative" }}
     >
+      <button
+        onClick={onExit}
+        style={{
+          position: "absolute", top: 20, left: 24,
+          background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)",
+          color: "#aaa", fontFamily: "monospace", fontSize: 11,
+          padding: "6px 14px", borderRadius: 4, cursor: "pointer",
+          letterSpacing: "0.05em", zIndex: 10,
+        }}
+      >
+        ← exit
+      </button>
       <button
         onClick={onStart}
         style={{
@@ -2778,7 +2791,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
       <AnimatePresence mode="wait">
         {phase === "messenger" && (
           <motion.div key="messenger" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <MessengerPhase onStart={handleStart} />
+            <MessengerPhase onStart={handleStart} onExit={onExit} />
           </motion.div>
         )}
       </AnimatePresence>

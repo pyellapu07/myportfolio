@@ -113,6 +113,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
   // Self-emoticon video audio state
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [dropFlash, setDropFlash] = useState(false);
 
   // Smooth scroll parallax
   const [scrollY, setScrollY] = useState(0);
@@ -201,11 +202,12 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
         const inCenter = pctX > CENTER_ZONE.left && pctX < CENTER_ZONE.right && pctY > CENTER_ZONE.top && pctY < CENTER_ZONE.bottom;
         const inDrop = mx >= dropLeft && mx <= dropLeft + dropW && my >= dropTop && my <= dropTop + dropH;
         if (inDrop && !inCenter) {
-          // Reset sticker position and start game
+          // Reset sticker position, flash, then start game
           dragRef.current = null;
           setDraggingIdx(null);
           setLiveDelta(null);
-          onGameStart();
+          setDropFlash(true);
+          setTimeout(() => onGameStart(), 680);
           return;
         }
       }
@@ -246,6 +248,21 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
       ref={containerRef}
       className="pointer-events-none absolute inset-0 z-[15] hidden overflow-hidden md:block"
     >
+      {/* ── Global keyframes ─────────────────────────────────── */}
+      <style>{`
+        @keyframes dropZoneBlink { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
+        @keyframes dropFlashAnim { 0% { opacity:0; } 18% { opacity:0.78; } 100% { opacity:0; } }
+      `}</style>
+
+      {/* ── Drop flash overlay ────────────────────────────────── */}
+      {dropFlash && (
+        <div
+          className="pointer-events-none fixed inset-0"
+          style={{ zIndex: 9998, background: "#FF5210", animation: "dropFlashAnim 0.68s ease-out forwards" }}
+          onAnimationEnd={() => setDropFlash(false)}
+        />
+      )}
+
       {/* ── Glowing drop zone ─────────────────────────────────── */}
       <div
         className="pointer-events-none absolute flex flex-col items-center justify-center gap-2"
@@ -257,7 +274,15 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
         }}
       >
         {/* Pixel character face */}
-        <div className="drop-zone-ring group relative flex h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-transparent transition-colors duration-200 hover:border-accent/40" style={{ background: "transparent" }}>
+        <div
+          className="drop-zone-ring relative flex h-20 w-20 items-center justify-center rounded-xl"
+          style={{
+            border: draggingIdx !== null ? "2px dashed rgba(255,82,16,0.8)" : "2px dashed transparent",
+            background: draggingIdx !== null ? "rgba(255,82,16,0.07)" : "transparent",
+            animation: draggingIdx !== null ? "dropZoneBlink 0.55s ease-in-out infinite" : "none",
+            transition: "background 0.2s, border-color 0.2s",
+          }}
+        >
           <div className="drop-zone-pulse absolute inset-0 rounded-xl" />
           {/* Pixel art face using CSS grid of divs */}
           <div style={{ position: "relative", width: 28, height: 36, imageRendering: "pixelated", flexShrink: 0 }}>
@@ -322,6 +347,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
 
         const scale = isDragging ? 1.04 : isHovered ? 1.04 : 1;
         const shadow = "none";
+        const stickerFilter = `drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(3px 6px 0px rgba(0,0,0,0.18))`;
 
         // Don't apply parallax to dragged item — feels more grounded
         const txParallax = isDragging ? 0 : 0;
@@ -343,9 +369,10 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
               height: h,
               transform: `translate(${ox + effectiveDx + txParallax}px, ${oy + effectiveDy + tyParallax}px) rotate(${rot}deg) scale(${scale})`,
               opacity: 1,
+              filter: stickerFilter,
               cursor: isDragging ? "grabbing" : "grab",
               zIndex: isDragging ? 50 : isHovered ? 20 : 5,
-              willChange: "transform, opacity",
+              willChange: "transform, opacity, filter",
               transition: isDragging
                 ? "opacity 0.15s, filter 0.15s"
                 : `transform 0.45s cubic-bezier(0.34,1.56,0.64,1) ${hintActive ? `${i * 0.04}s` : "0s"}, opacity 0.25s, filter 0.25s`,
