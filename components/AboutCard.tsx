@@ -206,27 +206,6 @@ export default function AboutCard() {
               />
             </div>
 
-            {/* ── Platinum star sticker — top-left, 50% hanging off card ── */}
-            <div
-              className="absolute pointer-events-none select-none"
-              style={{
-                top: "-18%",
-                left: "-18%",
-                width: "40%",
-                transform: "translateZ(14px) rotate(45deg)",
-                zIndex: 30,
-                filter: "drop-shadow(2px 2px 0px rgba(0,0,0,0.15))",
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/platinum-star-sticker.png"
-                alt="Platinum"
-                draggable={false}
-                style={{ width: "100%", height: "auto", display: "block" }}
-              />
-            </div>
-
           </motion.div>
         </div>
 
@@ -236,8 +215,24 @@ export default function AboutCard() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="flex-1"
+          className="relative flex-1 overflow-hidden md:overflow-visible"
         >
+          {/* Platinum star sticker — top-right, cropped on mobile */}
+          <div
+            className="pointer-events-none select-none absolute"
+            style={{
+              top: "-12px",
+              right: "-18px",
+              width: "88px",
+              transform: "rotate(45deg)",
+              filter: "drop-shadow(2px 2px 0px rgba(0,0,0,0.15))",
+              zIndex: 10,
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/platinum-star-sticker.png" alt="Platinum" draggable={false} style={{ width: "100%", height: "auto", display: "block" }} />
+          </div>
+
           <span className="font-mono text-xs font-medium uppercase tracking-widest text-primary">
             About Me
           </span>
