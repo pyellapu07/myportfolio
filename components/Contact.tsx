@@ -132,14 +132,16 @@ export default function Contact() {
       </div>
 
       {/* ── Printer + Receipt scene ────────────────────────────────────── */}
-      {/* Negative margins cancel SectionWrapper padding so the printer bleeds to section edges */}
+      {/* Full-viewport bleed: printer always spans 100vw regardless of section padding */}
       <motion.div
         onViewportEnter={startPrint}
         viewport={{ once: true, amount: 0.15 }}
-        className="-mx-8 md:-mx-16 lg:-mx-24"
         style={{
           marginTop: "2.5rem",
           position: "relative",
+          width: "100vw",
+          left: "50%",
+          transform: "translateX(-50%)",
         }}
       >
         {/* MY TREAT sticker — overlaps top-right of printer */}
