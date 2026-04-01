@@ -26,6 +26,14 @@ export default function Footer() {
               ))}
               <li>
                 <a
+                  href="#testimonials"
+                  className="text-sm text-text-secondary transition-colors duration-200 hover:text-primary"
+                >
+                  Hear from real people
+                </a>
+              </li>
+              <li>
+                <a
                   href={SITE.resumeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -84,10 +92,8 @@ export default function Footer() {
               &copy; {new Date().getFullYear()} {SITE.name}
             </p>
             <p className="mt-1 font-mono text-xs text-text-muted">
-              Built with Next.js & Tailwind CSS
-            </p>
-            <p className="mt-1 font-mono text-xs text-text-muted">
-              Powered by OpenAI
+              Built with lots of Caffeine, Insomniac cookies,<br />
+              Logic and a friend called &lsquo;Claude&rsquo;
             </p>
           </div>
         </div>

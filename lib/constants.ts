@@ -5,7 +5,7 @@ export const SITE = {
   title: "Product Designer & UX Researcher",
   tagline:
     "Creating user-centered digital products across enterprise SaaS, AI platforms, and consumer applications. 5+ years delivering designs that drive measurable business impact.",
-  email: "pyellapu@umd.edu",
+  email: "pyellapu@terpmail.umd.edu",
   phone: "240.610.7815",
   linkedin: "https://linkedin.com/in/pradeepyellapu",
   github: "https://github.com/pyellapu07",
