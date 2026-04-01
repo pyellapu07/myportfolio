@@ -198,7 +198,7 @@ export default function Contact() {
         style={{
           marginTop: "2.5rem",
           position: "relative",
-          width: "110vw",
+          width: "min(1400px, 160vw)",
           left: "50%",
           transform: "translateX(-50%)",
         }}
