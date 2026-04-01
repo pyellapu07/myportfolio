@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { MapPin } from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
@@ -133,10 +133,23 @@ export default function Contact() {
   const receiptCtrl                      = useAnimation();
   const printerCtrl                      = useAnimation();
 
-  /* Measure printer-top height once the image loads */
+  /* Measure printer-top height and keep in sync on every viewport resize */
+  const roRef = useRef<ResizeObserver | null>(null);
+
   const onTopLoaded = useCallback(() => {
-    setPrinterTopH(printerTopImgRef.current?.offsetHeight ?? 0);
+    const img = printerTopImgRef.current;
+    if (!img) return;
+    setPrinterTopH(img.offsetHeight);
+
+    roRef.current?.disconnect();
+    roRef.current = new ResizeObserver(() => {
+      setPrinterTopH(printerTopImgRef.current?.offsetHeight ?? 0);
+    });
+    roRef.current.observe(img);
   }, []);
+
+  /* Cleanup ResizeObserver on unmount */
+  useEffect(() => () => { roRef.current?.disconnect(); }, []);
 
   /* Triggered once when the scene enters the viewport */
   const startPrint = useCallback(async () => {
@@ -195,7 +208,7 @@ export default function Contact() {
       <motion.div
         onViewportEnter={startPrint}
         viewport={{ once: true, amount: 0.15 }}
-        className="w-[86vw] md:w-[min(457px,53vw)]"
+        className="w-[95vw] md:w-[min(457px,53vw)]"
         style={{
           marginTop: "2.5rem",
           position: "relative",
