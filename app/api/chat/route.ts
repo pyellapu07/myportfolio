@@ -13,10 +13,15 @@ Use **bold** to highlight key terms (they render as highlighted chips in the UI)
 PROFILE:
 - Name: Pradeep Yellapu
 - Role: Product Designer & UX Researcher
-- Experience: 5+ years
-- Currently: MS Data Science @ University of Maryland (minor in UX Research Methods)
-- Contact: pyellapu@umd.edu | 240.610.7815
+- Experience: 3+ years
+- Currently: MS Data Science @ University of Maryland (minor in UX Research Methods), seeking full-time roles
+- Contact: pyellapu@terpmail.umd.edu | 240.610.7815
 - LinkedIn: linkedin.com/in/pradeepyellapu
+- Medium: Published author — "Why UX Designers Matter in the Age of AI"
+
+CERTIFICATIONS & AWARDS:
+- Microsoft MLSA (Most Liked Student Ambassador) — 1st Place, Imagine Cup, recognised by Microsoft
+- DHS Trusted Tester Certified — accessibility certification by the U.S. Dept. of Homeland Security (WCAG/Section 508)
 
 KEY METRICS:
 - Reduced user friction by **40%**
@@ -32,7 +37,7 @@ EXPERIENCE:
    - Led iterative prototyping in Figma with information architecture principles
    - Developed comprehensive brand identity system and style guide
    - Built Xylem Auto-Pilot: AI pipeline converting satellite crop data to HTML bulletins
-   - Ran 3-day AGRA RFBS training workshop in Nairobi for analysts from 9 countries
+   - Ran 3-day AGRA RFBS training workshop in Nairobi, Kenya for analysts from 9 countries
 
 2. Product Design & UX Research Intern, MarketCrunch AI, San Francisco (Jun–Sep 2025)
    - UX audit of 20+ screens, 15% reduction in reporting errors
@@ -44,28 +49,37 @@ EXPERIENCE:
    - 4-step modular flow reducing a 33-page process
    - Recruiter dashboard supporting 750+ applicants annually
 
-4. Technical UX Analyst, Computacenter, Bengaluru (Jan 2023 - Jul 2024)
+4. Creative & Info Lead, Terps Esports @ UMD (2024 - 2025)
+   - Creative-directed brand visuals, motion graphics, and esports content for the UMD esports org
+   - Designed posters, tournament graphics, and social content maintaining consistent brand guidelines
+
+5. Technical UX Analyst, Computacenter UK, Bengaluru (Jan 2023 - Jul 2024)
    - Automated diagnostic dashboards reducing MTTR by 40%
    - Workflow analysis and stakeholder interviews
    - Information design for IT support teams
 
-5. Market Research Analyst & UI/UX Designer, My Equation, Ahmedabad (May 2022 - Jun 2023)
+6. Market Research Analyst & UI/UX Designer, My Equation, Ahmedabad (May 2022 - Jun 2023)
    - Mixed-methods UX research using Double Diamond methodology
    - User interviews and competitive analysis driving 35% revenue growth
 
 PROJECTS:
 - MarketCrunch AI: Fintech trading platform redesign, design systems, usability research (NDA)
 - Faculty Dashboard: Contextual interviews with UMD faculty, affinity mapping, journey maps
-- NASA Harvest / Xylem Institute: 2 live websites, 2 design systems, AI bulletin pipeline, Nairobi workshop
+- NASA Harvest / Xylem Institute: 2 live websites, 2 design systems, AI bulletin pipeline, Nairobi Kenya workshop
 - HackImpact Portal: 80% reduction in navigation time, 750+ applicants, 33-page process simplified
 - Transurban Express Lanes: Mixed-methods research, 127 survey participants, 8 interviews, SUS scoring
 - PrepSharp: AI-powered interview prep platform, full product design from concept to prototype
 
 SKILLS:
 Design: Human-Centric Design, Interaction Design, Visual Design, Prototyping, Information Architecture, Design Systems, Accessibility (WCAG 2.2)
-Research: Journey Mapping, Card Sorting, In-Depth Interviews, Ethnographic Research, Competitive Analysis, Heuristic Evaluation, A/B Testing
-Tools: Figma, Adobe XD, Photoshop & Illustrator, Miro & Notion, Power BI & Tableau, QGIS, Generative-AI Tools
+Research: Journey Mapping, Card Sorting, In-Depth Interviews, Ethnographic Research, Competitive Analysis, Heuristic Evaluation, A/B Testing, Usability Testing, Contextual Inquiry
+Tools: Figma, Adobe XD, Photoshop, Illustrator, After Effects, Framer, Webflow, Miro, Notion, Power BI, Tableau, QGIS, Hotjar, Google Analytics, React, Docker, Claude AI, Google Colab
 Technical: HTML/CSS, JavaScript, Python, SQL, Git/GitHub, Data Visualization
+
+PERSONAL:
+- Grew up in coastal Vizag, India. Started designing for a startup clothing brand from scratch.
+- Collects Marvel and Star Wars figures, Lego sets, and photographs Hot Wheels editorially.
+- Open to relocation.
 `;
 
 /* ── Helper: parse match % from AI text ───────────────────────────── */
