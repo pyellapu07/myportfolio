@@ -226,14 +226,14 @@ export default function AboutCard() {
             Product Designer &amp; Researcher &nbsp;·&nbsp; Seeking Full-time roles
           </p>
           <p className="mt-7 text-[15.5px] leading-[1.85] text-text-secondary">
-            Grew up in coastal Vizag, India. Started designing for a startup clothing brand. Drew a hanger icon from scratch because nobody puts clothes in a cart. That one decision started everything.
+            Grew up in coastal Vizag, India. Started designing for a startup clothing brand when a friend handed me his idea and zero budget. The first real call was drawing a hanger icon from scratch because no one puts clothes in a cart. That decision set everything in motion.
           </p>
           <p className="mt-4 text-[15.5px] leading-[1.85] text-text-secondary">
-            Now at <strong className="text-text">University of Maryland</strong> doing MS in Data Science + UX Research. Built tools for NASA, shipped products at an AI startup, creative-directed an esports org, and got sponsored to fly to{" "}
+            Now at <strong className="text-text">University of Maryland</strong> doing MS in Data Science + UX Research. Built tools for NASA, shipped a full product redesign at a San Francisco AI startup, creative-directed an esports org, and got flown to{" "}
             <strong className="text-text">Nairobi, Kenya</strong> to train professionals on the system I designed.
           </p>
           <p className="mt-4 text-[15.5px] leading-[1.85] text-text-secondary">
-            Off the clock: Marvel action figures, Lego sets, and photographing Hot Wheels like they&apos;re full editorial shoots. Priorities. 🏎️
+            Off the clock: a Marvel and Star Wars figure collection I&apos;ve been building since age five, Lego sets my dad started me on, and photographing Hot Wheels like they&apos;re full editorial shoots. The collection is slightly out of hand.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link

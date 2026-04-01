@@ -236,42 +236,41 @@ export default function About() {
           className="space-y-5 text-[15.5px] leading-[1.82] text-text-secondary"
         >
           <p>
-            Grew up in <Hi color="blue">Vizag</Hi>, a coastal city in India that runs on sea breeze, shells on the sand, and genuinely good vibes. Clean. Peaceful. Then I moved to Chennai for uni at SRM, and honestly? That&apos;s where things got{" "}
-            <Cur>interesting.</Cur>
+            Grew up in <Hi color="blue">Vizag</Hi>, a coastal city in India where the sea is five minutes from everywhere and the pace of life actually lets you think. Quiet, clean, good food. Then moved to Chennai for uni at SRM, and that&apos;s where everything started to pick up speed.
           </p>
           <p>
-            Always been into storytelling: theatre, direction, art. There&apos;s something about <Cur>showing the world through your lens</Cur> that just hits different. My Movies &amp; Dramatics Club president saw it too and handed me his clothing brand startup to design. First challenge: the cart icon felt wrong. Nobody puts clothes in a cart.{" "}
-            <Hi color="yellow">They hang them.</Hi> So I drew a hanger icon from scratch with the pen tool (no icon libraries, I was very naive lol). Horizontal scroll felt like browsing through a real wardrobe. The hanger blew up. Calls started coming in from entrepreneurs and student clubs. And so it began.
+            I&apos;d always been drawn to storytelling. Theatre, direction, making things. In university I joined the Movies &amp; Dramatics Club, and the president was running a clothing brand startup on the side. He needed a designer. I had no formal training, just curiosity and a lot of time on Figma. First real challenge: the cart icon felt wrong for clothes. Nobody puts clothes in a cart.{" "}
+            <Hi color="yellow">They hang them.</Hi> So I drew a hanger icon from scratch with the pen tool. Built a horizontal scroll that felt like browsing through a real wardrobe. That decision got noticed. Calls started coming in from other entrepreneurs, student clubs, early-stage teams. I had no plan. It just kept going.
           </p>
           <p>
-            As I grew (experience-wise, I mean 😭), I realized:{" "}
-            <Hi color="pink">design isn&apos;t about what <em>I</em> like.</Hi> It&apos;s about what users need. Not everyone thinks the same way we do. A product is truly beautiful when a first-grader AND an 85-year-old grandma can use it without any help.{" "}
-            <Cur>UX is not about us.</Cur>
+            The more I worked with people, the more I understood:{" "}
+            <Hi color="pink">design isn&apos;t about what I find beautiful.</Hi> It&apos;s about what someone else can use without needing a manual. A product works when a first-grader and an 85-year-old both reach for it the same way.{" "}
+            <Cur>That shift changed how I think about everything.</Cur>
           </p>
           <p>
-            CS + Business Systems degree in hand, I thought I had it figured out... until I asked: where&apos;s the data? Research without evidence is just vibes. Started bridging{" "}
-            <Hi color="green">data analytics with product design.</Hi> Computacenter UK hired me during my senior year. A year of automation work later, my manager dropped a line that rewired my brain:{" "}
-            <Cur>&ldquo;Why does this problem even exist?&rdquo;</Cur> Root cause over symptom chasing. Completely different game.
+            CS and Business Systems degree in hand, I started noticing a gap. Good design without evidence is decoration.{" "}
+            <Hi color="green">Started bridging data analytics with product work.</Hi> Computacenter UK hired me during my final year. A year in, my manager asked me something I still think about: not how do we fix this problem, but why does this problem exist in the first place.{" "}
+            <Cur>Root cause over symptom.</Cur> Completely different game.
           </p>
           <p>
-            Moved to the US for my MS in Data Science + UX Research at{" "}
-            <Hi color="blue">University of Maryland.</Hi> Things escalated fast. Our faculty workload study earned a citation request from a senior professor. Joined{" "}
-            <PLink href="/work/hack4impact" label="Hack4Impact" gif="/hack4impactpreview.gif" /> as sole Product Designer, redesigned their full recruitment ecosystem for{" "}
-            <Hi color="yellow">750+ applicants/semester</Hi>, presented to stakeholders including Microsoft Reston and CMNS directors. Then interned at{" "}
-            <PLink href="/work/marketcrunch" label="MarketCrunch AI" gif="/marketcrunchaipreview.gif" /> in SF as their sole designer, audited, shipped new features, helped grow MAU ~16x.
+            Came to the US for my MS in Data Science + UX Research at{" "}
+            <Hi color="blue">University of Maryland.</Hi> Joined{" "}
+            <PLink href="/work/hack4impact" label="Hack4Impact" gif="/hack4impactpreview.gif" /> as sole Product Designer and redesigned a full recruitment system handling{" "}
+            <Hi color="yellow">750+ applicants per semester</Hi>, presented to stakeholders including Microsoft Reston and CMNS directors. Then interned at{" "}
+            <PLink href="/work/marketcrunch" label="MarketCrunch AI" gif="/marketcrunchaipreview.gif" /> in San Francisco as their sole designer. Audited the full product, shipped features, helped grow MAU roughly 16x.
           </p>
           <p>
-            Post-internship, I cold-reached a NASA-affiliated data scientist after watching her TED talk. One coffee chat later, I was in her lab. Now building{" "}
-            <PLink href="/work/xylem-institute" label="Xylem Institute" gif="/xylemlabscreenrecording.gif" />, automating 3-day satellite data pipelines into{" "}
-            <Hi color="green">30-minute policy bulletins.</Hi> Designed the brand, the UX, the full system. Got sponsored to <Cur>Nairobi, Kenya</Cur> in March 2026 to train professionals on the tools I built. Watching them use it effortlessly, no hand-holding needed. That&apos;s the whole point.
+            After the internship I watched a TED talk by a NASA-affiliated data scientist at UMD and sent her a cold email. One coffee chat later I was in her lab. Now building{" "}
+            <PLink href="/work/xylem-institute" label="Xylem Institute" gif="/xylemlabscreenrecording.gif" />, turning 3-day satellite data pipelines into{" "}
+            <Hi color="green">30-minute policy bulletins</Hi> for analysts across 9 countries. Designed the brand, the UX, the entire system. In March 2026 they flew me to <Cur>Nairobi, Kenya</Cur> to train professionals on the tools I&apos;d built. Watching them use it without any confusion, no hand-holding needed. That&apos;s the whole point.
           </p>
           <p>
-            Oh, and also creative-directed{" "}
-            <PLink href="/work/terps-esports" label="Terps Esports" gif="/Esports/displaygif.gif" />: motion graphics, brand identity, event shoots. Because apparently I don&apos;t say no. 🤷
+            Alongside all of that, I creative-directed{" "}
+            <PLink href="/work/terps-esports" label="Terps Esports" gif="/Esports/displaygif.gif" /> at UMD. Motion graphics, brand identity, event shoots. Started as a one-off project and turned into a full creative operation over two years.
           </p>
           <p>
-            Off the clock: collecting{" "}
-            <Hi color="purple">Marvel, Star Wars &amp; comic action figures</Hi>, building Lego sets, and photographing Hot Wheels &amp; F1 model cars like they&apos;re full editorial shoots. Priorities. 🏎️
+            Off the clock: I&apos;ve been collecting{" "}
+            <Hi color="purple">Marvel, Star Wars and comic action figures</Hi> since I was five. It started with Kinder Joy superhero capsules — my parents used them to get me to eat, and I kept every single one. The first full figure I got was Spider-Man. I&apos;m well into my 50s now. Every one of them has a story. My dad also used to bring home Lego sets when I was a kid. Building them was meditative, but what I remember most is losing one piece and the whole set feeling incomplete. That stuck with me more than I expected. A thing is either finished or it isn&apos;t. Applies to design the same way.
           </p>
         </motion.div>
 
