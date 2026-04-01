@@ -10,18 +10,18 @@ import SectionWrapper from "./SectionWrapper";
 const TESTIMONIALS = [
   {
     name: "Erica Javadpur",
-    role: "Esports Coordinator",
+    role: "Creative & Info Lead, Terps Esports",
     company: "University of Maryland",
-    period: "2024 – Present",
+    period: "March 31, 2026",
     avatar: "/Erica.jpeg",
     accentColor: "#E63946",
     defaultRotate: -22,
     defaultX: -340,
     defaultY: 30,
     quote:
-      "This website is incredibly impressive, engaging, and interesting. This will hook anyone in to really go through your site. One of the coolest portfolios I've ever seen.",
+      "Pradeep is an extremely talented, thorough, and wildly creative graphic designer. He consistently thinks outside of the box to elevate our program's brand. Any company will be beyond lucky to have Pradeep on their team.",
     fullQuote:
-      "This website is incredibly impressive, engaging, and interesting. This will hook anyone in to really go through your site. I will say, on both my PC and laptop (PC was better), the amount of interactive things going on slowed the website a bit — but the creativity and craft behind it is undeniable. One of the coolest portfolios I've ever seen.",
+      "Pradeep is an extremely talented, thorough, and wildly creative graphic designer. He consistently thinks outside of the box to elevate our program's brand, while still maintaining within the creative guidelines. More importantly though, he is a diligent, communicative worker who is eager to learn and grow, both as a creative but also as a budding professional. He takes feedback and incorporates it immediately into his work, to the point where the change is evident and reflected instantaneously. Although bittersweet that he leaves our team as he graduates from UMD, I'm excited to see where he takes his talents in this next chapter. Any company will be beyond lucky to have Pradeep on their team.",
   },
   {
     name: "Bhushan Suryavanshi",
