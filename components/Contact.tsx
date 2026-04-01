@@ -70,6 +70,62 @@ function Divider({ thick }: { thick?: boolean }) {
 }
 
 /* ── Component ────────────────────────────────────────────────────────── */
+/* ── Printer sound (Web Audio API, ≤ 2.8 s — compliant with Section 508 §1.4.2) ── */
+function playPrinterSound(duration: number) {
+  try {
+    type AudioCtxCtor = typeof AudioContext & { new(): AudioContext };
+    const Ctx = (window.AudioContext ?? (window as unknown as { webkitAudioContext: AudioCtxCtor }).webkitAudioContext);
+    if (!Ctx) return;
+    const ctx = new Ctx();
+
+    const sr = ctx.sampleRate;
+    const len = Math.floor(sr * duration);
+
+    /* ── White noise buffer (paper friction) ── */
+    const noiseBuf = ctx.createBuffer(1, len, sr);
+    const nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < len; i++) nd[i] = Math.random() * 2 - 1;
+
+    const noiseNode = ctx.createBufferSource();
+    noiseNode.buffer = noiseBuf;
+
+    /* Band-pass — keeps the papery "shhrrr" frequency band */
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = 900;
+    bp.Q.value = 1.8;
+
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.value = 0.18;
+
+    /* ── Stepper-motor oscillator (the rhythmic clatter) ── */
+    const motor = ctx.createOscillator();
+    motor.type = "sawtooth";
+    motor.frequency.value = 72;   // ~72 Hz step-motor buzz
+
+    const motorGain = ctx.createGain();
+    motorGain.gain.value = 0.06;
+
+    /* ── Master envelope: fade in fast, hold, fade out at end ── */
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0, ctx.currentTime);
+    master.gain.linearRampToValueAtTime(0.55, ctx.currentTime + 0.06);
+    master.gain.setValueAtTime(0.55, ctx.currentTime + duration - 0.18);
+    master.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+
+    /* ── Wire up ── */
+    noiseNode.connect(bp); bp.connect(noiseGain); noiseGain.connect(master);
+    motor.connect(motorGain); motorGain.connect(master);
+    master.connect(ctx.destination);
+
+    const t = ctx.currentTime;
+    noiseNode.start(t); noiseNode.stop(t + duration);
+    motor.start(t);     motor.stop(t + duration);
+
+    setTimeout(() => ctx.close(), (duration + 0.4) * 1000);
+  } catch (_) { /* silently skip if Web Audio unavailable */ }
+}
+
 export default function Contact() {
   const printerTopImgRef = useRef<HTMLImageElement>(null);
   const [printerTopH, setPrinterTopH]   = useState(0);
@@ -86,6 +142,9 @@ export default function Contact() {
   const startPrint = useCallback(async () => {
     if (hasAnimated.current) return;
     hasAnimated.current = true;
+
+    /* Printer sound — 2.8 s, under Section 508 §1.4.2 3-second threshold */
+    playPrinterSound(2.8);
 
     /* Printer buzz — runs until receipt is done */
     printerCtrl.start({
