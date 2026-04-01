@@ -15,7 +15,7 @@ const TESTIMONIALS = [
     avatar: "/Erica.jpeg",
     accentColor: "#E63946",
     defaultRotate: -22,
-    defaultX: -240,
+    defaultX: -340,
     defaultY: 30,
     quote:
       "This website is incredibly impressive, engaging, and interesting. This will hook anyone in to really go through your site. One of the coolest portfolios I've ever seen.",
@@ -28,7 +28,7 @@ const TESTIMONIALS = [
     avatar: "/bhushan marketcrunch.jpeg",
     accentColor: "#FF6B6B",
     defaultRotate: -9,
-    defaultX: -80,
+    defaultX: -113,
     defaultY: 10,
     quote:
       "Pradeep became the backbone of our product redesign. His UX audit was thorough, his prototypes polished, and his ability to run usability sessions and translate findings into improvements was beyond what we expected. The numbers speak for themselves.",
@@ -41,7 +41,7 @@ const TESTIMONIALS = [
     avatar: "/catherine nakalembe.webp",
     accentColor: "#A78BFA",
     defaultRotate: 9,
-    defaultX: 80,
+    defaultX: 113,
     defaultY: 10,
     quote:
       "He made complex geospatial and climate data intuitive for analysts across 9 countries. A rare blend of design sensibility and technical depth that most designers shy away from.",
@@ -54,7 +54,7 @@ const TESTIMONIALS = [
     avatar: "/ravi kumar.jpeg",
     accentColor: "#34D399",
     defaultRotate: 22,
-    defaultX: 240,
+    defaultX: 340,
     defaultY: 30,
     quote:
       "Never delayed on any task assigned to him. A true team player, and a creative artist when it comes to editing or drawing. I wish him the best for his masters in the states.",
@@ -117,7 +117,7 @@ export default function Testimonials() {
 
       {/* ── Deck ──────────────────────────────────────────────────────── */}
       <div className="relative flex items-center justify-center"
-           style={{ height: 480, marginTop: 40 }}>
+           style={{ height: 500, marginTop: 40 }}>
         {TESTIMONIALS.map((t, i) => {
           const style = getCardStyle(i);
           const isActive = hovered === i;
@@ -144,26 +144,26 @@ export default function Testimonials() {
             >
               {/* Card */}
               <div
-                className="relative overflow-hidden rounded-[22px] p-6"
+                className="relative overflow-hidden rounded-[22px] p-6 transition-shadow duration-300"
                 style={{
-                  background: "#111116",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "#ffffff",
+                  border: `1px solid ${isActive ? t.accentColor + "55" : "#e5e7eb"}`,
                   boxShadow: isActive
-                    ? "0 32px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.12)"
-                    : "0 8px 32px rgba(0,0,0,0.4)",
+                    ? `0 20px 48px rgba(0,0,0,0.12), 0 0 0 1px ${t.accentColor}33`
+                    : "0 4px 20px rgba(0,0,0,0.07)",
                 }}
               >
                 {/* Accent top bar */}
                 <div
-                  className="absolute left-0 top-0 h-[2px] w-full transition-opacity duration-300"
+                  className="absolute left-0 top-0 h-[2.5px] w-full transition-opacity duration-300"
                   style={{
                     background: `linear-gradient(to right, ${t.accentColor}, transparent)`,
-                    opacity: isActive ? 1 : 0.3,
+                    opacity: isActive ? 1 : 0.4,
                   }}
                 />
 
                 {/* Top row: period */}
-                <p className="mb-4 font-mono text-[10px] text-white/30 text-right">
+                <p className="mb-4 font-mono text-[10px] text-neutral-400 text-right">
                   {t.period}
                 </p>
 
@@ -173,40 +173,34 @@ export default function Testimonials() {
                     className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full transition-all duration-500"
                     style={{
                       filter: isActive ? "grayscale(0%)" : "grayscale(100%)",
-                      boxShadow: isActive ? `0 0 0 2px ${t.accentColor}` : "0 0 0 2px rgba(255,255,255,0.1)",
+                      boxShadow: isActive ? `0 0 0 2px ${t.accentColor}` : "0 0 0 2px #e5e7eb",
                     }}
                   >
-                    <Image
-                      src={t.avatar}
-                      alt={t.name}
-                      fill
-                      sizes="40px"
-                      className="object-cover"
-                    />
+                    <Image src={t.avatar} alt={t.name} fill sizes="40px" className="object-cover" />
                   </div>
                   <div>
-                    <p className="text-[12px] font-semibold text-white leading-tight">{t.name}</p>
+                    <p className="text-[12px] font-semibold text-neutral-900 leading-tight">{t.name}</p>
                     <p
                       className="text-[10px] font-mono transition-colors duration-300"
-                      style={{ color: isActive ? t.accentColor : "rgba(255,255,255,0.35)" }}
+                      style={{ color: isActive ? t.accentColor : "#9ca3af" }}
                     >
                       {t.role}
                     </p>
-                    <p className="text-[9px] font-mono text-white/20">{t.company}</p>
+                    <p className="text-[9px] font-mono text-neutral-400">{t.company}</p>
                   </div>
                 </div>
 
                 {/* Quote */}
-                <p className="text-[12px] leading-relaxed text-white/50">
+                <p className="text-[12px] leading-relaxed text-neutral-500">
                   &ldquo;{t.quote}&rdquo;
                 </p>
 
-                {/* Hover: subtle glow */}
+                {/* Hover: subtle tint */}
                 {isActive && (
                   <div
                     className="pointer-events-none absolute inset-0 rounded-[22px]"
                     style={{
-                      background: `radial-gradient(ellipse at 50% 0%, ${t.accentColor}18 0%, transparent 65%)`,
+                      background: `radial-gradient(ellipse at 50% 0%, ${t.accentColor}0d 0%, transparent 65%)`,
                     }}
                   />
                 )}
