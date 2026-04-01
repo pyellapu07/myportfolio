@@ -115,7 +115,7 @@ function Toolbox() {
         onMouseMove={onContainerMouseMove}
         onMouseLeave={() => setTooltip(null)}
       >
-        <div className="flex flex-wrap items-center gap-5 md:gap-7">
+        <div className="flex flex-wrap items-center justify-center gap-5 md:gap-7">
           {TOOLS.map((tool) => (
             <div
               key={tool.name}
