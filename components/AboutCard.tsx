@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import {
   motion,
   useMotionValue,
@@ -14,8 +14,12 @@ import SectionWrapper from "./SectionWrapper";
 const THICKNESS = 12; // number of stacked layers = visual depth in px
 
 export default function AboutCard() {
-  const cardRef    = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLElement | null>(null);
+  const cardRef        = useRef<HTMLDivElement>(null);
+  const sectionRef     = useRef<HTMLElement | null>(null);
+  const gyroCleanupRef = useRef<(() => void) | null>(null);
+
+  /* iOS requires a user-gesture before granting DeviceOrientation */
+  const [needsPermission, setNeedsPermission] = useState(false);
 
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
@@ -37,8 +41,67 @@ export default function AboutCard() {
   const hueShift   = useTransform(rawX, [-1, 1], [-30, 60]);
   const foilFilter = useTransform(hueShift, (h) => `hue-rotate(${h}deg) saturate(1.6) brightness(1.08) contrast(1.04)`);
 
-  /* ── Track mouse across the ENTIRE about section ── */
+  /* ── Gyroscope — mobile ── */
+  const startGyro = useCallback(() => {
+    let calibrated = false;
+    let baseBeta = 0, baseGamma = 0;
+
+    function onOrientation(e: DeviceOrientationEvent) {
+      if (e.beta === null || e.gamma === null) return;
+      if (!calibrated) {
+        baseBeta  = e.beta;
+        baseGamma = e.gamma;
+        calibrated = true;
+      }
+      // gamma = left/right tilt, beta = front/back tilt
+      const rx = Math.max(-1, Math.min(1, (e.gamma - baseGamma) / 20));
+      const ry = Math.max(-1, Math.min(1, (e.beta  - baseBeta)  / 20));
+      rawX.set(rx);
+      rawY.set(ry);
+    }
+
+    window.addEventListener("deviceorientation", onOrientation, true);
+    return () => window.removeEventListener("deviceorientation", onOrientation, true);
+  }, [rawX, rawY]);
+
   useEffect(() => {
+    const isMobile = window.matchMedia("(pointer: coarse)").matches;
+    if (!isMobile) return;
+
+    type DOE = typeof DeviceOrientationEvent & { requestPermission?: () => Promise<string> };
+    const hasPermissionAPI = typeof (DeviceOrientationEvent as DOE).requestPermission === "function";
+
+    if (hasPermissionAPI) {
+      // iOS 13+ — must wait for a user tap
+      setNeedsPermission(true);
+    } else {
+      // Android & others — start immediately
+      gyroCleanupRef.current = startGyro();
+    }
+
+    return () => { gyroCleanupRef.current?.(); };
+  }, [startGyro]);
+
+  async function handlePermissionTap() {
+    if (!needsPermission) return;
+    try {
+      type DOE = typeof DeviceOrientationEvent & { requestPermission?: () => Promise<string> };
+      const fn = (DeviceOrientationEvent as DOE).requestPermission;
+      if (fn) {
+        const result = await fn.call(DeviceOrientationEvent);
+        if (result === "granted") {
+          setNeedsPermission(false);
+          gyroCleanupRef.current = startGyro();
+        }
+      }
+    } catch (_) { /* denied or unavailable */ }
+  }
+
+  /* ── Track mouse across the ENTIRE about section (desktop only) ── */
+  useEffect(() => {
+    const isMobile = window.matchMedia("(pointer: coarse)").matches;
+    if (isMobile) return; // mobile uses device orientation above
+
     sectionRef.current = document.getElementById("about") as HTMLElement | null;
 
     function onMove(e: MouseEvent) {
@@ -47,17 +110,14 @@ export default function AboutCard() {
       if (!section || !card) return;
 
       const sr = section.getBoundingClientRect();
-      // Only active while inside the section
       if (e.clientY < sr.top || e.clientY > sr.bottom) {
         rawX.set(0); rawY.set(0); return;
       }
 
-      // Normalise relative to the card's centre so tilt "aims" at the card
       const cr = card.getBoundingClientRect();
       const cx = cr.left + cr.width  / 2;
       const cy = cr.top  + cr.height / 2;
 
-      // Range: half the section width/height → gives a gentle, natural feel
       const rx = Math.max(-1, Math.min(1, (e.clientX - cx) / (sr.width  * 0.55)));
       const ry = Math.max(-1, Math.min(1, (e.clientY - cy) / (sr.height * 0.55)));
       rawX.set(rx);
@@ -85,6 +145,7 @@ export default function AboutCard() {
         >
           <motion.div
             ref={cardRef}
+            onClick={handlePermissionTap}
             style={{ rotateX, rotateY, transformStyle: "preserve-3d", aspectRatio: "3/4" }}
             className="relative w-full cursor-pointer flex flex-col"
           >
@@ -204,6 +265,15 @@ export default function AboutCard() {
                   border: "1.5px solid rgba(150,150,150,0.55)",
                 }}
               />
+
+              {/* iOS tilt permission hint — tap the card to activate */}
+              {needsPermission && (
+                <div className="pointer-events-none absolute inset-0 z-50 flex items-end justify-center pb-4 md:hidden">
+                  <span className="rounded-full bg-black/50 px-3 py-1.5 font-mono text-[10px] text-white backdrop-blur-sm">
+                    tap card to enable tilt ↕
+                  </span>
+                </div>
+              )}
             </div>
 
           </motion.div>

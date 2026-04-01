@@ -192,6 +192,12 @@ body {
   animation: ticker 25s linear infinite;
 }
 
+@media (max-width: 767px) {
+  .ticker-scroll {
+    animation-duration: 12s;
+  }
+}
+
 /* Rotating text slide up */
 @keyframes slideUp {
   0% {

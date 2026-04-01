@@ -234,6 +234,31 @@ export default function Hero() {
           </div>
           <span className="font-mono text-[11px] font-medium text-neutral-500">creativesidehustle/</span>
         </motion.button>
+
+        {/* ── Mobile credential badges: Microsoft + DHS Trusted Tester ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.85 }}
+          className="mt-5 flex items-center gap-4 md:hidden"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/microsoft-logo.png"
+            alt="Microsoft MLSA 1st Place"
+            draggable={false}
+            className="h-11 w-auto object-contain"
+            style={{ filter: "drop-shadow(2px 2px 0px rgba(0,0,0,0.15))" }}
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/Trusted Tester Badge.png"
+            alt="DHS Trusted Tester Certified"
+            draggable={false}
+            className="h-11 w-auto object-contain"
+            style={{ filter: "drop-shadow(2px 2px 0px rgba(0,0,0,0.15))" }}
+          />
+        </motion.div>
       </motion.div>
 
       {/* Infinite scrolling company ticker */}
