@@ -75,8 +75,8 @@ export default function AboutCard() {
   }, [rawX, rawY]);
 
   return (
-    <SectionWrapper id="about" alternate>
-      <div className="relative flex flex-col items-center gap-12 md:flex-row md:items-start md:gap-16" style={{ overflowX: "clip" }}>
+    <SectionWrapper id="about" alternate className="overflow-x-hidden">
+      <div className="relative flex flex-col items-center gap-12 md:flex-row md:items-start md:gap-16">
 
         {/* ── 3D Card ── */}
         <div
@@ -222,7 +222,7 @@ export default function AboutCard() {
           </span>
 
           {/* Heading row — sticker sits as flex sibling, hangs off right edge */}
-          <div className="flex items-start gap-2 -mr-5 md:-mr-8">
+          <div className="flex items-start gap-2 -mr-12 md:-mr-20">
             <h2 className="mt-4 font-heading text-4xl font-bold leading-tight text-text md:text-[3rem]">
               Hii! I&apos;m Pradeep.
             </h2>
