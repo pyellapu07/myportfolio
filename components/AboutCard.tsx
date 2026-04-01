@@ -1,6 +1,13 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useMotionTemplate,
+} from "framer-motion";
 import Link from "next/link";
 import SectionWrapper from "./SectionWrapper";
 
@@ -11,64 +18,182 @@ const STATS = [
 ];
 
 export default function AboutCard() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  /* ── Raw mouse position: -1 → 1 ── */
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+
+  /* ── Smooth spring tilt ── */
+  const rotateY = useSpring(useTransform(rawX, [-1, 1], [-22, 22]), { stiffness: 110, damping: 18 });
+  const rotateX = useSpring(useTransform(rawY, [-1, 1], [16, -16]), { stiffness: 110, damping: 18 });
+
+  /* ── Photo parallax — shifts opposite to tilt, reveals hidden area ── */
+  const photoX = useSpring(useTransform(rawX, [-1, 1], [18, -18]), { stiffness: 80, damping: 20 });
+  const photoY = useSpring(useTransform(rawY, [-1, 1], [12, -12]), { stiffness: 80, damping: 20 });
+
+  /* ── Glare spot ── */
+  const glareXPct = useTransform(rawX, [-1, 1], [15, 85]);
+  const glareYPct = useTransform(rawY, [-1, 1], [10, 90]);
+  const glareBg   = useMotionTemplate`radial-gradient(circle at ${glareXPct}% ${glareYPct}%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.18) 22%, transparent 52%)`;
+
+  /* ── Holographic foil hue shifts with cursor X ── */
+  const hueShift  = useTransform(rawX, [-1, 1], [0, 180]);
+  const foilFilter = useTransform(hueShift, (h) => `hue-rotate(${h}deg) saturate(1.4) brightness(1.08)`);
+
+  /* ── Shadow depth follows tilt ── */
+  const shadowX = useTransform(rawX, [-1, 1], [-24, 24]);
+  const shadowY = useTransform(rawY, [-1, 1], [-16, 16]);
+  const cardShadow = useMotionTemplate`${shadowX}px ${shadowY}px 60px rgba(0,0,0,0.28), 0 8px 24px rgba(0,0,0,0.18)`;
+
+  function onMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    rawX.set((e.clientX - rect.left) / rect.width  * 2 - 1);
+    rawY.set((e.clientY - rect.top)  / rect.height * 2 - 1);
+  }
+
+  function onMouseLeave() {
+    rawX.set(0);
+    rawY.set(0);
+  }
+
   return (
     <SectionWrapper id="about" alternate>
       <div className="flex flex-col items-center gap-12 md:flex-row md:items-start md:gap-16">
 
-        {/* ── NFT Card ─────────────────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: 24, rotate: -1 }}
-          whileInView={{ opacity: 1, y: 0, rotate: -1 }}
-          whileHover={{ rotate: 0, y: -6 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-[260px] shrink-0 cursor-default"
+        {/* ── 3D Holographic Card ─────────────────────────────────── */}
+        <div
+          ref={containerRef}
+          onMouseMove={onMouseMove}
+          onMouseLeave={onMouseLeave}
+          className="w-full max-w-[260px] shrink-0 mx-auto md:mx-0"
+          style={{ perspective: "900px" }}
         >
-          <div className="relative overflow-hidden rounded-[28px] bg-[#0d0d12] p-3.5 shadow-[0_24px_64px_rgba(0,0,0,0.28)]">
+          <motion.div
+            style={{ rotateX, rotateY, transformStyle: "preserve-3d", boxShadow: cardShadow }}
+            className="relative w-full rounded-[28px] overflow-hidden cursor-pointer"
+            initial={{ opacity: 0, y: 24, rotateY: -6 }}
+            whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {/* 1 — Silver metallic base */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(128deg, #b0b0b0 0%, #efefef 18%, #c8c8c8 34%, #f7f7f7 50%, #c4c4c4 66%, #f0f0f0 82%, #d4d4d4 100%)",
+              }}
+            />
 
-            {/* Top row */}
-            <div className="mb-3 flex items-center justify-between px-0.5">
-              <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500 via-indigo-500 to-blue-500 px-3 py-[5px]">
-                <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white">✦ Rare</span>
+            {/* 2 — Holographic rainbow foil (shifts hue with cursor) */}
+            <motion.div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "repeating-linear-gradient(115deg, #ff006688 0%, #ffaa0088 16%, #00ff6688 33%, #0077ff88 50%, #cc00ff88 66%, #ff006688 100%)",
+                backgroundSize: "200% 200%",
+                filter: foilFilter,
+                mixBlendMode: "overlay",
+              }}
+            />
+
+            {/* 3 — Top bar label */}
+            <div className="relative z-10 flex items-center justify-between px-4 pt-4 pb-2">
+              <div
+                className="flex items-center gap-1.5 rounded-full px-3 py-1"
+                style={{
+                  background: "rgba(255,255,255,0.28)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255,255,255,0.5)",
+                }}
+              >
+                <span className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white drop-shadow">
+                  ✦ Rare
+                </span>
               </div>
-              <span className="font-mono text-[10px] text-white/30">UX / Research</span>
+              <span className="font-mono text-[9px] text-white/50">UX / Research</span>
             </div>
 
-            {/* Photo */}
-            <div className="aspect-[3/4] overflow-hidden rounded-[18px]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/About m/Me smiling in the safari van 2.JPEG"
-                alt="Pradeep in Nairobi, Kenya"
-                className="h-full w-full object-cover object-top"
+            {/* 4 — Photo with parallax */}
+            <div
+              className="relative mx-3 overflow-hidden rounded-[18px]"
+              style={{ aspectRatio: "3/4" }}
+            >
+              {/* Oversized image so tilt reveals hidden edges */}
+              <motion.div
+                className="absolute"
+                style={{
+                  width: "136%",
+                  height: "136%",
+                  top: "-18%",
+                  left: "-18%",
+                  x: photoX,
+                  y: photoY,
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/About m/Me smiling in the safari van 2.JPEG"
+                  alt="Pradeep"
+                  className="w-full h-full object-cover"
+                  draggable={false}
+                />
+              </motion.div>
+
+              {/* Matte/depth overlay on photo */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(to bottom, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.22) 100%)",
+                }}
+              />
+
+              {/* Shine on photo — follows cursor */}
+              <motion.div
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: glareBg, mixBlendMode: "overlay" }}
               />
             </div>
 
-            {/* Stats bar */}
-            <div className="mt-3 grid grid-cols-3 gap-1.5 px-0.5">
+            {/* 5 — Stats bar */}
+            <div className="relative z-10 mx-3 mb-3 mt-3 grid grid-cols-3 gap-1.5">
               {STATS.map((s) => (
                 <div
                   key={s.label}
-                  className="rounded-2xl bg-white/[0.06] px-2 py-2.5 text-center"
+                  className="rounded-2xl px-2 py-2.5 text-center"
+                  style={{
+                    background: "rgba(255,255,255,0.18)",
+                    backdropFilter: "blur(10px)",
+                    border: "1px solid rgba(255,255,255,0.3)",
+                  }}
                 >
-                  <p className="font-heading text-[15px] font-bold text-white">{s.value}</p>
-                  <p className="mt-0.5 font-mono text-[9px] text-white/35">{s.label}</p>
+                  <p className="font-heading text-[15px] font-bold text-white drop-shadow-sm">{s.value}</p>
+                  <p className="mt-0.5 font-mono text-[9px] text-white/55">{s.label}</p>
                 </div>
               ))}
             </div>
 
-            {/* Subtle inner glow */}
+            {/* 6 — Full card glare (on top of everything) */}
+            <motion.div
+              className="pointer-events-none absolute inset-0 rounded-[28px]"
+              style={{ background: glareBg, mixBlendMode: "soft-light", opacity: 0.7 }}
+            />
+
+            {/* 7 — Card edge highlight */}
             <div
               className="pointer-events-none absolute inset-0 rounded-[28px]"
               style={{
-                background:
-                  "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.12) 0%, transparent 60%)",
+                border: "1px solid rgba(255,255,255,0.55)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.65), inset 0 -1px 0 rgba(0,0,0,0.08)",
               }}
             />
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
 
-        {/* ── Right side ───────────────────────────────────────────────── */}
+        {/* ── Right side ───────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           whileInView={{ opacity: 1, x: 0 }}
