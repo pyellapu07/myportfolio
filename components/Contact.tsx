@@ -195,7 +195,7 @@ export default function Contact() {
       <motion.div
         onViewportEnter={startPrint}
         viewport={{ once: true, amount: 0.15 }}
-        className="w-[86vw] md:w-[min(571px,66vw)]"
+        className="w-[86vw] md:w-[min(457px,53vw)]"
         style={{
           marginTop: "2.5rem",
           position: "relative",
