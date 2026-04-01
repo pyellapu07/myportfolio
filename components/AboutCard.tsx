@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import {
   motion,
   useMotionValue,
@@ -11,164 +11,203 @@ import {
 import Link from "next/link";
 import SectionWrapper from "./SectionWrapper";
 
+const THICKNESS = 12; // number of stacked layers = visual depth in px
+
 export default function AboutCard() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const cardRef    = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
 
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
 
-  /* ── Tilt ── */
-  const rotateY = useSpring(useTransform(rawX, [-1, 1], [-22, 22]), { stiffness: 110, damping: 18 });
-  const rotateX = useSpring(useTransform(rawY, [-1, 1], [16, -16]), { stiffness: 110, damping: 18 });
+  /* ── Spring tilt ── */
+  const rotateY = useSpring(useTransform(rawX, [-1, 1], [-26, 26]), { stiffness: 100, damping: 18 });
+  const rotateX = useSpring(useTransform(rawY, [-1, 1], [18, -18]), { stiffness: 100, damping: 18 });
 
   /* ── Photo parallax ── */
-  const photoX = useSpring(useTransform(rawX, [-1, 1], [18, -18]), { stiffness: 80, damping: 20 });
-  const photoY = useSpring(useTransform(rawY, [-1, 1], [12, -12]), { stiffness: 80, damping: 20 });
+  const photoX = useSpring(useTransform(rawX, [-1, 1], [20, -20]), { stiffness: 80, damping: 20 });
+  const photoY = useSpring(useTransform(rawY, [-1, 1], [14, -14]), { stiffness: 80, damping: 20 });
 
   /* ── Glare ── */
-  const glareXPct = useTransform(rawX, [-1, 1], [15, 85]);
-  const glareYPct = useTransform(rawY, [-1, 1], [10, 90]);
-  const glareBg   = useMotionTemplate`radial-gradient(circle at ${glareXPct}% ${glareYPct}%, rgba(255,255,255,0.68) 0%, rgba(255,255,255,0.16) 22%, transparent 52%)`;
+  const glareXPct = useTransform(rawX, [-1, 1], [12, 88]);
+  const glareYPct = useTransform(rawY, [-1, 1], [8,  92]);
+  const glareBg   = useMotionTemplate`radial-gradient(circle at ${glareXPct}% ${glareYPct}%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.18) 22%, transparent 52%)`;
 
-  /* ── Holographic foil — less green, more chrome blues/pinks ── */
-  const hueShift   = useTransform(rawX, [-1, 1], [0, 140]);
+  /* ── Foil — blues, purples, pinks ── */
+  const hueShift   = useTransform(rawX, [-1, 1], [0, 130]);
   const foilFilter = useTransform(hueShift, (h) => `hue-rotate(${h}deg) saturate(1.2) brightness(1.06)`);
 
-  function onMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    rawX.set((e.clientX - rect.left) / rect.width  * 2 - 1);
-    rawY.set((e.clientY - rect.top)  / rect.height * 2 - 1);
-  }
-  function onMouseLeave() { rawX.set(0); rawY.set(0); }
+  /* ── Track mouse across the ENTIRE about section ── */
+  useEffect(() => {
+    sectionRef.current = document.getElementById("about") as HTMLElement | null;
+
+    function onMove(e: MouseEvent) {
+      const section = sectionRef.current;
+      const card    = cardRef.current;
+      if (!section || !card) return;
+
+      const sr = section.getBoundingClientRect();
+      // Only active while inside the section
+      if (e.clientY < sr.top || e.clientY > sr.bottom) {
+        rawX.set(0); rawY.set(0); return;
+      }
+
+      // Normalise relative to the card's centre so tilt "aims" at the card
+      const cr = card.getBoundingClientRect();
+      const cx = cr.left + cr.width  / 2;
+      const cy = cr.top  + cr.height / 2;
+
+      // Range: half the section width/height → gives a gentle, natural feel
+      const rx = Math.max(-1, Math.min(1, (e.clientX - cx) / (sr.width  * 0.55)));
+      const ry = Math.max(-1, Math.min(1, (e.clientY - cy) / (sr.height * 0.55)));
+      rawX.set(rx);
+      rawY.set(ry);
+    }
+
+    function onLeave() { rawX.set(0); rawY.set(0); }
+
+    window.addEventListener("mousemove", onMove, { passive: true });
+    document.addEventListener("mouseleave", onLeave);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseleave", onLeave);
+    };
+  }, [rawX, rawY]);
 
   return (
     <SectionWrapper id="about" alternate>
       <div className="flex flex-col items-center gap-12 md:flex-row md:items-start md:gap-16">
 
-        {/* ── 3D Holographic Card ─────────────────────────────────── */}
+        {/* ── 3D Card ── */}
         <div
-          ref={containerRef}
-          onMouseMove={onMouseMove}
-          onMouseLeave={onMouseLeave}
           className="w-full max-w-[240px] shrink-0 mx-auto md:mx-0"
           style={{ perspective: "900px" }}
         >
           <motion.div
+            ref={cardRef}
             style={{ rotateX, rotateY, transformStyle: "preserve-3d", aspectRatio: "3/4" }}
-            className="relative w-full rounded-[24px] overflow-hidden cursor-pointer flex flex-col"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="relative w-full cursor-pointer flex flex-col"
           >
-            {/* 1 — Chrome metallic base */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(145deg, #9a9a9a 0%, #e8e8e8 20%, #c0c0c0 38%, #f5f5f5 52%, #b8b8b8 68%, #ececec 84%, #d0d0d0 100%)",
-              }}
-            />
-
-            {/* 2 — Holographic foil: blues, purples, pinks — minimal green */}
-            <motion.div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background:
-                  "repeating-linear-gradient(118deg, #ff66cc99 0%, #9966ff99 20%, #66aaff99 40%, #cc44ff99 60%, #ff88aa99 80%, #ff66cc99 100%)",
-                backgroundSize: "180% 180%",
-                filter: foilFilter,
-                mixBlendMode: "overlay",
-              }}
-            />
-
-            {/* 3 — Photo (takes ~65% of card height) */}
-            <div className="relative overflow-hidden rounded-[16px] mx-3 mt-3 flex-1">
-              <motion.div
-                className="absolute"
-                style={{ width: "136%", height: "136%", top: "-18%", left: "-18%", x: photoX, y: photoY }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/About m/Me smiling in the safari van 2.JPEG"
-                  alt="Pradeep"
-                  className="w-full h-full object-cover"
-                  draggable={false}
-                />
-              </motion.div>
-
-              {/* Matte layer */}
+            {/* ── Thickness layers (stacked behind front face) ── */}
+            {Array.from({ length: THICKNESS }).map((_, i) => (
               <div
-                className="absolute inset-0 pointer-events-none"
+                key={i}
+                className="absolute inset-0 rounded-[24px]"
                 style={{
-                  background: "linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.18) 100%)",
+                  transform: `translateZ(-${(i + 1) * 1.1}px)`,
+                  background: i % 2 === 0
+                    ? `hsl(0,0%,${62 - i * 2}%)`
+                    : `hsl(0,0%,${70 - i * 2}%)`,
+                  borderRadius: 24,
+                }}
+              />
+            ))}
+
+            {/* ── Front face ── */}
+            <div
+              className="relative flex flex-col w-full h-full overflow-hidden rounded-[24px]"
+              style={{ transform: "translateZ(0)" }}
+            >
+              {/* Chrome metallic base */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(145deg, #9a9a9a 0%, #e8e8e8 20%, #c0c0c0 38%, #f5f5f5 52%, #b8b8b8 68%, #ececec 84%, #d0d0d0 100%)",
                 }}
               />
 
-              {/* Photo shine */}
+              {/* Holographic foil: blues, purples, pinks */}
               <motion.div
                 className="absolute inset-0 pointer-events-none"
-                style={{ background: glareBg, mixBlendMode: "overlay" }}
+                style={{
+                  background:
+                    "repeating-linear-gradient(118deg, #ff66cc99 0%, #9966ff99 20%, #66aaff99 40%, #cc44ff99 60%, #ff88aa99 80%, #ff66cc99 100%)",
+                  backgroundSize: "180% 180%",
+                  filter: foilFilter,
+                  mixBlendMode: "overlay",
+                }}
+              />
+
+              {/* Photo (flex-1 fills remaining height) */}
+              <div className="relative overflow-hidden rounded-[16px] mx-3 mt-3 flex-1">
+                <motion.div
+                  className="absolute"
+                  style={{ width: "136%", height: "136%", top: "-18%", left: "-18%", x: photoX, y: photoY }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/About m/Me smiling in the safari van 2.JPEG"
+                    alt="Pradeep"
+                    className="w-full h-full object-cover"
+                    draggable={false}
+                  />
+                </motion.div>
+
+                {/* Matte layer */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: "linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.18) 100%)",
+                  }}
+                />
+
+                {/* Photo shine */}
+                <motion.div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ background: glareBg, mixBlendMode: "overlay" }}
+                />
+              </div>
+
+              {/* Bottom info panel */}
+              <div
+                className="relative z-10 mx-3 mb-3 mt-2 rounded-[14px] px-3 py-2.5"
+                style={{
+                  background: "rgba(255,255,255,0.22)",
+                  backdropFilter: "blur(12px)",
+                  border: "1px solid rgba(255,255,255,0.38)",
+                }}
+              >
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-mono text-[9px] font-bold tracking-wider" style={{ color: "rgba(80,60,180,0.85)" }}>
+                    Lv.3
+                  </span>
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-800">
+                    Product Designer
+                  </span>
+                </div>
+                <div className="mt-1 flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} width="10" height="10" viewBox="0 0 24 24" fill="#f59e0b" aria-hidden>
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="mt-1.5 font-mono text-[9px] leading-tight text-neutral-500 italic">
+                  Owns more action figures than design books 🤖
+                </p>
+              </div>
+
+              {/* Full card glare overlay */}
+              <motion.div
+                className="pointer-events-none absolute inset-0"
+                style={{ background: glareBg, mixBlendMode: "soft-light", opacity: 0.65 }}
+              />
+
+              {/* Groove border */}
+              <div
+                className="pointer-events-none absolute inset-0 rounded-[24px]"
+                style={{
+                  boxShadow:
+                    "inset 0 1.5px 0 rgba(255,255,255,0.78), inset 0 -1.5px 0 rgba(0,0,0,0.14), inset 1.5px 0 rgba(255,255,255,0.48), inset -1.5px 0 rgba(0,0,0,0.1)",
+                  border: "1.5px solid rgba(150,150,150,0.55)",
+                }}
               />
             </div>
-
-            {/* 4 — Bottom info panel */}
-            <div
-              className="relative z-10 mx-3 mb-3 mt-2 rounded-[14px] px-3 py-2.5"
-              style={{
-                background: "rgba(255,255,255,0.22)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255,255,255,0.38)",
-              }}
-            >
-              {/* Level + title */}
-              <div className="flex items-baseline gap-1.5">
-                <span
-                  className="font-mono text-[9px] font-bold tracking-wider"
-                  style={{ color: "rgba(80,60,180,0.85)" }}
-                >
-                  Lv.3
-                </span>
-                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-800">
-                  Product Designer
-                </span>
-              </div>
-
-              {/* Stars */}
-              <div className="mt-1 flex gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} width="10" height="10" viewBox="0 0 24 24" fill="#f59e0b" aria-hidden>
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                ))}
-              </div>
-
-              {/* Fun fact */}
-              <p className="mt-1.5 font-mono text-[9px] leading-tight text-neutral-500 italic">
-                Owns more action figures than design books 🤖
-              </p>
-            </div>
-
-            {/* 5 — Full card glare */}
-            <motion.div
-              className="pointer-events-none absolute inset-0"
-              style={{ background: glareBg, mixBlendMode: "soft-light", opacity: 0.65 }}
-            />
-
-            {/* 6 — Groove border */}
-            <div
-              className="pointer-events-none absolute inset-0 rounded-[24px]"
-              style={{
-                boxShadow:
-                  "inset 0 1.5px 0 rgba(255,255,255,0.75), inset 0 -1.5px 0 rgba(0,0,0,0.12), inset 1.5px 0 rgba(255,255,255,0.45), inset -1.5px 0 rgba(0,0,0,0.08)",
-                border: "1.5px solid rgba(160,160,160,0.5)",
-              }}
-            />
           </motion.div>
         </div>
 
-        {/* ── Right side ───────────────────────────────────────────── */}
+        {/* ── Right side ── */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -179,14 +218,12 @@ export default function AboutCard() {
           <span className="font-mono text-xs font-medium uppercase tracking-widest text-primary">
             About Me
           </span>
-
           <h2 className="mt-4 font-heading text-4xl font-bold leading-tight text-text md:text-[3rem]">
             Hii! I&apos;m Pradeep.
           </h2>
           <p className="mt-2 font-mono text-sm tracking-wide text-text-secondary">
             Product Designer &amp; Researcher &nbsp;·&nbsp; Seeking Full-time roles
           </p>
-
           <p className="mt-7 text-[15.5px] leading-[1.85] text-text-secondary">
             Grew up in coastal Vizag, India. Started designing for a startup clothing brand — drew a hanger icon from scratch because nobody puts clothes in a cart. That one decision started everything.
           </p>
@@ -197,7 +234,6 @@ export default function AboutCard() {
           <p className="mt-4 text-[15.5px] leading-[1.85] text-text-secondary">
             Off the clock: Marvel action figures, Lego sets, and photographing Hot Wheels like they&apos;re full editorial shoots. Priorities. 🏎️
           </p>
-
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/about"
