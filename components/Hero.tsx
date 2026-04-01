@@ -13,6 +13,10 @@ import { Volume2, VolumeX } from "lucide-react";
 export default function Hero() {
   const { isRecruiterMode } = useRecruiter();
   const [wordIndex, setWordIndex] = useState(0);
+  // Per-char random scroll directions: +1 = scroll up-out/down-in, -1 = scroll down-out/up-in
+  const [charDirs, setCharDirs] = useState<number[]>(() =>
+    Array.from({ length: 18 }, () => (Math.random() > 0.5 ? 1 : -1))
+  );
   const [gameActive, setGameActive] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [finderOpen, setFinderOpen] = useState(false);
@@ -46,6 +50,7 @@ export default function Hero() {
 
   useEffect(() => {
     const interval = setInterval(() => {
+      setCharDirs(Array.from({ length: 18 }, () => (Math.random() > 0.5 ? 1 : -1)));
       setWordIndex((i) => (i + 1) % ROTATING_WORDS.length);
     }, 2200);
     return () => clearInterval(interval);
@@ -155,23 +160,42 @@ export default function Hero() {
           <br className="hidden md:block" />
           with a focus on{" "}
           <br className="hidden md:block" />
-          <span className="relative inline-grid grid-cols-1 overflow-hidden align-bottom">
-            <AnimatePresence mode="popLayout" initial={false}>
-              <motion.span
-                key={wordIndex}
-                initial={{ y: "100%", opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: "-100%", opacity: 0 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="col-start-1 row-start-1 text-accent"
-              >
-                {ROTATING_WORDS[wordIndex]}
-              </motion.span>
-            </AnimatePresence>
-            {/* Invisible copy to hold width/height */}
-            <span className="invisible col-start-1 row-start-1 opacity-0">
-              {ROTATING_WORDS[wordIndex]}
-            </span>
+          <span style={{ display: "inline-flex", verticalAlign: "bottom" }}>
+            {Array.from({ length: 18 }, (_, i) => {
+              const char = ROTATING_WORDS[wordIndex][i] ?? null;
+              const dir = charDirs[i] ?? 1;
+              return (
+                <span
+                  key={i}
+                  style={{
+                    display: "inline-block",
+                    overflow: "hidden",
+                    height: "1.06em",
+                    verticalAlign: "bottom",
+                  }}
+                >
+                  <AnimatePresence initial={false}>
+                    {char !== null && (
+                      <motion.span
+                        key={`${wordIndex}-${i}`}
+                        initial={{ y: `${dir > 0 ? 115 : -115}%` }}
+                        animate={{ y: "0%" }}
+                        exit={{ y: `${dir > 0 ? -115 : 115}%` }}
+                        transition={{
+                          duration: 0.3,
+                          ease: [0.16, 1, 0.3, 1],
+                          delay: i * 0.016,
+                        }}
+                        style={{ display: "inline-block", whiteSpace: "pre" }}
+                        className="text-accent"
+                      >
+                        {char}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </span>
+              );
+            })}
           </span>
         </motion.h1>
 
