@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
-import { MapPin } from "lucide-react";
+import { MapPin, Volume2, VolumeX } from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
 import { SITE } from "@/lib/constants";
 import { Fira_Sans_Condensed } from "next/font/google";
@@ -71,12 +71,15 @@ function Divider({ thick }: { thick?: boolean }) {
 
 /* ── Component ────────────────────────────────────────────────────────── */
 /* ── Printer sound (Web Audio API, ≤ 2.8 s — compliant with Section 508 §1.4.2) ── */
-function playPrinterSound(duration: number) {
+function playPrinterSound(duration: number, volume: number) {
+  if (volume === 0) return;
   try {
     type AudioCtxCtor = typeof AudioContext & { new(): AudioContext };
     const Ctx = (window.AudioContext ?? (window as unknown as { webkitAudioContext: AudioCtxCtor }).webkitAudioContext);
     if (!Ctx) return;
     const ctx = new Ctx();
+    /* Resume suspended context (required after browser autoplay policy blocks it) */
+    if (ctx.state === "suspended") ctx.resume();
 
     const sr = ctx.sampleRate;
     const len = Math.floor(sr * duration);
@@ -108,9 +111,10 @@ function playPrinterSound(duration: number) {
 
     /* ── Master envelope: fade in fast, hold, fade out at end ── */
     const master = ctx.createGain();
+    const peak = 0.55 * volume;
     master.gain.setValueAtTime(0, ctx.currentTime);
-    master.gain.linearRampToValueAtTime(0.55, ctx.currentTime + 0.06);
-    master.gain.setValueAtTime(0.55, ctx.currentTime + duration - 0.18);
+    master.gain.linearRampToValueAtTime(peak, ctx.currentTime + 0.06);
+    master.gain.setValueAtTime(peak, ctx.currentTime + duration - 0.18);
     master.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
 
     /* ── Wire up ── */
@@ -129,6 +133,7 @@ function playPrinterSound(duration: number) {
 export default function Contact() {
   const printerTopImgRef = useRef<HTMLImageElement>(null);
   const [printerTopH, setPrinterTopH]   = useState(0);
+  const [soundVolume, setSoundVolume]   = useState(1);   /* 1 = full, 0 = muted */
   const hasAnimated                      = useRef(false);
   const receiptCtrl                      = useAnimation();
   const printerCtrl                      = useAnimation();
@@ -151,13 +156,17 @@ export default function Contact() {
   /* Cleanup ResizeObserver on unmount */
   useEffect(() => () => { roRef.current?.disconnect(); }, []);
 
+  /* Keep a ref to soundVolume so startPrint always reads the latest value */
+  const soundVolumeRef = useRef(soundVolume);
+  useEffect(() => { soundVolumeRef.current = soundVolume; }, [soundVolume]);
+
   /* Triggered once when the scene enters the viewport */
   const startPrint = useCallback(async () => {
     if (hasAnimated.current) return;
     hasAnimated.current = true;
 
     /* Printer sound — 2.8 s, under Section 508 §1.4.2 3-second threshold */
-    playPrinterSound(2.8);
+    playPrinterSound(2.8, soundVolumeRef.current);
 
     /* Printer buzz — runs until receipt is done */
     printerCtrl.start({
@@ -216,6 +225,24 @@ export default function Contact() {
           transform: "translateX(-50%)",
         }}
       >
+        {/* Sound toggle — top-left of printer scene */}
+        <button
+          onClick={() => setSoundVolume(v => v === 0 ? 1 : 0)}
+          title={soundVolume === 0 ? "Unmute printer sound" : "Mute printer sound"}
+          style={{
+            position: "absolute", top: 12, left: 12, zIndex: 20,
+            background: "rgba(255,255,255,0.85)", border: "none",
+            borderRadius: "50%", width: 32, height: 32,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", backdropFilter: "blur(6px)",
+            boxShadow: "0 1px 6px rgba(0,0,0,0.18)",
+          }}
+        >
+          {soundVolume === 0
+            ? <VolumeX size={14} color="#111" />
+            : <Volume2 size={14} color="#111" />}
+        </button>
+
         {/* MY TREAT sticker — overlaps top-right of printer */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -403,17 +430,19 @@ export default function Contact() {
               </span>
             </div>
 
-            {/* CTA */}
+            {/* CTA — opens LinkedIn message */}
             <a
-              href={`mailto:${SITE.email}`}
+              href={`${SITE.linkedin}/`}
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
-                display: "block", width: "100%", background: "#111", color: "white",
+                display: "block", width: "100%", background: "#0A66C2", color: "white",
                 textAlign: "center", padding: "12px 0", fontSize: 13,
                 fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
                 textDecoration: "none", borderRadius: 2,
               }}
             >
-              LET&apos;S TALK
+              LET&apos;S TALK ON LINKEDIN
             </a>
 
             <Divider />
