@@ -71,14 +71,14 @@ function Divider({ thick }: { thick?: boolean }) {
 
 /* ── Component ────────────────────────────────────────────────────────── */
 /* ── Printer sound (Web Audio API, ≤ 2.8 s — compliant with Section 508 §1.4.2) ── */
-function playPrinterSound(duration: number, volume: number) {
+function playPrinterSound(duration: number, volume: number, unlockedCtx: AudioContext | null) {
   if (volume === 0) return;
   try {
     type AudioCtxCtor = typeof AudioContext & { new(): AudioContext };
     const Ctx = (window.AudioContext ?? (window as unknown as { webkitAudioContext: AudioCtxCtor }).webkitAudioContext);
     if (!Ctx) return;
-    const ctx = new Ctx();
-    /* Resume suspended context (required after browser autoplay policy blocks it) */
+    /* Reuse pre-unlocked context if available, otherwise create fresh */
+    const ctx = (unlockedCtx && unlockedCtx.state !== "closed") ? unlockedCtx : new Ctx();
     if (ctx.state === "suspended") ctx.resume();
 
     const sr = ctx.sampleRate;
@@ -134,6 +134,7 @@ export default function Contact() {
   const printerTopImgRef = useRef<HTMLImageElement>(null);
   const [printerTopH, setPrinterTopH]   = useState(0);
   const [soundVolume, setSoundVolume]   = useState(1);   /* 1 = full, 0 = muted */
+  const audioCtxRef                      = useRef<AudioContext | null>(null);
   const hasAnimated                      = useRef(false);
   const receiptCtrl                      = useAnimation();
   const printerCtrl                      = useAnimation();
@@ -156,6 +157,36 @@ export default function Contact() {
   /* Cleanup ResizeObserver on unmount */
   useEffect(() => () => { roRef.current?.disconnect(); }, []);
 
+  /* Pre-unlock AudioContext on first user gesture anywhere on page (Safari iOS fix) */
+  useEffect(() => {
+    const unlock = () => {
+      if (audioCtxRef.current) {
+        if (audioCtxRef.current.state === "suspended") audioCtxRef.current.resume();
+        return;
+      }
+      try {
+        type C = typeof AudioContext & { new(): AudioContext };
+        const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext: C }).webkitAudioContext;
+        if (!Ctx) return;
+        audioCtxRef.current = new Ctx();
+        /* Play a silent buffer — forces Safari to fully unlock */
+        const buf = audioCtxRef.current.createBuffer(1, 1, audioCtxRef.current.sampleRate);
+        const src = audioCtxRef.current.createBufferSource();
+        src.buffer = buf;
+        src.connect(audioCtxRef.current.destination);
+        src.start();
+      } catch (_) { /* ignore */ }
+    };
+    document.addEventListener("click",      unlock);
+    document.addEventListener("touchstart", unlock);
+    document.addEventListener("keydown",    unlock);
+    return () => {
+      document.removeEventListener("click",      unlock);
+      document.removeEventListener("touchstart", unlock);
+      document.removeEventListener("keydown",    unlock);
+    };
+  }, []);
+
   /* Keep a ref to soundVolume so startPrint always reads the latest value */
   const soundVolumeRef = useRef(soundVolume);
   useEffect(() => { soundVolumeRef.current = soundVolume; }, [soundVolume]);
@@ -166,7 +197,7 @@ export default function Contact() {
     hasAnimated.current = true;
 
     /* Printer sound — 2.8 s, under Section 508 §1.4.2 3-second threshold */
-    playPrinterSound(2.8, soundVolumeRef.current);
+    playPrinterSound(2.8, soundVolumeRef.current, audioCtxRef.current);
 
     /* Printer buzz — runs until receipt is done */
     printerCtrl.start({
