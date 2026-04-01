@@ -46,7 +46,7 @@ const DISPLAY_W: Record<string, number> = {
   "search figma.png": 160,
   "togglefigma.png": 130,
   "variants figma.png": 100,
-  "self emoticon.png": 130,
+  "self emoticon.png": 95,
   "microsoft-logo.png": 165,
 };
 
@@ -74,7 +74,7 @@ const SLOTS: SlotItem[] = [
 
   // ── LEFT EDGE ───────────────────────────────────────────────────────
   { file: "CreationBarmiro.png",    left: 0,  top: 22, depth: 0.09, rotation: -5, opacity: 0.42, anchor: "tl", hidden: true },
-  { file: "self emoticon.png",      left: 3,  top: 42, depth: 0.12, rotation: -6, opacity: 0.90, anchor: "tl" },
+  { file: "self emoticon.png",      left: 1,  top: 42, depth: 0.12, rotation: -6, opacity: 0.90, anchor: "tl" },
   { file: "conversionviz.png",      left: 1,  top: 68, depth: 0.14, rotation: 4,  opacity: 0.40, anchor: "tl", hidden: true },
 
   // ── MICROSOFT BADGE ─────────────────────────────────────────────────
@@ -257,8 +257,8 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
         }}
       >
         {/* Pixel character face */}
-        <div className="drop-zone-ring relative flex h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-accent/50" style={{ background: "rgba(255,82,16,0.08)" }}>
-          <div className="drop-zone-pulse absolute inset-0 rounded-xl border-2 border-accent/20" />
+        <div className="drop-zone-ring group relative flex h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-transparent transition-colors duration-200 hover:border-accent/40" style={{ background: "transparent" }}>
+          <div className="drop-zone-pulse absolute inset-0 rounded-xl" />
           {/* Pixel art face using CSS grid of divs */}
           <div style={{ position: "relative", width: 28, height: 36, imageRendering: "pixelated", flexShrink: 0 }}>
             {/* Hair */}
