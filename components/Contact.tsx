@@ -195,7 +195,7 @@ export default function Contact() {
       <motion.div
         onViewportEnter={startPrint}
         viewport={{ once: true, amount: 0.15 }}
-        className="w-[107vw] md:w-[min(714px,82vw)]"
+        className="w-[86vw] md:w-[min(571px,66vw)]"
         style={{
           marginTop: "2.5rem",
           position: "relative",
@@ -455,7 +455,7 @@ export default function Contact() {
             animate={printerCtrl}
             style={{
               position: "absolute",
-              top: printerTopH - 8,     /* slight overlap with slot */
+              top: printerTopH - 2,     /* sit tight just below the slot */
               left: 0,
               right: 0,
               zIndex: 1,
