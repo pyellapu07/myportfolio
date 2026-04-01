@@ -365,7 +365,7 @@ export default function WorkflowPage() {
                 <div className="absolute bottom-0 left-0 right-0 px-6 pb-12 md:px-12">
                     <div className="mx-auto max-w-[1000px]">
                         <p className="font-manrope text-2xl font-medium text-white md:text-3xl">&ldquo;We wanted to understand the invisible systems faculty have built for themselves.&rdquo;</p>
-                        <p className="mt-2 font-mono text-xs text-white/60">— Research team, initial project brief</p>
+                        <p className="mt-2 font-mono text-xs text-white/60">Research team, initial project brief</p>
                     </div>
                 </div>
             </section>
@@ -517,7 +517,7 @@ export default function WorkflowPage() {
                 <div className="absolute bottom-0 left-0 right-0 px-6 pb-12 md:px-12">
                     <div className="mx-auto max-w-[1000px]">
                         <p className="font-manrope text-2xl font-medium text-white md:text-3xl">&ldquo;The wall walk helped us see patterns we couldn&apos;t see on screen.&rdquo;</p>
-                        <p className="mt-2 font-mono text-xs text-white/60">— During the affinity diagram wall walk activity</p>
+                        <p className="mt-2 font-mono text-xs text-white/60">During the affinity diagram wall walk activity</p>
                     </div>
                 </div>
             </section>
@@ -646,7 +646,7 @@ export default function WorkflowPage() {
                 <div className="absolute bottom-0 left-0 right-0 px-6 pb-12 md:px-12">
                     <div className="mx-auto max-w-[1000px]">
                         <p className="font-manrope text-2xl font-medium text-white md:text-3xl">&ldquo;Every sticky note is a real person&apos;s frustration with an invisible system.&rdquo;</p>
-                        <p className="mt-2 font-mono text-xs text-white/60">— During the affinity mapping wall walk</p>
+                        <p className="mt-2 font-mono text-xs text-white/60">During the affinity mapping wall walk</p>
                     </div>
                 </div>
             </section>

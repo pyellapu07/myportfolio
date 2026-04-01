@@ -51,7 +51,7 @@ const TESTIMONIALS = [
     quote:
       "He made complex geospatial data intuitive for analysts across 9 countries. A rare blend of design and technical depth.",
     fullQuote:
-      "Working with Pradeep has been a genuine pleasure. He brought a rare blend of design sensibility and technical understanding to a domain that most designers shy away from — geospatial, climate, and agricultural data. He didn't just make things look good; he made complex information intuitive for analysts across 9 countries.",
+      "Working with Pradeep has been a genuine pleasure. He brought a rare blend of design sensibility and technical understanding to a domain that most designers shy away from: geospatial, climate, and agricultural data. He didn't just make things look good; he made complex information intuitive for analysts across 9 countries.",
   },
   {
     name: "Ravi Kumar",

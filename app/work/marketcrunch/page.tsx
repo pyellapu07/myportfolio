@@ -1104,7 +1104,7 @@ export default function MarketCrunchPage() {
               <div className="space-y-4">
                 <h3 className="font-manrope text-xl font-semibold text-text">The Problem</h3>
                 <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                  Retail investors are burdened by fragmented workflows—jumping between screeners, watchlists, charts, news, and &quot;gut feeling.&quot; While MarketCrunch possessed incredibly robust, non-hallucinating quantitative models (analyzing Treasury data, sentiment, and historical prices), <strong className="font-medium text-text">the legacy interface lacked clarity and trust signals.</strong> Users bounded quickly from the Analyze page because the data felt overwhelming without proper Information Architecture.
+                  Retail investors are burdened by fragmented workflows, jumping between screeners, watchlists, charts, news, and &quot;gut feeling.&quot; While MarketCrunch possessed incredibly robust, non-hallucinating quantitative models (analyzing Treasury data, sentiment, and historical prices), <strong className="font-medium text-text">the legacy interface lacked clarity and trust signals.</strong> Users bounded quickly from the Analyze page because the data felt overwhelming without proper Information Architecture.
                 </p>
               </div>
             </Fade>
@@ -1511,7 +1511,7 @@ export default function MarketCrunchPage() {
               <h3 className="font-manrope text-xl font-bold text-text">The Problem: Fragmentation</h3>
             </div>
             <p className="font-mono text-sm leading-relaxed text-text-secondary mb-6 max-w-2xl">
-              The legacy layout suffered from severe cognitive overload. Prior Accuracy, Technical Analysis, and Model Information were siloed across disparate UI regions. The ticker bar—the highest visibility element—was a dead surface with <strong className="font-medium text-text">zero action affordances</strong>.
+              The legacy layout suffered from severe cognitive overload. Prior Accuracy, Technical Analysis, and Model Information were siloed across disparate UI regions. The ticker bar (the highest visibility element) was a dead surface with <strong className="font-medium text-text">zero action affordances</strong>.
             </p>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="overflow-hidden rounded-xl border border-red-500/20 bg-red-50/50 p-2">
@@ -1870,7 +1870,7 @@ export default function MarketCrunchPage() {
           <div className="mt-16 border-t border-border/40 pt-16">
             <h3 className="font-manrope text-2xl font-bold text-text mb-6">Optimizing the AI Picks & Payments Flow</h3>
             <p className="font-mono text-base leading-relaxed text-text-secondary mb-10 max-w-2xl">
-              The AI Picks page is our primary acquisition hook. I applied progressive disclosure gating—blurring content subtly to generate curiosity while demonstrating the structure of the value. For authenticated users, we provided list vs. card views.
+              The AI Picks page is our primary acquisition hook. I applied progressive disclosure gating, blurring content subtly to generate curiosity while demonstrating the structure of the value. For authenticated users, we provided list vs. card views.
             </p>
             <div className="grid gap-6 md:grid-cols-3 items-stretch">
               <div className="flex flex-col gap-2">

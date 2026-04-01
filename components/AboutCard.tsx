@@ -226,10 +226,10 @@ export default function AboutCard() {
             Product Designer &amp; Researcher &nbsp;·&nbsp; Seeking Full-time roles
           </p>
           <p className="mt-7 text-[15.5px] leading-[1.85] text-text-secondary">
-            Grew up in coastal Vizag, India. Started designing for a startup clothing brand — drew a hanger icon from scratch because nobody puts clothes in a cart. That one decision started everything.
+            Grew up in coastal Vizag, India. Started designing for a startup clothing brand. Drew a hanger icon from scratch because nobody puts clothes in a cart. That one decision started everything.
           </p>
           <p className="mt-4 text-[15.5px] leading-[1.85] text-text-secondary">
-            Now at <strong className="text-text">University of Maryland</strong> doing MS in Data Science + UX Research. Built tools for NASA, shipped products at an AI startup, creative-directed an esports org — and got sponsored to fly to{" "}
+            Now at <strong className="text-text">University of Maryland</strong> doing MS in Data Science + UX Research. Built tools for NASA, shipped products at an AI startup, creative-directed an esports org, and got sponsored to fly to{" "}
             <strong className="text-text">Nairobi, Kenya</strong> to train professionals on the system I designed.
           </p>
           <p className="mt-4 text-[15.5px] leading-[1.85] text-text-secondary">
