@@ -9,7 +9,7 @@ import SectionWrapper from "./SectionWrapper";
 /* ── Data ─────────────────────────────────────────────────────────────── */
 const TESTIMONIALS = [
   {
-    name: "Erica Javadpur",
+    name: "Erica Javadpour",
     role: "Creative & Info Lead, Terps Esports",
     company: "University of Maryland",
     period: "March 31, 2026",
