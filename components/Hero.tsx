@@ -83,7 +83,7 @@ export default function Hero() {
           <div className="relative inline-block">
             <video
               ref={videoRef}
-              src="/grok-video-202a19e2-8bfb-4c98-8ac7-c28be5820793.mp4"
+              src="/Profileaudioalternative.mp4"
               autoPlay
               loop
               muted

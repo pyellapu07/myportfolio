@@ -476,7 +476,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
               <div className="relative" style={{ width: "100%", height: "100%" }}>
                 <video
                   ref={videoRef}
-                  src="/grok-video-202a19e2-8bfb-4c98-8ac7-c28be5820793.mp4"
+                  src="/Profileaudioalternative.mp4"
                   autoPlay
                   loop
                   muted
