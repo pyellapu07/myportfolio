@@ -5,12 +5,9 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Download } from "lucide-react";
 import Image from "next/image";
-import { Caveat } from "next/font/google";
 import RecruiterToggle from "./RecruiterToggle";
 import { NAV_LINKS, SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-
-const caveat = Caveat({ subsets: ["latin"], weight: ["700"] });
 
 /* ── Smooth eased scroll (easeInOutCubic) ──────────────────────────────── */
 function smoothScrollTo(id: string) {
@@ -294,42 +291,6 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
 
           {/* Right side */}
           <div className="hidden items-center gap-5 md:flex" data-tour="recruiter">
-
-            {/* ── Medium article pill sticker ── */}
-            <a
-              href={SITE.medium}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-2 rounded-full border border-neutral-200 bg-white/80 px-3 py-1.5 backdrop-blur-sm transition-all duration-200 hover:border-neutral-900 hover:bg-neutral-900"
-              style={{ textDecoration: "none" }}
-            >
-              {/* Medium logo — inverted to black normally, stays white on hover */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/Medium logo png.png"
-                alt="Medium"
-                draggable={false}
-                className="h-4 w-auto shrink-0 object-contain transition-all duration-200"
-                style={{ filter: "invert(1)" }}
-              />
-              {/* Article title — Caveat font with color-duplicate shadow effect */}
-              <span className="relative overflow-hidden">
-                {/* Color duplicate layer — 2px below, orange, fades on hover */}
-                <span
-                  className={`${caveat.className} pointer-events-none absolute inset-0 translate-y-[2px] select-none whitespace-nowrap text-[13px] font-bold text-[#FF5210] opacity-80 transition-opacity duration-200 group-hover:opacity-0`}
-                  aria-hidden
-                >
-                  Why UX Designers Matter in the Age of AI
-                </span>
-                {/* Foreground text */}
-                <span
-                  className={`${caveat.className} relative whitespace-nowrap text-[13px] font-bold text-neutral-900 transition-colors duration-200 group-hover:text-white`}
-                >
-                  Why UX Designers Matter in the Age of AI
-                </span>
-              </span>
-            </a>
-
             <TestimonialPills isDarkText={isDarkText} />
             <div className="relative inline-flex items-center">
               <RecruiterToggle size="sm" dark={!isDarkText} />

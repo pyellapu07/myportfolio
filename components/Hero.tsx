@@ -9,7 +9,10 @@ import HeroParticles from "./HeroParticles";
 import DesignRescueGame from "./DesignRescueGame";
 import MacFinderWindow, { MacFolderIcon } from "./MacFinderWindow";
 import { Volume2, VolumeX } from "lucide-react";
+import { Caveat } from "next/font/google";
 import MicrosoftBadgeSticker from "./MicrosoftBadgeSticker";
+
+const caveat = Caveat({ subsets: ["latin"], weight: ["700"] });
 
 export default function Hero() {
   const { isRecruiterMode } = useRecruiter();
@@ -25,6 +28,7 @@ export default function Hero() {
   const folderShownRef = useRef(false);
   // After DHS badge entrance completes, drop the 3.2s delay so hover exit snaps back
   const [dhsEntered, setDhsEntered] = useState(false);
+  const [mediumEntered, setMediumEntered] = useState(false);
 
   // Cards peek out of folder every ~4.5s, retract after 1.6s
   useEffect(() => {
@@ -419,6 +423,51 @@ export default function Hero() {
 
       {/* Mac Finder window */}
       {finderOpen && <MacFinderWindow onClose={() => setFinderOpen(false)} />}
+
+      {/* ── Medium article sticker — desktop only, equally spaced between folder + DHS ── */}
+      {!gameActive && (
+        <motion.a
+          href={SITE.medium}
+          target="_blank"
+          rel="noopener noreferrer"
+          drag
+          dragMomentum={false}
+          dragElastic={0}
+          className="absolute z-[25] hidden cursor-grab select-none md:block active:cursor-grabbing"
+          style={{ right: "7%", top: "43%" }}
+          initial={{ opacity: 0, rotate: -14, scale: 0.8 }}
+          animate={{ opacity: 1, rotate: -14, scale: 1 }}
+          transition={mediumEntered ? { duration: 0.25, ease: "easeOut" } : { delay: 3.0, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          onAnimationComplete={() => setMediumEntered(true)}
+          whileHover={{ scale: 1.08, rotate: -10, transition: { duration: 0.2, type: "tween" } }}
+          whileTap={{ scale: 0.96 }}
+        >
+          <div
+            className="rounded-2xl bg-neutral-900 px-4 pt-3 pb-3.5"
+            style={{ width: 192, filter: "drop-shadow(4px 4px 4px rgba(0,0,0,0.15))", pointerEvents: "none" }}
+          >
+            {/* Logo + label row */}
+            <div className="mb-2 flex items-center gap-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/Medium logo png.png" alt="Medium" draggable={false} className="h-4 w-auto object-contain" />
+              <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-500">Article</span>
+            </div>
+
+            {/* Title — Caveat with orange color-duplicate 2px below */}
+            <div className="relative leading-snug">
+              <span
+                className={`${caveat.className} pointer-events-none absolute inset-0 translate-y-[2px] select-none text-[13px] font-bold leading-snug text-[#FF5210]`}
+                aria-hidden
+              >
+                Why UX Designers Matter in the Age of AI
+              </span>
+              <span className={`${caveat.className} relative text-[13px] font-bold leading-snug text-white`}>
+                Why UX Designers Matter in the Age of AI
+              </span>
+            </div>
+          </div>
+        </motion.a>
+      )}
 
       {/* ── DHS Trusted Tester badge sticker — desktop only ───────── */}
       {!gameActive && (
