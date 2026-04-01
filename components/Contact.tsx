@@ -15,7 +15,7 @@ const fira = Fira_Sans_Condensed({
 
 /* ── Widths ───────────────────────────────────────────────────────────── */
 // Printer is 2× receipt width (50% extra on each side)
-const PRINTER_W = 620;   // px
+const PRINTER_W = 780;   // px — big chunky machine
 const RECEIPT_PCT = 50;  // receipt = 50% of printer width → printer overhangs 50% receipt-width on each side
 
 /* ── Data ─────────────────────────────────────────────────────────────── */
@@ -96,7 +96,7 @@ export default function Contact() {
 
     /* Receipt feeds out */
     await receiptCtrl.start({
-      clipPath: "inset(0% 0% 0% 0%)",
+      y: "0%",
       transition: { duration: 2.8, ease: [0.33, 1, 0.68, 1] },
     });
 
@@ -176,17 +176,23 @@ export default function Contact() {
           />
         </motion.div>
 
-        {/* ── RECEIPT — z:2, centered in printer, feeds out from slot ── */}
-        <motion.div
-          animate={receiptCtrl}
-          initial={{ clipPath: "inset(0% 0% 50% 0%)" }}
-          className={fira.className}
+        {/* ── RECEIPT — clip container sits at slot; receipt starts at y:-100% (inside printer) and feeds out ── */}
+        {/* clipPath inset(0 0 -9999px 0): clips above container top edge (= slot), lets receipt extend freely below */}
+        <div
           style={{
             position: "relative",
             zIndex: 2,
             width: `${RECEIPT_PCT}%`,
             margin: "0 auto",
-            marginTop: -10,          /* tuck top edge into printer slot */
+            marginTop: -10,          /* align with printer slot */
+            clipPath: "inset(0 0 -9999px 0)",
+          }}
+        >
+        <motion.div
+          animate={receiptCtrl}
+          initial={{ y: "-100%" }}
+          className={fira.className}
+          style={{
             boxShadow: "0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08)",
           }}
         >
@@ -382,6 +388,7 @@ export default function Contact() {
           {/* Zigzag paper tear at bottom */}
           <ZigzagEdge />
         </motion.div>
+        </div>{/* end clip container */}
 
         {/* ── PRINTER BOTTOM — z:1, behind the receipt, at slot position ── */}
         {printerTopH > 0 && (
