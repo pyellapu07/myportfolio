@@ -34,8 +34,8 @@ export default function AboutCard() {
   const glareBg   = useMotionTemplate`radial-gradient(circle at ${glareXPct}% ${glareYPct}%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.18) 22%, transparent 52%)`;
 
   /* ── Foil — blues, purples, pinks ── */
-  const hueShift   = useTransform(rawX, [-1, 1], [0, 60]);
-  const foilFilter = useTransform(hueShift, (h) => `hue-rotate(${h}deg) saturate(0.7) brightness(1.12)`);
+  const hueShift   = useTransform(rawX, [-1, 1], [0, 200]);
+  const foilFilter = useTransform(hueShift, (h) => `hue-rotate(${h}deg) saturate(1.8) brightness(1.1) contrast(1.05)`);
 
   /* ── Track mouse across the ENTIRE about section ── */
   useEffect(() => {
@@ -117,16 +117,16 @@ export default function AboutCard() {
                 }}
               />
 
-              {/* Holographic foil — soft pearlescent, light silver shimmer */}
+              {/* Holographic prismatic foil */}
               <motion.div
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   background:
-                    "repeating-linear-gradient(118deg, #e8d0f044 0%, #d0e8f844 20%, #f0e8d844 40%, #d8d0f044 60%, #e8f0f844 80%, #e8d0f044 100%)",
-                  backgroundSize: "200% 200%",
+                    "repeating-linear-gradient(115deg, #ff0080cc 0%, #ff8800cc 12%, #ffff00cc 25%, #00ff88cc 38%, #0088ffcc 50%, #8800ffcc 62%, #ff0080cc 75%, #ff8800cc 88%, #ffff00cc 100%)",
+                  backgroundSize: "250% 250%",
                   filter: foilFilter,
-                  mixBlendMode: "screen",
-                  opacity: 0.75,
+                  mixBlendMode: "overlay",
+                  opacity: 0.38,
                 }}
               />
 
@@ -138,7 +138,7 @@ export default function AboutCard() {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/About m/Me smiling in the safari van 2.JPEG"
+                    src="/About m/Landscapeonroad.jpeg"
                     alt="Pradeep"
                     className="w-full h-full object-cover"
                     draggable={false}
