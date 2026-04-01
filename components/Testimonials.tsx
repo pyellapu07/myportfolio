@@ -73,21 +73,22 @@ export default function Testimonials() {
     const isIdle   = hovered === null;
 
     if (isActive) {
-      return { rotate: 0, x: t.defaultX * 0.3, y: -32, scale: 1.05, zIndex: 50 };
+      // Straighten exactly where the card sits — no x movement at all
+      return { rotate: 0, x: t.defaultX, y: t.defaultY - 16, scale: 1.04, zIndex: 50 };
     }
 
     if (isIdle) {
       return { rotate: t.defaultRotate, x: t.defaultX, y: t.defaultY, scale: 1, zIndex: 10 - i };
     }
 
-    // Fan away from the hovered card — push further out
+    // Fan slightly further away from the hovered card, staying in their lane
     const diff = i - hovered!;
     const sign = diff > 0 ? 1 : -1;
     return {
-      rotate: t.defaultRotate + sign * 10,
-      x: t.defaultX + sign * 110,
-      y: t.defaultY + 20,
-      scale: 0.94,
+      rotate: t.defaultRotate + sign * 8,
+      x: t.defaultX + sign * 60,
+      y: t.defaultY + 14,
+      scale: 0.95,
       zIndex: 5 - Math.abs(diff),
     };
   }
@@ -137,9 +138,7 @@ export default function Testimonials() {
               onHoverEnd={() => setHovered(null)}
               className="absolute cursor-pointer select-none"
               style={{
-                width: 260,
-                // kill pointer events on all other cards while one is active
-                // this prevents the cursor sliding onto neighbours and triggering chain hovers
+                width: isActive ? 290 : 260,
                 pointerEvents: hovered !== null && hovered !== i ? "none" : "auto",
               }}
             >
