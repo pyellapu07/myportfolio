@@ -43,8 +43,8 @@
   --color-border-light: #F3F4F6;
 
   /* Fonts */
-  --font-heading: var(--font-manrope);
-  --font-display: var(--font-manrope);
+  --font-heading: var(--font-instrument-serif);
+  --font-display: var(--font-instrument-serif);
   --font-sans: var(--font-manrope);
   --font-mono: var(--font-dm-mono);
 }

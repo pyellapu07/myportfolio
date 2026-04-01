@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Manrope, DM_Mono } from "next/font/google";
+import { Manrope, DM_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import LoadingScreen from "@/components/LoadingScreen";
 import ScrollToTop from "@/components/ScrollToTop";
@@ -14,6 +14,13 @@ const dmMono = DM_Mono({
   weight: ["300", "400", "500"],
   subsets: ["latin"],
   variable: "--font-dm-mono",
+  display: "swap",
+});
+
+const instrumentSerif = Instrument_Serif({
+  weight: ["400"],
+  subsets: ["latin"],
+  variable: "--font-instrument-serif",
   display: "swap",
 });
 
@@ -59,7 +66,7 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/Favicon.png" type="image/png" />
         <link rel="apple-touch-icon" href="/Favicon.png" />
       </head>
-      <body className={`${manrope.variable} ${dmMono.variable} antialiased`}>
+      <body className={`${manrope.variable} ${dmMono.variable} ${instrumentSerif.variable} antialiased`}>
         <LoadingScreen />
         <ScrollToTop />
         <a href="#main" className="skip-link">
