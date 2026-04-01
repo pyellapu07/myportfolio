@@ -20,6 +20,10 @@ const PILL_PEOPLE = [
 function TestimonialPills({ isDarkText }: { isDarkText: boolean }) {
   const [hovered, setHovered] = useState(false);
 
+  const FRONT  = PILL_PEOPLE[0];                    // Erica — fully visible
+  const BEHIND = PILL_PEOPLE.slice(1);              // 3 peeking from behind
+  const TOTAL  = PILL_PEOPLE.length;
+
   function scrollToTestimonials() {
     document.getElementById("testimonials")?.scrollIntoView({ behavior: "smooth" });
   }
@@ -29,30 +33,71 @@ function TestimonialPills({ isDarkText }: { isDarkText: boolean }) {
       onClick={scrollToTestimonials}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="flex items-center focus:outline-none"
+      className="flex items-center gap-2 focus:outline-none"
       aria-label="Hear from real people"
     >
-      {/* Overlapping avatars */}
-      <div className="flex items-center">
-        {PILL_PEOPLE.map((p, i) => (
+      {/* Stack: 3 peek from left → front avatar → +count */}
+      <div className="relative flex items-center" style={{ width: 72, height: 28 }}>
+
+        {/* Peeking circles — tucked behind the front, fanning left */}
+        {BEHIND.map((p, i) => (
           <div
             key={p.name}
-            className="relative h-7 w-7 overflow-hidden rounded-full"
+            className="absolute overflow-hidden rounded-full"
             style={{
-              marginLeft: i === 0 ? 0 : -9,
-              zIndex: PILL_PEOPLE.length - i,
-              boxShadow: `0 0 0 2px ${p.ring}, 0 0 0 3.5px white`,
+              width: 24,
+              height: 24,
+              top: "50%",
+              transform: "translateY(-50%)",
+              // stack them left of the front avatar, each one a bit further back
+              left: 2 + i * 5,
+              zIndex: i + 1,
+              filter: "grayscale(100%)",
+              opacity: 0.55 - i * 0.08,
+              boxShadow: "0 0 0 1.5px white",
             }}
           >
-            <Image src={p.avatar} alt={p.name} fill sizes="28px" className="object-cover" />
+            <Image src={p.avatar} alt={p.name} fill sizes="24px" className="object-cover" />
           </div>
         ))}
+
+        {/* Front avatar — fully visible, on top */}
+        <div
+          className="absolute overflow-hidden rounded-full"
+          style={{
+            width: 28,
+            height: 28,
+            top: "50%",
+            left: 18,
+            transform: "translateY(-50%)",
+            zIndex: 10,
+            boxShadow: "0 0 0 2px white",
+          }}
+        >
+          <Image src={FRONT.avatar} alt={FRONT.name} fill sizes="28px" className="object-cover" />
+        </div>
+
+        {/* +count white bubble */}
+        <div
+          className="absolute flex items-center justify-center rounded-full bg-white"
+          style={{
+            width: 22,
+            height: 22,
+            top: "50%",
+            left: 48,
+            transform: "translateY(-50%)",
+            zIndex: 11,
+            boxShadow: "0 0 0 1.5px #e5e7eb, 0 1px 4px rgba(0,0,0,0.08)",
+          }}
+        >
+          <span className="font-mono text-[8px] font-bold text-neutral-600">+{TOTAL}</span>
+        </div>
       </div>
 
-      {/* Expanding label — CSS transition only, no layout-thrashing width:auto */}
+      {/* Expanding label */}
       <span
         className={cn(
-          "ml-2.5 overflow-hidden whitespace-nowrap rounded-full font-mono text-[11px] font-semibold",
+          "overflow-hidden whitespace-nowrap rounded-full font-mono text-[11px] font-semibold",
           "transition-all duration-200 ease-out",
           isDarkText ? "bg-neutral-900 text-white" : "bg-white text-neutral-900",
           hovered ? "max-w-[180px] px-3 py-[5px] opacity-100" : "max-w-0 px-0 py-[5px] opacity-0"

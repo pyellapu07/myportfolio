@@ -97,11 +97,6 @@ function TestimonialModal({
           className="relative w-full max-w-lg rounded-[24px] bg-white p-8 shadow-2xl"
           style={{ border: "1px solid #e5e7eb" }}
         >
-          {/* Accent bar */}
-          <div
-            className="absolute left-0 top-0 h-[3px] w-full rounded-t-[24px]"
-            style={{ background: `linear-gradient(to right, ${t.accentColor}, transparent)` }}
-          />
 
           {/* Close */}
           <button
@@ -174,9 +169,6 @@ export default function Testimonials() {
         viewport={{ once: true }}
         className="mb-4 flex items-start gap-4"
       >
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border bg-bg-alt text-2xl">
-          💬
-        </div>
         <div>
           <h2 className="font-heading text-3xl font-bold text-text md:text-4xl">
             What others say!
@@ -221,15 +213,6 @@ export default function Testimonials() {
                     : "0 4px 18px rgba(0,0,0,0.07)",
                 }}
               >
-                {/* Accent top bar — only visible on hover */}
-                <div
-                  className="absolute left-0 top-0 h-[2.5px] w-full"
-                  style={{
-                    background: `linear-gradient(to right, ${t.accentColor}, transparent)`,
-                    opacity: isActive ? 1 : 0,
-                    transition: "opacity 0.3s",
-                  }}
-                />
 
                 {/* Period */}
                 <p className="mb-4 text-right font-mono text-[10px] text-neutral-400">
