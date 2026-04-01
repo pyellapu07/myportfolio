@@ -61,31 +61,19 @@ const TESTIMONIALS = [
 export default function Testimonials() {
   const [hovered, setHovered] = useState<number | null>(null);
 
+  const SPRING = { type: "spring", stiffness: 310, damping: 28 } as const;
+
   function getCardStyle(i: number) {
     const t = TESTIMONIALS[i];
     const isActive = hovered === i;
     const isIdle   = hovered === null;
 
     if (isActive) {
-      return {
-        rotate: 0,
-        x: 0,
-        y: -28,
-        scale: 1.04,
-        zIndex: 50,
-        transition: { type: "spring", stiffness: 320, damping: 28 },
-      };
+      return { rotate: 0, x: 0, y: -28, scale: 1.04, zIndex: 50 };
     }
 
     if (isIdle) {
-      return {
-        rotate: t.defaultRotate,
-        x: t.defaultX,
-        y: 0,
-        scale: 1,
-        zIndex: 10 - i,
-        transition: { type: "spring", stiffness: 300, damping: 30 },
-      };
+      return { rotate: t.defaultRotate, x: t.defaultX, y: 0, scale: 1, zIndex: 10 - i };
     }
 
     // Fan away from the hovered card
@@ -97,7 +85,6 @@ export default function Testimonials() {
       y: 12,
       scale: 0.96,
       zIndex: 5 - Math.abs(diff),
-      transition: { type: "spring", stiffness: 300, damping: 28 },
     };
   }
 
@@ -141,6 +128,7 @@ export default function Testimonials() {
                 scale: 1,
                 zIndex: 10 - i,
               }}
+              transition={SPRING}
               onHoverStart={() => setHovered(i)}
               onHoverEnd={() => setHovered(null)}
               className="absolute cursor-pointer select-none"
