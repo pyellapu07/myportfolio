@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { motion, useInView, useAnimation } from "framer-motion";
+import { useRef, useState, useCallback } from "react";
+import { motion, useAnimation } from "framer-motion";
 import { MapPin } from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
 import { SITE } from "@/lib/constants";
@@ -13,14 +13,19 @@ const fira = Fira_Sans_Condensed({
   display: "swap",
 });
 
+/* ── Widths ───────────────────────────────────────────────────────────── */
+// Printer is 50% wider than receipt (25% extra on each side)
+const PRINTER_W = 480;   // px
+const RECEIPT_PCT = 66;  // receipt = 66% of printer width
+
 /* ── Data ─────────────────────────────────────────────────────────────── */
 const RECEIPT_ITEMS = [
-  { service: "Product Design",    projects: "MarketCrunch AI, HackImpact, PrepSharp, Xylem"  },
-  { service: "UX Research",       projects: "Transurban, NASA Harvest, Faculty Dashboard"     },
-  { service: "Design Systems",    projects: "MarketCrunch AI, Xylem Institute, Esports"       },
-  { service: "Usability Testing", projects: "Transurban, MarketCrunch AI"                     },
-  { service: "Info. Architecture",projects: "HackImpact, Faculty Dashboard"                  },
-  { service: "Brand Identity",    projects: "Xylem Institute, Terps Esports"                  },
+  { service: "Product Design",     projects: "MarketCrunch AI, HackImpact, PrepSharp, Xylem" },
+  { service: "UX Research",        projects: "Transurban, NASA Harvest, Faculty Dashboard"    },
+  { service: "Design Systems",     projects: "MarketCrunch AI, Xylem Institute, Esports"      },
+  { service: "Usability Testing",  projects: "Transurban, MarketCrunch AI"                    },
+  { service: "Info. Architecture", projects: "HackImpact, Faculty Dashboard"                  },
+  { service: "Brand Identity",     projects: "Xylem Institute, Terps Esports"                 },
 ];
 
 const SOCIALS = [
@@ -29,10 +34,10 @@ const SOCIALS = [
   { label: "Medium",   href: SITE.medium   },
 ];
 
-const NOT_YET_LINKS = [
-  { label: "Play the UX Rescue Game",     href: "#hero-section", external: false },
-  { label: "Browse the Work",             href: "#work",         external: false },
-  { label: "Read the Article on Medium",  href: SITE.medium,     external: true  },
+const NOT_YET = [
+  { label: "Play the UX Rescue Game",    href: "#hero-section", ext: false },
+  { label: "Browse the Work",            href: "#work",         ext: false },
+  { label: "Read the Article on Medium", href: SITE.medium,     ext: true  },
 ];
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */
@@ -49,60 +54,67 @@ function ZigzagEdge() {
   );
 }
 
-function Dash({ heavy = false }: { heavy?: boolean }) {
+const R: React.CSSProperties = { /* receipt base text */
+  fontFamily: "inherit",
+  fontSize: 11,
+  color: "#111",
+  letterSpacing: "0.03em",
+};
+
+function Divider({ thick }: { thick?: boolean }) {
   return (
     <div style={{
-      borderTop: heavy ? "1.5px solid #111" : "1px dashed #d1d5db",
-      margin: heavy ? "14px 0" : "10px 0",
+      borderTop: thick ? "1.5px solid #111" : "1px dashed #555",
+      margin: thick ? "12px 0" : "9px 0",
     }} />
-  );
-}
-
-function Row({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#6b7280" }}>
-      <span>{label}</span>
-      <span style={{ color: valueColor ?? "#111", fontWeight: 600 }}>{value}</span>
-    </div>
   );
 }
 
 /* ── Component ────────────────────────────────────────────────────────── */
 export default function Contact() {
-  const sceneRef      = useRef<HTMLDivElement>(null);
-  const isInView      = useInView(sceneRef, { once: true, amount: 0.15 });
-  const receiptCtrl   = useAnimation();
-  const printerCtrl   = useAnimation();
+  const printerTopImgRef = useRef<HTMLImageElement>(null);
+  const [printerTopH, setPrinterTopH]   = useState(0);
+  const hasAnimated                      = useRef(false);
+  const receiptCtrl                      = useAnimation();
+  const printerCtrl                      = useAnimation();
 
-  /* Trigger printer vibration + receipt feed when section enters viewport */
-  useEffect(() => {
-    if (!isInView) return;
+  /* Measure printer-top height once the image loads */
+  const onTopLoaded = useCallback(() => {
+    setPrinterTopH(printerTopImgRef.current?.offsetHeight ?? 0);
+  }, []);
 
-    /* Fast mechanical buzz — no await, runs concurrently */
+  /* Triggered once when the scene enters the viewport */
+  const startPrint = useCallback(async () => {
+    if (hasAnimated.current) return;
+    hasAnimated.current = true;
+
+    /* Printer buzz — runs until receipt is done */
     printerCtrl.start({
       x: [0, -2, 2, -2, 2, -2, 2, -1.5, 1.5, -1, 1, 0],
       transition: { duration: 0.05, repeat: Infinity, repeatType: "loop" as const },
     });
 
-    /* Receipt feeds out, then stop buzz */
-    receiptCtrl
-      .start({
-        clipPath: "inset(0% 0% 0% 0%)",
-        transition: { duration: 2.6, ease: [0.33, 1, 0.68, 1] },
-      })
-      .then(() => {
-        printerCtrl.start({ x: 0, transition: { duration: 0.1 } });
-      });
-  }, [isInView, printerCtrl, receiptCtrl]);
+    /* Receipt feeds out */
+    await receiptCtrl.start({
+      clipPath: "inset(0% 0% 0% 0%)",
+      transition: { duration: 2.8, ease: [0.33, 1, 0.68, 1] },
+    });
 
+    /* Buzz off */
+    printerCtrl.start({ x: 0, transition: { duration: 0.12 } });
+  }, [printerCtrl, receiptCtrl]);
+
+  /* Date / time for receipt header */
   const now     = new Date();
-  const dateStr = now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "2-digit", year: "numeric" }).toUpperCase();
+  const dateStr = now.toLocaleDateString("en-US", {
+    weekday: "short", month: "short", day: "2-digit", year: "numeric",
+  }).toUpperCase();
   const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 
   return (
     <SectionWrapper id="contact" alternate>
 
-      {/* ── Section label + heading ────────────────────────────────────── */}
+      {/* Section label + heading */}
       <div className="mx-auto max-w-2xl text-center">
         <motion.span
           initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }}
@@ -121,290 +133,279 @@ export default function Contact() {
       </div>
 
       {/* ── Printer + Receipt scene ────────────────────────────────────── */}
-      <div
-        ref={sceneRef}
-        style={{ maxWidth: 460, margin: "2.5rem auto 0", position: "relative" }}
+      <motion.div
+        onViewportEnter={startPrint}
+        viewport={{ once: true, amount: 0.15 }}
+        style={{
+          maxWidth: PRINTER_W,
+          margin: "2.5rem auto 0",
+          position: "relative",
+        }}
       >
-        {/* Chai latte sticker — floats to the right on desktop */}
+        {/* MY TREAT sticker — overlaps top-right of printer */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/Mytreat starbucks.png"
-          alt="My Treat! Starbucks sticker"
+          alt="My treat!"
           draggable={false}
-          className="pointer-events-none absolute hidden md:block"
+          className="pointer-events-none hidden md:block"
           style={{
-            width: 130,
-            right: -148,
-            top: "44%",
-            transform: "translateY(-50%) rotate(12deg)",
-            zIndex: 50,
-            filter: "drop-shadow(2px 4px 6px rgba(0,0,0,0.18))",
+            position: "absolute",
+            right: -80,
+            top: 10,
+            width: 126,
+            transform: "rotate(12deg)",
+            zIndex: 10,
+            filter: "drop-shadow(2px 4px 6px rgba(0,0,0,0.20))",
           }}
         />
 
-        {/* ── Printer top — z:30, covers receipt's entry into slot ── */}
+        {/* ── PRINTER TOP — z:3, sits on top of everything ── */}
         <motion.div
           animate={printerCtrl}
-          style={{ position: "relative", zIndex: 30, lineHeight: 0 }}
+          style={{ position: "relative", zIndex: 3, lineHeight: 0 }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            ref={printerTopImgRef}
             src="/printer top part.png"
             alt="Receipt printer"
             draggable={false}
+            onLoad={onTopLoaded}
             style={{ width: "100%", display: "block" }}
           />
         </motion.div>
 
-        {/* ── Receipt paper — feeds out of slot with clipPath reveal ── */}
+        {/* ── RECEIPT — z:2, centered in printer, feeds out from slot ── */}
         <motion.div
           animate={receiptCtrl}
           initial={{ clipPath: "inset(0% 0% 50% 0%)" }}
           className={fira.className}
           style={{
             position: "relative",
-            zIndex: 20,
-            marginTop: -10, /* tuck top edge behind printer slot */
+            zIndex: 2,
+            width: `${RECEIPT_PCT}%`,
+            margin: "0 auto",
+            marginTop: -10,          /* tuck top edge into printer slot */
+            boxShadow: "0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08)",
           }}
         >
-          <div
-            style={{
-              background: "white",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
-              padding: "28px 28px 20px",
-            }}
-          >
+          <div style={{ background: "white", padding: "24px 22px 18px" }}>
 
-            {/* ── Store header ───────────────────────────────────────── */}
-            <div style={{ textAlign: "center", marginBottom: 18 }}>
-              <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "0.07em", color: "#111", textTransform: "uppercase" }}>
+            {/* Store header */}
+            <div style={{ textAlign: "center", marginBottom: 14 }}>
+              <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "0.1em", color: "#111", textTransform: "uppercase" }}>
                 Pradeep Yellapu
               </div>
-              <div style={{ fontSize: 11, letterSpacing: "0.13em", color: "#9ca3af", marginTop: 3, textTransform: "uppercase" }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.16em", color: "#555", marginTop: 2, textTransform: "uppercase" }}>
                 Product Design Studio
               </div>
-              <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 6, letterSpacing: "0.04em" }}>
-                {dateStr} &bull; {timeStr}
+              <div style={{ fontSize: 10, color: "#555", marginTop: 5, letterSpacing: "0.05em" }}>
+                {dateStr} - {timeStr}
               </div>
             </div>
 
-            {/* ── Receipt of Acknowledgement box ─────────────────────── */}
-            <div
-              style={{
-                border: "1.5px dashed #9ca3af",
-                borderRadius: 6,
-                padding: "10px 14px 14px",
-                marginBottom: 14,
-              }}
-            >
-              {/* Title row */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <div style={{ flex: 1, borderTop: "1px dashed #d1d5db" }} />
-                <span style={{ fontSize: 9, letterSpacing: "0.12em", color: "#9ca3af", textTransform: "uppercase", fontWeight: 700, whiteSpace: "nowrap" }}>
-                  Receipt of Acknowledgement
-                </span>
-                <div style={{ flex: 1, borderTop: "1px dashed #d1d5db" }} />
+            <Divider />
+
+            {/* Receipt of Acknowledgement */}
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#111", textAlign: "center", marginBottom: 6 }}>
+                Receipt of Acknowledgement
+              </div>
+              <div style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "#555", textAlign: "center", marginBottom: 10 }}>
+                Issued to: Fellow Human
               </div>
 
-              <div style={{ fontSize: 10, color: "#9ca3af", textAlign: "center", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10, fontWeight: 600 }}>
-                Issued to: Fellow Human &amp; Design Enthusiast
+              <div style={{ ...R, fontStyle: "normal", marginBottom: 10, fontSize: 10, color: "#333" }}>
+                You showed up. You looked around. Here is proof.
               </div>
 
-              <p style={{ fontSize: 11, color: "#6b7280", lineHeight: 1.6, fontStyle: "italic", marginBottom: 10 }}>
-                Here&apos;s a receipt of acknowledgement for visiting this space and everything you picked up along the way:
-              </p>
-
-              {/* Acknowledged items */}
+              {/* Checked items */}
               {[
-                "Visited Pradeep\u2019s Design Space",
-                "Explored UX Processes & Methods",
+                "Visited Pradeep's Design Space",
+                "Explored UX Processes and Methods",
                 "Discovered Real-World Projects",
               ].map((item) => (
-                <div key={item}
-                  style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, marginBottom: 5 }}
-                >
-                  <span style={{ color: "#22C55E", fontWeight: 700, fontSize: 13 }}>✓</span>
-                  <span style={{ fontWeight: 600, color: "#111" }}>{item}</span>
+                <div key={item} style={{ display: "flex", gap: 7, marginBottom: 4, fontSize: 11, color: "#111", fontWeight: 600 }}>
+                  <span>[OK]</span>
+                  <span>{item}</span>
                 </div>
               ))}
 
-              <div style={{ borderTop: "1px dashed #e5e7eb", margin: "10px 0 8px" }} />
+              <div style={{ borderTop: "1px dashed #999", margin: "8px 0" }} />
 
-              <div style={{ fontSize: 9, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700, marginBottom: 7 }}>
-                If not yet — start here:
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#555", marginBottom: 5 }}>
+                Pending — visit when ready:
               </div>
-              {NOT_YET_LINKS.map((link) => (
+              {NOT_YET.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
-                  target={link.external ? "_blank" : undefined}
-                  rel={link.external ? "noopener noreferrer" : undefined}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 5,
-                    fontSize: 11, color: "#6366F1", textDecoration: "none",
-                    fontWeight: 600, marginBottom: 4,
-                  }}
+                  target={link.ext ? "_blank" : undefined}
+                  rel={link.ext ? "noopener noreferrer" : undefined}
+                  style={{ display: "block", fontSize: 11, color: "#111", textDecoration: "underline", marginBottom: 3, fontWeight: 500 }}
                 >
-                  <span style={{ color: "#9ca3af", fontSize: 10 }}>→</span>
                   {link.label}
                 </a>
               ))}
             </div>
 
-            {/* ── Email token ────────────────────────────────────────── */}
-            <div
-              style={{
-                border: "1.5px dashed #d1d5db",
-                borderRadius: 6,
-                padding: "8px 14px 10px",
-                marginBottom: 14,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
-                <div style={{ flex: 1, borderTop: "1px dashed #e5e7eb" }} />
-                <span style={{ fontSize: 10, letterSpacing: "0.12em", color: "#9ca3af", textTransform: "uppercase", fontWeight: 600 }}>
-                  Contact
-                </span>
-                <div style={{ flex: 1, borderTop: "1px dashed #e5e7eb" }} />
+            <Divider />
+
+            {/* Contact */}
+            <div style={{ textAlign: "center", marginBottom: 10 }}>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#555", marginBottom: 4 }}>
+                Contact
               </div>
-              <div style={{ fontFamily: "monospace", fontSize: 13, fontWeight: 700, color: "#111", textAlign: "center" }}>
+              <div style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 700, color: "#111" }}>
                 {SITE.email}
               </div>
             </div>
 
-            {/* ── Meta rows ──────────────────────────────────────────── */}
-            <Row label="Designer Type" value="Mixed Methods" />
-            <Dash />
-            <Row label="Status" value="Open to Opportunities" valueColor="#22C55E" />
-            <div style={{ marginTop: 6 }}>
-              <Row label="Location" value="Open to Relocation" />
-            </div>
-            <Dash />
+            <Divider />
 
-            {/* ── Services table ─────────────────────────────────────── */}
-            <div style={{
-              display: "flex", justifyContent: "space-between",
-              fontSize: 9, fontWeight: 700, letterSpacing: "0.14em",
-              textTransform: "uppercase", color: "#9ca3af", marginBottom: 10,
-            }}>
+            {/* Meta */}
+            {[
+              { k: "Designer Type",  v: "Mixed Methods"         },
+              { k: "Status",         v: "Open to Opportunities" },
+              { k: "Location",       v: "Open to Relocation"    },
+            ].map(({ k, v }, i) => (
+              <div key={k}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#111" }}>
+                  <span style={{ color: "#555" }}>{k}</span>
+                  <span style={{ fontWeight: 600 }}>{v}</span>
+                </div>
+                {i < 2 && <Divider />}
+              </div>
+            ))}
+
+            <Divider />
+
+            {/* Services table */}
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#555", marginBottom: 8 }}>
               <span>Service</span>
               <span>Projects</span>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {RECEIPT_ITEMS.map((item, i) => (
-                <div key={item.service}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#111", whiteSpace: "nowrap", flexShrink: 0 }}>
-                      {item.service}
-                    </span>
-                    <span style={{ fontSize: 11, color: "#6b7280", textAlign: "right", lineHeight: 1.45, maxWidth: 160 }}>
-                      {item.projects}
-                    </span>
-                  </div>
-                  {i < RECEIPT_ITEMS.length - 1 && (
-                    <div style={{ borderTop: "1px dashed #f3f4f6", marginTop: 8 }} />
-                  )}
+
+            {RECEIPT_ITEMS.map((item, i) => (
+              <div key={item.service}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#111", whiteSpace: "nowrap", flexShrink: 0 }}>
+                    {item.service}
+                  </span>
+                  <span style={{ fontSize: 10, color: "#555", textAlign: "right", lineHeight: 1.5 }}>
+                    {item.projects}
+                  </span>
                 </div>
-              ))}
-            </div>
-            <Dash />
+                {i < RECEIPT_ITEMS.length - 1 && <Divider />}
+              </div>
+            ))}
 
-            {/* ── Summary ────────────────────────────────────────────── */}
-            <Row label="Total Experience" value="3+ Years" />
-            <div style={{ marginTop: 6 }}>
-              <Row label="Satisfaction" value="Measurable ✓" />
-            </div>
-            <Dash heavy />
+            <Divider />
 
-            {/* ── Amount due ─────────────────────────────────────────── */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-              <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#111" }}>
+            {/* Summary */}
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#111", marginBottom: 6 }}>
+              <span style={{ color: "#555" }}>Total Experience</span>
+              <span style={{ fontWeight: 600 }}>3+ Years</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#111" }}>
+              <span style={{ color: "#555" }}>Satisfaction</span>
+              <span style={{ fontWeight: 600 }}>Measurable</span>
+            </div>
+
+            <Divider thick />
+
+            {/* Amount due */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+              <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#111" }}>
                 Amount Due
               </span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#FF5210", textAlign: "right", lineHeight: 1.3 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#111", textAlign: "right", lineHeight: 1.35 }}>
                 One Good<br />Conversation
               </span>
             </div>
 
-            {/* ── CTA ────────────────────────────────────────────────── */}
+            {/* CTA */}
             <a
               href={`mailto:${SITE.email}`}
               style={{
                 display: "block", width: "100%", background: "#111", color: "white",
-                textAlign: "center", padding: "13px 0", borderRadius: 4,
-                fontSize: 14, fontWeight: 700, letterSpacing: "0.12em",
-                textTransform: "uppercase", textDecoration: "none",
+                textAlign: "center", padding: "12px 0", fontSize: 13,
+                fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
+                textDecoration: "none", borderRadius: 2,
               }}
             >
-              Let&apos;s Talk &rarr;
+              LET&apos;S TALK
             </a>
-            <Dash />
 
-            {/* ── Thank you ──────────────────────────────────────────── */}
-            <div style={{ textAlign: "center" }}>
-              <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.8, fontWeight: 500 }}>
-                Thank you so much for showing up today.
-              </p>
-              <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.8, fontWeight: 500 }}>
-                You have yourself a good rest of your day!
-              </p>
+            <Divider />
+
+            {/* Thank you */}
+            <div style={{ textAlign: "center", ...R, lineHeight: 1.8, color: "#333" }}>
+              <div>Seriously, thank you for making it this far.</div>
+              <div>Most people just glance. You actually read.</div>
+              <div style={{ marginTop: 4 }}>That means a lot.</div>
             </div>
-            <Dash />
 
-            {/* ── Chai latte line ────────────────────────────────────── */}
-            <div style={{ textAlign: "center" }}>
-              <p style={{ fontSize: 14, color: "#92400e", fontWeight: 700, letterSpacing: "0.02em" }}>
-                ☕ Chai Latte at Starbucks, on me.
-              </p>
-              <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 4, letterSpacing: "0.04em" }}>
-                My token of appreciation for your time.
-              </p>
+            <Divider />
+
+            {/* Chai latte */}
+            <div style={{ textAlign: "center", ...R, fontWeight: 700, color: "#111" }}>
+              Next time we are in the same city,
             </div>
-            <Dash />
+            <div style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: "#111", letterSpacing: "0.04em" }}>
+              chai latte is on me.
+            </div>
 
-            {/* ── Footer ─────────────────────────────────────────────── */}
+            <Divider />
+
+            {/* Footer */}
             <div style={{ textAlign: "center" }}>
-              <div style={{ display: "flex", justifyContent: "center", gap: 18, marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "center", gap: 14, marginBottom: 8 }}>
                 {SOCIALS.map((s) => (
                   <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize: 11, color: "#6b7280", textDecoration: "none", letterSpacing: "0.08em", textTransform: "uppercase" }}
-                  >
+                    style={{ fontSize: 10, color: "#111", textDecoration: "underline", letterSpacing: "0.1em", textTransform: "uppercase" }}>
                     {s.label}
                   </a>
                 ))}
               </div>
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "center",
-                gap: 4, fontSize: 10, color: "#9ca3af", letterSpacing: "0.06em", textTransform: "uppercase",
-              }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, fontSize: 10, color: "#555", letterSpacing: "0.06em", textTransform: "uppercase" }}>
                 <MapPin size={10} />
                 {SITE.location}
               </div>
-              <div style={{ marginTop: 14, fontSize: 12, color: "#d1d5db", letterSpacing: "0.1em" }}>
-                ✦&nbsp;&nbsp;THANK YOU&nbsp;&nbsp;✦
+              <div style={{ marginTop: 12, fontSize: 11, color: "#aaa", letterSpacing: "0.12em" }}>
+                * * * THANK YOU * * *
               </div>
             </div>
-
           </div>
 
-          {/* Zigzag bottom tear */}
+          {/* Zigzag paper tear at bottom */}
           <ZigzagEdge />
         </motion.div>
 
-        {/* ── Printer bottom — z:10, sits behind receipt ─────────────── */}
-        <motion.div
-          animate={printerCtrl}
-          style={{ position: "relative", zIndex: 10, lineHeight: 0, marginTop: -6 }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/printer bottom part.png"
-            alt=""
-            draggable={false}
-            style={{ width: "100%", display: "block" }}
-          />
-        </motion.div>
-      </div>
+        {/* ── PRINTER BOTTOM — z:1, behind the receipt, at slot position ── */}
+        {printerTopH > 0 && (
+          <motion.div
+            animate={printerCtrl}
+            style={{
+              position: "absolute",
+              top: printerTopH - 8,     /* slight overlap with slot */
+              left: 0,
+              right: 0,
+              zIndex: 1,
+              lineHeight: 0,
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/printer bottom part.png"
+              alt=""
+              draggable={false}
+              style={{ width: "100%", display: "block" }}
+            />
+          </motion.div>
+        )}
+      </motion.div>
 
     </SectionWrapper>
   );
