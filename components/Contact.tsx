@@ -132,12 +132,13 @@ export default function Contact() {
       </div>
 
       {/* ── Printer + Receipt scene ────────────────────────────────────── */}
+      {/* Negative margins cancel SectionWrapper padding so the printer bleeds to section edges */}
       <motion.div
         onViewportEnter={startPrint}
         viewport={{ once: true, amount: 0.15 }}
+        className="-mx-8 md:-mx-16 lg:-mx-24"
         style={{
-          width: "100%",
-          margin: "2.5rem auto 0",
+          marginTop: "2.5rem",
           position: "relative",
         }}
       >
@@ -382,6 +383,8 @@ export default function Contact() {
             </div>
           </div>
 
+          {/* Zigzag paper tear at bottom */}
+          <ZigzagEdge />
         </motion.div>
         </div>{/* end clip container */}
 
