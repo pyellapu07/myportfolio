@@ -380,7 +380,7 @@ export default function Hero() {
           dragElastic={0}
           data-tour="folder"
           className="absolute z-[25] hidden cursor-grab select-none flex-col items-center gap-1 md:flex active:cursor-grabbing"
-          style={{ right: "20%", top: "28%" }}
+          style={{ right: "12%", top: "26%" }}
           /* initial=false after first mount so finderOpen toggles don't re-run entrance */
           initial={folderShownRef.current ? false : { opacity: 0, rotate: -7, scale: 0.85 }}
           animate={{ opacity: 1, rotate: -7, scale: 1 }}
@@ -434,7 +434,7 @@ export default function Hero() {
           dragMomentum={false}
           dragElastic={0}
           className="absolute z-[25] hidden cursor-grab select-none md:block active:cursor-grabbing"
-          style={{ right: "12%", top: "42%" }}
+          style={{ right: "22%", top: "54%" }}
           initial={{ opacity: 0, rotate: -14, scale: 0.8 }}
           animate={{ opacity: 1, rotate: -14, scale: 1 }}
           transition={mediumEntered ? { duration: 0.25, ease: "easeOut" } : { delay: 3.0, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -476,7 +476,7 @@ export default function Hero() {
           dragMomentum={false}
           dragElastic={0}
           className="absolute z-[25] hidden cursor-grab select-none flex-col items-center gap-1.5 md:flex active:cursor-grabbing"
-          style={{ right: "5%", top: "56%" }}
+          style={{ right: "4%", top: "54%" }}
           initial={{ opacity: 0, rotate: 8, scale: 0.8 }}
           animate={{ opacity: 1, rotate: 8, scale: 1 }}
           transition={dhsEntered ? { duration: 0.25, ease: "easeOut" } : { delay: 3.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
