@@ -348,8 +348,8 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
         const scale = isDragging ? 1.04 : isHovered ? 1.04 : 1;
         const shadow = "none";
         const stickerFilter = item.file === "self emoticon.png"
-          ? "none"
-          : `drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(3px 6px 0px rgba(0,0,0,0.18))`;
+          ? "drop-shadow(2px 2px 0px rgba(0,0,0,0.45))"
+          : `drop-shadow(2px 2px 0px rgba(0,0,0,0.45))`;
 
         // Don't apply parallax to dragged item — feels more grounded
         const txParallax = isDragging ? 0 : 0;

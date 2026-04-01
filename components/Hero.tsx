@@ -182,9 +182,9 @@ export default function Hero() {
                         animate={{ y: "0%" }}
                         exit={{ y: `${dir > 0 ? -115 : 115}%` }}
                         transition={{
-                          duration: 0.3,
+                          duration: 0.55,
                           ease: [0.16, 1, 0.3, 1],
-                          delay: i * 0.016,
+                          delay: i * 0.03,
                         }}
                         style={{ display: "inline-block", whiteSpace: "pre" }}
                         className="text-accent"
@@ -334,7 +334,7 @@ export default function Hero() {
           dragMomentum={false}
           dragElastic={0}
           className="absolute z-[25] hidden cursor-grab select-none flex-col items-center gap-1.5 md:flex active:cursor-grabbing"
-          style={{ right: "5%", top: "54%", filter: "drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(3px 6px 0px rgba(0,0,0,0.18))" }}
+          style={{ right: "5%", top: "54%", filter: "drop-shadow(2px 2px 0px rgba(0,0,0,0.45))" }}
           initial={{ opacity: 0, rotate: 8, scale: 0.8 }}
           animate={{ opacity: 1, rotate: 8, scale: 1 }}
           transition={dhsEntered ? { duration: 0.25, ease: "easeOut" } : { delay: 3.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
