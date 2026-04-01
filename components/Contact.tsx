@@ -14,9 +14,8 @@ const fira = Fira_Sans_Condensed({
 });
 
 /* ── Widths ───────────────────────────────────────────────────────────── */
-// Printer is 2× receipt width (50% extra on each side)
-const PRINTER_W = 780;   // px — big chunky machine
-const RECEIPT_PCT = 50;  // receipt = 50% of printer width → printer overhangs 50% receipt-width on each side
+// Printer fills full section width; receipt is a fixed narrow strip
+const RECEIPT_W = 360;   // px — fixed receipt width
 
 /* ── Data ─────────────────────────────────────────────────────────────── */
 const RECEIPT_ITEMS = [
@@ -137,7 +136,7 @@ export default function Contact() {
         onViewportEnter={startPrint}
         viewport={{ once: true, amount: 0.15 }}
         style={{
-          maxWidth: PRINTER_W,
+          width: "100%",
           margin: "2.5rem auto 0",
           position: "relative",
         }}
@@ -182,7 +181,8 @@ export default function Contact() {
           style={{
             position: "relative",
             zIndex: 2,
-            width: `${RECEIPT_PCT}%`,
+            width: RECEIPT_W,
+            maxWidth: "90%",
             margin: "0 auto",
             marginTop: -10,          /* align with printer slot */
             clipPath: "inset(0 0 -9999px 0)",
@@ -192,9 +192,6 @@ export default function Contact() {
           animate={receiptCtrl}
           initial={{ y: "-100%" }}
           className={fira.className}
-          style={{
-            boxShadow: "0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08)",
-          }}
         >
           <div style={{ background: "white", padding: "24px 22px 18px" }}>
 
@@ -385,8 +382,6 @@ export default function Contact() {
             </div>
           </div>
 
-          {/* Zigzag paper tear at bottom */}
-          <ZigzagEdge />
         </motion.div>
         </div>{/* end clip container */}
 
