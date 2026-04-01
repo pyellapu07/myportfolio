@@ -46,8 +46,8 @@ const DISPLAY_W: Record<string, number> = {
   "search figma.png": 160,
   "togglefigma.png": 130,
   "variants figma.png": 100,
-  "self emoticon.png": 90,
-  "microsoft-logo.png": 118,
+  "self emoticon.png": 130,
+  "microsoft-logo.png": 165,
 };
 
 interface SlotItem {
@@ -58,26 +58,27 @@ interface SlotItem {
   rotation: number;
   opacity: number;
   anchor?: "tl" | "tr" | "bl" | "br";
+  hidden?: boolean;
 }
 
 const SLOTS: SlotItem[] = [
-  // ── RIGHT EDGE ─────────────────────────────────────────────────────
-  { file: "exportwindow figma.png", left: 97, top: 18, depth: 0.18, rotation: 3,  opacity: 0.46, anchor: "tr" },
-  { file: "figmacomment.png",       left: 98, top: 42, depth: 0.16, rotation: 2,  opacity: 0.48, anchor: "tr" },
-  { file: "filterby miro.png",      left: 99, top: 64, depth: 0.14, rotation: -4, opacity: 0.50, anchor: "tr" },
-  { file: "alert component.png",    left: 99, top: 82, depth: 0.19, rotation: -3, opacity: 0.44, anchor: "tr" },
+  // ── RIGHT EDGE — hidden ─────────────────────────────────────────────
+  { file: "exportwindow figma.png", left: 97, top: 18, depth: 0.18, rotation: 3,  opacity: 0.46, anchor: "tr", hidden: true },
+  { file: "figmacomment.png",       left: 98, top: 42, depth: 0.16, rotation: 2,  opacity: 0.48, anchor: "tr", hidden: true },
+  { file: "filterby miro.png",      left: 99, top: 64, depth: 0.14, rotation: -4, opacity: 0.50, anchor: "tr", hidden: true },
+  { file: "alert component.png",    left: 99, top: 82, depth: 0.19, rotation: -3, opacity: 0.44, anchor: "tr", hidden: true },
 
-  // ── BOTTOM ─────────────────────────────────────────────────────────
-  { file: "salesviz.png",           left: 60, top: 94, depth: 0.20, rotation: -3, opacity: 0.50, anchor: "bl" },
-  { file: "miro PeopleBar.png",     left: 80, top: 97, depth: 0.17, rotation: 1,  opacity: 0.48, anchor: "bl" },
+  // ── BOTTOM — hidden ─────────────────────────────────────────────────
+  { file: "salesviz.png",           left: 60, top: 94, depth: 0.20, rotation: -3, opacity: 0.50, anchor: "bl", hidden: true },
+  { file: "miro PeopleBar.png",     left: 80, top: 97, depth: 0.17, rotation: 1,  opacity: 0.48, anchor: "bl", hidden: true },
 
-  // ── LEFT EDGE ──────────────────────────────────────────────────────
-  { file: "CreationBarmiro.png",    left: 0,  top: 22, depth: 0.09, rotation: -5, opacity: 0.42, anchor: "tl" },
-  { file: "self emoticon.png",      left: 2,  top: 44, depth: 0.12, rotation: -6, opacity: 0.55, anchor: "tl" },
-  { file: "conversionviz.png",      left: 1,  top: 68, depth: 0.14, rotation: 4,  opacity: 0.40, anchor: "tl" },
+  // ── LEFT EDGE ───────────────────────────────────────────────────────
+  { file: "CreationBarmiro.png",    left: 0,  top: 22, depth: 0.09, rotation: -5, opacity: 0.42, anchor: "tl", hidden: true },
+  { file: "self emoticon.png",      left: 3,  top: 42, depth: 0.12, rotation: -6, opacity: 0.90, anchor: "tl" },
+  { file: "conversionviz.png",      left: 1,  top: 68, depth: 0.14, rotation: 4,  opacity: 0.40, anchor: "tl", hidden: true },
 
-  // ── MICROSOFT BADGE ────────────────────────────────────────────────
-  { file: "microsoft-logo.png",     left: 13, top: 20, depth: 0.13, rotation: 6,  opacity: 1,    anchor: "tl" },
+  // ── MICROSOFT BADGE ─────────────────────────────────────────────────
+  { file: "microsoft-logo.png",     left: 7,  top: 8,  depth: 0.13, rotation: 6,  opacity: 1,    anchor: "tl" },
 ];
 
 /* ── Helpers ────────────────────────────────────────────────────────── */
@@ -101,7 +102,7 @@ interface PlacedOffset {
 }
 
 /* ── Drop zone config ──────────────────────────────────────────────── */
-const DROP_ZONE = { left: 5, top: 70, width: 14, height: 14 }; // % of hero
+const DROP_ZONE = { left: 3, top: 68, width: 17, height: 18 }; // % of hero
 // Center exclusion: stickers dropped here won't trigger game
 const CENTER_ZONE = { left: 18, right: 82, top: 15, bottom: 85 };
 
@@ -256,7 +257,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
         }}
       >
         {/* Pixel character face */}
-        <div className="drop-zone-ring relative flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-accent/50" style={{ background: "rgba(255,82,16,0.08)" }}>
+        <div className="drop-zone-ring relative flex h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-accent/50" style={{ background: "rgba(255,82,16,0.08)" }}>
           <div className="drop-zone-pulse absolute inset-0 rounded-xl border-2 border-accent/20" />
           {/* Pixel art face using CSS grid of divs */}
           <div style={{ position: "relative", width: 28, height: 36, imageRendering: "pixelated", flexShrink: 0 }}>
@@ -303,7 +304,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
           </span>
         </div>
       </div>
-      {SLOTS.map((item, i) => {
+      {SLOTS.map((item, i) => { if (item.hidden) return null;
         const w = DISPLAY_W[item.file];
         const h = getDisplayH(item.file);
         const anchor = item.anchor ?? "tl";

@@ -257,7 +257,7 @@ export default function Hero() {
           dragElastic={0}
           data-tour="folder"
           className="absolute z-[25] hidden cursor-grab select-none flex-col items-center gap-1 md:flex active:cursor-grabbing"
-          style={{ right: "22%", top: "46%" }}
+          style={{ right: "20%", top: "32%" }}
           /* initial=false after first mount so finderOpen toggles don't re-run entrance */
           initial={folderShownRef.current ? false : { opacity: 0, rotate: -7, scale: 0.85 }}
           animate={{ opacity: 1, rotate: -7, scale: 1 }}
@@ -268,31 +268,31 @@ export default function Hero() {
           onClick={() => setFinderOpen(true)}
         >
           {/* Desktop folder with peek cards behind it */}
-          <div style={{ position: "relative", width: 72, height: 58, overflow: "visible" }}>
+          <div style={{ position: "relative", width: 100, height: 80, overflow: "visible" }}>
             {PEEK_CARDS.map((src, i) => (
               <motion.div
                 key={i}
                 style={{
-                  position: "absolute", width: 42, height: 33,
-                  borderRadius: 5, overflow: "hidden",
-                  left: "50%", top: "8%", marginLeft: -21,
+                  position: "absolute", width: 58, height: 44,
+                  borderRadius: 6, overflow: "hidden",
+                  left: "50%", top: "8%", marginLeft: -29,
                   zIndex: 2 + i,
                   boxShadow: "0 2px 10px rgba(0,0,0,0.28)",
                   transformOrigin: "bottom center",
                 }}
                 animate={isPeeking
-                  ? { y: -(10 + i * 16), rotate: (i - 1) * 13, opacity: 1 }
-                  : { y: 8,  rotate: (i - 1) * 2.5, opacity: 0.85 }}
+                  ? { y: -(14 + i * 20), rotate: (i - 1) * 13, opacity: 1 }
+                  : { y: 10, rotate: (i - 1) * 2.5, opacity: 0.85 }}
                 transition={{ type: "spring", stiffness: 280, damping: 22, delay: isPeeking ? i * 0.07 : (2 - i) * 0.05 }}
               >
                 <img src={src} alt="" draggable={false} style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
               </motion.div>
             ))}
             <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
-              <MacFolderIcon size={72} uid="desk" />
+              <MacFolderIcon size={100} uid="desk" />
             </div>
           </div>
-          <span className="font-mono text-[9.5px] font-medium text-neutral-400 tracking-wide">
+          <span className="font-mono text-[10px] font-medium text-neutral-400 tracking-wide">
             creativesidehustle/
           </span>
         </motion.div>
@@ -308,7 +308,7 @@ export default function Hero() {
           dragMomentum={false}
           dragElastic={0}
           className="absolute z-[25] hidden cursor-grab select-none flex-col items-center gap-1.5 md:flex active:cursor-grabbing"
-          style={{ right: "6%", top: "52%" }}
+          style={{ right: "5%", top: "54%" }}
           initial={{ opacity: 0, rotate: 8, scale: 0.8 }}
           animate={{ opacity: 1, rotate: 8, scale: 1 }}
           transition={{ delay: 3.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -320,7 +320,7 @@ export default function Hero() {
             src="/Trusted Tester Badge.png"
             alt="DHS Trusted Tester Certified"
             draggable={false}
-            className="w-36 drop-shadow-xl"
+            className="w-44 drop-shadow-xl"
             style={{ pointerEvents: "none" }}
           />
           <span className="font-mono text-[9px] font-medium tracking-wide text-neutral-400">
