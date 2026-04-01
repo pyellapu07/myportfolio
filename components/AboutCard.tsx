@@ -81,7 +81,7 @@ export default function AboutCard() {
         {/* ── 3D Card ── */}
         <div
           className="w-full max-w-[300px] shrink-0 mx-auto md:mx-0"
-          style={{ perspective: "900px" }}
+          style={{ perspective: "900px", overflow: "visible" }}
         >
           <motion.div
             ref={cardRef}
@@ -205,6 +205,28 @@ export default function AboutCard() {
                 }}
               />
             </div>
+
+            {/* ── Platinum star sticker — top-left, 50% hanging off card ── */}
+            <div
+              className="absolute pointer-events-none select-none"
+              style={{
+                top: "-18%",
+                left: "-18%",
+                width: "40%",
+                transform: "translateZ(14px)",
+                zIndex: 30,
+                filter: "drop-shadow(2px 3px 5px rgba(0,0,0,0.28))",
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/platinum-star-sticker.png"
+                alt="Platinum"
+                draggable={false}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </div>
+
           </motion.div>
         </div>
 
