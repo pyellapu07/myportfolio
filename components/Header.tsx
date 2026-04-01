@@ -48,26 +48,17 @@ function TestimonialPills({ isDarkText }: { isDarkText: boolean }) {
         ))}
       </div>
 
-      {/* Expanding label */}
-      <AnimatePresence>
-        {hovered && (
-          <motion.span
-            key="label"
-            initial={{ opacity: 0, width: 0, marginLeft: 0 }}
-            animate={{ opacity: 1, width: "auto", marginLeft: 10 }}
-            exit={{ opacity: 0, width: 0, marginLeft: 0 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className={cn(
-              "overflow-hidden whitespace-nowrap rounded-full px-3 py-[5px] font-mono text-[11px] font-semibold",
-              isDarkText
-                ? "bg-neutral-900 text-white"
-                : "bg-white text-neutral-900"
-            )}
-          >
-            Hear from Real People
-          </motion.span>
+      {/* Expanding label — CSS transition only, no layout-thrashing width:auto */}
+      <span
+        className={cn(
+          "ml-2.5 overflow-hidden whitespace-nowrap rounded-full font-mono text-[11px] font-semibold",
+          "transition-all duration-200 ease-out",
+          isDarkText ? "bg-neutral-900 text-white" : "bg-white text-neutral-900",
+          hovered ? "max-w-[180px] px-3 py-[5px] opacity-100" : "max-w-0 px-0 py-[5px] opacity-0"
         )}
-      </AnimatePresence>
+      >
+        Hear from Real People
+      </span>
     </button>
   );
 }
