@@ -14,8 +14,9 @@ const TESTIMONIALS = [
     period: "2024 – Present",
     avatar: "/Erica.jpeg",
     accentColor: "#E63946",
-    defaultRotate: -18,
-    defaultX: -80,
+    defaultRotate: -22,
+    defaultX: -240,
+    defaultY: 30,
     quote:
       "This website is incredibly impressive, engaging, and interesting. This will hook anyone in to really go through your site. One of the coolest portfolios I've ever seen.",
   },
@@ -26,8 +27,9 @@ const TESTIMONIALS = [
     period: "Summer 2025",
     avatar: "/bhushan marketcrunch.jpeg",
     accentColor: "#FF6B6B",
-    defaultRotate: -7,
-    defaultX: -27,
+    defaultRotate: -9,
+    defaultX: -80,
+    defaultY: 10,
     quote:
       "Pradeep became the backbone of our product redesign. His UX audit was thorough, his prototypes polished, and his ability to run usability sessions and translate findings into improvements was beyond what we expected. The numbers speak for themselves.",
   },
@@ -38,8 +40,9 @@ const TESTIMONIALS = [
     period: "2025 – Present",
     avatar: "/catherine nakalembe.webp",
     accentColor: "#A78BFA",
-    defaultRotate: 7,
-    defaultX: 27,
+    defaultRotate: 9,
+    defaultX: 80,
+    defaultY: 10,
     quote:
       "He made complex geospatial and climate data intuitive for analysts across 9 countries. A rare blend of design sensibility and technical depth that most designers shy away from.",
   },
@@ -50,8 +53,9 @@ const TESTIMONIALS = [
     period: "2023 – 2024",
     avatar: "/ravi kumar.jpeg",
     accentColor: "#34D399",
-    defaultRotate: 18,
-    defaultX: 80,
+    defaultRotate: 22,
+    defaultX: 240,
+    defaultY: 30,
     quote:
       "Never delayed on any task assigned to him. A true team player, and a creative artist when it comes to editing or drawing. I wish him the best for his masters in the states.",
   },
@@ -61,7 +65,7 @@ const TESTIMONIALS = [
 export default function Testimonials() {
   const [hovered, setHovered] = useState<number | null>(null);
 
-  const SPRING = { type: "spring", stiffness: 310, damping: 28 } as const;
+  const SPRING = { type: "spring", stiffness: 260, damping: 28 } as const;
 
   function getCardStyle(i: number) {
     const t = TESTIMONIALS[i];
@@ -69,21 +73,21 @@ export default function Testimonials() {
     const isIdle   = hovered === null;
 
     if (isActive) {
-      return { rotate: 0, x: 0, y: -28, scale: 1.04, zIndex: 50 };
+      return { rotate: 0, x: t.defaultX * 0.3, y: -32, scale: 1.05, zIndex: 50 };
     }
 
     if (isIdle) {
-      return { rotate: t.defaultRotate, x: t.defaultX, y: 0, scale: 1, zIndex: 10 - i };
+      return { rotate: t.defaultRotate, x: t.defaultX, y: t.defaultY, scale: 1, zIndex: 10 - i };
     }
 
-    // Fan away from the hovered card
+    // Fan away from the hovered card — push further out
     const diff = i - hovered!;
     const sign = diff > 0 ? 1 : -1;
     return {
-      rotate: t.defaultRotate + sign * 14,
-      x: t.defaultX + sign * 90,
-      y: 12,
-      scale: 0.96,
+      rotate: t.defaultRotate + sign * 10,
+      x: t.defaultX + sign * 110,
+      y: t.defaultY + 20,
+      scale: 0.94,
       zIndex: 5 - Math.abs(diff),
     };
   }
@@ -112,7 +116,7 @@ export default function Testimonials() {
 
       {/* ── Deck ──────────────────────────────────────────────────────── */}
       <div className="relative flex items-center justify-center"
-           style={{ height: 420, marginTop: 40 }}>
+           style={{ height: 480, marginTop: 40 }}>
         {TESTIMONIALS.map((t, i) => {
           const style = getCardStyle(i);
           const isActive = hovered === i;
@@ -124,7 +128,7 @@ export default function Testimonials() {
               initial={{
                 rotate: t.defaultRotate,
                 x: t.defaultX,
-                y: 0,
+                y: t.defaultY,
                 scale: 1,
                 zIndex: 10 - i,
               }}
@@ -132,7 +136,12 @@ export default function Testimonials() {
               onHoverStart={() => setHovered(i)}
               onHoverEnd={() => setHovered(null)}
               className="absolute cursor-pointer select-none"
-              style={{ width: 260 }}
+              style={{
+                width: 260,
+                // kill pointer events on all other cards while one is active
+                // this prevents the cursor sliding onto neighbours and triggering chain hovers
+                pointerEvents: hovered !== null && hovered !== i ? "none" : "auto",
+              }}
             >
               {/* Card */}
               <div
