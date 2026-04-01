@@ -324,7 +324,7 @@ export default function Hero() {
           dragMomentum={false}
           dragElastic={0}
           className="absolute z-[25] hidden cursor-grab select-none flex-col items-center gap-1.5 md:flex active:cursor-grabbing"
-          style={{ right: "5%", top: "54%", filter: "drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(2px 2px 0px rgba(0,0,0,0.45))" }}
+          style={{ right: "5%", top: "54%" }}
           initial={{ opacity: 0, rotate: 8, scale: 0.8 }}
           animate={{ opacity: 1, rotate: 8, scale: 1 }}
           transition={dhsEntered ? { duration: 0.25, ease: "easeOut" } : { delay: 3.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -338,7 +338,7 @@ export default function Hero() {
             alt="DHS Trusted Tester Certified"
             draggable={false}
             className="w-44"
-            style={{ pointerEvents: "none" }}
+            style={{ pointerEvents: "none", filter: "drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(1px 1px 0px rgba(0,0,0,0.38))" }}
           />
           <span className="font-mono text-[9px] font-medium tracking-wide text-neutral-400">
             A DHS Trusted Tester 🫡

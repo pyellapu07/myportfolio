@@ -347,9 +347,8 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
 
         const scale = isDragging ? 1.04 : isHovered ? 1.04 : 1;
         const shadow = "none";
-        const stickerFilter = item.file === "self emoticon.png"
-          ? "drop-shadow(2px 2px 0px rgba(0,0,0,0.45))"
-          : `drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(2px 2px 0px rgba(0,0,0,0.45))`;
+        const imgFilter = `drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(0 0 5px #fff) drop-shadow(1px 1px 0px rgba(0,0,0,0.38))`;
+        const avatarFilter = `drop-shadow(1px 1px 0px rgba(0,0,0,0.38))`;
 
         // Don't apply parallax to dragged item — feels more grounded
         const txParallax = isDragging ? 0 : 0;
@@ -371,13 +370,12 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
               height: h,
               transform: `translate(${ox + effectiveDx + txParallax}px, ${oy + effectiveDy + tyParallax}px) rotate(${rot}deg) scale(${scale})`,
               opacity: 1,
-              filter: stickerFilter,
               cursor: isDragging ? "grabbing" : "grab",
               zIndex: isDragging ? 50 : isHovered ? 20 : 5,
-              willChange: "transform, opacity, filter",
+              willChange: "transform, opacity",
               transition: isDragging
-                ? "opacity 0.15s, filter 0.15s"
-                : `transform 0.45s cubic-bezier(0.34,1.56,0.64,1) ${hintActive ? `${i * 0.04}s` : "0s"}, opacity 0.25s, filter 0.25s`,
+                ? "opacity 0.15s"
+                : `transform 0.45s cubic-bezier(0.34,1.56,0.64,1) ${hintActive ? `${i * 0.04}s` : "0s"}, opacity 0.25s`,
             }}
             onPointerDown={(e) => onPointerDown(e, i)}
             onPointerEnter={() => setHoveredIdx(i)}
@@ -401,7 +399,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
                   @keyframes cf12{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(26px,-54px) rotate(-160deg);opacity:0}}
                 `}</style>
 
-                <div style={{ width: "100%", height: "100%", position: "relative", overflow: "visible", pointerEvents: "none", userSelect: "none" }}>
+                <div style={{ width: "100%", height: "100%", position: "relative", overflow: "visible", pointerEvents: "none", userSelect: "none", filter: imgFilter }}>
 
                   {/* Trophy + confetti — top-right corner of Microsoft logo */}
                   <div style={{
@@ -490,6 +488,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
                     objectFit: "cover",
                     userSelect: "none",
                     pointerEvents: "none",
+                    filter: avatarFilter,
                   }}
                   onEnded={() => {
                     if (videoRef.current && !videoRef.current.muted) {
@@ -534,7 +533,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
                   width: "100%",
                   height: "auto",
                   display: "block",
-                  filter: shadow,
+                  filter: imgFilter,
                   userSelect: "none",
                   pointerEvents: "none",
                   transition: "filter 0.25s",
