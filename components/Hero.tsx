@@ -180,8 +180,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-8 max-w-[520px] font-mono text-sm leading-relaxed text-neutral-400"
         >
-          5+ years creating user-centered digital products. Reduced friction by 40%,
-          boosted engagement by 167%. Currently at UMD.
+          3+ years creating user-centered digital products. I run usability studies, read the analytics, and ship work that holds up across every user type. Previously at MarketCrunch AI (San Francisco), NASA Harvest UMD, Computacenter UK. ✦
         </motion.p>
 
         {/* Mobile creative work folder tap ─ hidden on desktop */}
