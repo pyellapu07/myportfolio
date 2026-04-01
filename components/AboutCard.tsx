@@ -34,8 +34,8 @@ export default function AboutCard() {
   const glareBg   = useMotionTemplate`radial-gradient(circle at ${glareXPct}% ${glareYPct}%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.18) 22%, transparent 52%)`;
 
   /* ── Foil — blues, purples, pinks ── */
-  const hueShift   = useTransform(rawX, [-1, 1], [0, 200]);
-  const foilFilter = useTransform(hueShift, (h) => `hue-rotate(${h}deg) saturate(1.8) brightness(1.1) contrast(1.05)`);
+  const hueShift   = useTransform(rawX, [-1, 1], [-30, 60]);
+  const foilFilter = useTransform(hueShift, (h) => `hue-rotate(${h}deg) saturate(1.6) brightness(1.08) contrast(1.04)`);
 
   /* ── Track mouse across the ENTIRE about section ── */
   useEffect(() => {
@@ -117,16 +117,16 @@ export default function AboutCard() {
                 }}
               />
 
-              {/* Holographic prismatic foil */}
+              {/* Holographic foil — orange + violet theme */}
               <motion.div
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   background:
-                    "repeating-linear-gradient(115deg, #ff0080cc 0%, #ff8800cc 12%, #ffff00cc 25%, #00ff88cc 38%, #0088ffcc 50%, #8800ffcc 62%, #ff0080cc 75%, #ff8800cc 88%, #ffff00cc 100%)",
-                  backgroundSize: "250% 250%",
+                    "repeating-linear-gradient(115deg, #ff6600bb 0%, #cc44ffbb 20%, #ff4400bb 38%, #9922ffbb 55%, #ff8833bb 72%, #aa33ffbb 88%, #ff6600bb 100%)",
+                  backgroundSize: "220% 220%",
                   filter: foilFilter,
                   mixBlendMode: "overlay",
-                  opacity: 0.38,
+                  opacity: 0.32,
                 }}
               />
 
