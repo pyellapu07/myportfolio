@@ -119,7 +119,7 @@ function Toolbox() {
           {TOOLS.map((tool) => (
             <div
               key={tool.name}
-              className="cursor-pointer opacity-60 transition-all duration-200 hover:opacity-100 hover:scale-110"
+              className="cursor-pointer transition-all duration-200 hover:scale-110"
               onMouseEnter={(e) => onLogoEnter(tool.name, e)}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
