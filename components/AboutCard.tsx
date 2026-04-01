@@ -315,7 +315,7 @@ export default function AboutCard() {
             Grew up in coastal Vizag, India. Started designing for a startup clothing brand when a friend handed me his idea and zero budget. The first real call was drawing a hanger icon from scratch because no one puts clothes in a cart. That decision set everything in motion.
           </p>
           <p className="mt-4 text-[15.5px] leading-[1.85] text-text-secondary">
-            Now at <strong className="text-text">University of Maryland</strong> doing MS in Data Science + UX Research. Built tools for NASA, shipped a full product redesign at a San Francisco AI startup, creative-directed an esports org, and got flown to{" "}
+            Now at <strong className="text-text">University of Maryland</strong> doing MS in Data Science + UX Research. Built tools for <strong className="text-text">NASA Harvest</strong>, shipped a full product redesign at a San Francisco AI startup, creative-directed an esports org, and got flown to{" "}
             <strong className="text-text">Nairobi, Kenya</strong> to train professionals on the system I designed.
           </p>
           <p className="mt-4 text-[15.5px] leading-[1.85] text-text-secondary">

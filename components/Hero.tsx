@@ -30,6 +30,10 @@ export default function Hero() {
   const [dhsEntered, setDhsEntered] = useState(false);
   const [mediumEntered, setMediumEntered] = useState(false);
 
+  // Drag-vs-click guards: set true on drag start, checked & cleared in onClick
+  const folderDragRef = useRef(false);
+  const mediumDragRef = useRef(false);
+
   // Cards peek out of folder every ~4.5s, retract after 1.6s
   useEffect(() => {
     function doPeek() {
@@ -388,7 +392,11 @@ export default function Hero() {
           onAnimationComplete={() => { folderShownRef.current = true; }}
           whileHover={{ scale: 1.08, rotate: -5, transition: { duration: 0.2 } }}
           whileTap={{ scale: 0.96 }}
-          onClick={() => setFinderOpen(true)}
+          onDragStart={() => { folderDragRef.current = true; }}
+          onClick={() => {
+            if (folderDragRef.current) { folderDragRef.current = false; return; }
+            setFinderOpen(true);
+          }}
         >
           {/* Desktop folder with peek cards behind it */}
           <div style={{ position: "relative", width: 100, height: 80, overflow: "visible" }}>
@@ -441,6 +449,10 @@ export default function Hero() {
           onAnimationComplete={() => setMediumEntered(true)}
           whileHover={{ scale: 1.08, rotate: -10, transition: { duration: 0.2, type: "tween" } }}
           whileTap={{ scale: 0.96 }}
+          onDragStart={() => { mediumDragRef.current = true; }}
+          onClick={(e) => {
+            if (mediumDragRef.current) { mediumDragRef.current = false; e.preventDefault(); }
+          }}
         >
           <div
             className="rounded-2xl bg-neutral-900 px-4 pt-3 pb-3.5"

@@ -15,43 +15,13 @@ const TESTIMONIALS = [
     period: "March 31, 2026",
     avatar: "/Erica.jpeg",
     accentColor: "#E63946",
-    defaultRotate: -22,
-    defaultX: -340,
-    defaultY: 30,
+    defaultRotate: -18,
+    defaultX: -200,
+    defaultY: 20,
     quote:
       "Pradeep is an extremely talented, thorough, and wildly creative graphic designer. He consistently thinks outside of the box to elevate our program's brand. Any company will be beyond lucky to have Pradeep on their team.",
     fullQuote:
       "Pradeep is an extremely talented, thorough, and wildly creative graphic designer. He consistently thinks outside of the box to elevate our program's brand, while still maintaining within the creative guidelines. More importantly though, he is a diligent, communicative worker who is eager to learn and grow, both as a creative but also as a budding professional. He takes feedback and incorporates it immediately into his work, to the point where the change is evident and reflected instantaneously. Although bittersweet that he leaves our team as he graduates from UMD, I'm excited to see where he takes his talents in this next chapter. Any company will be beyond lucky to have Pradeep on their team.",
-  },
-  {
-    name: "Bhushan Suryavanshi",
-    role: "Founder & CEO",
-    company: "MarketCrunch AI",
-    period: "Summer 2025",
-    avatar: "/bhushan marketcrunch.jpeg",
-    accentColor: "#FF6B6B",
-    defaultRotate: -9,
-    defaultX: -113,
-    defaultY: 10,
-    quote:
-      "Pradeep became the backbone of our product redesign. His UX audit was thorough, his prototypes polished. The numbers speak for themselves.",
-    fullQuote:
-      "Pradeep joined us as a design intern and quickly became the backbone of our product redesign. His UX audit was thorough, his prototypes were polished, and his ability to run usability sessions and translate findings into actionable improvements was beyond what we expected. The numbers speak for themselves.",
-  },
-  {
-    name: "Catherine Nakalembe (Ph.D.)",
-    role: "NASA Harvest Africa Director",
-    company: "Univ. of Maryland",
-    period: "2025 – Present",
-    avatar: "/catherine nakalembe.webp",
-    accentColor: "#A78BFA",
-    defaultRotate: 9,
-    defaultX: 113,
-    defaultY: 10,
-    quote:
-      "He made complex geospatial data intuitive for analysts across 9 countries. A rare blend of design and technical depth.",
-    fullQuote:
-      "Working with Pradeep has been a genuine pleasure. He brought a rare blend of design sensibility and technical understanding to a domain that most designers shy away from: geospatial, climate, and agricultural data. He didn't just make things look good; he made complex information intuitive for analysts across 9 countries.",
   },
   {
     name: "Ravi Kumar",
@@ -60,9 +30,9 @@ const TESTIMONIALS = [
     period: "2023 – 2024",
     avatar: "/ravi kumar.jpeg",
     accentColor: "#34D399",
-    defaultRotate: 22,
-    defaultX: 340,
-    defaultY: 30,
+    defaultRotate: 18,
+    defaultX: 200,
+    defaultY: 20,
     quote:
       "Never delayed on any task. A true team player, and a creative artist when it comes to editing or drawing.",
     fullQuote:
