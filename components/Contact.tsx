@@ -352,7 +352,7 @@ export default function Contact() {
               }}
             >
               <span>Total Experience</span>
-              <span style={{ color: "#111", fontWeight: 600 }}>5+ Years</span>
+              <span style={{ color: "#111", fontWeight: 600 }}>3+ Years</span>
             </div>
             <div
               style={{
