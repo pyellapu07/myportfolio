@@ -209,22 +209,6 @@ export default function AboutCard() {
           </motion.div>
         </div>
 
-        {/* ── Platinum star sticker — floats top-right of text block ── */}
-        <div
-          className="pointer-events-none select-none absolute"
-          style={{
-            top: "52%",
-            right: "-22px",
-            width: "88px",
-            transform: "rotate(45deg)",
-            filter: "drop-shadow(2px 2px 0px rgba(0,0,0,0.15))",
-            zIndex: 20,
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/platinum-star-sticker.png" alt="Platinum" draggable={false} style={{ width: "100%", height: "auto", display: "block" }} />
-        </div>
-
         {/* ── Right side ── */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
@@ -236,9 +220,24 @@ export default function AboutCard() {
           <span className="font-mono text-xs font-medium uppercase tracking-widest text-primary">
             About Me
           </span>
-          <h2 className="mt-4 font-heading text-4xl font-bold leading-tight text-text md:text-[3rem]">
-            Hii! I&apos;m Pradeep.
-          </h2>
+
+          {/* Heading row — sticker sits as flex sibling, hangs off right edge */}
+          <div className="flex items-start gap-2 -mr-5 md:-mr-8">
+            <h2 className="mt-4 font-heading text-4xl font-bold leading-tight text-text md:text-[3rem]">
+              Hii! I&apos;m Pradeep.
+            </h2>
+            <div
+              className="pointer-events-none select-none shrink-0 mt-2"
+              style={{
+                width: "80px",
+                transform: "rotate(45deg)",
+                filter: "drop-shadow(2px 2px 0px rgba(0,0,0,0.15))",
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/platinum-star-sticker.png" alt="Platinum" draggable={false} style={{ width: "100%", height: "auto", display: "block" }} />
+            </div>
+          </div>
           <p className="mt-2 font-mono text-sm tracking-wide text-text-secondary">
             Product Designer &amp; Researcher &nbsp;·&nbsp; Seeking Full-time roles
           </p>
