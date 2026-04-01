@@ -34,8 +34,8 @@ export default function AboutCard() {
   const glareBg   = useMotionTemplate`radial-gradient(circle at ${glareXPct}% ${glareYPct}%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.18) 22%, transparent 52%)`;
 
   /* ── Foil — blues, purples, pinks ── */
-  const hueShift   = useTransform(rawX, [-1, 1], [0, 130]);
-  const foilFilter = useTransform(hueShift, (h) => `hue-rotate(${h}deg) saturate(1.2) brightness(1.06)`);
+  const hueShift   = useTransform(rawX, [-1, 1], [0, 60]);
+  const foilFilter = useTransform(hueShift, (h) => `hue-rotate(${h}deg) saturate(0.7) brightness(1.12)`);
 
   /* ── Track mouse across the ENTIRE about section ── */
   useEffect(() => {
@@ -80,7 +80,7 @@ export default function AboutCard() {
 
         {/* ── 3D Card ── */}
         <div
-          className="w-full max-w-[240px] shrink-0 mx-auto md:mx-0"
+          className="w-full max-w-[300px] shrink-0 mx-auto md:mx-0"
           style={{ perspective: "900px" }}
         >
           <motion.div
@@ -108,24 +108,25 @@ export default function AboutCard() {
               className="relative flex flex-col w-full h-full overflow-hidden rounded-[24px]"
               style={{ transform: "translateZ(0)" }}
             >
-              {/* Chrome metallic base */}
+              {/* Chrome metallic base — bright silver */}
               <div
                 className="absolute inset-0"
                 style={{
                   background:
-                    "linear-gradient(145deg, #9a9a9a 0%, #e8e8e8 20%, #c0c0c0 38%, #f5f5f5 52%, #b8b8b8 68%, #ececec 84%, #d0d0d0 100%)",
+                    "linear-gradient(145deg, #c8c8c8 0%, #f8f8f8 18%, #d8d8d8 35%, #ffffff 50%, #d0d0d0 66%, #f5f5f5 82%, #e0e0e0 100%)",
                 }}
               />
 
-              {/* Holographic foil: blues, purples, pinks */}
+              {/* Holographic foil — soft pearlescent, light silver shimmer */}
               <motion.div
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   background:
-                    "repeating-linear-gradient(118deg, #ff66cc99 0%, #9966ff99 20%, #66aaff99 40%, #cc44ff99 60%, #ff88aa99 80%, #ff66cc99 100%)",
-                  backgroundSize: "180% 180%",
+                    "repeating-linear-gradient(118deg, #e8d0f044 0%, #d0e8f844 20%, #f0e8d844 40%, #d8d0f044 60%, #e8f0f844 80%, #e8d0f044 100%)",
+                  backgroundSize: "200% 200%",
                   filter: foilFilter,
-                  mixBlendMode: "overlay",
+                  mixBlendMode: "screen",
+                  opacity: 0.75,
                 }}
               />
 
@@ -184,7 +185,7 @@ export default function AboutCard() {
                   ))}
                 </div>
                 <p className="mt-1.5 font-mono text-[9px] leading-tight text-neutral-500 italic">
-                  Owns more action figures than design books 🤖
+                  Owns more action figures than design books
                 </p>
               </div>
 
