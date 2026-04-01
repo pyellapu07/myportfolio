@@ -14,9 +14,9 @@ const fira = Fira_Sans_Condensed({
 });
 
 /* ── Widths ───────────────────────────────────────────────────────────── */
-// Printer is 50% wider than receipt (25% extra on each side)
-const PRINTER_W = 480;   // px
-const RECEIPT_PCT = 66;  // receipt = 66% of printer width
+// Printer is 2× receipt width (50% extra on each side)
+const PRINTER_W = 620;   // px
+const RECEIPT_PCT = 50;  // receipt = 50% of printer width → printer overhangs 50% receipt-width on each side
 
 /* ── Data ─────────────────────────────────────────────────────────────── */
 const RECEIPT_ITEMS = [
