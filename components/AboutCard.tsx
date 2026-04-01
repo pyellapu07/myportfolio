@@ -213,9 +213,9 @@ export default function AboutCard() {
                 top: "-18%",
                 left: "-18%",
                 width: "40%",
-                transform: "translateZ(14px)",
+                transform: "translateZ(14px) rotate(45deg)",
                 zIndex: 30,
-                filter: "drop-shadow(2px 3px 5px rgba(0,0,0,0.28))",
+                filter: "drop-shadow(2px 2px 0px rgba(0,0,0,0.15))",
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
