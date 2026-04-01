@@ -9,6 +9,7 @@ import HeroParticles from "./HeroParticles";
 import DesignRescueGame from "./DesignRescueGame";
 import MacFinderWindow, { MacFolderIcon } from "./MacFinderWindow";
 import { Volume2, VolumeX } from "lucide-react";
+import MicrosoftBadgeSticker from "./MicrosoftBadgeSticker";
 
 export default function Hero() {
   const { isRecruiterMode } = useRecruiter();
@@ -243,94 +244,97 @@ export default function Hero() {
           transition={{ duration: 0.5, delay: 0.85 }}
           className="mt-5 relative md:hidden"
         >
-          {/* Caption — Microsoft */}
-          <AnimatePresence>
-            {tappedBadge === "microsoft" && (
-              <motion.div
-                key="microsoft-caption"
-                initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 4, scale: 0.96 }}
-                transition={{ type: "spring", stiffness: 340, damping: 26 }}
-                className="absolute bottom-full left-0 mb-1 w-48"
-              >
-                <div className="rounded-xl bg-white px-3.5 py-2.5 shadow-lg" style={{ border: "1px solid #e5e7eb" }}>
-                  <p className="font-mono text-[11px] font-semibold leading-snug text-neutral-800">
-                    🏆 Microsoft MLSA
-                  </p>
-                  <p className="mt-0.5 font-mono text-[10px] leading-snug text-neutral-500">
-                    1st Place — Imagine Cup<br />recognised by Microsoft
-                  </p>
-                </div>
-                {/* Hand-drawn arrow pointing down-left toward badge */}
-                <svg width="44" height="30" viewBox="0 0 44 30" fill="none" aria-hidden className="ml-4 mt-0.5">
-                  <path d="M 38,4 C 30,10 20,18 9,26" stroke="#374151" strokeWidth="1.7" strokeLinecap="round"/>
-                  <path d="M 9,26 L 14,19" stroke="#374151" strokeWidth="1.7" strokeLinecap="round"/>
-                  <path d="M 9,26 L 17,26" stroke="#374151" strokeWidth="1.7" strokeLinecap="round"/>
-                </svg>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Caption — DHS */}
-          <AnimatePresence>
-            {tappedBadge === "dhs" && (
-              <motion.div
-                key="dhs-caption"
-                initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 4, scale: 0.96 }}
-                transition={{ type: "spring", stiffness: 340, damping: 26 }}
-                className="absolute bottom-full right-0 mb-1 w-52"
-              >
-                <div className="rounded-xl bg-white px-3.5 py-2.5 shadow-lg" style={{ border: "1px solid #e5e7eb" }}>
-                  <p className="font-mono text-[11px] font-semibold leading-snug text-neutral-800">
-                    🔒 DHS Trusted Tester
-                  </p>
-                  <p className="mt-0.5 font-mono text-[10px] leading-snug text-neutral-500">
-                    Certified accessibility expert<br />by Dept. of Homeland Security
-                  </p>
-                </div>
-                {/* Hand-drawn arrow pointing down-right toward badge */}
-                <svg width="44" height="30" viewBox="0 0 44 30" fill="none" aria-hidden className="ml-auto mr-6 mt-0.5">
-                  <path d="M 6,4 C 14,10 24,18 35,26" stroke="#374151" strokeWidth="1.7" strokeLinecap="round"/>
-                  <path d="M 35,26 L 27,26" stroke="#374151" strokeWidth="1.7" strokeLinecap="round"/>
-                  <path d="M 35,26 L 30,19" stroke="#374151" strokeWidth="1.7" strokeLinecap="round"/>
-                </svg>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           {/* Badges row */}
-          <div className="flex items-center gap-5">
-            <button
-              onClick={() => setTappedBadge(tappedBadge === "microsoft" ? null : "microsoft")}
-              className="focus:outline-none active:scale-95 transition-transform"
-              aria-label="Microsoft MLSA badge — tap for info"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/microsoft-logo.png"
-                alt="Microsoft MLSA 1st Place"
-                draggable={false}
-                className="h-11 w-auto object-contain"
-                style={{ filter: "drop-shadow(2px 2px 0px rgba(0,0,0,0.15))" }}
-              />
-            </button>
-            <button
-              onClick={() => setTappedBadge(tappedBadge === "dhs" ? null : "dhs")}
-              className="focus:outline-none active:scale-95 transition-transform"
-              aria-label="DHS Trusted Tester badge — tap for info"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/Trusted Tester Badge.png"
-                alt="DHS Trusted Tester Certified"
-                draggable={false}
-                className="h-11 w-auto object-contain"
-                style={{ filter: "drop-shadow(2px 2px 0px rgba(0,0,0,0.15))" }}
-              />
-            </button>
+          <div className="flex items-end gap-8">
+
+            {/* Microsoft sticker — full trophy+confetti component */}
+            <div className="relative">
+              <button
+                onClick={() => setTappedBadge(tappedBadge === "microsoft" ? null : "microsoft")}
+                className="focus:outline-none active:scale-95 transition-transform block"
+                aria-label="Microsoft MLSA badge, tap for info"
+              >
+                <MicrosoftBadgeSticker displaySize={88} />
+              </button>
+
+              {/* Caption below Microsoft badge */}
+              <AnimatePresence>
+                {tappedBadge === "microsoft" && (
+                  <motion.div
+                    key="ms-caption"
+                    initial={{ opacity: 0, y: -4, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -3, scale: 0.97 }}
+                    transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                    className="absolute top-full left-0 mt-1 w-52 pointer-events-none"
+                    style={{ zIndex: 50 }}
+                  >
+                    {/* Cute curved arrow pointing UP-LEFT to badge */}
+                    <svg width="36" height="26" viewBox="0 0 36 26" fill="none" aria-hidden className="ml-6">
+                      <path d="M 20,24 C 18,17 12,11 7,4" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                      <path d="M 7,4 L 4,11" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/>
+                      <path d="M 7,4 L 13,7" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    <div className="rounded-2xl bg-white px-3.5 py-2.5" style={{ border: "1px solid #e5e7eb" }}>
+                      <p className="font-mono text-[11px] font-semibold leading-snug text-neutral-800">
+                        🏆 Microsoft MLSA
+                      </p>
+                      <p className="mt-0.5 font-mono text-[10px] leading-snug text-neutral-500">
+                        1st Place, Imagine Cup<br />Recognised by Microsoft
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* DHS Trusted Tester badge */}
+            <div className="relative">
+              <button
+                onClick={() => setTappedBadge(tappedBadge === "dhs" ? null : "dhs")}
+                className="focus:outline-none active:scale-95 transition-transform block"
+                aria-label="DHS Trusted Tester badge, tap for info"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/Trusted Tester Badge.png"
+                  alt="DHS Trusted Tester Certified"
+                  draggable={false}
+                  className="h-12 w-auto object-contain"
+                />
+              </button>
+
+              {/* Caption below DHS badge */}
+              <AnimatePresence>
+                {tappedBadge === "dhs" && (
+                  <motion.div
+                    key="dhs-caption"
+                    initial={{ opacity: 0, y: -4, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -3, scale: 0.97 }}
+                    transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                    className="absolute top-full right-0 mt-1 w-52 pointer-events-none"
+                    style={{ zIndex: 50 }}
+                  >
+                    {/* Cute curved arrow pointing UP-RIGHT to badge */}
+                    <svg width="36" height="26" viewBox="0 0 36 26" fill="none" aria-hidden className="ml-auto mr-5">
+                      <path d="M 16,24 C 18,17 24,11 29,4" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                      <path d="M 29,4 L 32,11" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/>
+                      <path d="M 29,4 L 23,7" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    <div className="rounded-2xl bg-white px-3.5 py-2.5" style={{ border: "1px solid #e5e7eb" }}>
+                      <p className="font-mono text-[11px] font-semibold leading-snug text-neutral-800">
+                        🔒 DHS Trusted Tester
+                      </p>
+                      <p className="mt-0.5 font-mono text-[10px] leading-snug text-neutral-500">
+                        Certified accessibility expert<br />by Dept. of Homeland Security
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
           </div>
         </motion.div>
       </motion.div>
