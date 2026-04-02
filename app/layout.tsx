@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, DM_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
 import LoadingScreen from "@/components/LoadingScreen";
 import ScrollToTop from "@/components/ScrollToTop";
 
@@ -67,6 +68,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/Favicon.png" />
       </head>
       <body className={`${manrope.variable} ${dmMono.variable} ${instrumentSerif.variable} antialiased`}>
+        <Analytics />
         <LoadingScreen />
         <ScrollToTop />
         <a href="#main" className="skip-link">
