@@ -45,12 +45,21 @@ export const metadata: Metadata = {
       "5+ years creating user-centered digital products. Reduced user friction by 40%, boosted engagement by 167%.",
     type: "website",
     locale: "en_US",
+    images: [
+      {
+        url: "/Thumbnail portfolio.png",
+        width: 1200,
+        height: 630,
+        alt: "Pradeep Yellapu — Product Designer & UX Researcher",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Pradeep Yellapu, Product Designer",
     description:
       "Product Designer & UX Researcher crafting user-centered digital experiences.",
+    images: ["/Thumbnail portfolio.png"],
   },
   robots: { index: true, follow: true },
 };
