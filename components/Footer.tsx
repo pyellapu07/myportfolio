@@ -101,7 +101,7 @@ export default function Footer() {
               Credits
             </h4>
             <p className="text-sm text-text-secondary">
-              &copy; {new Date().getFullYear()} {SITE.name}
+              &copy; {new Date().getFullYear()} {SITE.name}. All rights reserved.
             </p>
             <p className="mt-1 font-mono text-xs text-text-muted">
               Built with lots of Caffeine, Insomniac cookies,<br />
