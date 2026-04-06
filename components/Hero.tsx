@@ -187,8 +187,8 @@ export default function Hero() {
           A product designer{" "}
           <br className="hidden md:block" />
           with a focus on{" "}
-          <br className="hidden md:block" />
-          <span className="relative inline-grid grid-cols-1 align-bottom min-h-[88px] md:min-h-0">
+          <br />
+          <span className="relative inline-grid grid-cols-1 align-bottom md:min-h-0">
             <span className="col-start-1 row-start-1 text-accent">
               {scrambledWord}
             </span>
