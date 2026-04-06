@@ -28,7 +28,7 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: "Pradeep's Canvas",
   description:
-    "Product Designer & UX Researcher with 5+ years of experience creating user-centered digital products across enterprise SaaS, AI platforms, and consumer applications.",
+    "Product Designer & UX Researcher creating user-centered digital products across enterprise SaaS, AI platforms, and consumer applications.",
   keywords: [
     "Pradeep Yellapu",
     "Product Designer",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Pradeep Yellapu, Product Designer & UX Researcher",
     description:
-      "5+ years creating user-centered digital products. Reduced user friction by 40%, boosted engagement by 167%.",
+      "Product Designer & UX Researcher. Reduced user friction by 40%, boosted engagement by 167%.",
     type: "website",
     locale: "en_US",
     images: [
