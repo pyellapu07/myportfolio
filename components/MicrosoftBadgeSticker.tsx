@@ -87,7 +87,7 @@ export default function MicrosoftBadgeSticker({ displaySize = 80 }: { displaySiz
               src="/microsoft-logo.png"
               alt="Microsoft MLSA 1st Place"
               draggable={false}
-              style={{ width: "100%", height: "auto", display: "block" }}
+              style={{ width: "100%", height: "auto", display: "block", filter: "none" }}
             />
           </div>
 

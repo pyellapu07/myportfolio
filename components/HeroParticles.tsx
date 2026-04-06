@@ -347,8 +347,8 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
 
         const scale = isDragging ? 1.04 : isHovered ? 1.04 : 1;
         const shadow = "none";
-        const imgFilter = `drop-shadow(4px 4px 4px rgba(0,0,0,0.15))`;
-        const avatarFilter = `drop-shadow(4px 4px 4px rgba(0,0,0,0.15))`;
+        const imgFilter = `none`;
+        const avatarFilter = `none`;
 
         // Don't apply parallax to dragged item — feels more grounded
         const txParallax = isDragging ? 0 : 0;
