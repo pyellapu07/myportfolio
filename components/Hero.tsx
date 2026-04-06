@@ -227,7 +227,7 @@ export default function Hero() {
                   borderRadius: 2, overflow: "hidden",
                   left: "50%", top: "10%", marginLeft: -9,
                   zIndex: 2 + i,
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
+                  boxShadow: "none",
                   transformOrigin: "bottom center",
                 }}
                 animate={isPeeking
@@ -408,7 +408,7 @@ export default function Hero() {
                   borderRadius: 6, overflow: "hidden",
                   left: "50%", top: "8%", marginLeft: -29,
                   zIndex: 2 + i,
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.28)",
+                  boxShadow: "none",
                   transformOrigin: "bottom center",
                 }}
                 animate={isPeeking
@@ -456,7 +456,7 @@ export default function Hero() {
         >
           <div
             className="rounded-2xl bg-neutral-900 px-4 pt-3 pb-3.5"
-            style={{ width: 192, filter: "drop-shadow(4px 4px 4px rgba(0,0,0,0.15))", pointerEvents: "none" }}
+            style={{ width: 192, pointerEvents: "none" }}
           >
             {/* Logo + label row */}
             <div className="mb-2 flex items-center gap-2">
@@ -502,7 +502,7 @@ export default function Hero() {
             alt="DHS Trusted Tester Certified"
             draggable={false}
             className="w-44"
-            style={{ pointerEvents: "none", filter: "drop-shadow(4px 4px 4px rgba(0,0,0,0.15))" }}
+            style={{ pointerEvents: "none" }}
           />
           <span className="font-mono text-[9px] font-medium tracking-wide text-neutral-400">
             A DHS Trusted Tester 🫡
