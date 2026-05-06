@@ -461,7 +461,7 @@ export default function WorkflowPage() {
                         <p className="font-mono text-xs text-text-secondary"><strong className="font-medium text-text">A note on iteration:</strong> Our original interview guide was significantly longer. After an internal review, we identified overlapping questions, reorganized around thematic clusters, and cut the guide down to a more focused structure. This reduced cognitive fatigue for participants and improved data quality. Similarly, our participatory design plan was initially loosely defined, we refined it after our first two interviews revealed that participants responded well to reflective prompts and visual organization.</p>
                     </div></Fade>
                     <div className="mt-8 flex flex-wrap gap-3">
-                        <a href="https://miro.com/app/board/uXjVIMwuDLA=/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border/50 bg-white px-4 py-2.5 font-mono text-xs font-medium text-text transition-all hover:border-primary/40 hover:shadow-sm"><ExternalLink size={13} className="text-primary" />View Research Guide on Miro</a>
+                        <a href="https://miro.com/app/board/uXjVHXXUG7o=/?share_link_id=736012304771" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border/50 bg-white px-4 py-2.5 font-mono text-xs font-medium text-text transition-all hover:border-primary/40 hover:shadow-sm"><ExternalLink size={13} className="text-primary" />View Research Guide on Miro</a>
                     </div>
                 </div>
             </section>
@@ -534,7 +534,7 @@ export default function WorkflowPage() {
                     </div></MediaPop>
                     <Fade><div className="mb-10 flex items-center justify-between">
                         <p className="font-mono text-xs text-text-muted">Complete affinity diagram, 120+ data points organized into 6 thematic clusters on Miro.</p>
-                        <a href="https://miro.com/app/board/uXjVIMwuDLA=/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border/50 bg-white px-4 py-2.5 font-mono text-xs font-medium text-text transition-all hover:border-primary/40 hover:shadow-sm shrink-0 ml-4"><ExternalLink size={13} className="text-primary" />View on Miro</a>
+                        <a href="https://miro.com/app/board/uXjVHXXUG7o=/?share_link_id=736012304771" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border/50 bg-white px-4 py-2.5 font-mono text-xs font-medium text-text transition-all hover:border-primary/40 hover:shadow-sm shrink-0 ml-4"><ExternalLink size={13} className="text-primary" />View on Miro</a>
                     </div></Fade>
                     <Fade><div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                         {[{ img: "Workflow Affinity Diagram - workload.jpg", title: "Workload Distribution", desc: "Faculty struggle with the sheer volume and variety of tasks. Service work is often invisible but consumes significant time." },
