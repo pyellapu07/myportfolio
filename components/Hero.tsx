@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useRecruiter } from "@/lib/recruiter-context";
 import { ROTATING_WORDS, TICKER_ITEMS, SITE } from "@/lib/constants";
 import HeroParticles from "./HeroParticles";
-import ParticleText from "./ParticleText";
 import DesignRescueGame from "./DesignRescueGame";
 import MacFinderWindow, { MacFolderIcon } from "./MacFinderWindow";
 import { Volume2, VolumeX } from "lucide-react";
@@ -167,28 +166,41 @@ export default function Hero() {
           <br className="hidden md:block" />
           with a focus on{" "}
           <br />
-          <span
-            className="relative inline-block align-bottom"
-            style={{ lineHeight: "inherit" }}
-          >
-            {/* Invisible text holds container to exact word size */}
-            <span
-              className="invisible select-none pointer-events-none"
-              aria-hidden
-            >
+          <span className="relative inline-grid grid-cols-1 align-bottom md:min-h-0">
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={wordIndex}
+                className="col-start-1 row-start-1 text-accent"
+                style={{ display: "inline-flex", flexWrap: "wrap" }}
+              >
+                {ROTATING_WORDS[wordIndex].split("").map((char, i) => {
+                  // Deterministic scatter direction per (word, char) — consistent across renders
+                  const angle = ((wordIndex * 1000 + i * 137) % 360) * (Math.PI / 180);
+                  const dist = 45 + ((wordIndex * 500 + i * 89) % 55);
+                  const sx = Math.cos(angle) * dist;
+                  const sy = Math.sin(angle) * dist;
+                  return (
+                    <motion.span
+                      key={i}
+                      style={{ display: "inline-block", whiteSpace: "pre" }}
+                      initial={{ x: sx, y: sy, scale: 0.04, opacity: 0, filter: "blur(4px)" }}
+                      animate={{ x: 0, y: 0, scale: 1, opacity: 1, filter: "blur(0px)" }}
+                      exit={{ x: sx, y: sy, scale: 0.04, opacity: 0, filter: "blur(4px)" }}
+                      transition={{
+                        duration: 0.42,
+                        delay: i * 0.016,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                    >
+                      {char}
+                    </motion.span>
+                  );
+                })}
+              </motion.span>
+            </AnimatePresence>
+            {/* Invisible copy holds container width — prevents layout shift */}
+            <span className="invisible col-start-1 row-start-1 opacity-0" aria-hidden>
               {ROTATING_WORDS[wordIndex]}
-            </span>
-            {/* Canvas fills the container — sized by ResizeObserver inside */}
-            <span
-              className="absolute inset-0"
-              aria-live="polite"
-              aria-label={ROTATING_WORDS[wordIndex]}
-            >
-              <ParticleText
-                words={ROTATING_WORDS}
-                wordIndex={wordIndex}
-                color="#FF5210"
-              />
             </span>
           </span>
         </motion.h1>
