@@ -17,7 +17,6 @@ const caveat = Caveat({ subsets: ["latin"], weight: ["700"] });
 export default function Hero() {
   const { isRecruiterMode } = useRecruiter();
   const [wordIndex, setWordIndex] = useState(0);
-  const [scrambledWord, setScrambledWord] = useState(ROTATING_WORDS[0]);
   const [tappedBadge, setTappedBadge] = useState<null | "microsoft" | "dhs">(null);
   const [gameActive, setGameActive] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -62,27 +61,6 @@ export default function Hero() {
     return () => clearInterval(interval);
   }, []);
 
-  // Scramble effect — cycles random chars then locks in left-to-right when word changes
-  useEffect(() => {
-    const target = ROTATING_WORDS[wordIndex];
-    const LC = "abcdefghijklmnopqrstuvwxyz";
-    const UC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let frame = 0;
-    const TOTAL = 22;
-    const id = setInterval(() => {
-      const lockCount = Math.floor((frame / TOTAL) * target.length);
-      const next = target.split("").map((char, i) => {
-        if (char === " ") return " ";
-        if (i < lockCount) return char;
-        const pool = char !== char.toLowerCase() ? UC : LC;
-        return pool[Math.floor(Math.random() * pool.length)];
-      }).join("");
-      setScrambledWord(next);
-      frame++;
-      if (frame >= TOTAL) { clearInterval(id); setScrambledWord(target); }
-    }, 42);
-    return () => clearInterval(id);
-  }, [wordIndex]);
 
   const handleGameStart = useCallback(() => setGameActive(true), []);
   const handleGameExit = useCallback(() => setGameActive(false), []);
@@ -189,10 +167,38 @@ export default function Hero() {
           with a focus on{" "}
           <br />
           <span className="relative inline-grid grid-cols-1 align-bottom md:min-h-0">
-            <span className="col-start-1 row-start-1 text-accent">
-              {scrambledWord}
-            </span>
-            {/* Invisible copy holds container size at target word — prevents layout shift */}
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={wordIndex}
+                className="col-start-1 row-start-1 text-accent"
+                style={{ display: "inline-flex", flexWrap: "wrap" }}
+              >
+                {ROTATING_WORDS[wordIndex].split("").map((char, i) => {
+                  // Deterministic scatter direction per (word, char) — consistent across renders
+                  const angle = ((wordIndex * 1000 + i * 137) % 360) * (Math.PI / 180);
+                  const dist = 45 + ((wordIndex * 500 + i * 89) % 55);
+                  const sx = Math.cos(angle) * dist;
+                  const sy = Math.sin(angle) * dist;
+                  return (
+                    <motion.span
+                      key={i}
+                      style={{ display: "inline-block", whiteSpace: "pre" }}
+                      initial={{ x: sx, y: sy, scale: 0.04, opacity: 0, filter: "blur(4px)" }}
+                      animate={{ x: 0, y: 0, scale: 1, opacity: 1, filter: "blur(0px)" }}
+                      exit={{ x: sx, y: sy, scale: 0.04, opacity: 0, filter: "blur(4px)" }}
+                      transition={{
+                        duration: 0.42,
+                        delay: i * 0.016,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                    >
+                      {char}
+                    </motion.span>
+                  );
+                })}
+              </motion.span>
+            </AnimatePresence>
+            {/* Invisible copy holds container width — prevents layout shift */}
             <span className="invisible col-start-1 row-start-1 opacity-0" aria-hidden>
               {ROTATING_WORDS[wordIndex]}
             </span>
@@ -399,6 +405,7 @@ export default function Hero() {
           }}
         >
           {/* Desktop folder with peek cards behind it */}
+          <div className="md:scale-[0.65] lg:scale-[0.8] xl:scale-100 origin-top-right transition-transform">
           <div style={{ position: "relative", width: 100, height: 80, overflow: "visible" }}>
             {PEEK_CARDS.map((src, i) => (
               <motion.div
@@ -426,6 +433,7 @@ export default function Hero() {
           <span className="font-mono text-[10px] font-medium text-neutral-400 tracking-wide">
             creativesidehustle/
           </span>
+          </div>
         </motion.div>
       )}
 
@@ -454,6 +462,7 @@ export default function Hero() {
             if (mediumDragRef.current) { mediumDragRef.current = false; e.preventDefault(); }
           }}
         >
+          <div className="md:scale-[0.65] lg:scale-[0.8] xl:scale-100 origin-top-right transition-transform">
           <div
             className="rounded-2xl bg-neutral-900 px-4 pt-3 pb-3.5"
             style={{ width: 192, pointerEvents: "none" }}
@@ -478,6 +487,7 @@ export default function Hero() {
               </span>
             </div>
           </div>
+          </div>
         </motion.a>
       )}
 
@@ -501,7 +511,7 @@ export default function Hero() {
             src="/Trusted Tester Badge.png"
             alt="DHS Trusted Tester Certified"
             draggable={false}
-            className="w-44"
+            className="md:w-28 lg:w-36 xl:w-44"
             style={{ pointerEvents: "none" }}
           />
           <span className="font-mono text-[9px] font-medium tracking-wide text-neutral-400">
