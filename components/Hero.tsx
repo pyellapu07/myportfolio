@@ -167,23 +167,27 @@ export default function Hero() {
           <br className="hidden md:block" />
           with a focus on{" "}
           <br />
-          <span className="relative block md:inline-block align-bottom" style={{ lineHeight: 0 }}>
-            {/* Invisible text drives the natural width so layout doesn't shift */}
+          <span
+            className="relative inline-block align-bottom"
+            style={{ lineHeight: "inherit" }}
+          >
+            {/* Invisible text holds container to exact word size */}
             <span
-              className="invisible select-none text-accent pointer-events-none block"
+              className="invisible select-none pointer-events-none"
               aria-hidden
-              style={{ lineHeight: 1.05 }}
             >
               {ROTATING_WORDS[wordIndex]}
             </span>
-            {/* Canvas particle system — absolutely overlaid */}
-            <span className="absolute inset-0 flex items-center" aria-live="polite" aria-label={ROTATING_WORDS[wordIndex]}>
+            {/* Canvas fills the container — sized by ResizeObserver inside */}
+            <span
+              className="absolute inset-0"
+              aria-live="polite"
+              aria-label={ROTATING_WORDS[wordIndex]}
+            >
               <ParticleText
                 words={ROTATING_WORDS}
                 wordIndex={wordIndex}
                 color="#FF5210"
-                width={900}
-                height={118}
               />
             </span>
           </span>

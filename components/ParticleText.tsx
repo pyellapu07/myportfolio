@@ -2,30 +2,39 @@
 
 import { useEffect, useRef } from "react";
 
-/* ─── tunables ─────────────────────────────────────────── */
-const POOL           = 4800;   // total particle count
-const SAMPLE_STEP    = 2;      // px between pixel samples (lower = denser)
-const SCATTER_MS     = 580;    // how long scatter phase runs before reform begins
-const SCATTER_MIN    = 70;     // min scatter radius (px, canvas-space)
-const SCATTER_MAX    = 200;    // max scatter radius
-/* ─────────────────────────────────────────────────────── */
+/* ─── tunables ──────────────────────────────────────────────── */
+const POOL        = 5500;   // particle count
+const SAMPLE_STEP = 2;      // px between pixel samples in offscreen canvas
+const SCATTER_MS  = 1100;   // ms particles stay scattered before reform starts
+
+// Scatter physics — slow, drifty, elastic
+const SC_STIFF    = 0.018;
+const SC_DAMP     = 0.89;
+
+// Reform physics — springy with overshoot
+const RF_STIFF    = 0.055;
+const RF_DAMP     = 0.68;
+
+// Idle — barely any movement, particles breathe in place
+const ID_STIFF    = 0.22;
+const ID_DAMP     = 0.48;
+/* ─────────────────────────────────────────────────────────── */
 
 interface Particle {
-  x: number; y: number;          // current position
-  vx: number; vy: number;        // velocity
-  tx: number; ty: number;        // reform target (text pixel)
-  sx: number; sy: number;        // scatter target
-  r: number;                     // radius
+  x: number; y: number;
+  vx: number; vy: number;
+  tx: number; ty: number;   // reform target
+  sx: number; sy: number;   // scatter target
+  r: number;
 }
 
 type Phase = "idle" | "scatter" | "reform";
 
-/** Draw word into offscreen canvas, return sampled pixel coords */
 function sampleWord(
-  word: string,
-  cw: number,
-  ch: number,
-  font: string,
+  word:     string,
+  cw:       number,
+  ch:       number,
+  fontSize: number,
 ): [number, number][] {
   const oc  = document.createElement("canvas");
   oc.width  = cw;
@@ -33,209 +42,218 @@ function sampleWord(
   const ctx = oc.getContext("2d")!;
   ctx.clearRect(0, 0, cw, ch);
   ctx.fillStyle    = "#fff";
-  ctx.font         = font;
+  ctx.font         = `400 ${fontSize}px "Instrument Serif", Georgia, serif`;
   ctx.textAlign    = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(word, cw / 2, ch / 2);
-
   const { data } = ctx.getImageData(0, 0, cw, ch);
   const pts: [number, number][] = [];
-  for (let y = 0; y < ch; y += SAMPLE_STEP) {
-    for (let x = 0; x < cw; x += SAMPLE_STEP) {
-      if (data[(y * cw + x) * 4 + 3] > 110) pts.push([x, y]);
-    }
-  }
+  for (let y = 0; y < ch; y += SAMPLE_STEP)
+    for (let x = 0; x < cw; x += SAMPLE_STEP)
+      if (data[(y * cw + x) * 4 + 3] > 100) pts.push([x, y]);
   return pts;
 }
 
-/** Build the fixed-size particle pool, all placed at text positions */
-function buildPool(
-  pts: [number, number][],
-  cw: number,
-  ch: number,
-): Particle[] {
+function scatterDest(cw: number, ch: number) {
+  // Scatter in any direction, distance proportional to canvas size
+  const angle = Math.random() * Math.PI * 2;
+  const base  = Math.max(cw, ch);
+  const dist  = base * (0.35 + Math.random() * 0.65);
+  return {
+    sx: cw / 2 + Math.cos(angle) * dist,
+    sy: ch / 2 + Math.sin(angle) * dist,
+  };
+}
+
+function buildPool(pts: [number, number][], cw: number, ch: number): Particle[] {
   const pool: Particle[] = [];
   for (let i = 0; i < POOL; i++) {
     const [tx, ty] = pts[i % pts.length];
-    const angle = Math.random() * Math.PI * 2;
-    const dist  = SCATTER_MIN + Math.random() * (SCATTER_MAX - SCATTER_MIN);
+    const { sx, sy } = scatterDest(cw, ch);
     pool.push({
-      x: cw / 2 + Math.cos(angle) * dist * 0.6, // start slightly scattered for entrance
-      y: ch / 2 + Math.sin(angle) * dist * 0.6,
+      x: sx, y: sy,   // start at scatter position for initial reform-in
       vx: 0, vy: 0,
       tx, ty,
-      sx: cw / 2 + Math.cos(angle) * dist,
-      sy: ch / 2 + Math.sin(angle) * dist,
-      r: 0.55 + Math.random() * 0.9,
+      sx, sy,
+      r: 0.6 + Math.random() * 1.1,
     });
   }
   return pool;
 }
 
-/** Assign new scatter destinations (called before each scatter phase) */
-function reassignScatter(pool: Particle[], cw: number, ch: number) {
-  for (const p of pool) {
-    const angle = Math.random() * Math.PI * 2;
-    const dist  = SCATTER_MIN + Math.random() * (SCATTER_MAX - SCATTER_MIN);
-    p.sx = cw / 2 + Math.cos(angle) * dist;
-    p.sy = ch / 2 + Math.sin(angle) * dist;
-  }
-}
-
 export default function ParticleText({
   words,
   wordIndex,
-  color   = "#FF5210",
-  width   = 900,
-  height  = 118,
+  color = "#FF5210",
 }: {
   words:     string[];
   wordIndex: number;
   color?:    string;
-  width?:    number;
-  height?:   number;
 }) {
+  const wrapRef  = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  /* All mutable animation state lives in a ref — zero re-renders */
   const state = useRef<{
     pool:      Particle[];
     phase:     Phase;
-    prevIndex: number;
+    prevIdx:   number;
     rafId:     number;
     timer:     ReturnType<typeof setTimeout> | null;
-    font:      string;
+    cw:        number;
+    ch:        number;
+    fontSize:  number;
     mounted:   boolean;
+    ctx:       CanvasRenderingContext2D | null;
   }>({
-    pool:      [],
-    phase:     "idle",
-    prevIndex: -1,
-    rafId:     0,
-    timer:     null,
-    font:      "",
-    mounted:   false,
+    pool: [], phase: "idle", prevIdx: -1,
+    rafId: 0, timer: null,
+    cw: 0, ch: 0, fontSize: 0,
+    mounted: false, ctx: null,
   });
 
-  /* ── Bootstrap once ────────────────────────────────────── */
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
+  /* ── Tick ────────────────────────────────────────────────── */
+  function tick() {
     const s   = state.current;
-    s.mounted = true;
+    const ctx = s.ctx;
+    if (!ctx || !s.mounted) return;
 
-    /* Resolve the actual display font from the computed style of
-       the nearest font-display heading so particles match the hero. */
-    const font = `400 ${Math.round(height * 0.74)}px "Instrument Serif", Georgia, serif`;
-    s.font = font;
+    ctx.clearRect(0, 0, s.cw, s.ch);
+    const { pool, phase } = s;
+    let settled = true;
 
-    /* Wait for fonts then init */
-    document.fonts.ready.then(() => {
-      if (!s.mounted) return;
-      const pts = sampleWord(words[0], width, height, font);
-      s.pool      = buildPool(pts, width, height);
-      s.prevIndex = 0;
-      s.phase     = "reform"; // animate in on load
+    for (let i = 0; i < pool.length; i++) {
+      const p = pool[i];
 
-      /* ── Animation loop ──────────────────────────────────── */
-      function tick() {
-        ctx.clearRect(0, 0, width, height);
-        const { pool, phase } = s;
-        let settled = true;
-
-        for (let i = 0; i < pool.length; i++) {
-          const p = pool[i];
-
-          if (phase === "scatter") {
-            /* Spring toward scatter position */
-            p.vx += (p.sx - p.x) * 0.055;
-            p.vy += (p.sy - p.y) * 0.055;
-            p.vx *= 0.83;
-            p.vy *= 0.83;
-            if (Math.hypot(p.sx - p.x, p.sy - p.y) > 3) settled = false;
-          } else if (phase === "reform") {
-            /* Spring toward text pixel target */
-            p.vx += (p.tx - p.x) * 0.085;
-            p.vy += (p.ty - p.y) * 0.085;
-            p.vx *= 0.76;
-            p.vy *= 0.76;
-            if (Math.hypot(p.tx - p.x, p.ty - p.y) > 1.2) settled = false;
-          } else {
-            /* Idle: micro-jitter then snap back */
-            p.vx += (p.tx - p.x) * 0.18;
-            p.vy += (p.ty - p.y) * 0.18;
-            p.vx *= 0.52;
-            p.vy *= 0.52;
-          }
-
-          p.x += p.vx;
-          p.y += p.vy;
-
-          /* Fade particles that are far from center during scatter */
-          let alpha = 1;
-          if (phase === "scatter") {
-            const dist = Math.hypot(p.x - width / 2, p.y - height / 2);
-            alpha = Math.max(0, 1 - dist / (SCATTER_MAX * 1.25));
-          }
-
-          ctx.globalAlpha = alpha;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = color;
-          ctx.fill();
-        }
-
-        ctx.globalAlpha = 1;
-
-        /* Phase transitions driven by settlement */
-        if (phase === "reform" && settled) s.phase = "idle";
-
-        s.rafId = requestAnimationFrame(tick);
+      if (phase === "scatter") {
+        p.vx += (p.sx - p.x) * SC_STIFF;
+        p.vy += (p.sy - p.y) * SC_STIFF;
+        p.vx *= SC_DAMP;
+        p.vy *= SC_DAMP;
+        if (Math.hypot(p.sx - p.x, p.sy - p.y) > 3) settled = false;
+      } else if (phase === "reform") {
+        p.vx += (p.tx - p.x) * RF_STIFF;
+        p.vy += (p.ty - p.y) * RF_STIFF;
+        p.vx *= RF_DAMP;
+        p.vy *= RF_DAMP;
+        if (Math.hypot(p.tx - p.x, p.ty - p.y) > 1.0) settled = false;
+      } else {
+        // idle — gentle snap
+        p.vx += (p.tx - p.x) * ID_STIFF;
+        p.vy += (p.ty - p.y) * ID_STIFF;
+        p.vx *= ID_DAMP;
+        p.vy *= ID_DAMP;
       }
 
-      tick();
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Fade as particles travel far from center during scatter
+      let alpha = 0.88;
+      if (phase === "scatter") {
+        const dist = Math.hypot(p.x - s.cw / 2, p.y - s.ch / 2);
+        const maxD = Math.max(s.cw, s.ch) * 0.7;
+        alpha = Math.max(0, 0.88 * (1 - dist / maxD));
+      }
+
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+    if (phase === "reform" && settled) s.phase = "idle";
+
+    s.rafId = requestAnimationFrame(tick);
+  }
+
+  /* ── Init / resize canvas via ResizeObserver ─────────────── */
+  useEffect(() => {
+    const wrap   = wrapRef.current;
+    const canvas = canvasRef.current;
+    if (!wrap || !canvas) return;
+
+    const s   = state.current;
+    s.ctx     = canvas.getContext("2d");
+    s.mounted = true;
+
+    function initCanvas(cw: number, ch: number) {
+      if (cw < 10 || ch < 10) return;
+      canvas!.width  = cw;
+      canvas!.height = ch;
+      s.cw       = cw;
+      s.ch       = ch;
+      s.fontSize = Math.round(ch * 0.78);
+    }
+
+    function reinit(cw: number, ch: number, wordIdx: number) {
+      initCanvas(cw, ch);
+      document.fonts.ready.then(() => {
+        if (!s.mounted) return;
+        const pts = sampleWord(words[wordIdx], cw, ch, s.fontSize);
+        s.pool    = buildPool(pts, cw, ch);
+        s.phase   = "reform";
+      });
+    }
+
+    const ro = new ResizeObserver((entries) => {
+      const rect = entries[0].contentRect;
+      if (Math.abs(rect.width - s.cw) < 2 && Math.abs(rect.height - s.ch) < 2) return;
+      reinit(Math.round(rect.width), Math.round(rect.height), state.current.prevIdx < 0 ? 0 : state.current.prevIdx);
     });
+    ro.observe(wrap);
+
+    // Kick off first frame
+    s.rafId = requestAnimationFrame(tick);
 
     return () => {
       s.mounted = false;
+      ro.disconnect();
       cancelAnimationFrame(s.rafId);
       if (s.timer) clearTimeout(s.timer);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ── React to word changes ──────────────────────────────── */
+  /* ── Word change ─────────────────────────────────────────── */
   useEffect(() => {
     const s = state.current;
-    if (!s.mounted || s.prevIndex === wordIndex) return;
-    s.prevIndex = wordIndex;
+    if (!s.mounted || s.cw < 10) return;
+    if (s.prevIdx === wordIndex) return;
+    s.prevIdx = wordIndex;
 
-    /* Step 1 — scatter current particles */
-    reassignScatter(s.pool, width, height);
+    // Reassign scatter destinations + start scatter
+    for (const p of s.pool) {
+      const { sx, sy } = scatterDest(s.cw, s.ch);
+      p.sx = sx;
+      p.sy = sy;
+    }
     s.phase = "scatter";
 
-    /* Step 2 — after SCATTER_MS, retarget to new word and reform */
     if (s.timer) clearTimeout(s.timer);
     s.timer = setTimeout(() => {
       if (!s.mounted) return;
-      const pts = sampleWord(words[wordIndex], width, height, s.font);
-      const { pool } = s;
-      for (let i = 0; i < pool.length; i++) {
-        const [ntx, nty] = pts[i % pts.length];
-        pool[i].tx = ntx;
-        pool[i].ty = nty;
-      }
-      s.phase = "reform";
+      document.fonts.ready.then(() => {
+        const pts = sampleWord(words[wordIndex], s.cw, s.ch, s.fontSize);
+        for (let i = 0; i < s.pool.length; i++) {
+          const [ntx, nty] = pts[i % pts.length];
+          s.pool[i].tx = ntx;
+          s.pool[i].ty = nty;
+        }
+        s.phase = "reform";
+      });
     }, SCATTER_MS);
-  }, [wordIndex, words, width, height]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wordIndex]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={width}
-      height={height}
-      aria-hidden
-      style={{ display: "block", width: "100%", height: "auto" }}
-    />
+    <div ref={wrapRef} style={{ width: "100%", height: "100%", lineHeight: 0 }}>
+      <canvas
+        ref={canvasRef}
+        aria-hidden
+        style={{ display: "block", width: "100%", height: "100%" }}
+      />
+    </div>
   );
 }
