@@ -5,10 +5,10 @@ import Link from "next/link";
  * Shared editorial primitives for the Jeevy OS case study and its deep dives.
  *
  * One measure, one type scale, one link treatment across every page:
- *   28px semibold white   — titles and section breaks
- *   18px neutral-300      — all body copy
- *   14px neutral-500      — captions and metadata
- *   12px mono neutral-400 — eyebrows and breadcrumbs
+ *   28px semibold white: titles and section breaks
+ *   18px neutral-300: all body copy
+ *   14px neutral-500: captions and metadata
+ *   12px mono neutral-400: eyebrows and breadcrumbs
  *
  * Text sits directly on the canvas. Nothing here draws a card.
  */
@@ -17,7 +17,7 @@ export const CANVAS = "#040D16";
 export const ACCENT = "#D97352";
 export const ACCENT_BRIGHT = "#F2805B";
 
-/** Prose measure — images share it so both hold one left and right edge. */
+/** Prose measure: images share it so both hold one left and right edge. */
 export const Prose = ({
   children,
   className = "",
@@ -47,7 +47,7 @@ export const Caption = ({ children }: { children: React.ReactNode }) => (
 );
 
 /**
- * Colour classes are written out literally, never interpolated — Tailwind
+ * Colour classes are written out literally, never interpolated: Tailwind
  * scans source text, so a `text-[${VAR}]` would be purged and the hover lost.
  */
 const LINK_BASE =
@@ -72,7 +72,7 @@ export const GhostLink = ({
   </Link>
 );
 
-/** Breakout measure — figures and editorial primitives that outrun the prose. */
+/** Breakout measure: figures and editorial primitives that outrun the prose. */
 export const Wide = ({
   children,
   className = "",
@@ -83,9 +83,9 @@ export const Wide = ({
 
 /**
  * Figure measures:
- *   full    — 960px breakout, for wide tables, hero photos, and diagrams
- *   prose   — shares the 720px text edge
- *   compact — 380/420px, for popovers and dropdown crops that would turn to
+ *   full: 960px breakout, for wide tables, hero photos, and diagrams
+ *   prose: shares the 720px text edge
+ *   compact: 380/420px, for popovers and dropdown crops that would turn to
  *             mush if stretched across the page
  */
 export type FigureSize = "full" | "prose" | "compact";
@@ -103,9 +103,9 @@ export function Figure({
   src: string;
   alt: string;
   caption: string;
-  /** Crop to this ratio — photographs only. */
+  /** Crop to this ratio: photographs only. */
   ratio?: string;
-  /** Intrinsic dimensions — for UI screenshots, so nothing is cropped away. */
+  /** Intrinsic dimensions: for UI screenshots, so nothing is cropped away. */
   width?: number;
   height?: number;
   size?: FigureSize;
@@ -119,8 +119,8 @@ export function Figure({
   const inner = compact ? "mx-auto max-w-[380px] md:max-w-[420px]" : "";
   /**
    * `sizes` must describe the box the image actually occupies. If it under-
-   * reports, Next picks a too-small variant and the browser upscales it —
-   * which reads as a blurry screenshot, not as a layout bug.
+   * reports, Next picks a too-small variant and the browser upscales it,
+   * which reads as a blurry screenshot rather than as a layout bug.
    */
   const sizes =
     size === "prose"
@@ -169,7 +169,7 @@ export function Figure({
 }
 
 /**
- * Two figures side by side across the breakout measure — for paired modal
+ * Two figures side by side across the breakout measure: for paired modal
  * crops and step-by-step screens that read as one beat.
  *
  * Images keep their intrinsic ratios, so a taller crop sits lower than a
@@ -209,12 +209,239 @@ export function FigureRow({
   );
 }
 
+/* ── Industrial signal palette ─────────────────────────────────
+   Desaturated shop tones, deliberately not primaries: a saturated
+   red/amber/green triad reads as a status dashboard, which is the
+   opposite of what these pages are. */
+
+export const SIGNAL = {
+  /** Fatal blocker or vulnerability. */
+  rust: "#C25E43",
+  /** Operational friction or latency. */
+  sand: "#D4A373",
+  /** Validated floor requirement. */
+  sage: "#4E8775",
+} as const;
+
+export type SignalTone = keyof typeof SIGNAL;
+
+/* ── Dot-coded matrix ──────────────────────────────────────────
+   Workshop synthesis as a 2x2 of findings, each topped by a cluster of
+   hand-stamped ink dots. No fills and no card: hairlines and dot weight
+   carry the structure.
+
+   Every offset, tilt and colour class is written out literally in the
+   caller's data. Tailwind scans source text, so a computed class name
+   would be purged and the dots would land in a neat, lifeless row. */
+
+export interface InkDotSpec {
+  tone: SignalTone;
+  /** Literal Tailwind classes, never interpolated. */
+  dx: string;
+  dy: string;
+  rotate: string;
+  /** Slight scale variation, so no two stamps are the same weight. */
+  size?: string;
+}
+
+export interface MatrixBlock {
+  title: string;
+  description: string;
+  dots: readonly InkDotSpec[];
+  /**
+   * Whether neighbouring stamps bleed into each other. Set per block rather
+   * than derived from grid index: the grid collapses to one column on mobile,
+   * so an index rule would silently change which clusters overlap.
+   */
+  overlap?: boolean;
+}
+
+const DOT_BG: Record<SignalTone, string> = {
+  rust: "bg-[#C25E43]",
+  sand: "bg-[#D4A373]",
+  sage: "bg-[#4E8775]",
+};
+
+/** One marker dot. The lopsided radius is what stops it reading as a bullet. */
+const InkDot = ({
+  tone,
+  dx,
+  dy,
+  rotate,
+  size = "w-3.5 h-3.5",
+  overlap = false,
+}: InkDotSpec & { overlap?: boolean }) => (
+  <span
+    aria-hidden
+    className={`inline-block ${size} rounded-[48%_52%_49%_51%] opacity-90 shadow-sm ${DOT_BG[tone]} ${dx} ${dy} ${rotate} ${overlap ? "-ml-1" : ""}`}
+    style={{ filter: "contrast(1.05)" }}
+  />
+);
+
+const MATRIX_LEGEND: { tone: SignalTone; label: string }[] = [
+  { tone: "rust", label: "Critical blocker" },
+  { tone: "sand", label: "Operational friction" },
+  { tone: "sage", label: "Floor requirement" },
+];
+
+export function DotCodedMatrix({
+  title,
+  blocks,
+}: {
+  title: string;
+  blocks: readonly MatrixBlock[];
+}) {
+  return (
+    <div className="mx-auto my-14 max-w-[840px] border-t border-white/[0.08] px-4 pt-8">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.06] pb-8">
+        <div className="text-[12px] font-medium text-neutral-400">{title}</div>
+        <ul className="flex flex-wrap items-center gap-5 text-[12px] text-neutral-400">
+          {MATRIX_LEGEND.map((l) => (
+            <li key={l.tone} className="flex items-center gap-1.5">
+              <span
+                aria-hidden
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: SIGNAL[l.tone] }}
+              />
+              {l.label}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="grid grid-cols-1 gap-x-12 gap-y-10 md:grid-cols-2">
+        {blocks.map((b) => (
+          <div key={b.title} className="space-y-3">
+            <div className={`flex h-6 items-center pl-1 ${b.overlap === false ? "gap-1.5" : ""}`}>
+              {b.dots.map((d, i) => (
+                <InkDot
+                  key={`${d.tone}-${i}`}
+                  {...d}
+                  overlap={i > 0 && b.overlap !== false}
+                />
+              ))}
+            </div>
+            <div className="text-[18px] font-semibold leading-snug tracking-tight text-white">
+              {b.title}
+            </div>
+            <p className="text-[14px] font-normal leading-[22px] text-neutral-400">
+              {b.description}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Taped sketch frame ────────────────────────────────────────
+   A hand sketch pinned to the page the way it was pinned to a wall, with
+   a strip of masking tape over the top edge.
+   The tape overlaps the frame rather than floating above it, so the
+   wrapper must not clip. */
+
+export function TapedSketchFrame({
+  src,
+  alt,
+  width,
+  height,
+  annotation,
+}: {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  annotation: string;
+}) {
+  return (
+    <div className="my-16">
+      <Wide>
+        <figure className="mx-auto max-w-[420px]">
+          <div className="relative">
+            {/* A real torn-tape cut-out rather than a CSS rectangle. Sits low
+                enough to actually hold the sketch down, and is decorative, so
+                it stays out of the accessibility tree and ignores pointers. */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-0 z-10 w-40 -translate-x-1/2 -translate-y-[30%] -rotate-[2.6deg]"
+            >
+              <Image
+                src="/jeevy/tape-yellow.webp"
+                alt=""
+                width={712}
+                height={350}
+                sizes="160px"
+                className="h-auto w-full"
+              />
+            </div>
+            <div className="overflow-hidden rounded-sm border border-white/10 bg-white/[0.02]">
+              <Image
+                src={src}
+                alt={alt}
+                width={width}
+                height={height}
+                sizes="(max-width: 420px) 100vw, 420px"
+                quality={90}
+                className="h-auto w-full"
+              />
+            </div>
+          </div>
+          <figcaption>
+            {/* standard caption treatment, matching every other figure */}
+            <Caption>{annotation}</Caption>
+          </figcaption>
+        </figure>
+      </Wide>
+    </div>
+  );
+}
+
+/* ── Mental model pivot ────────────────────────────────────────
+   Two readings of the same problem set side by side. No badges, no
+   status colour: a hairline is enough separation, and the labels
+   carry the contrast (neutral for the discarded hypothesis, Sand for
+   what shipped). The trailing paragraph steps down to 15px so each
+   column reads as a claim followed by its evidence. */
+
+export interface PivotSide {
+  /** Short sentence-case label, never a badge. */
+  label: string;
+  /** The claim. */
+  lead: string;
+  /** The evidence, set one step down. */
+  detail: string;
+}
+
+export function MentalModelPivot({ left, right }: { left: PivotSide; right: PivotSide }) {
+  return (
+    <div className="mx-auto my-12 grid max-w-[960px] grid-cols-1 gap-8 border-t border-white/[0.08] px-4 pt-6 md:grid-cols-2 md:gap-12">
+      <div className="space-y-4">
+        <div className="text-[12px] font-medium tracking-normal text-neutral-400">{left.label}</div>
+        <div className="space-y-4 text-[18px] font-normal leading-[28px] text-neutral-300">
+          <p>{left.lead}</p>
+          <p className="text-[14px] leading-[22px] text-neutral-400">{left.detail}</p>
+        </div>
+      </div>
+
+      <div className="space-y-4 md:border-l md:border-white/[0.08] md:pl-12">
+        <div className="text-[12px] font-medium tracking-normal" style={{ color: "#E3D5C0" }}>
+          {right.label}
+        </div>
+        <div className="space-y-4 text-[18px] font-normal leading-[28px] text-neutral-300">
+          <p>{right.lead}</p>
+          <p className="text-[14px] leading-[22px] text-neutral-400">{right.detail}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Field notes wall ──────────────────────────────────────────
    Raw quotes captured on-site, pinned like physical field tags.
    The rotations and offsets are fixed per index rather than random
-   so the wall renders identically on server and client — a random
+   so the wall renders identically on server and client, a random
    tilt would hydrate mismatched.
-   The 12px sans speaker tag is a deliberate exception to the page@s
+   The 12px sans speaker tag is a deliberate exception to the page's
    type scale: it reads as a stamped tag, not as body copy. */
 
 const NOTE_SKINS = [
@@ -246,7 +473,7 @@ export function FieldNotesWall({ notes }: { notes: FieldNote[] }) {
                 <p className="font-sans text-[14px] font-normal leading-[22px] text-neutral-900">
                   {n.quote}
                 </p>
-                {/* Attribution stays sentence case in the body face — uppercase
+                {/* Attribution stays sentence case in the body face, uppercase
                     mono read as a system label rather than a person. */}
                 <p className="mt-4 font-sans text-[12px] font-medium tracking-normal text-neutral-600">
                   {n.speaker}

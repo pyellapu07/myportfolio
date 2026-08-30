@@ -19,7 +19,7 @@ import {
 import { ProcurementPipeline } from "@/components/jeevy-os/materials-diagram";
 
 /* ══════════════════════════════════════════════════════════════
-   Engine 01 — Materials, Sourcing & Single-Table Ledger.
+   Engine 01: Materials, Sourcing & Single-Table Ledger.
    First-person deep dive, same editorial language as the hub:
    720px measure, 28/18/14/12 type, no cards, no boxed sections.
    ══════════════════════════════════════════════════════════════ */
@@ -97,7 +97,10 @@ const STATE_MAP = [
 export default function MaterialsProcurementPage() {
   return (
     <div data-ds="v1" className="min-h-screen" style={{ background: CANVAS }}>
-      <Header initialDark />
+        {/* `initialDark` means "render dark text", so it is false on this
+            dark canvas. It flips to dark automatically once scrolled,
+            when the header paints its own white bar. */}
+      <Header initialDark={false} />
 
       <article className="pb-28 pt-28">
         {/* ══ HEADER ══ */}
@@ -180,7 +183,7 @@ export default function MaterialsProcurementPage() {
           <div className="space-y-6">
             <P>
               The legacy web interface was an unstable 1,078-line React monolith that made things
-              worse. It had no approval controls — any user could click Generate PO and commit company
+              worse. It had no approval controls: any user could click Generate PO and commit company
               capital with zero sign-off.
             </P>
             <P>
@@ -205,8 +208,8 @@ export default function MaterialsProcurementPage() {
             </P>
             <P>
               To eliminate relational desynchronization between office purchasing and dock receiving,
-              I designed <span className="text-white">manual_material_items</span> — roughly 90
-              columns — as the single authoritative ledger. Instead of mutating rows destructively on
+              I designed <span className="text-white">manual_material_items</span>, roughly 90
+              columns, as the single authoritative ledger. Instead of mutating rows destructively on
               edits, every event appends to an audit trail.
             </P>
           </div>
@@ -289,7 +292,7 @@ export default function MaterialsProcurementPage() {
             </P>
             <P>
               <span className="text-white">Zero-lock fallback.</span> A shop with no configured limit
-              defaults to $1,000 — never to NULL, never to zero.
+              defaults to $1,000, never to NULL and never to zero.
             </P>
             <P>
               <span className="text-white">Atomic check constraint.</span> We wrote
@@ -337,8 +340,7 @@ export default function MaterialsProcurementPage() {
               routes 2 damaged units to quarantine in a single atomic transaction.
             </P>
             <P>
-              <span className="text-white">Direct to inventory.</span> Off-the-shelf commercial goods —
-              bolts, tape, paint — bypass the QA queue with a single toggle, immediately generating an
+              <span className="text-white">Direct to inventory.</span> Off-the-shelf commercial goods (bolts, tape, paint) bypass the QA queue with a single toggle, immediately generating an
               AUTO_DIRECT_RECEIPT audit record and satisfying forward{" "}
               <GhostLink href="/work/jeevy-os/tasking-cpm-engine">Gantt CPM scheduling ↗</GhostLink>{" "}
               constraints.
@@ -405,7 +407,7 @@ export default function MaterialsProcurementPage() {
           <div className="space-y-6">
             <P>
               During on-site reviews with Trevor Goldston, I watched estimators calculate plate cutting
-              layouts on scratch paper — ordering a single 6&prime;×8&prime; raw plate to fulfil four
+              layouts on scratch paper, ordering a single 6&prime;×8&prime; raw plate to fulfil four
               smaller child parts.
             </P>
             <P>
@@ -488,7 +490,7 @@ export default function MaterialsProcurementPage() {
               to start using the thing that you built.&rdquo;
             </p>
             <footer className="mt-3 text-[14px] leading-relaxed text-neutral-500">
-              Vinay Konuru, VP Technology &amp; Product — milestone debrief
+              Vinay Konuru, VP Technology &amp; Product · milestone debrief
             </footer>
           </blockquote>
         </Prose>

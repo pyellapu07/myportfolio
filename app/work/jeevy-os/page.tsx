@@ -6,16 +6,16 @@ import Footer from "@/components/Footer";
 import { Prose, P, H2, Figure } from "@/components/jeevy-os/editorial";
 
 /* ══════════════════════════════════════════════════════════════
-   Jeevy Industrial OS — first-person editorial essay.
+   Jeevy Industrial OS: first-person editorial essay.
 
    Prose sits directly on the canvas in a 720px measure, and images share
    that exact measure so text and media hold one common left and right edge
    down the page. No cards, no bento boxes, no pills, no tables.
 
    Type:
-     28px semibold white           — title and section breaks
-     18px neutral-300              — all body copy
-     14px neutral-500              — captions, metadata, eyebrow
+     28px semibold white: title and section breaks
+     18px neutral-300: all body copy
+     14px neutral-500: captions, metadata, eyebrow
    ══════════════════════════════════════════════════════════════ */
 
 const SUB_STORIES = [
@@ -66,7 +66,10 @@ const SUB_STORIES = [
 export default function JeevyOSCaseStudy() {
   return (
     <div data-ds="v1" className="min-h-screen bg-[#040D16]">
-      <Header initialDark />
+        {/* `initialDark` means "render dark text", so it is false on this
+            dark canvas. It flips to dark automatically once scrolled,
+            when the header paints its own white bar. */}
+      <Header initialDark={false} />
 
       <article className="pb-28 pt-28">
         {/* ══ HEADER ══ */}
@@ -151,8 +154,7 @@ export default function JeevyOSCaseStudy() {
             </P>
             <P>
               I realized that treating procurement as an accounting chore was why industrial software
-              fails. Sourcing, inventory, blueprints, and critical-path scheduling are not separate
-              departments — they are a single physical loop.
+              fails. Sourcing, inventory, blueprints, and critical-path scheduling are not separate departments; they are a single physical loop.
             </P>
             <P>
               I architected Jeevy OS around one non-negotiable invariant: steel dictates the schedule.
@@ -221,7 +223,7 @@ export default function JeevyOSCaseStudy() {
             <P>
               Deploying software into a second fabrication plant is the real test of systems
               architecture. When we rolled out Jeevy OS to our partner manufacturing plant, shop leads
-              didn&rsquo;t want custom forks — they wanted immediate clarity. Features like dynamic
+              didn&rsquo;t want custom forks; they wanted immediate clarity. Features like dynamic
               Notion-style blueprint callout columns and 1-to-N raw plate nesting gave them
               flexibility without touching the database schema.
             </P>

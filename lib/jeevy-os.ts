@@ -121,19 +121,19 @@ export const JEEVY_OS = {
   lead: "Heavy Fabrication & Materials Operating System",
   /** Subtitle shown under the title on the compact homepage card. */
   cardSubtitle: "Aerospace Fabrication & Materials OS, 2026",
-  /** Full narrative — used on the platform hub page. */
+  /** Full narrative: used on the platform hub page. */
   narrative:
     "Heavy manufacturing breaks consumer software. When multi-ton cryogenic pressure vessels and skids are built under high-bay glare by crews in leather gauntlets, disconnected spreadsheets cause five-figure schedule collapses. As Lead Product Designer & Systems Architect, I designed and built a 6-engine closed-loop operating system uniting PIN kiosks, CAD viewers, procurement ledgers, and Gantt CPM.",
-  /** Tightened 3-sentence version — used on the compact homepage card. */
+  /** Tightened 3-sentence version: used on the compact homepage card. */
   narrativeShort:
     "Heavy manufacturing breaks consumer software. When multi-ton cryogenic skids are built by crews in leather gauntlets, disconnected spreadsheets cause five-figure schedule collapses. Built solo as Lead Systems Architect, Jeevy OS is a 6-engine closed-loop operating system uniting PIN kiosks, CAD viewers, procurement ledgers, and Gantt CPM.",
   ctaLabel: "Explore Platform Case Study",
   ctaHref: JEEVY_OS_ROOT,
-  /** Primary image first — it is the one rendered large. */
+  /** Primary image first, it is the one rendered large. */
   gallery: [
     {
       // Jeevy logo is composited into the top-left corner, so any crop of
-      // this image must keep the left edge — see `object-left` on the card.
+      // this image must keep the left edge, see `object-left` on the card.
       src: "/jeevy/spacex-cape-canaveral-lc39a.jpg",
       alt: "Falcon 9 and Dragon stacked on the launchpad at dusk, crew access arm extended from the tower",
       caption: "Cleburne Hangar → SpaceX Cape Canaveral GSE Launchpad",

@@ -2,19 +2,17 @@
  * Procurement pipeline for Engine 01.
  *
  * Hand-authored SVG (Mermaid is not a dependency here; it ships ~2.5MB and
- * renders post-hydration). Surfaces are low-opacity slate with hairline
- * borders — no solid fills — and branch labels are parked beside their
+ * renders post-hydration). Surfaces and strokes come from the shared kit;
+ * branch labels are parked beside their
  * connectors with 12px clearance so nothing overlaps a line.
  *
- * viewBox width is pinned to 928 — the content width of the 960px breakout
- * measure at px-4 — so the diagram renders at scale 1 and its 15/13/12px
+ * viewBox width is pinned to 928, the content width of the 960px breakout
+ * measure at px-4, so the diagram renders at scale 1 and its 15/13/12px
  * text is genuinely that size.
  */
 
-const FILL = "rgba(18, 32, 51, 0.45)";
-const STROKE = "rgba(227, 213, 192, 0.2)";
-const EDGE = "#85919E";
-const SUB = "#9CA3AF";
+// tokens shared with the other diagrams so all three read as one system
+import { FILL, STROKE, EDGE, SUB, NODE_SUB } from "./diagram-kit";
 
 /** Vertical clearance between the decision diamond and its child nodes. */
 const DIAMOND_BOTTOM = 288;
@@ -42,7 +40,7 @@ function Node({
       <text x={cx} y={y + 28} fill="#FFFFFF" fontSize={15} fontWeight={600} textAnchor="middle">
         {title}
       </text>
-      <text x={cx} y={y + 50} fill={SUB} fontSize={13} textAnchor="middle">
+      <text x={cx} y={y + 50} fill={NODE_SUB} fontSize={13} textAnchor="middle">
         {sub}
       </text>
     </g>
@@ -80,7 +78,7 @@ export function ProcurementPipeline() {
       aria-label="Procurement pipeline: a BOM demand line enters a multi-vendor RFQ tray, then a server-resolved governance check. Orders at or above $1,000 route to an approval stage that mints a draft ID with a null PO number and require PM sign-off before a legal PO is minted; orders below the threshold mint a PO directly. Every PO passes through a 4-step dock QC wizard, which either releases units into FIFO inventory or holds them in quarantine."
     >
       <defs>
-        {/* open arrowhead — a stroked chevron, not a filled triangle */}
+        {/* open arrowhead, a stroked chevron, not a filled triangle */}
         <marker
           id="matarrow"
           viewBox="0 0 8 8"

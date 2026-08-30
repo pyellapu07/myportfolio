@@ -35,7 +35,8 @@ export default function SubsystemShell({ slug }: { slug: string }) {
   return (
     <div className="relative min-h-screen bg-[#FAFAFA] text-text selection:bg-primary/20">
       <CustomCursor />
-      <Header initialDark={false} />
+      {/* light #FAFAFA canvas, so dark header text */}
+      <Header initialDark />
 
       {/* ══ STICKY BREADCRUMB ══ */}
       <nav
