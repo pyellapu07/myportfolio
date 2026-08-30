@@ -59,7 +59,7 @@ html {
 }
 
 body {
-  font-family: var(--font-body), system-ui, sans-serif;
+  font-family: var(--font-manrope), system-ui, sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
@@ -476,3 +476,37 @@ body {
     scroll-behavior: auto !important;
   }
 }
+/* ── Jeevy Industrial OS design tokens ──────────────────────────
+   Scoped to [data-ds="v1"] so this dark-native palette applies only
+   inside the Jeevy case-study pages and never leaks into the light
+   site. Mirrors the production token names from the Jeevy codebase. */
+[data-ds="v1"] {
+  /* Surfaces — strict monotonic lightness stepping */
+  --ds-bg-deep: #000000;
+  --ds-bg-shell: #040D16;
+  --ds-bg-surface: #061723;
+  --ds-bg-elevated: #122033;
+  --ds-bg-hover: #17263C;
+
+  /* Line work — Sand at 14% */
+  --ds-border-subtle: rgba(227, 213, 192, 0.14);
+  --ds-border-strong: rgba(227, 213, 192, 0.28);
+
+  /* Type */
+  --ds-text-primary: #FFFFFF;
+  --ds-text-body: #A0B0C0;
+  --ds-text-muted: #85919E;
+  --ds-sand: #E3D5C0;
+
+  /* Accent */
+  --ds-terracotta: #9C3B22;
+  --ds-terracotta-lt: #D97352;
+}
+
+/* The case-study shell paints its own ground so the light site's
+   body background never shows through. */
+[data-ds="v1"] ::selection {
+  background: rgba(217, 115, 82, 0.3);
+  color: #FFFFFF;
+}
+

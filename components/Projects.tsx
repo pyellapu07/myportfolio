@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
+import JeevyOSCard from "./JeevyOSCard";
 import { PROJECTS } from "@/lib/constants";
 import { useState } from "react";
 import type { Project } from "@/types";
@@ -69,6 +70,9 @@ export default function Projects() {
           Case Studies
         </motion.h2>
       </div>
+
+      {/* ── Flagship platform card ── */}
+      <JeevyOSCard />
 
       {segments.map((segment, si) =>
         segment.type === "featured" ? (
