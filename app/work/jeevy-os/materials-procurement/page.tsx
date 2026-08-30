@@ -128,7 +128,7 @@ export default function MaterialsProcurementPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/prod-materials-catalog-table.webp"
+          src="/jeevy/mat-catalog-table.webp"
           alt="Production materials catalog table with photo thumbnails and per-line procurement state"
           caption={'The production Materials Catalog running on our [data-ds="v1"] design tokens, featuring monotonic elevation, 36px photo thumbnails, and contextual short names.'}
           width={2400}
@@ -172,7 +172,7 @@ export default function MaterialsProcurementPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/mat-legacy-quoting-sheet.webp"
+          src="/jeevy/mat-legacy-quote-sheet.webp"
           alt="The legacy multi-tab spreadsheet quoting engine with disconnected formula tabs"
           caption="The baseline $800,036.25 quoting sheet showing disconnected formula tabs, manual splits, and un-audited cost adjustments."
           width={1894}
@@ -315,7 +315,7 @@ export default function MaterialsProcurementPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/mat-raise-po-drawer.webp"
+          src="/jeevy/mat-raise-po-panel.webp"
           alt="The Raise PO drawer showing vendor-grouped line totals and the sign-off warning banner"
           caption="The Raise PO Drawer evaluating vendor-grouped line totals and rendering the active $1,000 sign-off warning banner."
           width={2400}
@@ -396,7 +396,7 @@ export default function MaterialsProcurementPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/mat-inventory-ledger.webp"
+          src="/jeevy/mat-inventory-ledger-view.webp"
           alt="Production linear inventory table with photo thumbnails and single-click consumption"
           caption="Production linear inventory table with 36px photo thumbnails and single-click FIFO stock consumption."
           width={2400}
