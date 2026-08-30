@@ -197,7 +197,7 @@ export default function TaskingCpmEnginePage() {
         />
 
         <Figure
-          src="/jeevy/cpm-table-view.webp"
+          src="/jeevy/cpm-tasking-table.webp"
           alt="The production tasking table view with dense rows, inline material chips, hierarchical tree nesting and status pills"
           caption="Production tasking table view: dense 28px row actions, inline material chips carrying the delivery and its received ratio, and hierarchical tree nesting."
           width={1914}
@@ -288,7 +288,7 @@ export default function TaskingCpmEnginePage() {
 
         <Figure
           size="prose"
-          src="/jeevy/cpm-link-material-modal.webp"
+          src="/jeevy/cpm-material-link-modal.webp"
           alt="The material link modal showing clean line rows with allocation ratios, a fully-allocated lock, and an open claimant breakdown popover"
           caption="The material link modal: progressive disclosure showing clean 1 of 3 allocations, a fully-allocated lock, and an interactive claimant breakdown naming the three tasks currently holding units."
           width={780}
@@ -327,7 +327,7 @@ export default function TaskingCpmEnginePage() {
 
         <Figure
           size="prose"
-          src="/jeevy/cpm-material-cards.webp"
+          src="/jeevy/cpm-drawer-material-states.webp"
           alt="The task drawer required materials list showing a met requirement, an in-transit partial receipt, and a slipped delivery with the superseded date struck through"
           caption="Task inspection drawer with structured material cards: requirement met at 2 of 2, an in-transit partial receipt at 1 of 2, and a slipped vendor ETA with the superseded baseline date struck through beside it."
           width={710}

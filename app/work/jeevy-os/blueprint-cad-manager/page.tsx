@@ -153,7 +153,7 @@ export default function BlueprintCadManagerPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/fm-file-manager-split.webp"
+          src="/jeevy/fm-cad-split-view.webp"
           alt="Production master split view pairing the file explorer with an interactive drawing inspector"
           caption="The production Master Split View pairing the central file explorer with an interactive drawing inspector displaying a launch pad cryogenic GSE specification."
           width={2400}
