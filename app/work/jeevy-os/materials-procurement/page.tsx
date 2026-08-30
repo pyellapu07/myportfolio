@@ -489,7 +489,7 @@ export default function MaterialsProcurementPage() {
               gets to finally start using the software. Someone is actually going in every single day
               to start using the thing that you built.&rdquo;
             </p>
-            <footer className="mt-3 text-[14px] leading-relaxed text-neutral-500">
+            <footer className="mt-3 text-[14px] leading-relaxed text-neutral-400">
               Vinay Konuru, VP Technology &amp; Product · milestone debrief
             </footer>
           </blockquote>

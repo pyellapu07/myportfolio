@@ -72,8 +72,7 @@ export function ProcurementPipeline() {
   return (
     <svg
       viewBox="0 0 928 730"
-      width={928}
-      className="h-auto max-w-none"
+      className="h-auto w-full"
       role="img"
       aria-label="Procurement pipeline: a BOM demand line enters a multi-vendor RFQ tray, then a server-resolved governance check. Orders at or above $1,000 route to an approval stage that mints a draft ID with a null PO number and require PM sign-off before a legal PO is minted; orders below the threshold mint a PO directly. Every PO passes through a 4-step dock QC wizard, which either releases units into FIFO inventory or holds them in quarantine."
     >

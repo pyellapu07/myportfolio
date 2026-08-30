@@ -15,7 +15,7 @@ import { Prose, P, H2, Figure } from "@/components/jeevy-os/editorial";
    Type:
      28px semibold white: title and section breaks
      18px neutral-300: all body copy
-     14px neutral-500: captions, metadata, eyebrow
+     14px neutral-400: captions, metadata, eyebrow
    ══════════════════════════════════════════════════════════════ */
 
 const SUB_STORIES = [

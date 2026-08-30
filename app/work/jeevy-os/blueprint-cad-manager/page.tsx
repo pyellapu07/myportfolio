@@ -511,7 +511,7 @@ export default function BlueprintCadManagerPage() {
             <p className="text-[18px] font-normal leading-[28px] tracking-[-0.01em] text-white">
               &ldquo;New file manager is kickass. Love it, nice work!!&rdquo;
             </p>
-            <footer className="mt-3 text-[14px] leading-relaxed text-neutral-500">
+            <footer className="mt-3 text-[14px] leading-relaxed text-neutral-400">
               Jeevesh Konuru, CEO &amp; Co-Founder · production release feedback
             </footer>
           </blockquote>

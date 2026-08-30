@@ -109,8 +109,7 @@ export function DualClockDiagram() {
   return (
     <svg
       viewBox="0 0 928 800"
-      width={928}
-      className="h-auto max-w-none"
+      className="h-auto w-full"
       role="img"
       aria-label="Dual-clock kiosk architecture: a shared plant tablet authenticates a worker with a 6-digit ephemeral PIN, which dispatches into two separate clocks: shop attendance in shop_time_entries and direct task labour in task_time_entries. Task labour passes through a lunch-break trigger that freezes the timer, then a tri-state clock-out that routes finished work to the PM review queue and blocked work to a live blocker alert."
     >

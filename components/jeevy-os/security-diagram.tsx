@@ -22,8 +22,7 @@ export function SecurityGateDiagram() {
   return (
     <svg
       viewBox={`0 0 ${DIAGRAM_W} 634`}
-      width={DIAGRAM_W}
-      className="h-auto max-w-none"
+      className="h-auto w-full"
       role="img"
       aria-label="Three-gate authorization pipeline. An incoming request carrying a user, file and action passes gate one, shop tenancy; a mismatch returns 403 cross-tenant forbidden. It then passes gate two, the view prerequisite; without read clearance it returns 403 for lacking view authorization. It then passes gate three, mutation clearance; without an active write or admin role it returns 403 for lacking mutation privilege. Only a request clearing all three gates executes the upload, confirm, restore or delete."
     >

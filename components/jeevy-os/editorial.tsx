@@ -7,7 +7,7 @@ import Link from "next/link";
  * One measure, one type scale, one link treatment across every page:
  *   28px semibold white: titles and section breaks
  *   18px neutral-300: all body copy
- *   14px neutral-500: captions and metadata
+ *   14px neutral-400: captions and metadata (neutral-500 lands at 4.12:1 here, under AA)
  *   12px mono neutral-400: eyebrows and breadcrumbs
  *
  * Text sits directly on the canvas. Nothing here draws a card.
@@ -43,7 +43,18 @@ export const Eyebrow = ({ children }: { children: React.ReactNode }) => (
 );
 
 export const Caption = ({ children }: { children: React.ReactNode }) => (
-  <p className="mt-2 text-[14px] font-normal leading-relaxed text-neutral-500">{children}</p>
+  <p className="mt-2 text-[14px] font-normal leading-relaxed text-neutral-400">{children}</p>
+);
+
+/**
+ * Inline code: token names, file paths, selectors.
+ *
+ * Size is inherited rather than set. A bare <code> falls back to the browser
+ * monospace default, which lands near 15px inside 18px body copy and puts a
+ * fifth size on a page that only has four.
+ */
+export const Code = ({ children }: { children: React.ReactNode }) => (
+  <code className="font-mono text-[1em] text-white">{children}</code>
 );
 
 /**
@@ -454,6 +465,8 @@ const NOTE_SKINS = [
 export interface FieldNote {
   quote: string;
   speaker: string;
+  /** Optional second line. Omitted, the speaker line renders as before. */
+  role?: string;
 }
 
 export function FieldNotesWall({ notes }: { notes: FieldNote[] }) {
@@ -475,9 +488,16 @@ export function FieldNotesWall({ notes }: { notes: FieldNote[] }) {
                 </p>
                 {/* Attribution stays sentence case in the body face, uppercase
                     mono read as a system label rather than a person. */}
-                <p className="mt-4 font-sans text-[12px] font-medium tracking-normal text-neutral-600">
-                  {n.speaker}
-                </p>
+                <div className="mt-4 border-t border-black/10 pt-3">
+                  <p className="font-sans text-[12px] font-semibold tracking-normal text-neutral-900">
+                    {n.speaker}
+                  </p>
+                  {n.role && (
+                    <p className="mt-0.5 font-sans text-[12px] font-normal text-neutral-600">
+                      {n.role}
+                    </p>
+                  )}
+                </div>
               </li>
             );
           })}
@@ -514,6 +534,208 @@ export function WideCallout({ label, items }: { label: string; items: CalloutIte
               </li>
             ))}
           </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Monotonic surface ladder ──────────────────────────────────
+   Stacked rather than gridded, because the argument is the step
+   itself: each row paints its own token, so the ladder is read as
+   physical lightness rather than as a table of hex strings.
+
+   L* is CIE lightness on the D65 white point, used rather than hex
+   distance because "one step lighter" has to mean the same thing to
+   the eye at every rung. Every figure below was computed from the
+   shipped hex, not transcribed. */
+
+const RUNGS = [
+  {
+    token: "bg-chrome",
+    hex: "#040D16",
+    desc: "Application shell, sidebar, top header bar",
+    lightness: "L* 3.36",
+    delta: "base rung",
+    bgClass: "bg-[#040D16]",
+  },
+  {
+    token: "bg-surface",
+    hex: "#061723",
+    desc: "Zero-reflection page canvas",
+    lightness: "L* 6.98",
+    delta: "+3.62 lighter",
+    bgClass: "bg-[#061723]",
+  },
+  {
+    token: "bg-elevated",
+    hex: "#122033",
+    desc: "Interactive card and panel container",
+    lightness: "L* 11.96",
+    delta: "+4.98 lighter",
+    bgClass: "bg-[#122033]",
+  },
+  {
+    token: "bg-hover",
+    hex: "#17263C",
+    desc: "Mouse hover lift",
+    lightness: "L* 14.92",
+    delta: "+2.96 lighter",
+    bgClass: "bg-[#17263C]",
+  },
+  {
+    token: "bg-active",
+    hex: "#202E4A",
+    desc: "Pressed tactile feedback",
+    lightness: "L* 19.04",
+    delta: "+4.12 lighter",
+    bgClass: "bg-[#202E4A]",
+  },
+];
+
+export const MonotonicSurfaceLadder = () => (
+  <div className="mx-auto my-12 max-w-[720px] space-y-4 px-6">
+    <div>
+      <div className="text-[18px] font-semibold tracking-tight text-white">
+        The monotonic surface ladder
+      </div>
+      <p className="mt-1 text-[14px] font-normal leading-[22px] text-neutral-400">
+        Five rungs, each strictly lighter than the one above it. Depth is carried by lightness
+        alone, which is why the system ships no drop shadows.
+      </p>
+    </div>
+
+    {/* Stacked stepped container: the row background is the token. */}
+    <div className="divide-y divide-white/[0.08] overflow-hidden rounded-xl border border-white/[0.1]">
+      {RUNGS.map((rung) => (
+        <div
+          key={rung.token}
+          className={`flex items-center justify-between gap-6 p-5 ${rung.bgClass}`}
+        >
+          {/* token and intent */}
+          <div className="min-w-0 space-y-1">
+            <div className="flex flex-wrap items-center gap-x-2.5">
+              <span className="text-[14px] font-medium text-white">{rung.token}</span>
+              <span className="font-mono text-[14px] text-neutral-400">{rung.hex}</span>
+            </div>
+            <div className="text-[14px] font-normal leading-[22px] text-neutral-400">
+              {rung.desc}
+            </div>
+          </div>
+
+          {/* lightness and delta */}
+          <div className="shrink-0 space-y-0.5 text-right">
+            <div className="text-[14px] font-medium tabular-nums text-white">{rung.lightness}</div>
+            <div className="text-[12px] font-normal tabular-nums text-neutral-400">
+              {rung.delta}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+/* ── Engineering sync consensus ────────────────────────────────
+   A flat two-column record of decisions reached with an engineer,
+   for the moments where the architecture was settled in a room
+   rather than derived. Unboxed: the divider carries the framing. */
+
+export interface ConsensusColumn {
+  topic: string;
+  decision: string;
+}
+
+export function EngineeringSyncConsensus({
+  header,
+  columns,
+}: {
+  header: string;
+  columns: ConsensusColumn[];
+}) {
+  return (
+    <div className="mx-auto my-12 max-w-[840px] space-y-6 border-t border-white/[0.08] px-4 pt-6">
+      <div className="text-[12px] font-medium text-neutral-400">{header}</div>
+      <div className="grid grid-cols-1 gap-x-12 gap-y-8 md:grid-cols-2">
+        {columns.map((c) => (
+          <div key={c.topic} className="space-y-2">
+            <h3 className="text-[18px] font-semibold tracking-tight text-white">{c.topic}</h3>
+            <p className="text-[14px] font-normal leading-[22px] text-neutral-400">{c.decision}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Taped sticky note ─────────────────────────────────────────
+   A quote pinned to the page with the real tape cut-out. Unlike the
+   legends and ledgers in this file, it keeps its edges: here the
+   paper is the artifact rather than a container around one.
+
+   Consecutive notes alternate tilt so a run of them reads as a wall
+   of pinned paper rather than as a repeated component. */
+
+/**
+ * Rotation is appended as a whole literal class rather than interpolated
+ * from a variable. Tailwind scans source text, and a class assembled from a
+ * `const` is not reliably seen: the utility lands in the DOM and no rule is
+ * ever generated for it, so the note renders flat.
+ */
+const PAPER_BASE =
+  "relative rounded-sm border border-white/[0.1] bg-[#161D26] p-6 shadow-2xl shadow-black/50";
+/* The tape counter-rotates, the way a torn strip sits when it is
+   pressed on by hand rather than aligned to the paper. */
+const TAPE_BASE =
+  "pointer-events-none absolute left-1/2 top-0 z-10 w-32 -translate-x-1/2 -translate-y-[38%]";
+
+export function TapedStickyNote({
+  eyebrow,
+  quote,
+  attribution,
+  role,
+  tilt = "left",
+}: {
+  eyebrow: string;
+  quote: string;
+  attribution: string;
+  role: string;
+  tilt?: "left" | "right";
+}) {
+  return (
+    <div className="mx-auto my-16 max-w-[560px] px-6">
+      <div
+        className={
+          tilt === "left"
+            ? `${PAPER_BASE} -rotate-1`
+            : `${PAPER_BASE} rotate-1`
+        }
+      >
+        <div
+          aria-hidden
+          className={
+            tilt === "left"
+              ? `${TAPE_BASE} -rotate-[2.2deg]`
+              : `${TAPE_BASE} rotate-[2.2deg]`
+          }
+        >
+          <Image
+            src="/jeevy/tape-yellow.webp"
+            alt=""
+            width={712}
+            height={350}
+            sizes="128px"
+            className="h-auto w-full"
+          />
+        </div>
+
+        <div className="mt-2 text-[12px] font-medium text-[#D4A373]">{eyebrow}</div>
+        <p className="mt-3 text-[14px] font-normal italic leading-[22px] text-neutral-200">
+          {quote}
+        </p>
+        <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-white/[0.08] pt-3 text-[12px] text-neutral-400">
+          <span className="font-medium text-white">{attribution}</span>
+          <span>{role}</span>
         </div>
       </div>
     </div>
