@@ -199,7 +199,7 @@ export default function DeliverablesMapDashboardPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/dm-legacy-shop-monitor.webp"
+          src="/jeevy/dm-shop-monitor-baseline.webp"
           alt="A photograph of a partner facility shop floor monitor running the legacy project status report as a colour-coded Excel workbook"
           caption="The baseline: a project status workbook on a shop monitor. Ten disconnected tabs, hand-coloured cells and a manually maintained timeline, with the facility identifiers masked. This photograph was the feature request."
           width={1920}
