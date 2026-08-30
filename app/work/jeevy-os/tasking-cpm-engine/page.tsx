@@ -336,7 +336,9 @@ export default function TaskingCpmEnginePage() {
 
         {/* ══ 6. NEGATIVE FLOAT ══ */}
         <Prose>
-          <H2 id="critical-path">Exposing true negative float against fixed delivery milestones</H2>
+          <H2 id="critical-path">
+            Exposing true negative float against contractual launch pad delivery deadlines
+          </H2>
           <div className="mt-8 space-y-6">
             <P>
               Traditional project management algorithms calculate float relative to whichever task

@@ -83,8 +83,7 @@ export default function JeevyOSCaseStudy() {
               Over a twelve-week solo engineering sprint in Cleburne, Texas, I designed and built
               Jeevy OS from scratch as Lead Product Designer &amp; Systems Architect. The system
               serves as the central operating system for heavy fabrication facilities building
-              multi-ton cryogenic skids and GSE launch infrastructure for SpaceX Starbase and Cape
-              Canaveral.
+              multi-ton cryogenic process skids and commercial orbital launch infrastructure.
             </P>
           </div>
         </Prose>
@@ -92,9 +91,9 @@ export default function JeevyOSCaseStudy() {
         {/* ══ HERO ══ */}
         <Figure
           size="prose"
-          src="/jeevy/skid-delivery-spacex-florida.jpg"
-          alt="Delivery day in Cleburne: the freight tractor loaded for the run to SpaceX Cape Canaveral"
-          caption="Completed cryogenic process skid package staged in Cleburne, Texas, and dispatched to SpaceX Cape Canaveral Launchpad 2."
+          src="/jeevy/skid-delivery-launch-site.jpg"
+          alt="Delivery day in Cleburne: the freight tractor loaded for the run to the launch site"
+          caption="Completed cryogenic process skid package staged in Cleburne, Texas, and dispatched to a commercial launch customer’s pad."
           ratio="aspect-[16/9]"
           priority
         />

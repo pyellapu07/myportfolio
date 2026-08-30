@@ -134,9 +134,9 @@ export const JEEVY_OS = {
     {
       // Jeevy logo is composited into the top-left corner, so any crop of
       // this image must keep the left edge, see `object-left` on the card.
-      src: "/jeevy/spacex-cape-canaveral-lc39a.jpg",
-      alt: "Falcon 9 and Dragon stacked on the launchpad at dusk, crew access arm extended from the tower",
-      caption: "Cleburne Hangar → SpaceX Cape Canaveral GSE Launchpad",
+      src: "/jeevy/launch-pad-gse-dusk.jpg",
+      alt: "A launch vehicle stacked on the pad at dusk, crew access arm extended from the tower",
+      caption: "Cleburne Hangar → launch pad cryogenic GSE",
     },
     {
       src: "/jeevy/cleburne-hangar-skid-handoff.jpg",

@@ -62,8 +62,8 @@ const STAKEHOLDER_NOTES = [
   },
   {
     quote:
-      "Our entire facility was running off a single shared SharePoint Excel sheet. A $50,000 fabrication mistake happened simply because teams looked at mismatched BOM revisions across un-synced files.",
-    speaker: "Prentex Shop Lead",
+      "Our entire facility was running off a single shared spreadsheet. A $50,000 fabrication mistake happened simply because teams looked at mismatched BOM revisions across un-synced files.",
+    speaker: "Partner facility shop lead",
     role: "Partner facility reality",
   },
   {
@@ -148,7 +148,7 @@ export default function DeliverablesMapDashboardPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/dm-deliverables-canvas.webp"
+          src="/jeevy/dm-deliverables-map.webp"
           alt="The production deliverables map: an orange project root above a green workstream, branching into slate assembly groups and graphite task cards"
           caption="The production Deliverables Map. The orange root carries the project, the green node is the build program, slate headers are assembly groups holding rollup fractions such as 51 of 168, and graphite cards are the executable operations. The header states the boundary out loud: physical structural breakdown, separate from milestones."
           width={1537}
@@ -158,15 +158,20 @@ export default function DeliverablesMapDashboardPage() {
 
         {/* ══ 1. THE ORIGIN ══ */}
         <Prose>
-          <H2 id="origin">The $50,000 cost of running a hangar on SharePoint</H2>
+          <H2 id="origin">The $50,000 cost of running a hangar on a shared drive</H2>
           <div className="mt-8 space-y-6">
             <P>
               Custom aerospace manufacturing means orchestrating multi-ton piping skids,
-              high-pressure vessels and thousands of raw fittings under strict delivery windows. Yet
-              across partner facilities like Prentex, the entire operation ran off fragmented Excel
-              spreadsheets shared over SharePoint.
+              high-pressure vessels and thousands of raw fittings under strict delivery windows. A
+              representative scope reads: an 8 inch Schedule 40 piping skid build, four
+              sub-assemblies in 304L and 316L, with all piping hydrostatically tested and certified
+              to client aerospace standards before final assembly sign-off.
             </P>
-            <P>That baseline created constant operational vulnerability.</P>
+            <P>
+              Yet across partner fabrication facilities, the entire operation ran off fragmented
+              spreadsheets on a shared drive. That baseline created constant operational
+              vulnerability.
+            </P>
           </div>
 
           <div className="mt-10 border-t border-white/[0.08]">
@@ -194,9 +199,9 @@ export default function DeliverablesMapDashboardPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/dm-prentex-excel.webp"
-          alt="A photograph of the Prentex shop floor monitor running the legacy project status report as a colour-coded Excel workbook"
-          caption="The baseline: the Prentex status report on a shop monitor, a workbook of disconnected tabs and hand-coloured cells. This photograph was the feature request."
+          src="/jeevy/dm-legacy-shop-monitor.webp"
+          alt="A photograph of a partner facility shop floor monitor running the legacy project status report as a colour-coded Excel workbook"
+          caption="The baseline: a project status workbook on a shop monitor, its tabs and hand-coloured cells kept deliberately illegible. This photograph was the feature request."
           width={1920}
           height={1440}
         />

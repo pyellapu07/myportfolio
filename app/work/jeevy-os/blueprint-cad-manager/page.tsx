@@ -153,9 +153,9 @@ export default function BlueprintCadManagerPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/fm-split-view.webp"
+          src="/jeevy/fm-file-manager-split.webp"
           alt="Production master split view pairing the file explorer with an interactive drawing inspector"
-          caption="The production Master Split View pairing the central file explorer with an interactive drawing inspector displaying a SpaceX Starbase GSE specification."
+          caption="The production Master Split View pairing the central file explorer with an interactive drawing inspector displaying a launch pad cryogenic GSE specification."
           width={2400}
           height={1104}
           priority
@@ -168,7 +168,8 @@ export default function BlueprintCadManagerPage() {
             <P>
               In heavy aerospace manufacturing, software failure is measured in stalled welders and
               five-figure liquidated damages. When a 40-foot Ground Support Equipment skid or
-              high-pressure cryogenic manifold is being fabricated for SpaceX Starbase, an un-synced
+              high-pressure cryogenic manifold is being fabricated for a Tier-1 commercial space
+              operator, an un-synced
               drawing revision or an unreadable blueprint halts the line.
             </P>
             <P>
@@ -499,7 +500,8 @@ export default function BlueprintCadManagerPage() {
             <P>
               By discarding an abstract prototype and anchoring in a model Trevor already trusted, we
               removed training friction entirely, built credibility with the shop leads, and delivered
-              sub-second clarity to the crews building for SpaceX. The same instinct shows up in the{" "}
+              sub-second clarity to the crews building for a Tier-1 commercial space operator. The same
+              instinct shows up in the{" "}
               <GhostLink href="/work/jeevy-os/industrial-design-system">
                 industrial design system ↗
               </GhostLink>

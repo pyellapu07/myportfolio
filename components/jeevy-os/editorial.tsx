@@ -741,3 +741,86 @@ export function TapedStickyNote({
     </div>
   );
 }
+
+/* ── Sanitized image frame ─────────────────────────────────────
+   Presentation masks for screenshots whose chrome carries an
+   internal URL or a trailing block of scope text.
+
+   IMPORTANT: these overlays are cosmetic. They sit above the image
+   in the DOM and remove nothing from the file, so anyone opening
+   the asset URL directly still sees the original. Where the source
+   actually carries customer identity, order numbers or personal
+   names, the pixels must be destroyed in the file itself before it
+   ships. Use this to tidy a frame, never to redact one. */
+
+export function SanitizedImageFrame({
+  src,
+  alt,
+  caption,
+  width,
+  height,
+  maskTopUrlBar = false,
+  maskBottomText = false,
+  maskedUrl = "https://internal-portal.local/fabrication/project-status-report",
+  bottomNote = "Proprietary customer scope details redacted for portfolio presentation.",
+  className = "",
+}: {
+  src: string;
+  alt: string;
+  caption?: string;
+  width: number;
+  height: number;
+  maskTopUrlBar?: boolean;
+  maskBottomText?: boolean;
+  maskedUrl?: string;
+  bottomNote?: string;
+  className?: string;
+}) {
+  return (
+    <figure className={`my-16 ${className}`}>
+      <Wide>
+        <div className="relative w-full overflow-hidden rounded-xl border border-white/10">
+          <Image
+            src={src}
+            alt={alt}
+            width={width}
+            height={height}
+            sizes="(max-width: 960px) 100vw, 960px"
+            quality={90}
+            className="h-auto w-full"
+          />
+
+          {maskTopUrlBar && (
+            <div
+              aria-hidden
+              className="absolute inset-x-0 top-0 flex h-9 items-center border-b border-white/10 bg-[#0B1015]/95 px-4 backdrop-blur-md"
+            >
+              <div className="mr-3 flex gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+                <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+                <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+              </div>
+              <div className="flex h-5 max-w-[420px] items-center truncate rounded bg-white/[0.06] px-3 text-[12px] text-neutral-400">
+                {maskedUrl}
+              </div>
+            </div>
+          )}
+
+          {maskBottomText && (
+            <div
+              aria-hidden
+              className="absolute inset-x-0 bottom-0 flex h-20 items-end bg-gradient-to-t from-[#040D16] via-[#040D16]/90 to-transparent p-4"
+            >
+              <span className="text-[12px] italic text-neutral-400">{bottomNote}</span>
+            </div>
+          )}
+        </div>
+        {caption && (
+          <figcaption>
+            <Caption>{caption}</Caption>
+          </figcaption>
+        )}
+      </Wide>
+    </figure>
+  );
+}

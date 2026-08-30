@@ -63,7 +63,7 @@ const VERIFIED_OUTCOMES = [
   },
   {
     lead: "Multi-shop scalability.",
-    body: "Deployed to partner facility Prentex with zero codebase forks, using Notion-style custom columns and 1-to-N raw plate nesting at 78.4% utilization.",
+    body: "Deployed to Partner Fabrication Facility A with zero codebase forks, using Notion-style custom columns and 1-to-N raw plate nesting at 78.4% utilization.",
   },
 ];
 

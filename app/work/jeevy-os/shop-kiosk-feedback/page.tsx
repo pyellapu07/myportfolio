@@ -28,22 +28,22 @@ const FIELD_NOTES = [
   {
     quote:
       "Welders shouldn't have to take off heavy gloves, walk 200 feet across the hangar, or call around just to report a completed joint or ask for crane support.",
-    speaker: "Cisco Rod · Project Manager",
+    speaker: "Project Manager · fabrication",
   },
   {
     quote:
       "I clock in every day, but I never know what hours actually got recorded until Friday. If there's a payroll discrepancy, it turns into an argument after the fact.",
-    speaker: "Cleburne Pipe Welder",
+    speaker: "Weld Operator · pipe",
   },
   {
     quote:
       "In heavy fab, you're always jumping in to help fit a multi-ton frame. If I can't clock in to another guy's task, the system treats me as idle and PMs question my productivity.",
-    speaker: "Welder · Steel Department",
+    speaker: "Weld Operator · steel department",
   },
   {
     quote:
       "When we run out of flanges or gussets, there's no way to put a task on hold. We end up clocking in and out aimlessly, with blocked jobs cluttering the terminal screen.",
-    speaker: "Cleburne Pipe Fitter",
+    speaker: "Lead Fitter · pipe",
   },
 ];
 
@@ -58,7 +58,7 @@ const VERIFIED_OUTCOMES = [
   },
   {
     lead: "100% net labor accuracy.",
-    body: "Frozen break arithmetic and database-enforced single sessions eliminated phantom fabrication costs across every active SpaceX skid build.",
+    body: "Frozen break arithmetic and database-enforced single sessions eliminated phantom fabrication costs across every active heavy industrial process skid and cryogenic pressure vessel build.",
   },
   {
     lead: "100% bilingual floor adoption.",

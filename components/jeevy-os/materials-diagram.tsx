@@ -120,7 +120,7 @@ export function ProcurementPipeline() {
       <Lbl x={730} y={306} anchor="start">&lt; $1k</Lbl>
 
       <Node x={40} y={CHILD_TOP} w={340} h={76} title="Approval stage" sub="Draft ID · PO number NULL" />
-      <Node x={548} y={CHILD_TOP} w={340} h={76} title="PO minted" sub="Legal counter SPX260101" />
+      <Node x={548} y={CHILD_TOP} w={340} h={76} title="PO minted" sub="Legal counter PO-8402" />
 
       <Edge d="M 380 398 L 544 398" />
       <Lbl x={462} y={388}>PM sign-off</Lbl>
