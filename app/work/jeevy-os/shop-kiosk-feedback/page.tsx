@@ -100,11 +100,11 @@ export default function ShopKioskFeedbackPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/kiosk-worker-home.webp"
+          src="/jeevy/kiosk-shop-home-v.webp"
           alt="Production kiosk worker dashboard showing the active task banner, elapsed timer, and category filters"
           caption="Production worker dashboard displaying the active task banner, elapsed timer, Lunch break trigger, and category filters."
           width={1912}
-          height={984}
+          height={900}
           priority
         />
 
@@ -148,11 +148,11 @@ export default function ShopKioskFeedbackPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/kiosk-legacy-two-button.webp"
+          src="/jeevy/kiosk-legacy-home.webp"
           alt="The legacy two-button kiosk interface with no task context or escalation path"
           caption="The legacy two-button kiosk baseline: zero task categorization, no shift context, and no digital escalation path."
           width={1917}
-          height={990}
+          height={906}
         />
 
         {/* ══ 2. FIELD RESEARCH ══ */}
@@ -170,7 +170,7 @@ export default function ShopKioskFeedbackPage() {
         <FieldNotesWall notes={FIELD_NOTES} />
 
         <Figure
-          src="/jeevy/kiosk-user-testing-hq.jpg"
+          src="/jeevy/kiosk-user-testing.webp"
           alt="Usability validation session with shop-floor crew testing PIN entry on a tablet"
           caption="Usability validation session with shop-floor crew testing 6-digit PIN entry and shift reconciliation flows."
           width={2400}
@@ -238,11 +238,11 @@ export default function ShopKioskFeedbackPage() {
 
         <Figure
           size="compact"
-          src="/jeevy/kiosk-pin-pad.webp"
+          src="/jeevy/kiosk-pin-entry.webp"
           alt="Production PIN keypad with large high-contrast circular touch keys"
           caption="Production PIN keypad featuring high-contrast 64px circular touch keys with 44px invisible hit-target contracts."
           width={2400}
-          height={1234}
+          height={1128}
         />
 
         {/* ══ 4. FEEDBACK LOOP ══ */}
@@ -283,11 +283,11 @@ export default function ShopKioskFeedbackPage() {
         />
 
         <Figure
-          src="/jeevy/kiosk-task-history-drawer.webp"
+          src="/jeevy/kiosk-task-history.webp"
           alt="Immutable task history drawer auditing every clock-in, pause, and blocker note"
           caption="Immutable task history drawer auditing every clock-in, pause, and blocker note to maintain complete build provenance."
           width={1912}
-          height={989}
+          height={905}
         />
 
         <Prose>
@@ -313,11 +313,11 @@ export default function ShopKioskFeedbackPage() {
         />
 
         <Figure
-          src="/jeevy/kiosk-pm-review-sendback.webp"
+          src="/jeevy/kiosk-pm-review.webp"
           alt="Supervisor review history showing structured send-back reason codes"
           caption="Supervisor review history auditing structured send-back reasons (wrong spec, missing welds) to enforce aerospace quality standards."
           width={1906}
-          height={988}
+          height={904}
         />
 
         {/* ══ 5. SHIFT RECONCILIATION ══ */}
@@ -357,11 +357,11 @@ export default function ShopKioskFeedbackPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/kiosk-wireframe-reconciliation.webp"
+          src="/jeevy/kiosk-reconciliation-wireframe.webp"
           alt="Shift reconciliation wireframe with an 'anything else you worked on?' selector before checkout"
           caption="The shift reconciliation wireframe introducing the “Anything else you worked on?” selector, allowing assisting crew members to account for collaborative labor before checkout."
           width={1910}
-          height={982}
+          height={898}
         />
 
         {/* ══ 6. LOCALIZATION & WORKER VALUE ══ */}
@@ -415,11 +415,11 @@ export default function ShopKioskFeedbackPage() {
 
         <Figure
           size="compact"
-          src="/jeevy/kiosk-worker-account-menu.webp"
+          src="/jeevy/kiosk-account-menu.webp"
           alt="In-kiosk worker account menu exposing shift history and wage transparency links"
           caption="In-kiosk worker account menu exposing personal productivity metrics, shift history, and wage transparency."
           width={543}
-          height={520}
+          height={490}
         />
 
         {/* ══ 7. OUTCOMES & RETROSPECTIVE ══ */}

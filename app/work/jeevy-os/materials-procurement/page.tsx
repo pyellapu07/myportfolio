@@ -128,7 +128,7 @@ export default function MaterialsProcurementPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/mat-catalog-table.webp"
+          src="/jeevy/mat-catalog-view.webp"
           alt="Production materials catalog table with photo thumbnails and per-line procurement state"
           caption={'The production Materials Catalog running on our [data-ds="v1"] design tokens, featuring monotonic elevation, 36px photo thumbnails, and contextual short names.'}
           width={2400}
@@ -355,7 +355,7 @@ export default function MaterialsProcurementPage() {
         <FigureRow
           items={[
             {
-              src: "/jeevy/mat-qc-step1.webp",
+              src: "/jeevy/mat-qc-quantity.webp",
               alt: "Step one of the QC wizard showing unit-batch inspection allocation",
               caption:
                 "Step 1 of the QC Wizard: unit-batch inspection allocation allowing partial lot check-ins without orphaned line items.",

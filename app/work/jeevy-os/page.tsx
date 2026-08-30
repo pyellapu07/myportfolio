@@ -171,7 +171,7 @@ export default function JeevyOSCaseStudy() {
 
         <Figure
           size="prose"
-          src="/jeevy/prod-tasking-gantt.webp"
+          src="/jeevy/prod-tasking-gantt-v.webp"
           alt="Production Gantt timeline with stalled task bars gated by supplier delivery dates"
           caption="The production Gantt timeline showing stalled task bars floored automatically by supplier delivery ETAs."
           width={1914}
@@ -211,8 +211,8 @@ export default function JeevyOSCaseStudy() {
           src="/jeevy/ds-button-matrix.webp"
           alt="Figma button coordinate matrix showing every token-bound variant and state"
           caption="The button coordinate matrix in Figma: 750 token-bound variants mapped across 10 styles, 3 sizes, and 5 interactive states."
-          width={2000}
-          height={846}
+          width={1920}
+          height={812}
         />
 
         {/* ══ 4. PRODUCTION SCALE & RETROSPECTIVE ══ */}

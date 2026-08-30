@@ -200,11 +200,11 @@ export default function BlueprintCadManagerPage() {
         </Prose>
 
         <Figure
-          src="/jeevy/fm-legacy-flat-list.webp"
+          src="/jeevy/fm-legacy-file-list-v.webp"
           alt="The legacy flat file list with no directory depth and a dead BOM sidebar"
           caption="The legacy flat file list: zero directory depth, unformatted proxy strings, and dead BOM sidebars consuming horizontal screen space."
           width={1915}
-          height={985}
+          height={901}
         />
 
         {/* ══ 2. PARTICIPATORY DISCOVERY ══ */}
@@ -236,11 +236,11 @@ export default function BlueprintCadManagerPage() {
         />
 
         <Figure
-          src="/jeevy/fm-trevor-mental-model.webp"
+          src="/jeevy/fm-explorer-mental-model.webp"
           alt="Trevor demonstrating the Windows File Explorer mental model with large visual thumbnails"
           caption="Trevor Goldston demonstrating his ground-truth mental model: Windows File Explorer with large visual thumbnails for rapid part geometry identification."
           width={1901}
-          height={1012}
+          height={928}
         />
 
         <DotCodedMatrix
@@ -384,7 +384,7 @@ export default function BlueprintCadManagerPage() {
         <InspectionLatencyBenchmark />
 
         <Figure
-          src="/jeevy/fm-grid-view.webp"
+          src="/jeevy/fm-file-grid.webp"
           alt="Production grid view with large thumbnails, folder pills, and type filters"
           caption="Production Grid View showing large visual thumbnails, folder pills, type filters, and 44px glove-operable touch boundaries."
           width={1958}
