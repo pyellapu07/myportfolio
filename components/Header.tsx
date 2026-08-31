@@ -225,16 +225,51 @@ const DoodleCircle = memo(function DoodleCircle() {
   );
 });
 
-export default function Header({ initialDark = false }: { initialDark?: boolean }) {
+/** How far down the page the bar may start hiding. */
+const HIDE_AFTER = 96;
+/** Ignore sub-pixel scroll noise, which otherwise flickers the bar. */
+const DELTA = 4;
+
+export default function Header({
+  initialDark = false,
+  surface = "light",
+}: {
+  initialDark?: boolean;
+  /**
+   * The page's own canvas. On a dark surface the scrolled bar stays dark and
+   * its text stays light, rather than dropping a white slab onto the page.
+   */
+  surface?: "light" | "dark";
+}) {
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const lastY = useRef(0);
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    lastY.current = window.scrollY;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      // One read per frame: the handler fires far more often than paint.
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const y = window.scrollY;
+        setScrolled(y > 20);
+        const dy = y - lastY.current;
+        if (Math.abs(dy) < DELTA) return;
+        // Reveal on any upward movement; hide only once clear of the top.
+        setHidden(dy > 0 && y > HIDE_AFTER);
+        lastY.current = y;
+      });
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   useEffect(() => {
@@ -242,18 +277,24 @@ export default function Header({ initialDark = false }: { initialDark?: boolean 
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  // If initialDark is true, use dark text (text-text) when NOT scrolled too
-  // Normal behavior: white text at top, dark text when scrolled
-  const isDarkText = initialDark || scrolled;
+  const onDark = surface === "dark";
+  // On a dark canvas the text is light at every scroll position. Otherwise:
+  // white over the hero, dark once the bar has a light background under it.
+  const isDarkText = onDark ? false : initialDark || scrolled;
 
   return (
     <>
       <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+          "fixed top-0 left-0 right-0 z-50",
+          "transition-[transform,background-color,border-color] duration-300 ease-out",
           scrolled
-            ? "bg-white/90 backdrop-blur-lg border-b border-border"
-            : "bg-transparent"
+            ? onDark
+              ? "border-b border-white/10 bg-[#040D16]/85 backdrop-blur-lg"
+              : "border-b border-border bg-white/90 backdrop-blur-lg"
+            : "bg-transparent",
+          // The drawer sits above the page, so the bar must stay put under it.
+          hidden && !mobileOpen ? "-translate-y-full" : "translate-y-0"
         )}
       >
         <nav className="mx-auto flex h-16 max-w-[1080px] items-center justify-between px-8 md:px-16 lg:px-24 overflow-visible">

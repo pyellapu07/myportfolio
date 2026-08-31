@@ -87,10 +87,9 @@ const VERIFIED_OUTCOMES = [
 export default function TaskingCpmEnginePage() {
   return (
     <div data-ds="v1" className="min-h-screen" style={{ background: CANVAS }}>
-      {/* `initialDark` means "render dark text", so it is false on this
-          dark canvas. It flips to dark automatically once scrolled,
-          when the header paints its own white bar. */}
-      <Header initialDark={false} />
+      {/* A dark surface keeps the bar dark and its text light at every
+          scroll position, rather than dropping a white slab onto the page. */}
+      <Header surface="dark" />
 
       <article className="pb-28 pt-28">
         {/* ══ HEADER ══ */}
