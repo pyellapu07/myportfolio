@@ -12,7 +12,10 @@ export const SITE = {
   medium: "https://medium.com/design-bootcamp/why-ux-designers-matter-more-than-ever-in-the-age-of-ai-part-1-f74761c7a4c3",
   portfolio: "#",
   location: "Open to Relocation",
-  resumeUrl: "/Pradeep_Yellapu_UX-Research_Product-Design_2026.pdf",
+  // Must match the filename in public/ exactly, spaces included. The previous
+  // value omitted a trailing space the file actually had, so every Resume
+  // link 404'd.
+  resumeUrl: "/Pradeep_Yellapu_Lead_Product-Designer_2026.pdf",
 } as const;
 
 export const NAV_LINKS = [
