@@ -10,22 +10,62 @@ interface ClawMark {
   angle: number;
 }
 
-/* Returns true if the element (or nearest ancestor with a background) is dark */
+/**
+ * One reusable 1x1 surface used to resolve and blend CSS colours. The canvas
+ * is doing two jobs that are awkward by hand: parsing whatever colour syntax
+ * the browser hands back, and compositing alpha correctly.
+ */
+let probe: CanvasRenderingContext2D | null = null;
+function getProbe(): CanvasRenderingContext2D | null {
+  if (probe) return probe;
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 1;
+  probe = canvas.getContext("2d", { willReadFrequently: true });
+  return probe;
+}
+
+const TRANSPARENT = /^(transparent|rgba?\(0,\s*0,\s*0,\s*0\))$/;
+
+/**
+ * True when the background actually showing behind `el` is dark.
+ *
+ * Two things make this harder than reading one backgroundColor. Alpha has to
+ * be composited: the dark case study pages stack panels like
+ * `bg-white/[0.02]` over a near-black canvas, and reading that panel alone
+ * reports pure white, which is what turned the cursor dark and invisible
+ * exactly where a panel sat. And Tailwind v4 emits `oklab(...)` rather than
+ * `rgb()`, so hand-rolled parsing of the numbers silently reads the wrong
+ * channels.
+ *
+ * Both are handed to a canvas instead. Layers are painted furthest-ancestor
+ * first onto an opaque white base, letting the browser resolve each colour
+ * and blend it source-over, then the resulting pixel is measured.
+ */
 function isDarkBackground(el: Element | null): boolean {
-  let node = el as HTMLElement | null;
-  while (node && node !== document.body) {
+  const ctx = getProbe();
+  if (!ctx) return false;
+
+  // Collect every painted background from the element up to <html>.
+  const stack: string[] = [];
+  for (let node = el as HTMLElement | null; node; node = node.parentElement) {
     const bg = window.getComputedStyle(node).backgroundColor;
-    if (bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent") {
-      const nums = bg.match(/\d+/g);
-      if (nums) {
-        const [r, g, b] = nums.map(Number);
-        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        return luminance < 0.45;
-      }
-    }
-    node = node.parentElement;
+    if (bg && !TRANSPARENT.test(bg)) stack.push(bg);
   }
-  return false;
+
+  // White is what an unstyled page shows through everything above it.
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, 1, 1);
+
+  // Paint back to front. An opaque layer naturally hides what is beneath it,
+  // so there is no need to detect opacity separately.
+  for (let i = stack.length - 1; i >= 0; i--) {
+    ctx.fillStyle = stack[i];
+    ctx.fillRect(0, 0, 1, 1);
+  }
+
+  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.45;
 }
 
 export default function CustomCursor() {
