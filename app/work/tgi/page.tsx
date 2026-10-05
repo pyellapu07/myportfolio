@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -101,6 +102,80 @@ function DataTable({
       </div>
       {caption && <Caption>{caption}</Caption>}
     </Wide>
+  );
+}
+
+/** Three tall panel crops side by side, stacking on mobile. */
+function FigureTrio({
+  items,
+}: {
+  items: { src: string; alt: string; caption: string; width: number; height: number }[];
+}) {
+  return (
+    <div className="my-16">
+      <Wide>
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+          {items.map((it) => (
+            <figure key={it.src}>
+              <div className="w-full overflow-hidden rounded-xl border border-white/10">
+                <Image
+                  src={it.src}
+                  alt={it.alt}
+                  width={it.width}
+                  height={it.height}
+                  sizes="(max-width: 640px) 100vw, 300px"
+                  quality={90}
+                  className="h-auto w-full"
+                />
+              </div>
+              <figcaption>
+                <Caption>{it.caption}</Caption>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </Wide>
+    </div>
+  );
+}
+
+/**
+ * Command bar states as labelled strips. Each crop is ~20:1, so a caption
+ * under every one would outweigh the image; the label sits beside it instead.
+ */
+function StateStrips({
+  items,
+  caption,
+}: {
+  items: { label: string; src: string; alt: string; width: number; height: number }[];
+  caption: string;
+}) {
+  return (
+    <figure className="my-16">
+      <Wide>
+        <div className="space-y-5 border-t border-white/[0.08] pt-6">
+          {items.map((it) => (
+            <div key={it.src} className="grid grid-cols-1 items-center gap-2 md:grid-cols-[140px_1fr] md:gap-6">
+              <div className="text-[12px] font-medium text-neutral-400">{it.label}</div>
+              <div className="overflow-hidden rounded-lg border border-white/10">
+                <Image
+                  src={it.src}
+                  alt={it.alt}
+                  width={it.width}
+                  height={it.height}
+                  sizes="(max-width: 960px) 100vw, 800px"
+                  quality={90}
+                  className="h-auto w-full"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        <figcaption>
+          <Caption>{caption}</Caption>
+        </figcaption>
+      </Wide>
+    </figure>
   );
 }
 
@@ -634,6 +709,14 @@ export default function TgiWorkbenchPage() {
           ]}
         />
 
+        <Figure
+          src="/tgi/11-query-locked.webp"
+          alt="Command bar with the query field showing cropland and a small lock"
+          caption="The query locked to cropland: a small lock replaces the suggestions caret, and hovering it gives the reason."
+          width={1622}
+          height={116}
+        />
+
         <Prose>
           <div className="space-y-6">
             <H3>CEO upload: from placeholder to live ingestion</H3>
@@ -666,6 +749,15 @@ export default function TgiWorkbenchPage() {
           caption="The 2024 season with 70 pins: the 20 CEO points carry a dark ring and their own legend row, and the estimate reads 0.70M ha ± 0.24M."
           width={2000}
           height={1250}
+        />
+
+        <Figure
+          size="compact"
+          src="/tgi/14-ceo-sample-card.webp"
+          alt="Map card for CEO-1002 with a CEO reference chip and the CEO label Non-Cropland"
+          caption="A CEO sample card: the CEO reference chip, the GLAD stratum stand-in note, and the label marked as not scored by the model."
+          width={672}
+          height={1196}
         />
 
         <FigureRow
@@ -745,6 +837,26 @@ export default function TgiWorkbenchPage() {
 
         <Prose>
           <div className="space-y-6">
+            <H3>A warm sand surface ladder</H3>
+            <P>
+              Five surfaces, ordered by CIE L*: the segmented-control groove at 92.8, the left rail at
+              93.5, hover at 94.9, the canvas at 96.6 and white cards at 100. The token build enforces
+              that the structural ladder rises strictly in every theme, and that hover sits at least 2.0
+              L* below a white card.
+            </P>
+          </div>
+        </Prose>
+
+        <Figure
+          src="/tgi/card-surface-ladder.webp"
+          alt="Five warm sand surfaces plotted by L* lightness"
+          caption="The warm sand surface ladder: five shipped surfaces with their L* and ΔL*, plotted on an L* 90 to 100 scale."
+          width={2000}
+          height={1320}
+        />
+
+        <Prose>
+          <div className="space-y-6">
             <H3>Tabular figures, never monospace</H3>
             <P>
               Iteration 1 set figures in terminal monospace, and the drawer read like a log dump.
@@ -783,6 +895,45 @@ export default function TgiWorkbenchPage() {
           height={962}
         />
 
+        <FigureRow
+          items={[
+            {
+              src: "/tgi/m-chip-ask-card.webp",
+              alt: "An Ask chip inside the Precision Trap card",
+              caption: "An Ask chip inside the Precision Trap card: the question stays attached to the figure it explains.",
+              width: 710,
+              height: 336,
+            },
+            {
+              src: "/tgi/m-copilot-chips.webp",
+              alt: "The open Co-Pilot with Ask starter chips above a Do chip",
+              caption: "The open Co-Pilot: Ask starter chips above a Do chip (Audit false positive sample SD22-018 →).",
+              width: 1064,
+              height: 704,
+            },
+          ]}
+        />
+
+        <Prose>
+          <div className="space-y-6">
+            <H3>Compare is a switch, not a segmented control</H3>
+            <P>
+              A segmented control implies several peer categories; a switch engages one mode over the
+              canvas. Compare is that kind of mode, so it is a 28 × 16px track with a 12px thumb, bound
+              to <Code>role=&quot;switch&quot;</Code> and <Code>aria-checked</Code>. The design system
+              gates allow the switch role on this component only.
+            </P>
+          </div>
+        </Prose>
+
+        <Figure
+          src="/tgi/gov-6-4-compare-toggle.webp"
+          alt="The Compare toggle inactive and active in the decision drawer header"
+          caption="Compare off and on: the off track sits at 3:1 against the drawer, the on track fills Xylem Leaf and the drawer becomes the multi-season audit."
+          width={2000}
+          height={1112}
+        />
+
         <Prose>
           <div className="space-y-6">
             <H3>Ambient motion instead of spinners</H3>
@@ -811,6 +962,73 @@ export default function TgiWorkbenchPage() {
           height={717}
         />
 
+        <StateStrips
+          caption="Command bar states from the running prototype. In the breathing state the border was sampled at rgba(214, 119, 7, 0.45) at the amber swing."
+          items={[
+            {
+              label: "Default",
+              src: "/tgi/m-bar-default.webp",
+              alt: "Command bar at rest with every item on one 28px centre line and In sync at the end",
+              width: 2000,
+              height: 99,
+            },
+            {
+              label: "Hover",
+              src: "/tgi/m-bar-hover-trigger.webp",
+              alt: "Command bar with the Stages trigger filled on hover",
+              width: 2000,
+              height: 99,
+            },
+            {
+              label: "Active month",
+              src: "/tgi/m-bar-active-month.webp",
+              alt: "Command bar with September selected and June showing the pill hover",
+              width: 2000,
+              height: 99,
+            },
+            {
+              label: "Scope changed",
+              src: "/tgi/m-bar-run.webp",
+              alt: "Command bar where an edited query replaces In sync with Run and explains why",
+              width: 2000,
+              height: 168,
+            },
+            {
+              label: "Working",
+              src: "/tgi/m-bar-breathing.webp",
+              alt: "Command bar at the amber swing of its aura with Calibrating estimate in the status pill",
+              width: 2000,
+              height: 133,
+            },
+          ]}
+        />
+
+        <FigureTrio
+          items={[
+            {
+              src: "/tgi/07a-search-samples.webp",
+              alt: "Search samples panel listing reference samples by ID",
+              caption: "Search samples: find any of the 50 reference samples by ID and fly to it.",
+              width: 856,
+              height: 1800,
+            },
+            {
+              src: "/tgi/07b-datasets.webp",
+              alt: "Datasets panel listing reference annotations and external sources",
+              caption: "Datasets: the provenance ledger for reference annotations and samples.",
+              width: 856,
+              height: 1800,
+            },
+            {
+              src: "/tgi/07c-run-history.webp",
+              alt: "Run history panel listing session runs including the 2023 abstention",
+              caption: "Run history: every run in the session, including the 2023 abstention, restorable in one click.",
+              width: 816,
+              height: 1800,
+            },
+          ]}
+        />
+
         <Prose>
           <div className="space-y-6">
             <H3>Map pins that pass 3:1</H3>
@@ -830,6 +1048,15 @@ export default function TgiWorkbenchPage() {
           height={1122}
         />
 
+        <Figure
+          size="compact"
+          src="/tgi/m-legend.webp"
+          alt="Map legend showing crop, non-crop, high uncertainty and overridden states"
+          caption="The map legend, with the running count of crop labels and overrides."
+          width={492}
+          height={374}
+        />
+
         <Prose>
           <div className="space-y-6">
             <H3>Overrides are a deliberate act</H3>
@@ -843,6 +1070,25 @@ export default function TgiWorkbenchPage() {
             </P>
           </div>
         </Prose>
+
+        <FigureRow
+          items={[
+            {
+              src: "/tgi/m-override-step1.webp",
+              alt: "Sample SD22-018 with a read-only label and the override question",
+              caption: "Step 1: SD22-018 is a false positive (model Crop 0.70, reference Fallow / Non-crop). The label is read-only and the override sits behind an explicit question.",
+              width: 704,
+              height: 1352,
+            },
+            {
+              src: "/tgi/m-override-step2.webp",
+              alt: "Sample SD22-018 with the Crop and Non-crop choice and Cancel revealed",
+              caption: "Step 2: after the analyst asks to override, Set the label reveals Crop / Non-crop with Cancel.",
+              width: 704,
+              height: 1464,
+            },
+          ]}
+        />
 
         <Figure
           src="/tgi/card-override-sequence.webp"
