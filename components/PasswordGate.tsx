@@ -10,6 +10,8 @@ interface PasswordGateProps {
   password: string;
   storageKey: string;
   projectName: string;
+  /** Replaces the default NDA line under the title. */
+  note?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -17,6 +19,7 @@ export default function PasswordGate({
   password,
   storageKey,
   projectName,
+  note,
   children,
 }: PasswordGateProps) {
   const [unlocked, setUnlocked] = useState(false);
@@ -80,14 +83,18 @@ export default function PasswordGate({
               {projectName}
             </h1>
             <p className="text-center text-sm text-text-muted max-w-[260px]">
-              This case study is under NDA.{" "}
-              <a
-                href="mailto:pyellapu@umd.edu"
-                className="text-primary underline underline-offset-2 hover:opacity-75 transition-opacity"
-              >
-                Reach out
-              </a>{" "}
-              and I&apos;ll share access.
+              {note ?? (
+                <>
+                  This case study is under NDA.{" "}
+                  <a
+                    href="mailto:pyellapu@umd.edu"
+                    className="text-primary underline underline-offset-2 hover:opacity-75 transition-opacity"
+                  >
+                    Reach out
+                  </a>{" "}
+                  and I&apos;ll share access.
+                </>
+              )}
             </p>
           </div>
 

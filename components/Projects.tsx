@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
 import JeevyOSCard from "./JeevyOSCard";
+import TGICard from "./TGICard";
 import { PROJECTS } from "@/lib/constants";
 import { useState } from "react";
 import type { Project } from "@/types";
@@ -73,6 +74,12 @@ export default function Projects() {
 
       {/* ── Flagship platform card ── */}
       <JeevyOSCard />
+
+      <TGICard
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => handleMouseEnter("Work ongoing")}
+        onMouseLeave={handleMouseLeave}
+      />
 
       {segments.map((segment, si) =>
         segment.type === "featured" ? (

@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import PasswordGate from "@/components/PasswordGate";
 import {
   Prose,
   P,
@@ -243,6 +245,38 @@ const OUTCOMES = [
 ];
 
 export default function TgiWorkbenchPage() {
+  return (
+    <PasswordGate
+      password="tgi2026"
+      storageKey="tgi-unlocked"
+      projectName="TGI Crop Intelligence Workbench"
+      note={
+        <>
+          Work ongoing: this case study is still being written.{" "}
+          <a
+            href="mailto:pyellapu@umd.edu"
+            className="text-primary underline underline-offset-2 transition-opacity hover:opacity-75"
+          >
+            Reach out
+          </a>{" "}
+          for early access.
+        </>
+      }
+    >
+      <TgiWorkbench />
+    </PasswordGate>
+  );
+}
+
+function TgiWorkbench() {
+  /* The homepage card links to sections (#personas and so on), but this
+     content mounts only after the gate unlocks, by which point the browser
+     has already given up on the hash. Scroll to it once on mount. */
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (id) document.getElementById(id)?.scrollIntoView();
+  }, []);
+
   return (
     <div className="min-h-screen" style={{ background: CANVAS }}>
       <Header surface="dark" />
