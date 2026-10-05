@@ -753,7 +753,7 @@ export default function TgiWorkbenchPage() {
 
         <Figure
           size="compact"
-          src="/tgi/14-ceo-sample-card.webp"
+          src="/tgi/14-ceo-sample-card-redacted.webp"
           alt="Map card for CEO-1002 with a CEO reference chip and the CEO label Non-Cropland"
           caption="A CEO sample card: the CEO reference chip, the GLAD stratum stand-in note, and the label marked as not scored by the model."
           width={672}
