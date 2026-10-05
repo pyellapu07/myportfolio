@@ -55,6 +55,18 @@ export const METRICS = [
 
 export const PROJECTS: Project[] = [
   {
+    title: "TGI Crop Intelligence Workbench",
+    subtitle: "Lead Product & Systems Design, In-Season Food Security GIS for Conflict Zones",
+    impact: "ASU · WashU · UMD consortium · Error-adjusted estimates with explicit abstention · Live prototype",
+    description:
+      "Designed the decision workbench for the Taylor Geospatial Institute Food Security Initiative, turning three labs' research pipelines into one calibrated GIS tool for FEWS NET, WFP and journalists. A unified command bar, intentional sample overrides, a persona engine and an abstention gate keep the tool from publishing crop area figures it cannot defend.",
+    techStack: ["Product Design", "Systems Design", "GIS", "Design Systems", "Data Visualization", "AI/UX", "Accessibility"],
+    image: "/tgi/01-hero-full-platform.webp",
+    link: "/work/tgi",
+    featured: true,
+    cursorLabel: "View case study →",
+  },
+  {
     title: "MarketCrunch AI",
     subtitle: "Product Design & UX Research, Trading Platform Redesign",
     impact: "End-to-end redesign · design system · usability research",
