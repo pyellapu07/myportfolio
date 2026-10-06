@@ -6,8 +6,6 @@ import { motion } from "framer-motion";
 import { ArrowUpRight, Lock } from "lucide-react";
 import type { Project } from "@/types";
 
-/** Chips past this collapse into a +N, so one long stack cannot set the height. */
-const TAG_LIMIT = 6;
 
 /**
  * The Jeevy and TGI card frame, generalised for the rest of the work.
@@ -122,32 +120,12 @@ export default function ProjectSplitCard({
           </span>
         </div>
 
-        <p className="mt-4 font-mono text-[14px] font-medium leading-snug text-accent">
-          {project.impact}
-        </p>
-
         {/* Clamped so the text column stays near the height of the shot beside
-            it. Unclamped, the longest entry ran 427px past its own image and
-            left a trough of white down the side of the card. */}
-        <p className="mt-4 line-clamp-5 text-[14px] leading-relaxed text-text-secondary">
+            it. Unclamped, the longest entry ran past its own image and left a
+            trough of white down the side of the card. */}
+        <p className="mt-4 line-clamp-6 text-[14px] leading-relaxed text-text-secondary">
           {project.description}
         </p>
-
-        <ul className="mt-4 flex flex-wrap gap-1.5 border-t border-border pt-4">
-          {project.techStack.slice(0, TAG_LIMIT).map((t) => (
-            <li
-              key={t}
-              className="rounded-full border border-border px-2.5 py-0.5 font-mono text-[11px] text-text-muted"
-            >
-              {t}
-            </li>
-          ))}
-          {project.techStack.length > TAG_LIMIT && (
-            <li className="rounded-full border border-border px-2.5 py-0.5 font-mono text-[11px] text-text-muted">
-              +{project.techStack.length - TAG_LIMIT}
-            </li>
-          )}
-        </ul>
 
         {locked && (
           <p className="mt-auto flex items-center gap-1.5 pt-6 text-[14px] leading-snug text-text-muted">
