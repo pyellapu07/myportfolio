@@ -9,12 +9,12 @@ const HREF = "/work/tgi";
 
 /** Section anchors on the case study, in page order. */
 const SECTIONS = [
-  { label: "Precision Trap", id: "problem" },
+  { label: "Impact", id: "impact" },
+  { label: "Timeline", id: "timeline" },
   { label: "3-Lab Pipeline", id: "architecture" },
-  { label: "Persona Engine", id: "personas" },
-  { label: "Benchmark", id: "benchmark" },
-  { label: "4 Iterations", id: "iterations" },
+  { label: "Iteration 5", id: "iteration-5" },
   { label: "Design System", id: "system" },
+  { label: "Outcomes", id: "outcomes" },
 ];
 
 /**
@@ -57,13 +57,13 @@ export default function TGICard({
       <div className="p-2 md:col-span-3 md:p-3">
         <div className="relative h-full w-full min-h-[420px] overflow-hidden rounded-lg bg-bg-alt">
           <Image
-            src="/tgi/01-hero-full-platform.webp"
-            alt="The TGI workbench over Al Jazirah on a satellite basemap, with reference sample pins and the Statistical decision drawer"
+            src="/tgi/17-production-492-in-season.webp"
+            alt="The TGI workbench showing 492 Al Jazirah reference points over September true-colour imagery"
             fill
             sizes="(max-width: 768px) 100vw, 60vw"
-            // object-left keeps the command bar and the pin field; the
-            // decision drawer on the right is what a narrow crop gives up
-            className="h-full w-full object-cover object-left"
+            // object-top keeps the command bar; the month dock at the
+            // bottom is what a short crop gives up
+            className="h-full w-full object-cover object-top"
           />
         </div>
       </div>
@@ -88,10 +88,10 @@ export default function TGICard({
         </div>
 
         <p className="mt-4 text-[14px] leading-relaxed text-text-secondary">
-          In conflict zones no one can survey, a single misread field can make a famine look like a
+          In conflict zones no one can survey, one misread field can make a famine look like a
           harvest. As Lead Product &amp; Systems Designer for an ASU, WashU and UMD consortium, I
-          designed a calibrated workbench for FEWS NET and WFP that refuses to publish a crop
-          estimate it cannot defend.
+          took a 50-point prototype to 1,636 ground reference points: an error bar 43% narrower,
+          every season reported, and a calibration failure caught before it shipped.
         </p>
 
         <ul className="mt-4 grid grid-cols-1 gap-x-4 gap-y-1.5 border-t border-border pt-4 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2">
