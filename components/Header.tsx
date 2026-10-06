@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, memo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Download } from "lucide-react";
+import { Menu, X, Download, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import RecruiterToggle from "./RecruiterToggle";
 import { NAV_LINKS, SITE } from "@/lib/constants";
@@ -326,6 +326,22 @@ export default function Header({
                 {link.label}
               </a>
             ))}
+            {/* External, so it is separated from the in-page anchors and
+                carries the arrow that marks a link off the site. */}
+            <a
+              href={SITE.substack}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                "inline-flex items-center gap-1 font-mono text-xs tracking-wide transition-colors",
+                isDarkText
+                  ? "text-text-secondary hover:text-text"
+                  : "text-white/60 hover:text-white"
+              )}
+            >
+              Substack
+              <ArrowUpRight size={12} aria-hidden />
+            </a>
           </div>
 
           {/* Right side */}
@@ -397,6 +413,16 @@ export default function Header({
                   {link.label}
                 </a>
               ))}
+              <a
+                href={SITE.substack}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                className="inline-flex items-center gap-1.5 font-display text-2xl font-semibold text-white transition-colors hover:text-accent"
+              >
+                Substack
+                <ArrowUpRight size={18} aria-hidden />
+              </a>
               <RecruiterToggle dark />
               <a
                 href={SITE.resumeUrl}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Linkedin, Github, Mail } from "lucide-react";
+import { Linkedin, Github, Mail, BookOpen } from "lucide-react";
 import { NAV_LINKS, SITE } from "@/lib/constants";
 
 export default function Footer() {
@@ -80,6 +80,17 @@ export default function Footer() {
                   </a>
                 </li>
               ))}
+              <li>
+                <a
+                  href={SITE.substack}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-text-secondary transition-colors duration-200 hover:text-primary"
+                >
+                  <BookOpen size={14} />
+                  Substack
+                </a>
+              </li>
               <li>
                 <a
                   href={SITE.medium}

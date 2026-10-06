@@ -212,7 +212,10 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-8 max-w-[520px] font-mono text-sm leading-relaxed text-neutral-400"
         >
-          3+ years creating user-centered digital products. I run usability studies, read the analytics, and ship work that holds up across every user type. Previously at MarketCrunch AI (San Francisco), NASA Harvest UMD, Computacenter UK. ✦
+          I design software for complex environments where data, physical workflows, and high stakes
+          meet: aerospace fabrication, geospatial data systems, agentic AI. I work from the data
+          model outward, mapping schemas and failure boundaries before any interface exists.
+          Previously at MarketCrunch AI (San Francisco), NASA Harvest UMD, Computacenter UK. ✦
         </motion.p>
 
         {/* Mobile creative work folder tap ─ hidden on desktop */}

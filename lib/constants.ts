@@ -10,6 +10,10 @@ export const SITE = {
   linkedin: "https://linkedin.com/in/pradeepyellapu",
   github: "https://github.com/pyellapu07",
   medium: "https://medium.com/design-bootcamp/why-ux-designers-matter-more-than-ever-in-the-age-of-ai-part-1-f74761c7a4c3",
+  // The profile root rather than the single note it was shared from: a link
+  // that sits in the nav on every page should survive that note scrolling
+  // away, and the share URL carried utm_source and a referral token.
+  substack: "https://substack.com/@pyellapu07",
   portfolio: "#",
   location: "Open to Relocation",
   // Must match the filename in public/ exactly, spaces included. The previous
