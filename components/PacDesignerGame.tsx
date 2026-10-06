@@ -2,6 +2,12 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 
+/* Canvas cannot take a CSS class, so the family is spelled out here. Matches
+   the page's sans stack; next/font registers Manrope under its own name, and
+   system-ui catches the case where it has not loaded yet. */
+const GAME_FONT = 'Manrope, system-ui, -apple-system, "Segoe UI", sans-serif';
+
+
 // ─── Maze ────────────────────────────────────────────────────────────────────
 const MAZE_COLS = 19;
 const MAZE_ROWS = 22;
@@ -429,13 +435,13 @@ function drawIntro(ctx: CanvasRenderingContext2D, time: number): void {
 
   // Title
   ctx.fillStyle = "#FF5210";
-  ctx.font = "bold 36px monospace";
+  ctx.font = `bold 36px ${GAME_FONT}`;
   ctx.textAlign = "center";
   ctx.fillText("PAC-DESIGNER", CANVAS_W / 2, CANVAS_H / 2 - 80);
 
   // Ghost list
   const names = GHOST_DEFS.map(g => `${g.name}`);
-  ctx.font = "13px monospace";
+  ctx.font = `13px ${GAME_FONT}`;
   ctx.fillStyle = "#888888";
   ctx.fillText("AVOID:", CANVAS_W / 2, CANVAS_H / 2 - 40);
   GHOST_DEFS.forEach((g, i) => {
@@ -446,7 +452,7 @@ function drawIntro(ctx: CanvasRenderingContext2D, time: number): void {
   // Press any key
   const alpha = 0.5 + 0.5 * Math.sin(time * 3);
   ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-  ctx.font = "14px monospace";
+  ctx.font = `14px ${GAME_FONT}`;
   ctx.fillText("PRESS ANY KEY TO START", CANVAS_W / 2, CANVAS_H / 2 + 110);
 
   void names;
@@ -830,20 +836,20 @@ export default function PacDesignerGame({ onExit }: { onExit: () => void }) {
     ctx.textAlign = "center";
     if (phase === "gameover") {
       ctx.fillStyle = "#FF4444";
-      ctx.font = "bold 40px monospace";
+      ctx.font = `bold 40px ${GAME_FONT}`;
       ctx.fillText("GAME OVER", CANVAS_W / 2, CANVAS_H / 2 - 40);
     } else {
       ctx.fillStyle = "#FF5210";
-      ctx.font = "bold 36px monospace";
+      ctx.font = `bold 36px ${GAME_FONT}`;
       ctx.fillText("DESIGN SHIPPED!", CANVAS_W / 2, CANVAS_H / 2 - 40);
     }
 
     ctx.fillStyle = "#ffffff";
-    ctx.font = "20px monospace";
+    ctx.font = `20px ${GAME_FONT}`;
     ctx.fillText(`INSIGHTS: ${score}`, CANVAS_W / 2, CANVAS_H / 2 + 10);
 
     ctx.fillStyle = "#888888";
-    ctx.font = "14px monospace";
+    ctx.font = `14px ${GAME_FONT}`;
     ctx.fillText("Press R to restart", CANVAS_W / 2, CANVAS_H / 2 + 50);
   }, [phase, score]);
 

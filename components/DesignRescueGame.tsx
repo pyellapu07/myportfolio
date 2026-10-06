@@ -3,6 +3,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+/* Canvas cannot take a CSS class, so the family is spelled out here. Matches
+   the page's sans stack; next/font registers Manrope under its own name, and
+   system-ui catches the case where it has not loaded yet. */
+const GAME_FONT = 'Manrope, system-ui, -apple-system, "Segoe UI", sans-serif';
+
+
 /* ─── Types ──────────────────────────────────────────────────── */
 
 interface CollectibleDef {
@@ -571,7 +577,7 @@ function drawGround(
       ctx.fillRect(sx - 4, ugY + 11, 2, 2);
       // ZZZ
       ctx.fillStyle = "rgba(200,220,255,0.7)";
-      ctx.font = "6px monospace";
+      ctx.font = `6px ${GAME_FONT}`;
       ctx.fillText("zzz", sx + 8, ugY + 6);
     }
   }
@@ -1019,7 +1025,7 @@ function drawEnemyNameTag(
   name: string
 ) {
   const padding = 4;
-  ctx.font = 'bold 8px monospace';
+  ctx.font = `bold 8px ${GAME_FONT}`;
   const tw = ctx.measureText(name).width;
   const bw = tw + padding * 2;
   const bh = 14;
@@ -1177,7 +1183,7 @@ function drawCollectible(
 
   ctx.shadowBlur = 0;
 
-  ctx.font = "bold 8px monospace";
+  ctx.font = `bold 8px ${GAME_FONT}`;
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
   ctx.fillText(c.label, sx + 10, sy + 32);
@@ -1249,7 +1255,7 @@ function drawDialogueBubble(
 
   // Text
   ctx.fillStyle = '#222222';
-  ctx.font = 'bold 9px monospace';
+  ctx.font = `bold 9px ${GAME_FONT}`;
   lines.forEach((line, i) => {
     ctx.fillText(line, bx + padX, by + padY + 10 + i * lineH);
   });
@@ -1268,7 +1274,7 @@ function drawSpeechBubble(
 
   ctx.save();
   ctx.globalAlpha = alpha;
-  ctx.font = "bold 8px monospace";
+  ctx.font = `bold 8px ${GAME_FONT}`;
   const tw = ctx.measureText(sb.text).width;
   const bw = Math.min(tw + 16, 180);
   const bh = 22;
@@ -1370,7 +1376,7 @@ function drawPiecesHUD(
     drawCoin(ctx, cx, cy, item.color, collected);
 
     // Full label below coin — split into 2 lines if long
-    ctx.font = 'bold 7px monospace';
+    ctx.font = `bold 7px ${GAME_FONT}`;
     ctx.textAlign = 'center';
     const label = item.label;
     const words = label.split(' ');
@@ -1409,7 +1415,7 @@ function drawPowerUp(ctx: CanvasRenderingContext2D, sx: number, sy: number, fram
   ctx.fillRect(sx, sy+8, 10, 1);
   ctx.restore();
   // Label
-  ctx.font = 'bold 7px monospace';
+  ctx.font = `bold 7px ${GAME_FONT}`;
   ctx.fillStyle = '#FFD700';
   ctx.textAlign = 'center';
   ctx.fillText('TEAM COLLAB', sx + 5, sy + 20);
@@ -1563,7 +1569,7 @@ function drawBigPixelText(ctx: CanvasRenderingContext2D, text: string, cx: numbe
   ctx.save();
   ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = 'rgba(0,0,0,0.8)';
-  ctx.font = `bold ${pixelSize * 8}px monospace`;
+  ctx.font = `bold ${pixelSize * 8}px ${GAME_FONT}`;
   ctx.textAlign = 'center';
   ctx.fillText(text, cx + 3, cy + 3);
   ctx.fillStyle = darkenColor(color, 50);
@@ -2712,7 +2718,7 @@ export default function DesignRescueGame({ onExit }: { onExit: () => void }) {
       if (gs.playerBullets > 0) {
         const plrSx = gs.playerX - gs.cameraX;
         const plrSy = gs.playerY;
-        ctx.font = 'bold 8px monospace';
+        ctx.font = `bold 8px ${GAME_FONT}`;
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'center';
         ctx.fillText(`\uD83D\uDD2B ${gs.playerBullets}`, plrSx + 10, plrSy - 10);

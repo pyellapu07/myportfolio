@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
-import { X, Grid, List } from "lucide-react";
+import { X, Grid, List, Folder, Image as ImageIcon, Clapperboard } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 /* ── Creative work data ─────────────────────────────────────────────
    Add your actual files to /public/creative-work/ and update src here.
@@ -116,10 +117,13 @@ const FILES: CreativeFile[] = [
 
 const CATEGORIES = ["All", "Posters", "Motion"];
 
-const SIDEBAR_ITEMS = [
-  { label: "All",     icon: "🗂️" },
-  { label: "Posters", icon: "🖼️" },
-  { label: "Motion",  icon: "🎬" },
+/** Lucide rather than emoji: emoji render as a different face per platform
+    and sit on their own baseline, which is why they never lined up with the
+    labels beside them. */
+const SIDEBAR_ITEMS: { label: string; Icon: LucideIcon }[] = [
+  { label: "All",     Icon: Folder },
+  { label: "Posters", Icon: ImageIcon },
+  { label: "Motion",  Icon: Clapperboard },
 ];
 
 /* ── Mac folder SVG ─────────────────────────────────────────────────── */
@@ -298,7 +302,7 @@ export default function MacFinderWindow({ onClose }: MacFinderWindowProps) {
                       : "text-neutral-600 hover:bg-black/[0.04]"
                   }`}
                 >
-                  <span className="text-[13px] leading-none">{item.icon}</span>
+                  <item.Icon size={14} strokeWidth={1.75} className="shrink-0" aria-hidden />
                   <span className="truncate">{item.label}</span>
                 </button>
               ))}
