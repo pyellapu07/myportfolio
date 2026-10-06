@@ -39,6 +39,7 @@ export default function ProjectSplitCard({
   const isLive = href.startsWith("/");
   const fit = project.media?.fit ?? "contain";
   const isContain = fit === "contain";
+  const surface = project.media?.surface;
   const locked = /nda|password/i.test(project.cursorLabel ?? "");
 
   return (
@@ -71,10 +72,27 @@ export default function ProjectSplitCard({
           // A contained shot keeps its own height, so centre it against the
           // text rather than stretching a panel it cannot fill. Stretching is
           // what left the widest thumbnail floating in a tall empty box.
-          isContain ? "flex items-center" : ""
+          // A tinted surface is the exception: there the panel is meant to
+          // fill, because the tint is what covers the space the art cannot.
+          isContain && !surface ? "flex items-center" : ""
         }`}
       >
-        {isContain ? (
+        {isContain && surface ? (
+          <div
+            className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg px-4 py-6 sm:px-6"
+            style={{ background: surface }}
+          >
+            <Image
+              src={project.image}
+              alt={project.title}
+              width={1432}
+              height={853}
+              sizes="(max-width: 768px) 88vw, 52vw"
+              className="h-auto w-full rounded-md object-contain shadow-sm ring-1 ring-black/5 transition-transform duration-700 group-hover:scale-[1.01]"
+              unoptimized={project.image.endsWith(".gif")}
+            />
+          </div>
+        ) : isContain ? (
           <Image
             src={project.image}
             alt={project.title}

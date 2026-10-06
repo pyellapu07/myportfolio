@@ -11,6 +11,13 @@ export interface ProjectMedia {
   fit?: "cover" | "contain";
   /** Tailwind object-position class, only meaningful with `cover`. */
   position?: string;
+  /**
+   * CSS background for the panel behind a contained shot. Only worth setting
+   * when the art is too wide to fill its column on its own, since otherwise
+   * the image already reaches every edge and a tint would only show as a
+   * band at the corners.
+   */
+  surface?: string;
 }
 
 export interface Project {
