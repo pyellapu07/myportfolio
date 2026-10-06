@@ -241,21 +241,21 @@ const STATS = [
   },
   {
     value: "~87%",
-    unit: "smaller",
-    label: "area moved by one mislabelled point",
-    note: "46,300 ha per point on the sandbox, 5,000 to 6,100 ha across 492 points.",
+    unit: "reduced",
+    label: "Per-sample sensitivity",
+    note: "In the 50-point sandbox, a single misclassification skewed the regional estimate by 46,300 ha. Across 492 ground points, variance scales down to 5,000–6,100 ha per point.",
   },
   {
     value: "82.4%",
-    unit: "agreement",
-    label: "caught before it shipped",
-    note: "Model labels posing as ground truth. Calibrating on them would have reported zero error everywhere.",
+    unit: "validation check",
+    label: "Data hygiene safeguard",
+    note: "The incoming export bundled model predictions into fields formatted like ground reference annotations. Calibrating directly against model inference would have reported artificial zero-error. Caught by joining reviewer annotations on plotid and year before wiring the estimator.",
   },
   {
     value: "+46.3%",
-    unit: "phantom",
-    label: "pixel counting over calibrated",
-    note: "366,100 ha of cropland that is not there: 13% of the state, on a famine-planning figure.",
+    unit: "uncalibrated bias",
+    label: "Pixel counting vs. error-adjusted estimate",
+    note: "Pixel counting overcounted cropland by 366,100 ha (~13% of the state) compared to error-adjusted ground truth.",
   },
   {
     value: "32×",
@@ -529,16 +529,17 @@ function TgiWorkbench() {
             </Link>
           </nav>
 
-          {/* Masking notice: first thing under the breadcrumb, before any
+          {/* Attribution note: first thing under the breadcrumb, before any
               content that uses a placeholder. */}
           <div className="mt-8 rounded-lg border border-dashed border-white/25 px-5 py-4">
             <p className="font-mono text-[12px] uppercase tracking-wider text-neutral-200">
-              Names withheld
+              Project attribution note
             </p>
             <p className="mt-1.5 text-[14px] leading-[22px] text-neutral-400">
-              Collaborators and stakeholders appear as role placeholders, like{" "}
-              <Ph>Research Lead, ASU</Ph>, and model-owner prefixes in data column names are
-              generalised. Institutions and public organisations are named. Figures are unchanged.
+              Individual collaborators and lab contributors are referenced by consortium role (e.g.,{" "}
+              <Ph>Research Lead, ASU</Ph>), and column keys are normalized to institutional namespaces
+              ahead of publication. Core metrics, methodology, and institutional affiliations remain
+              exact.
             </p>
           </div>
 
@@ -624,7 +625,7 @@ function TgiWorkbench() {
         {/* ══ 1. PROBLEM ══ */}
         <Prose>
           <Kicker>01 · Problem</Kicker>
-          <H2 id="problem">Famine warnings from places no one can survey</H2>
+          <H2 id="problem">In-season crop area for regions without field access</H2>
           <div className="mt-8 space-y-6">
             <P>
               In conflict zones such as Sudan’s Al Jazirah State, armed clashes keep ground teams from
@@ -648,7 +649,7 @@ function TgiWorkbench() {
           label="The Precision Trap"
           items={[
             {
-              lead: "Naive models overestimate badly.",
+              lead: "Uncalibrated models overestimate.",
               body: "Foundation models (e.g. OlmoEarth) and pixel classifiers produced overestimates of +98% to +246% in project analyses of conflict settings.",
             },
             {
@@ -656,11 +657,11 @@ function TgiWorkbench() {
               body: "The Olofsson (2014) estimator multiplies each reference label across a very large stratum, so every label carries thousands of hectares.",
             },
             {
-              lead: "The blast radius depends on sample size.",
-              body: "On the 50-point sandbox one wrong point added about 46,300 ha. Across 492 points each carries 5,000 to 6,100 ha: roughly an eighth. More reference points buy a smaller error per mistake.",
+              lead: "Per-sample sensitivity depends on sample size.",
+              body: "On the 50-point sandbox one wrong point added about 46,300 ha. Across 492 points each carries 5,000 to 6,100 ha: roughly an eighth. More reference points reduce the influence of any single label.",
             },
             {
-              lead: "The hazard is humanitarian.",
+              lead: "The cost is operational.",
               body: "Bloated estimates make conflict regions look food-secure, which can delay life-saving assistance.",
             },
           ]}
@@ -840,7 +841,7 @@ function TgiWorkbench() {
         {/* ══ 4. BENCHMARK ══ */}
         <Prose>
           <Kicker>04 · Benchmark · 8 Sep 2026</Kicker>
-          <H2 id="benchmark">From black box to calibrated audit</H2>
+          <H2 id="benchmark">From uncalibrated output to calibrated audit</H2>
           <div className="mt-8 space-y-6">
             <P>
               The competitive set ran from text-only agents to imagery-rich research assistants. None
@@ -1188,12 +1189,11 @@ function TgiWorkbench() {
         {/* ══ 7. ITERATION 5 ══ */}
         <Prose>
           <Kicker>07 · Build log · Iteration 5 · late Sep → Oct</Kicker>
-          <H2 id="iteration-5">Production data, and the decisions that did not survive it</H2>
+          <H2 id="iteration-5">Production data and the decisions it revised</H2>
           <div className="mt-8 space-y-6">
             <P>
               Iteration 4 closed the design questions. Iteration 5 replaced the data underneath them,
-              and several decisions that had looked settled did not survive contact with 492 real
-              points.
+              and validation against 492 ground reference points revised several earlier decisions.
             </P>
           </div>
 
@@ -1266,14 +1266,14 @@ function TgiWorkbench() {
         </Prose>
 
         <WideCallout
-          label="Why a caution beats a blank"
+          label="Why publish with a caution"
           items={[
             {
-              lead: "A blank says nothing.",
+              lead: "Suppression carries no information.",
               body: "An abstention tells the reader nothing about how far off the figure might be.",
             },
             {
-              lead: "A caution says how far.",
+              lead: "A caution quantifies the risk.",
               body: "A figure carrying its own health warning tells them exactly that, and leaves the judgement with the planner.",
             },
           ]}
@@ -1343,7 +1343,7 @@ function TgiWorkbench() {
 
         {/* ══ 8. DESIGN SYSTEM ══ */}
         <Prose>
-          <Kicker>08 · Design system · 15 gates on every build</Kicker>
+          <Kicker>08 · Design system &amp; accessibility audit (15 CI build gates)</Kicker>
           <H2 id="system">A design system tuned for numbers people act on</H2>
           <div className="mt-8 space-y-6">
             <P>
@@ -1591,26 +1591,26 @@ function TgiWorkbench() {
             ["2022 Al Jazirah estimate", "1.04M ha", "1.75M ha", "+68%, outside the old interval"],
             ["95% margin of error", "± 0.21M ha", "± 0.12M ha", "43% narrower"],
             ["Seasons that publish a figure", "2 of 3", "3 of 3", "The conflict-onset year is no longer blank"],
-            ["Area moved by one mislabelled point", "46,300 ha", "5,000 to 6,100 ha", "~87% smaller blast radius"],
+            ["Per-sample sensitivity", "46,300 ha", "5,000 to 6,100 ha", "~87% reduction"],
             ["Reference points", "50 synthetic", "1,636 ground-observed", "32×, across 4 states and 4 seasons"],
             ["In-season resolution", "1 annual figure", "12 monthly figures", "0 ha in January to 1.53M ha by November"],
           ]}
         />
 
         <WideCallout
-          label="What the work prevented"
+          label="Risks addressed"
           items={[
             {
-              lead: "A silent calibration failure.",
-              body: "Two models’ labels shipped in columns that look exactly like ground truth, agreeing with reviewers only 82.4% and 82.2% of the time. Calibrating on them would have reported zero error on every season, in every region, indefinitely. Caught by joining on plotid and year and testing agreement before wiring anything up.",
+              lead: "Data hygiene safeguard (82.4% validation check).",
+              body: "The incoming export bundled model predictions into fields formatted like ground reference annotations. Calibrating directly against model inference would have reported artificial zero-error. Caught by joining reviewer annotations on plotid and year before wiring the estimator.",
             },
             {
-              lead: "366,100 ha of phantom cropland.",
-              body: "Uncalibrated pixel counting reads +46.3% high: 13% of the state’s land area. The interface now shows both bars side by side, so the gap is the first thing a reader sees.",
+              lead: "+46.3% uncalibrated bias.",
+              body: "Pixel counting overcounted cropland by 366,100 ha (~13% of the state) compared to error-adjusted ground truth. The interface shows both values side by side, so the difference is visible at the point of decision.",
             },
             {
-              lead: "A blank where the answer mattered most.",
-              body: "An arbitrary ±35% clamp suppressed the conflict-onset year. It now reads 0.51M ha with a stated range.",
+              lead: "Eliminating arbitrary data suppression.",
+              body: "The prototype previously withheld estimates when uncertainty exceeded ±35%, hiding critical conflict-onset data. Iteration 5 publishes the calibrated 0.51M ha estimate with an explicit confidence envelope and methodological caution.",
             },
           ]}
         />
@@ -1650,12 +1650,13 @@ function TgiWorkbench() {
         </Prose>
 
         <WideCallout
-          label="The pattern underneath"
+          label="System verification insights"
           items={[
-            {
-              lead: "Four times a figure looked right and was wrong:",
-              body: "a sandbox that was precise and inaccurate, model labels that could not calibrate, a ±35% clamp with no derivation, and a per-point error weight quoted eight times too large. Each was found by measuring against the running system instead of trusting the artifact that described it.",
-            },
+            { lead: "Sandbox precision is not accuracy.", body: "The 50-point estimate was internally consistent but fell outside the production interval." },
+            { lead: "Model output is not reference data.", body: "Calibration requires reviewer annotations, verified by agreement rate before use." },
+            { lead: "Thresholds need a derivation.", body: "The ±35% reporting limit had none, and was replaced with published intervals and cautions." },
+            { lead: "Sensitivity figures need re-measurement.", body: "The per-point error weight was revised after the 492-point set showed it overstated eightfold." },
+            { lead: "Method:", body: "each was identified by testing against the running build rather than the documentation describing it." },
           ]}
         />
 

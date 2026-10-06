@@ -88,10 +88,11 @@ export default function TGICard({
         </div>
 
         <p className="mt-4 text-[14px] leading-relaxed text-text-secondary">
-          In conflict zones no one can survey, one misread field can make a famine look like a
-          harvest. As Lead Product &amp; Systems Designer for an ASU, WashU and UMD consortium, I
-          took a 50-point prototype to 1,636 ground reference points: an error bar 43% narrower,
-          every season reported, and a calibration failure caught before it shipped.
+          Famine early warning in conflict zones depends on crop area estimates that cannot be
+          checked on the ground. As Lead Product &amp; Systems Designer for an ASU, WashU and UMD
+          consortium, I took a 50-point prototype to 1,636 ground reference points: a 43% narrower
+          confidence interval, every season reported, and a data validation safeguard in the
+          calibration pipeline.
         </p>
 
         <ul className="mt-4 grid grid-cols-1 gap-x-4 gap-y-1.5 border-t border-border pt-4 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2">

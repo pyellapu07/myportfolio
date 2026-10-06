@@ -104,8 +104,8 @@ export default function Footer() {
               &copy; {new Date().getFullYear()} {SITE.name}. All rights reserved.
             </p>
             <p className="mt-1 font-mono text-xs text-text-muted">
-              Built with lots of Caffeine, Insomniac cookies,<br />
-              Logic and a friend called &lsquo;Claude&rsquo;
+              Designed &amp; engineered by Pradeep Kumar Yellapu · Built with React, Next.js, and
+              Leaflet.
             </p>
           </div>
         </div>
