@@ -393,7 +393,7 @@ export default function Contact() {
               <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#555", marginBottom: 4 }}>
                 Contact
               </div>
-              <div style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 700, color: "#111" }}>
+              <div style={{ fontFamily: "var(--font-manrope), system-ui, sans-serif", fontSize: 12, fontWeight: 700, color: "#111" }}>
                 {SITE.email}
               </div>
             </div>

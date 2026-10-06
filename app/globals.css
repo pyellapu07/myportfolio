@@ -46,7 +46,13 @@
   --font-heading: var(--font-instrument-serif);
   --font-display: var(--font-instrument-serif);
   --font-sans: var(--font-manrope);
-  --font-mono: var(--font-dm-mono);
+  /* Points at the sans face on purpose. `font-mono` is applied 694 times
+     across 40 files, mostly as a texture on eyebrows, labels and metadata
+     rather than to align anything, and the monospace it used to resolve to
+     read as a different voice mid-sentence. Retargeting the token swaps every
+     one of those at once; where digits need to line up, `tabular-nums` does
+     that job on the sans face. */
+  --font-mono: var(--font-manrope);
 }
 
 * {

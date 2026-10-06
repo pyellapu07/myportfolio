@@ -315,7 +315,7 @@ export default function HeroParticles({ onGameStart }: { onGameStart?: () => voi
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
           <div style={{
             background:"#FF5210", color:"#fff",
-            fontFamily:"monospace", fontSize:8, fontWeight:700,
+            fontFamily:"var(--font-manrope), system-ui, sans-serif", fontSize:8, fontWeight:700,
             padding:"2px 6px", borderRadius:3, letterSpacing:"0.08em",
             textTransform:"uppercase", border:"1px solid #cc4200",
           }}>
