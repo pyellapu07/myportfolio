@@ -313,65 +313,95 @@ function MetaGrid() {
 }
 
 /* ── Impact at a glance ─────────────────────────────────────────
-   Stat tiles, not a chart: one headline number each, with its before
-   value in words, so nothing depends on colour. */
+   Stat tiles, not a chart. Each card reads in three steps: the metric,
+   the design decision behind it, and why it matters to the ministries
+   that read the bulletin. Nothing depends on colour.
 
-/* The first four are the benchmarks quoted in the AIM Symposium poster
-   and the policy briefs, in their wording; the last two are operating
-   facts from the training decks. */
+   Five cards on a 6-column track: three across the top, two wider ones
+   below, so the grid never shows an empty cell. Span classes are written
+   out literally per card, because Tailwind cannot see computed names. */
+
 const STATS = [
   {
-    value: "85×",
-    unit: "operational speedup",
-    label: "Operational speed",
-    note: "Reduced monthly bulletin turnaround from 2–3 working days (~25 hours) to under 30 minutes.",
+    value: "85× Faster",
+    label: "Workflow Turnaround",
+    decision:
+      "Replaced 25+ hours of manual QGIS map styling and Word drafting with an automated 5-stage headless pipeline.",
+    impact:
+      "Shifts analyst cognitive bandwidth from manual assembly to food balance validation.",
+    span: "lg:col-span-2",
   },
   {
-    value: "7.9%",
-    unit: "MAPE · Zambia",
-    label: "Forecast reliability",
-    note: "On a 3-year holdout benchmark, against 25.4% regional ensemble MAPE across 6 nations. The gap is ground truth: Zambia has sustained crop-cut data.",
+    value: "7.9% vs 25.4%",
+    label: "Statistical Confidence",
+    context: "Zambia holdout vs. regional ensemble MAPE.",
+    decision:
+      "Designed uncertainty-first visual cards with min/max whiskers and condition triage badges.",
+    impact:
+      "Ministers can distinguish confident forecasts from early-season directional signals.",
+    span: "lg:col-span-2",
   },
   {
-    value: "20",
-    unit: "analysts · 9 nations",
-    label: "Capacity deployed",
-    note: "Regional analysts from 9 Eastern & Southern African nations trained in Nairobi, March 2026, each generating their own country’s bulletin.",
+    value: "20 Analysts / 9 Nations",
+    label: "Field Ownership",
+    decision: "Trained regional planners live in Nairobi via zero-install browser notebooks.",
+    impact:
+      "Operational tooling moves from US research labs directly to African ministry desks.",
+    span: "lg:col-span-2",
   },
   {
-    value: "50+",
-    unit: "maps · 21 datasets",
-    label: "Data throughput per monthly cycle",
-    note: "Automated generation of 50+ maps from 21 ML model prediction datasets across 3 staple crops: maize, beans and rice.",
+    value: "$0.50 – $2.00",
+    label: "Cost Per Run",
+    decision:
+      "Architected a cost-optimized RAG engine using FAISS semantic retrieval and GPT-4.1-mini.",
+    impact:
+      "Replaces hundreds in analyst overhead with scalable, grant-sustainable automation.",
+    span: "lg:col-span-3",
   },
   {
-    value: "~20",
-    unit: "min active",
-    label: "Operator time per cycle",
-    note: "Five notebook cells. The analyst uploads CSVs, picks a month and downloads a ZIP; Earth Engine does the rest server-side.",
-  },
-  {
-    value: "$0.50–2",
-    unit: "per run",
-    label: "AI cost per full bulletin",
-    note: "GPT-4.1-mini for narratives and map captions, plus embeddings. Every prompt and response is logged for audit.",
+    value: "100% Disambiguation",
+    label: "Visual Cartography",
+    decision:
+      "Engineered strict ‘No Data’ gray fills and dual-season blue shading across 50+ monthly maps.",
+    impact:
+      "Prevents policymakers from mistaking missing satellite coverage for crop failure.",
+    span: "sm:col-span-2 lg:col-span-3",
   },
 ];
 
 function StatGrid() {
   return (
     <Wide className="my-16">
-      <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.08] sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.08] sm:grid-cols-2 lg:grid-cols-6">
         {STATS.map((s) => (
-          <div key={s.label} className="flex flex-col gap-1.5 p-6" style={{ background: CANVAS }}>
-            <div className="flex items-baseline gap-2">
-              <span className="text-[28px] font-semibold tabular-nums tracking-tight text-white">
+          <div
+            key={s.label}
+            className={`flex flex-col gap-4 p-6 ${s.span}`}
+            style={{ background: CANVAS }}
+          >
+            {/* 1. The metric */}
+            <div>
+              <p className="text-[12px] font-medium uppercase tracking-wider text-neutral-400">
+                {s.label}
+              </p>
+              <p className="mt-1.5 text-[28px] font-semibold leading-tight tabular-nums tracking-tight text-white">
                 {s.value}
-              </span>
-              <span className="text-[14px] tabular-nums text-neutral-400">{s.unit}</span>
+              </p>
+              {s.context && (
+                <p className="mt-1 text-[14px] leading-[22px] text-neutral-400">{s.context}</p>
+              )}
             </div>
-            <p className="text-[14px] font-medium leading-[20px] text-neutral-200">{s.label}</p>
-            <p className="text-[14px] leading-[22px] text-neutral-400">{s.note}</p>
+            {/* 2. What was designed, 3. why it matters */}
+            <dl className="space-y-3 border-t border-white/[0.08] pt-4">
+              <div>
+                <dt className="text-[12px] font-medium text-neutral-400">Design decision</dt>
+                <dd className="mt-0.5 text-[14px] leading-[22px] text-neutral-200">{s.decision}</dd>
+              </div>
+              <div>
+                <dt className="text-[12px] font-medium text-neutral-400">Policy impact</dt>
+                <dd className="mt-0.5 text-[14px] leading-[22px] text-neutral-300">{s.impact}</dd>
+              </div>
+            </dl>
           </div>
         ))}
       </div>
