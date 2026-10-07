@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import CustomCursor from "@/components/CustomCursor";
 
 export const metadata: Metadata = {
-  title: "NASA Harvest & Xylem Institute — Pradeep Yellapu",
+  title: "Xylem AutoPilot · Pradeep Yellapu",
   description:
-    "Product research & design: Built the design layer for satellite intelligence — two live websites, two design systems, and an AI pipeline converting satellite data into policy bulletins.",
+    "Designing the end-to-end operational pipeline for satellite-driven food security in Africa: multi-sensor yield ensembles and grounded RAG narratives turned into policy-ready bulletins for six countries, cut from 2–3 analyst days to under 30 minutes.",
 };
 
 export default function Layout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <CustomCursor />
+      {children}
+    </>
+  );
 }

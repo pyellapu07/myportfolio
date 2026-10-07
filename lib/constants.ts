@@ -83,24 +83,22 @@ export const PROJECTS: Project[] = [
     cursorLabel: "View case study →",
   },
   {
-    title: "NASA Harvest, Xylem Institute",
-    subtitle: "Product Design · Design Systems · AI Pipeline, End-to-end from websites to bulletin automation",
-    impact: "32% reduction in bounce rate · 2 live websites · 2 design systems · Nairobi workshop · AI bulletin pipeline",
+    title: "Xylem AutoPilot",
+    subtitle: "Product & Pipeline Design, Satellite-driven food security bulletins for AGRA and COMESA",
+    impact: "2–3 analyst days → under 30 min per country · 20–30× faster · 6 countries · 20 analysts trained across 9 countries",
     description:
-      "Built the complete design layer for NASA Harvest-affiliated Xylem Lab: launched two production websites from zero, designed two distinct brand systems, ran a 3-day AGRA RFBS training workshop in Nairobi for analysts from 9 countries, and built Xylem Auto-Pilot, an AI pipeline that converts satellite crop data into publication-ready HTML bulletins in a single click.",
-    techStack: ["Product Design", "Design Systems", "Brand Identity", "AI Pipeline", "UX Research", "Figma", "Python", "HTML/CSS", "QGIS"],
-    image: "/xylemlabscreenrecording.gif",
-    // 2.11:1, the widest thumbnail on the page, so it cannot fill its column
-    // and leaves ~124px of white. The tint is built from the image's own
-    // dominant hue (90deg, green) held at pastel lightness so the screenshot
-    // stays the brightest thing in the panel.
+      "Designed the end-to-end operational pipeline that turns satellite yield ensembles into policy-ready bulletins for six African countries: crop-calendar season gating, automated Earth Engine cartography, grounded RAG narratives, and a four-tab interactive bulletin built for three levels of reader. Deployed live with partner analysts in Nairobi, March 2026.",
+    techStack: ["Product Design", "Information Design", "Data Visualization", "AI Pipeline", "RAG", "Google Earth Engine", "Python", "Jinja2"],
+    image: "/xylem-autopilot/01-nairobi-live-demo.webp",
+    // A 3:2 photograph, so it fills the media cell rather than sitting in a
+    // tinted panel; weighted right to keep the presenter and screen in frame.
     media: {
-      fit: "contain",
-      surface: "linear-gradient(135deg, #ffffff 0%, #f5faef 45%, #e0eed2 100%)",
+      fit: "cover",
+      position: "object-[60%_50%]",
     },
     link: "/work/xylem-institute",
     featured: false,
-    cursorLabel: "NDA · ask me about it",
+    cursorLabel: "Password · ask me for access",
   },
   {
     title: "HackImpact Application Portal",
