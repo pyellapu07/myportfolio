@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -165,9 +166,131 @@ const META = [
   {
     label: "Impact",
     value: "2–3 days → under 30 min",
-    note: "Per-country bulletin production, about 25 hours of manual work end to end, now 20–30× faster. 20 analysts trained across 9 partner countries.",
+    note: "An 85× operational speedup per country bulletin, reported in Policy Brief 2. 20 analysts trained across 9 partner countries.",
   },
 ];
+
+/* ── Partner strip ──────────────────────────────────────────────
+   Monochrome marks on the canvas, the way an enterprise trust bar sits.
+   The five funder marks are cut from the partner banner the bulletin
+   itself carries; COMESA, NASA Harvest and Xylem Lab are their own
+   files. All are pre-keyed to white, so no CSS filter is involved.
+   Heights are set per mark for optical balance: a long wordmark at the
+   same height as a roundel would shout over it. */
+
+const PARTNERS: { name: string; file: string; w: number; h: number }[] = [
+  { name: "AGRA", file: "agra", w: 300, h: 120 },
+  { name: "COMESA", file: "comesa", w: 236, h: 120 },
+  { name: "NASA Harvest", file: "nasa-harvest", w: 115, h: 120 },
+  { name: "The Xylem Lab, University of Maryland", file: "xylem-lab", w: 531, h: 120 },
+  { name: "The Rockefeller Foundation", file: "rockefeller", w: 454, h: 120 },
+  { name: "Gates Foundation", file: "gates-foundation", w: 1065, h: 120 },
+  { name: "UK International Development (FCDO)", file: "uk-international-development", w: 443, h: 120 },
+  { name: "German Cooperation, implemented by KfW", file: "kfw", w: 309, h: 120 },
+];
+
+/** Display height in px, keyed by file: roundels larger, wordmarks smaller. */
+const PARTNER_HEIGHT: Record<string, string> = {
+  agra: "h-9",
+  comesa: "h-9",
+  "nasa-harvest": "h-11",
+  "xylem-lab": "h-6",
+  rockefeller: "h-8",
+  "gates-foundation": "h-5",
+  "uk-international-development": "h-8",
+  kfw: "h-9",
+};
+
+function PartnerStrip() {
+  return (
+    <Wide className="my-12">
+      <div className="rounded-xl border border-white/[0.08] bg-[#061723]/60 px-6 py-7 md:px-10">
+        <p className="mb-6 text-center font-mono text-[12px] uppercase tracking-wider text-neutral-400">
+          Built for and with
+        </p>
+        <ul className="flex flex-wrap items-center justify-center gap-x-10 gap-y-7 md:gap-x-12">
+          {PARTNERS.map((p) => (
+            <li key={p.file} className="flex items-center">
+              <Image
+                src={`${IMG}/partners/${p.file}-mono.png`}
+                alt={p.name}
+                title={p.name}
+                width={p.w}
+                height={p.h}
+                className={`${PARTNER_HEIGHT[p.file]} w-auto opacity-80 transition-opacity hover:opacity-100`}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Wide>
+  );
+}
+
+/* ── Exhibit ────────────────────────────────────────────────────
+   The page's numbered figures. Same frame and caption treatment as
+   Figure and FigureRow, with a mono label above so each can be cited
+   as "Figure 3". Items keep their intrinsic ratios; `full` spans the
+   row, the rest share it two up and stack on mobile. */
+
+function Exhibit({
+  n,
+  title,
+  items,
+  caption,
+}: {
+  n: number;
+  title: string;
+  items: {
+    src: string;
+    alt: string;
+    width: number;
+    height: number;
+    label?: string;
+    full?: boolean;
+  }[];
+  caption: string;
+}) {
+  return (
+    <figure className="my-16">
+      <Wide>
+        <div className="mb-5 flex items-baseline gap-3 border-t border-white/[0.08] pt-5">
+          <span className="font-mono text-[12px] uppercase tracking-wider text-neutral-400">
+            Figure {n}
+          </span>
+          <span className="text-[14px] font-medium text-neutral-200">{title}</span>
+        </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {items.map((it) => (
+            <div key={it.src} className={it.full || items.length === 1 ? "md:col-span-2" : ""}>
+              <div className="w-full overflow-hidden rounded-xl border border-white/10">
+                <Image
+                  src={it.src}
+                  alt={it.alt}
+                  width={it.width}
+                  height={it.height}
+                  sizes={
+                    it.full || items.length === 1
+                      ? "(max-width: 960px) 100vw, 960px"
+                      : "(max-width: 768px) 100vw, 460px"
+                  }
+                  quality={90}
+                  className="h-auto w-full"
+                />
+              </div>
+              {it.label && (
+                <p className="mt-2 text-[12px] font-medium text-neutral-400">{it.label}</p>
+              )}
+            </div>
+          ))}
+        </div>
+        <figcaption>
+          <Caption>{caption}</Caption>
+        </figcaption>
+      </Wide>
+    </figure>
+  );
+}
 
 function MetaGrid() {
   return (
@@ -193,36 +316,39 @@ function MetaGrid() {
    Stat tiles, not a chart: one headline number each, with its before
    value in words, so nothing depends on colour. */
 
+/* The first four are the benchmarks quoted in the AIM Symposium poster
+   and the policy briefs, in their wording; the last two are operating
+   facts from the training decks. */
 const STATS = [
   {
-    value: "20–30×",
-    unit: "faster",
-    label: "End-to-end bulletin cycle",
-    note: "About 25 hours of manual work became about 2 hours of wall-clock time, most of it Earth Engine exporting in parallel.",
+    value: "85×",
+    unit: "operational speedup",
+    label: "Operational speed",
+    note: "Reduced monthly bulletin turnaround from 2–3 working days (~25 hours) to under 30 minutes.",
   },
   {
-    value: "~20",
-    unit: "min",
-    label: "Active operator time",
-    note: "Five notebook cells. The analyst uploads CSVs, picks a month and downloads a ZIP; the rest runs server-side.",
-  },
-  {
-    value: "50+",
-    unit: "maps",
-    label: "Styled per bulletin, now automatically",
-    note: "Each one used to take about 45 minutes in desktop QGIS, by the one person who knew the styling.",
-  },
-  {
-    value: "21",
-    unit: "CSVs",
-    label: "6 countries · 3 crops",
-    note: "Kenya, Tanzania, Uganda, Rwanda, Malawi and Zambia; maize, beans and rice; sub-national resolution with min–max ranges.",
+    value: "7.9%",
+    unit: "MAPE · Zambia",
+    label: "Forecast reliability",
+    note: "On a 3-year holdout benchmark, against 25.4% regional ensemble MAPE across 6 nations. The gap is ground truth: Zambia has sustained crop-cut data.",
   },
   {
     value: "20",
-    unit: "analysts",
-    label: "Trained from 9 countries",
-    note: "Each generated a bulletin for their own country in Nairobi, in a browser, with nothing to install.",
+    unit: "analysts · 9 nations",
+    label: "Capacity deployed",
+    note: "Regional analysts from 9 Eastern & Southern African nations trained in Nairobi, March 2026, each generating their own country’s bulletin.",
+  },
+  {
+    value: "50+",
+    unit: "maps · 21 datasets",
+    label: "Data throughput per monthly cycle",
+    note: "Automated generation of 50+ maps from 21 ML model prediction datasets across 3 staple crops: maize, beans and rice.",
+  },
+  {
+    value: "~20",
+    unit: "min active",
+    label: "Operator time per cycle",
+    note: "Five notebook cells. The analyst uploads CSVs, picks a month and downloads a ZIP; Earth Engine does the rest server-side.",
   },
   {
     value: "$0.50–2",
@@ -524,6 +650,8 @@ function XylemAutoPilot() {
 
         <MetaGrid />
 
+        <PartnerStrip />
+
         <Figure
           src={`${IMG}/01-nairobi-live-demo.webp`}
           alt="Presenting the AutoPilot pipeline at a lectern to partner analysts, with the Colab notebook on a large screen"
@@ -659,12 +787,18 @@ function XylemAutoPilot() {
           </div>
         </Prose>
 
-        <Figure
-          src={`${IMG}/04-integrated-pipeline-architecture.webp`}
-          alt="Architecture diagram: the YieldWatch engine feeding CSVs into the AutoPilot CSV parser, crop calendar engine, GEE maps, FAISS-backed GPT-4.1-mini report engine, and the packaged HTML bulletin"
-          caption="YieldWatch + AutoPilot as presented at the AIM Symposium. The top band is the forecasting model; the bottom band is the operational pipeline this case study covers."
-          width={1376}
-          height={768}
+        <Exhibit
+          n={1}
+          title="Pipeline architecture"
+          items={[
+            {
+              src: `${IMG}/04-integrated-pipeline-architecture.webp`,
+              alt: "Architecture diagram: satellite signals feed the YieldWatch engine, whose CSVs pass through the AutoPilot CSV parser, crop calendar engine and GEE map export, then a FAISS-backed GPT-4.1-mini report engine, ending in a packaged HTML bulletin with maps, charts and assets",
+              width: 1376,
+              height: 768,
+            },
+          ]}
+          caption="Satellite ingestion → GEE raster engine → FAISS / RAG retrieval → GPT-4.1-mini report engine → Jinja2 HTML bulletin, as presented at the AIM Symposium. The top band is the YieldWatch forecasting model; the bottom band is the AutoPilot pipeline this case study covers."
         />
 
         <StageRail />
@@ -744,7 +878,31 @@ function XylemAutoPilot() {
               design question at every element was the same: what will a busy reader conclude in
               five seconds, and is it true?
             </P>
+            <P>
+              The data itself is uneven. Ground-truth yield records are dense for Kenya, Malawi and
+              Zambia and nearly absent for Rwanda and Uganda, so every map carries regions the
+              model could not score. The design has to make that absence visible rather than let it
+              pass for a number.
+            </P>
+          </div>
+        </Prose>
 
+        <Exhibit
+          n={2}
+          title="The data gap matrix"
+          items={[
+            {
+              src: `${IMG}/16-ground-truth-availability.webp`,
+              alt: "Heatmap of yield training data availability by country and crop from 1970 to 2025: dense for Kenya, Malawi and Zambia, sparse for Rwanda and Uganda",
+              width: 950,
+              height: 360,
+            },
+          ]}
+          caption="Availability of yield model training data across the 6 RFBS member countries, 1970–2025 (Policy Brief 1). Rwanda and Uganda have a handful of years; Zambia has decades, which is why its holdout MAPE is 7.9% against 25.4% for the ensemble overall."
+        />
+
+        <Prose>
+          <div className="space-y-6">
             <H3>Preventing change blindness: missing is not zero</H3>
             <P>
               Before v10, regions without a model prediction were simply left unpainted. On a
@@ -757,23 +915,26 @@ function XylemAutoPilot() {
           </div>
         </Prose>
 
-        <FigureRow
+        <Exhibit
+          n={3}
+          title="Cartographic evolution"
           items={[
             {
-              src: `${IMG}/07-zambia-maize-yield.webp`,
-              alt: "Zambia December 2025 maize yield prediction map on a light basemap, with province labels and a No Data legend swatch",
-              caption: "Zambia, December 2025, maize yield: GLAD-masked so only cropland carries colour, labels placed by code, a No Data swatch in the legend.",
-              width: 1400,
-              height: 1615,
+              src: `${IMG}/19-zambia-anomaly-manual-qgis.webp`,
+              alt: "Manually styled QGIS map of Zambia December 2025 maize yield anomaly on a white background, with hand-placed labels, north arrow and scale bar",
+              width: 2000,
+              height: 1414,
+              label: "Before · desktop QGIS, ~45 min per map, styled by hand",
             },
             {
               src: `${IMG}/08-zambia-maize-anomaly.webp`,
-              alt: "Zambia December 2025 maize yield anomaly map with a diverging red-to-green ramp",
-              caption: "The same month as an anomaly against the long-term mean, on a diverging ramp: the map a regional director actually triages from.",
+              alt: "Automatically rendered map of Zambia December 2025 maize yield anomaly over a light gray minimal-label basemap, with a No Data legend swatch",
               width: 1400,
               height: 1615,
+              label: "After · Colab and matplotlib, rendered in the batch with every other map",
             },
           ]}
+          caption="The same map, Zambia maize yield anomaly for December 2025, from the manual and the automated bulletins. The automated render sits on a light, minimal-label basemap (CartoDB Positron from v13), places labels without overlap, and carries an explicit #E0E0E0 “No Data” swatch in its legend. Tanzania’s maps add a third state: the out-of-season Msimu or Vuli regions shaded blue and labelled “Different Season”."
         />
 
         <Prose>
@@ -936,23 +1097,78 @@ function XylemAutoPilot() {
           </div>
         </Prose>
 
-        <FigureRow
+        <Exhibit
+          n={4}
+          title="Field workshop deployment · Mövenpick Hotel, Nairobi"
           items={[
             {
-              src: `${IMG}/15-nairobi-floor-support.webp`,
-              alt: "Sketching the pipeline on a flip chart for workshop participants",
-              caption: "Sketching the five stages on a flip chart before the hands-on run.",
+              src: `${IMG}/24-nairobi-hands-on.webp`,
+              alt: "Partner analysts at laptops running the pipeline while facilitators move between tables",
               width: 2000,
-              height: 2299,
+              height: 1334,
+              label: "Hands-on day: every analyst runs the notebook on their own laptop",
             },
             {
-              src: `${IMG}/14-analysts-generating-bulletins.webp`,
-              alt: "Partner analysts at laptops generating country bulletins, with a facilitator assisting",
-              caption: "Partner analysts generating country-specific bulletins. Photograph from Policy Brief 2.",
-              width: 876,
-              height: 257,
+              src: `${IMG}/25-nairobi-floor-support-laptops.webp`,
+              alt: "A facilitator leaning in to help an analyst working in a browser notebook",
+              width: 2000,
+              height: 1334,
+              label: "Floor support at the laptop, not from the lectern",
+            },
+            {
+              src: `${IMG}/26-nairobi-colab-on-screen.webp`,
+              alt: "The Colab notebook projected on a large screen while analysts follow along",
+              width: 2000,
+              height: 1334,
+              label: "The live Colab run on the main screen",
+            },
+            {
+              src: `${IMG}/27-nairobi-cohort.webp`,
+              alt: "The workshop cohort of analysts and facilitators gathered for a group photograph",
+              width: 2000,
+              height: 1334,
+              label: "The cohort: analysts from 9 Eastern and Southern African countries",
             },
           ]}
+          caption="The RFBS capacity-building workshop, March 2026. Analysts operated the pipeline in browser notebooks against their own countries’ live data, which needed three credentials and nothing installed."
+        />
+
+        <Exhibit
+          n={5}
+          title="Sample production bulletin"
+          items={[
+            {
+              src: `${IMG}/20-bulletin-header-tabs.webp`,
+              alt: "Bulletin header with the partner banner and tabs for Overview, Executive Summary, Malawi, Zambia, Tanzania and Appendix, above the Overview section",
+              width: 2000,
+              height: 1250,
+              label: "The tab bar: Overview, Executive Summary, one tab per in-season country, Appendix",
+              full: true,
+            },
+            {
+              src: `${IMG}/21-bulletin-regional-chart-maize.webp`,
+              alt: "Tanzania regional interactive chart with maize selected and the top five regions plotted as bars with min–max whiskers",
+              width: 1470,
+              height: 1052,
+              label: "D3.js regional chart, maize, Top 5: Tabora to Geita with min–max whiskers",
+            },
+            {
+              src: `${IMG}/22-bulletin-regional-chart-beans-empty.webp`,
+              alt: "The same chart with beans selected, showing flat bars for every region",
+              width: 1470,
+              height: 1052,
+              label: "Switch to beans and the bars go flat: Tanzania reports no bean area",
+            },
+            {
+              src: `${IMG}/23-bulletin-regional-table.webp`,
+              alt: "Tanzania regional production table with crop and condition filters, a Download CSV button, and nan–nan production ranges for beans",
+              width: 1794,
+              height: 930,
+              label: "The analyst layer: filter by crop and condition, then download the CSV",
+              full: true,
+            },
+          ]}
+          caption="Captured from the December 2025 bulletin as generated, opened offline from its ZIP. The interactive chart and filterable table are the depth a field analyst works at; the “nan – nan” ranges are the area gap stated plainly rather than drawn as zero. The collapsible regional accordion with zoomed drill-down maps arrived in v12, after this run, and is not pictured."
         />
 
         <WideCallout
@@ -979,10 +1195,11 @@ function XylemAutoPilot() {
 
         <Prose>
           <Note label="On the speed-up figures">
-            The training decks measure the whole cycle: about 25 hours down to about 2 hours, or
-            20–30×. Policy Brief 2 measures per country, from 2–3 analyst days to under 30 minutes,
-            and reports that as 85×; the AIM poster calls it a 99.7% cut in analyst time. They
-            measure different spans. This page leads with the most conservative.
+            The 85× figure is Policy Brief 2’s, measured per country bulletin: 2–3 analyst days
+            down to under 30 minutes. The AIM poster states the same span as a 99.7% cut in
+            analyst time. Measured across the whole six-country cycle instead, the training decks
+            put it at about 25 hours down to about 2 hours of wall-clock time, 20–30×, because
+            Earth Engine exports still take minutes per raster.
           </Note>
 
           <div id="briefs" className="mt-12 scroll-mt-28 space-y-6">
@@ -991,20 +1208,12 @@ function XylemAutoPilot() {
               The deployment fed two Xylem Lab policy briefs, written for RFBS member governments.
               The first argues that ground truth, not modelling, limits accuracy: the ensemble
               reaches 25.4% regional MAPE across six countries but 7.9% in Zambia, where sustained
-              crop-cut investment exists. The second argues that automation only lasts if it has an
+              crop-cut investment exists (Figure 2). The second argues that automation only lasts if it has an
               owner: named operators, budgeted Earth Engine and API access, and a review protocol
               before anything is published.
             </P>
           </div>
         </Prose>
-
-        <Figure
-          src={`${IMG}/16-ground-truth-availability.webp`}
-          alt="Heatmap of yield training data availability by country and crop from 1970 to 2025, dense for Kenya and Malawi and sparse for Rwanda and Uganda"
-          caption="Policy Brief 1, Figure 1: yield training data available by country and crop, 1970–2025. The countries most exposed to food insecurity have the sparsest records and so the widest error bars."
-          width={950}
-          height={360}
-        />
 
         <FigureRow
           items={[

@@ -85,7 +85,7 @@ export const PROJECTS: Project[] = [
   {
     title: "Xylem AutoPilot",
     subtitle: "Product & Pipeline Design, Satellite-driven food security bulletins for AGRA and COMESA",
-    impact: "2–3 analyst days → under 30 min per country · 20–30× faster · 6 countries · 20 analysts trained across 9 countries",
+    impact: "85× operational speedup · 7.9% MAPE in Zambia vs 25.4% across 6 nations · 20 analysts trained across 9 nations · 50+ maps per cycle",
     description:
       "Designed the end-to-end operational pipeline that turns satellite yield ensembles into policy-ready bulletins for six African countries: crop-calendar season gating, automated Earth Engine cartography, grounded RAG narratives, and a four-tab interactive bulletin built for three levels of reader. Deployed live with partner analysts in Nairobi, March 2026.",
     techStack: ["Product Design", "Information Design", "Data Visualization", "AI Pipeline", "RAG", "Google Earth Engine", "Python", "Jinja2"],
