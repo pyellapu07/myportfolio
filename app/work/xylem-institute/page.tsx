@@ -732,6 +732,24 @@ function XylemAutoPilot() {
               The RFBS bulletin exists to beat that by months. A bulletin that arrives three days
               late, with national averages only, gives most of that lead time back.
             </P>
+            <P>
+              Seen as an interaction problem, the legacy QGIS-and-Word workflow carried{" "}
+              <span className="font-semibold text-white">severe extraneous cognitive load</span>:
+              analysts spent their attention on file shuffling, colour ramps and label placement,
+              none of which was the analytical task. It also had a{" "}
+              <span className="font-semibold text-white">broken affordance</span> at its centre. A
+              filename was the interface between a map and the bulletin, yet nothing about it
+              signalled which spellings would work, and a wrong one failed silently.
+            </P>
+            <P>
+              The same silence reached the reader. Regions without a prediction rendered as blank
+              white polygons, and from one month to the next a region could drop out of coverage
+              without anything marking the change: a textbook case of{" "}
+              <span className="font-semibold text-white">change blindness</span>. Because an empty
+              polygon on a choropleth reads as the bottom of the scale, it also distorted
+              policymakers’ <span className="font-semibold text-white">mental models</span>, turning
+              missing satellite data into what looked like a zero harvest.
+            </P>
           </div>
         </Prose>
 
@@ -834,13 +852,15 @@ function XylemAutoPilot() {
         <StageRail />
 
         <Prose>
-          <Note label="The rule that makes RAG safe here" tone="risk">
-            Retrieved passages from past bulletins are there for vocabulary, tone and structure:
-            how AGRA analysts describe a Watch region, not what the yield was. The prompt states
-            that every number must come from this month’s CSV and never from retrieved context.
-            Every prompt and response is written to <Code>logs.txt</Code>, so a wrong sentence can
-            be traced to the data it was given. In practice, when the text was wrong, the CSV
-            usually was too.
+          <Note label="Constrained generative inference" tone="risk">
+            The RAG stage is designed as constrained generative inference: GPT-4.1-mini writes
+            inside a strict data-grounding contract with this month’s CSVs. Retrieved passages
+            from past bulletins supply vocabulary, tone and structure (how AGRA analysts describe
+            a Watch region), never values. The prompt requires every number to come from the CSV,
+            and the Executive Summary prompt receives the explicit list of countries and crops
+            in its table, with rules against mentioning any other. Every prompt and response is
+            written to <Code>logs.txt</Code>, so a wrong sentence can be traced to the data it was
+            given. In practice, when the text was wrong, the CSV usually was too.
           </Note>
 
           <div className="mt-12 space-y-6">
@@ -943,7 +963,39 @@ function XylemAutoPilot() {
               three separate visual states, not one.
             </P>
           </div>
+
+          <div className="mt-12 space-y-6">
+            <H3>Visual syntax and cartographic hierarchy</H3>
+            <P>
+              The first job of each map is a clear{" "}
+              <span className="font-semibold text-white">focal point</span>. Busy OpenStreetMap
+              tiles competed with the data for attention: roads, place names and terrain all at
+              similar weight. From v13 the choropleth sits on a muted CartoDB Positron basemap, light
+              gray with minimal labels, so the yield and anomaly colours are the strongest thing on
+              the page and the basemap recedes to orientation.
+            </P>
+            <P>
+              The second is a semantic colour syntax. Data uses the diverging red-to-green anomaly
+              ramp; gray (<Code>#E0E0E0</Code>) means “No Data”; light blue means “Different Season”.
+              Neither non-data colour appears anywhere in the ramp, so neither can be read as a
+              value. This is the{" "}
+              <span className="font-semibold text-white">affordance solution</span> to the blank
+              polygon: each state announces what it is, in the legend and on the region itself.
+            </P>
+          </div>
         </Prose>
+
+        <DataTable
+          rowHeaders
+          head={["Map element", "Against", "Contrast", "WCAG 2.1 AA (1.4.11, 3:1)"]}
+          rows={[
+            ["Black region boundary", "Every anomaly and yield fill", "4.3:1 to 19.6:1", "Passes"],
+            [<span key="o">No Data outline <Code>#888888</Code></span>, "White page", "3.5:1", "Passes"],
+            [<span key="l">“No Data” label <Code>#555555</Code></span>, "Gray fill", "5.0:1", "Passes (also 4.5:1 text)"],
+            ["Gray and blue fills", "Light basemap", "1.3:1 to 1.5:1", "Not alone: state carried by outline and label"],
+          ]}
+          caption="Measured from the colours in the v13 rendering code for this case study. The fills are deliberately quiet so they never compete with data; the outline and the text label are what make the state legible, so colour is never the only signal."
+        />
 
         <Exhibit
           n={3}
@@ -982,6 +1034,22 @@ function XylemAutoPilot() {
               Rather than three products, one bulletin with three depths. The tab order follows how
               far down the chain of command a reader sits, and each tab answers one question
               before offering the next level of detail.
+            </P>
+            <P>
+              A tabbed layout (Overview, Executive Summary, one tab per in-season country, and an
+              Appendix) replaced a single continuous scroll for two reasons.{" "}
+              <span className="font-semibold text-white">Miller’s Law</span> puts working memory at
+              about 7 ± 2 chunks, so each tab holds one country’s story rather than six countries’
+              at once, and each production chart holds at most seven regions.{" "}
+              <span className="font-semibold text-white">Hick’s Law</span> says decision time grows
+              with the number of choices on offer, so the top level presents only a few tabs, and a
+              country appears only when it has an in-season crop.
+            </P>
+            <P>
+              The Executive Summary’s UMD, USDA and FAO comparison table opens the report on
+              purpose. The <span className="font-semibold text-white">serial position effect</span>{" "}
+              makes the first item read the most memorable, so the highest-stakes comparison primes
+              every number that follows.
             </P>
           </div>
         </Prose>
@@ -1029,6 +1097,28 @@ function XylemAutoPilot() {
 
         <Prose>
           <div className="space-y-6">
+            <H3>Progressive disclosure, down to the region</H3>
+            <P>
+              Below each country tab, v12 added a regional analyst accordion: one collapsible
+              section per region, with a two-sentence conditions-and-outlook brief and zoomed
+              yield and anomaly drill-down maps. It is collapsed by default, so a minister never
+              meets it and an analyst opens only the regions they need. This is{" "}
+              <span className="font-semibold text-white">progressive disclosure</span> applied to
+              the deepest layer of the report.
+            </P>
+            <P>
+              It is also a front-end performance decision. Regional content is injected by
+              JavaScript into containers isolated from the main bulletin body, and collapsed
+              sections stay out of layout until opened. A country tab can carry dozens of regional
+              maps without the browser recalculating their layout on every interaction, which
+              avoids the repeated reflow (<span className="font-semibold text-white">layout
+              thrashing</span>) that makes long, image-heavy reports stutter. The D3 production
+              charts stay lightweight: one SVG per chart, rendered from the bulletin’s embedded
+              data, with no charting framework in between.
+            </P>
+          </div>
+
+          <div className="mt-12 space-y-6">
             <H3>Making statistical uncertainty legible</H3>
             <P>
               A standard error of 0.133 MT/ha means nothing in a ministry. The pipeline turns it
