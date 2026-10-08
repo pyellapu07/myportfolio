@@ -1214,6 +1214,23 @@ function XylemAutoPilot() {
               hands-on run. The materials live on as a public{" "}
               <ExtLink href={TRAINING_URL}>training site ↗</ExtLink> for the next cohort.
             </P>
+            <P>
+              The onboarding was designed for a range of digital literacy rather than for the most
+              technical person in the room. Nothing had to be installed. The notebook exposes forms
+              instead of editable code, each of its five cells ends with a check mark and a
+              plain-language summary, and the reading guide came before any pipeline was run, so
+              participants learned what a correct bulletin looks like before producing one.
+            </P>
+            <P>
+              The same principle shaped what each reader sees. The three-tier reporting structure
+              keeps senior ministry officials on the Executive Summary and country overviews, and
+              wherever a map appears, missing coverage is never an unexplained blank: regions
+              without data are gray and labelled “No Data”, out-of-season regions are labelled as
+              such, and countries absent this month are listed with the reason. Granular telemetry stays one level down for the analysts who
+              need it, in the regional accordions, drill-down maps and CSV export. The design goal
+              was that no minister should mistake a gap in satellite coverage for a crop failure,
+              while no analyst loses access to the underlying numbers.
+            </P>
           </div>
         </Prose>
 
@@ -1354,9 +1371,73 @@ function XylemAutoPilot() {
           ]}
         />
 
-        {/* ══ 5. LIMITS & NEXT ══ */}
+        {/* ══ 5. STAKEHOLDERS & SCALE ══ */}
         <Prose>
-          <Kicker>05 · Limits &amp; next</Kicker>
+          <Kicker>05 · Stakeholders &amp; operational scale</Kicker>
+          <H2 id="stakeholders">Institutional stakeholder management and operational scale</H2>
+          <div className="mt-8 space-y-6">
+            <P>
+              AutoPilot serves a programme with several owners. AGRA runs the Regional Food Balance
+              Sheet programme, COMESA member ministries read the bulletin and own the national
+              data, NASA Harvest and UMD answer for the science, and the Rockefeller Foundation,
+              Gates Foundation and FCDO fund it with the expectation that it outlives the grant.
+              Each group needed something different from the same monthly document.
+            </P>
+          </div>
+        </Prose>
+
+        <DataTable
+          rowHeaders
+          head={["Stakeholder", "What they needed", "How the design answered"]}
+          rows={[
+            [
+              "AGRA programme team",
+              "A dependable monthly cadence that does not hinge on one person",
+              "A pipeline any team member can run; styling and filenames are generated, not remembered",
+            ],
+            [
+              "COMESA member ministries",
+              "Authority over their own country’s figures, and no unexplained surprises",
+              "Analysts from each country trained to generate their own bulletin; UMD figures sit beside USDA and FAO rather than replacing them",
+            ],
+            [
+              "NASA Harvest and UMD",
+              "Methodological integrity in every published sentence",
+              "Numbers come only from the month’s CSVs, every range is shown, every prompt is logged",
+            ],
+            [
+              "Funders",
+              "Sustainability beyond the grant period",
+              "$0.50 to $2.00 per run, no installed software, a public training site and two policy briefs",
+            ],
+          ]}
+        />
+
+        <Prose className="mb-20">
+          <div className="space-y-6">
+            <H3>Operational return per monthly cycle</H3>
+            <P>
+              Policy Brief 2 measures the manual process at 2–3 analyst days per country bulletin.
+              Across the six RFBS countries in a monthly cycle, at eight-hour days, that is roughly
+              100 to 140 analyst-hours, now replaced by under 30 minutes of operator attention per
+              bulletin. The training decks measure the whole cycle more conservatively, at about 25
+              hours down to 20 active minutes. On either basis, analyst time moved from assembling
+              maps to validating the food balance, and the programme no longer stops when its one
+              QGIS specialist is unavailable.
+            </P>
+            <P>
+              The operating model scaled with it. The 20 analysts trained in Nairobi came from 9
+              nations, more than the 6 countries the bulletin currently covers, so the workflow is
+              already known beyond today’s coverage. Adding a country is now a matter of its CSVs,
+              a crop calendar entry and a boundary-name check, rather than days of desktop GIS
+              work.
+            </P>
+          </div>
+        </Prose>
+
+        {/* ══ 6. LIMITS & NEXT ══ */}
+        <Prose>
+          <Kicker>06 · Limits &amp; next</Kicker>
           <H2 id="limits">What AutoPilot does not solve</H2>
           <div className="mt-8 space-y-6">
             <P>

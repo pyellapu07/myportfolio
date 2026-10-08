@@ -1578,9 +1578,97 @@ function TgiWorkbench() {
           height={1158}
         />
 
-        {/* ══ 9. OUTCOMES ══ */}
+        {/* ══ 9. ALIGNMENT ══ */}
         <Prose>
-          <Kicker>09 · Outcomes · measured on the running build</Kicker>
+          <Kicker>09 · Cross-functional alignment</Kicker>
+          <H2 id="alignment">Cross-functional alignment and multi-institutional constraints</H2>
+          <div className="mt-8 space-y-6">
+            <P>
+              The workbench sits where four groups with different incentives meet. ASU’s vision
+              team owns the monthly embeddings and wants its scores shown faithfully. WashU’s
+              language team owns prompt alignment. The UMD statistics side wants calibration that
+              survives review. Decision-makers at FEWS NET and WFP need a plain-language figure for
+              every season, a need voiced in reviews by <Ph>Research Lead, ASU</Ph> and{" "}
+              <Ph>Program Stakeholder</Ph>. Engineering scope was fixed underneath all of them: a static
+              build on precomputed exports, with no server and no API proxy.
+            </P>
+            <P>
+              Most of the design decisions on this page were negotiated, not drawn. Each one below
+              resolved a conflict between two of those groups without adding a backend or a new
+              engineering dependency.
+            </P>
+          </div>
+        </Prose>
+
+        <DataTable
+          rowHeaders
+          head={["Conflict", "Competing positions", "Resolution", "Engineering cost"]}
+          rows={[
+            [
+              "How uncertainty is presented",
+              "Statistics: expose the cutoff and target precision as controls. Research and policy: uncertainty should be shared with the reader, not tuned by them.",
+              "A read-only Uncertainty card. The cutoff is still computed and still labels samples; it is no longer a dial.",
+              "Negative: a control was removed",
+            ],
+            [
+              "When a figure is withheld",
+              "Sandbox rigor: abstain above a ±35% interval. Decision-makers: a blank reads as the system hiding a number.",
+              "Every season publishes its figure and interval, with a caution where a reporting rule breaks.",
+              "A caution beside an existing figure",
+            ],
+            [
+              "What counts as ground truth",
+              "Model columns from ASU and WashU arrived formatted like reference labels; they agree with reviewers only 82.4% and 82.2% of the time.",
+              "Calibrate against the reviewer annotations, joined on plotid and year, after testing agreement.",
+              "One join in the client-side estimator",
+            ],
+            [
+              "Which latent space the models share",
+              "Prompt scores aligned to unaligned OLMoEarth projections would not be comparable with the monthly embeddings.",
+              "WashU’s alignment trains directly against AlphaEarth embeddings, so both hand-offs share one space.",
+              "None in the workbench",
+            ],
+            [
+              "Ingesting field data",
+              "Research wanted Collect Earth Online uploads; there was no budget for a backend or data store.",
+              "CSV and GeoJSON parsed and recalibrated entirely in the browser; nothing leaves the device.",
+              "Client-side only",
+            ],
+            [
+              "One audience or three",
+              "The persona engine served three vocabularies, but every reviewer first had to pick a role.",
+              "The build opens in the humanitarian layout for everyone; the copy was rewritten for that reader.",
+              "Negative: a switcher was removed",
+            ],
+          ]}
+          caption="Each row is a trade-off recorded in the build log. Two of the six reduced engineering scope rather than adding to it."
+        />
+
+        <Prose className="mb-20">
+          <div className="space-y-6">
+            <H3>Design tokens as a governance contract</H3>
+            <P>
+              With three institutions contributing to one interface, the risk was drift: each team
+              restyling the surfaces it cared about. The design system is the contract that
+              prevents it. Every colour, radius and motion value lives in one token source
+              compiled to <Code>tokens.css</Code>, and 15 design-system gates run in CI on every
+              build, covering token scope, contrast, type scale, motion and iconography. A change
+              that breaks a gate does not deploy.
+            </P>
+            <P>
+              The contrast gate fails the build if any documented text pair drops below its WCAG AA
+              floor in either theme, so accessibility is enforced rather than reviewed. The
+              governance also audits itself: the gate checked crimson only against white cards, and
+              the audit surfaced that the same token reaches just 4.43:1 on the sand canvas. The
+              rule was written down (crimson body text stays on white) instead of being discovered
+              in production.
+            </P>
+          </div>
+        </Prose>
+
+        {/* ══ 10. OUTCOMES ══ */}
+        <Prose>
+          <Kicker>10 · Outcomes · measured on the running build</Kicker>
           <H2 id="outcomes">What changed, what it prevented, and what it is worth</H2>
         </Prose>
 
@@ -1660,9 +1748,9 @@ function TgiWorkbench() {
           ]}
         />
 
-        {/* ══ 10. SHIPPING & NEXT ══ */}
+        {/* ══ 11. SHIPPING & NEXT ══ */}
         <Prose>
-          <Kicker>10 · Shipping &amp; next</Kicker>
+          <Kicker>11 · Shipping &amp; next</Kicker>
           <H2 id="next">Where it stands</H2>
           <div className="mt-8">
             <Points

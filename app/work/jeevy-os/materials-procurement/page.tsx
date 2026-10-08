@@ -471,8 +471,9 @@ export default function MaterialsProcurementPage() {
           <H2 id="retrospective">Systems reflection and executive reception</H2>
           <div className="mt-8 space-y-6">
             <P>
-              Building the materials engine solo proved that enterprise UX cannot be separated from
-              database constraints. By enforcing append-only single-table ledgers, dynamic spend
+              The materials engine showed that enterprise UX cannot be separated from database
+              constraints, and that procurement, the dock and finance only stay aligned when the
+              rules live in the schema rather than in a shared spreadsheet. By enforcing append-only single-table ledgers, dynamic spend
               limits, and 4-step dock QA, BOM-to-RFQ turnaround dropped from 48 hours to under 12
               minutes, and rogue spending was eliminated outright.
             </P>

@@ -126,7 +126,7 @@ export const JEEVY_OS = {
     "Heavy manufacturing breaks consumer software. When multi-ton cryogenic pressure vessels and skids are built under high-bay glare by crews in leather gauntlets, disconnected spreadsheets cause five-figure schedule collapses. As Lead Product Designer & Systems Architect, I designed and built a 6-engine closed-loop operating system uniting PIN kiosks, CAD viewers, procurement ledgers, and Gantt CPM.",
   /** Tightened 3-sentence version: used on the compact homepage card. */
   narrativeShort:
-    "Heavy manufacturing breaks consumer software. When multi-ton cryogenic skids are built by crews in leather gauntlets, disconnected spreadsheets cause five-figure schedule collapses. Built solo as Lead Systems Architect, Jeevy OS is a 6-engine closed-loop operating system uniting PIN kiosks, CAD viewers, procurement ledgers, and Gantt CPM.",
+    "Heavy manufacturing breaks consumer software. When multi-ton cryogenic skids are built by crews in leather gauntlets, disconnected spreadsheets cause five-figure schedule collapses. As Lead Systems Architect, I aligned shop operations, procurement and engineering on Jeevy OS: a 6-engine closed-loop operating system uniting PIN kiosks, CAD viewers, procurement ledgers, and Gantt CPM.",
   ctaLabel: "Explore Platform Case Study",
   ctaHref: JEEVY_OS_ROOT,
   /** Primary image first, it is the one rendered large. */

@@ -79,10 +79,11 @@ export default function JeevyOSCaseStudy() {
 
           <div className="mt-8">
             <P>
-              Over a twelve-week solo engineering sprint in Cleburne, Texas, I designed and built
-              Jeevy OS from scratch as Lead Product Designer &amp; Systems Architect. The system
-              serves as the central operating system for heavy fabrication facilities building
-              multi-ton cryogenic process skids and commercial orbital launch infrastructure.
+              Over twelve weeks in Cleburne, Texas, I led product design and systems architecture
+              for Jeevy OS, working with the VP of Technology, full-stack engineering and the shop
+              operations lead. The system serves as the central operating system for heavy
+              fabrication facilities building multi-ton cryogenic process skids and commercial
+              orbital launch infrastructure.
             </P>
           </div>
         </Prose>
@@ -214,7 +215,83 @@ export default function JeevyOSCaseStudy() {
           height={812}
         />
 
-        {/* ══ 4. PRODUCTION SCALE & RETROSPECTIVE ══ */}
+        {/* ══ 4. OPERATIONAL GOVERNANCE ══ */}
+        <Prose>
+          <H2 id="governance">An operational governance model, not a set of screens</H2>
+          <div className="mt-8 space-y-6">
+            <P>
+              Jeevy OS sits between three groups with different incentives. The shop floor
+              optimizes for throughput and wants nothing that interrupts a live weld. Procurement
+              optimizes for price and lead time. Engineering answers to a commercial launch
+              customer’s revision-controlled drawings and acceptance milestones. Before Jeevy, each
+              group kept its own version of the truth, and the gaps between them were where money
+              leaked.
+            </P>
+            <P>
+              The deliverables map and its workstream nodes are the governance layer that connects
+              them. A manager maps each physical skid assembly once; tasks, milestones and material
+              allocations derive from that single structure, so the BOM the dock receives against is
+              the same BOM engineering revised and procurement priced.
+            </P>
+          </div>
+        </Prose>
+
+        <Prose>
+          <div className="mt-10 space-y-6">
+            <P>
+              <span className="text-white">One BOM revision, everywhere.</span> A partner facility
+              lost $50,000 on a fabrication error because teams worked from mismatched BOM revisions
+              in un-synced files. In Jeevy the BOM lives in one ledger that tasking, purchasing and
+              the dock all read from, so a revision reaches every team instead of forking.
+            </P>
+            <P>
+              <span className="text-white">A boundary between client reporting and shop
+              execution.</span> With the VP of Technology, we agreed that milestones are
+              client-facing summaries (“70% complete on Skid 1 piping”) while tasks are internal
+              execution (“weld 4 of this spool”). The data model keeps the two separate, so customer
+              reporting never exposes shop-level noise and shop changes never rewrite a commitment.
+            </P>
+            <P>
+              <span className="text-white">Deployment that respects the floor.</span> Engineering
+              raised that releasing every workstream at once would disrupt active welder sessions.
+              We negotiated per-workstream deployment, so a manager can update Skid 2 without
+              touching terminals in use on Skid 1.
+            </P>
+          </div>
+        </Prose>
+
+        <Prose className="mb-20">
+          <div className="mt-12 space-y-6">
+            <h3 className="text-[18px] font-semibold tracking-tight text-white">
+              Procurement controls as margin protection
+            </h3>
+            <P>
+              The financial risk was concrete. The legacy 15-tab sheet carried $800,036.25 in raw
+              materials, and a single formula typo once silently wiped the projected margin on a
+              $500k skid assembly with no change log. The procurement workflow was designed as a set
+              of risk controls rather than as data entry.
+            </P>
+            <P>
+              <span className="text-white">Spend gating in the schema.</span> Purchases above
+              $1,000 require approval, enforced by a PostgreSQL check constraint rather than a UI
+              rule, which keeps draft IDs structurally separate from legal PO numbers. Unapproved
+              spend dropped to zero.
+            </P>
+            <P>
+              <span className="text-white">Faster, auditable sourcing.</span> BOM-to-RFQ
+              turnaround fell from about 48 hours across 15 spreadsheet tabs to under 12 minutes,
+              a 96% reduction, with every material movement recorded in an append-only ledger.
+            </P>
+            <P>
+              <span className="text-white">Live cost visibility.</span> The executive dashboard
+              tracks BOM materials from on order through received and signed off, so a project
+              manager sees capital stuck in transit before it becomes a schedule slip or a margin
+              surprise.
+            </P>
+          </div>
+        </Prose>
+
+        {/* ══ 5. PRODUCTION SCALE & RETROSPECTIVE ══ */}
         <Prose>
           <H2 id="scale">Scaling to partner shops, and what it taught me</H2>
           <div className="mt-8 space-y-6">
@@ -226,8 +303,8 @@ export default function JeevyOSCaseStudy() {
               flexibility without touching the database schema.
             </P>
             <P>
-              Leading this build solo reinforced that enterprise design is fundamentally systems
-              architecture. A sleek modal cannot fix a broken data schema, and a pretty status badge
+              Leading this build across shop operations, procurement and engineering reinforced
+              that enterprise design is fundamentally systems architecture. A sleek modal cannot fix a broken data schema, and a pretty status badge
               cannot stop an unapproved $50k spend leak. When you align database check constraints and
               physical shop-floor constraints under one rhythm, software becomes an operational
               multiplier.
@@ -243,7 +320,7 @@ export default function JeevyOSCaseStudy() {
           ratio="aspect-[16/10]"
         />
 
-        {/* ══ 5. THE SIX SUB-STORIES ══ */}
+        {/* ══ 6. THE SIX SUB-STORIES ══ */}
         <Prose>
           <H2 id="deep-dives">The work splits into six deep-dive systems blueprints</H2>
 
