@@ -94,9 +94,8 @@ type Cell = {
   coreBias: number;
   /** On black: whether this cell shows the faint outline of the type at all. */
   faint: boolean;
-  /** Inside the black star: punched back to white (black type) or beam outline. */
+  /** Round the black star: snapped back to white, showing the base black type. */
   punch: boolean;
-  beam: boolean;
 };
 
 // Small cells; the big dark and white areas are clumps of them.
@@ -130,7 +129,6 @@ function buildCells(w: number, h: number): { size: number; cells: Cell[] } {
         coreBias: 0.7 + rand() * 0.6,
         faint: rand() < 0.55,
         punch: rand() < 0.22,
-        beam: rand() < 0.6,
       });
     }
   }
@@ -542,7 +540,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       const energy = energyAt(e);
       const coreR = h * 0.24 * energy;
       const inv = invertAt(e);
-      const invR = inv > 0 ? h * (0.04 + 0.26 * inv) * 0.8 : 0;
+      const invR = inv > 0 ? h * (0.04 + 0.18 * inv) * 0.85 : 0;
       for (const c of cells) {
         const sq = `M${c.x} ${c.y}h${size}v${size}h${-size}Z`;
         if (isDark(c, e)) {
@@ -550,8 +548,11 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
             // A few cells round the star (never over it) snap back to white,
             // so the star always tears out of the boom itself.
             if (c.punch && c.dist > invR * 0.6) continue;
+            // Type stays in front of the star: solid black reads where white
+            // petals show through, the beam outline where the star is black.
             all += sq;
-            if (c.beam) beamed += sq;
+            solid += sq;
+            beamed += sq;
           } else {
             all += sq;
             if (c.dist < coreR * c.coreBias) solid += sq;

@@ -62,53 +62,52 @@ void main() {
   float a = atan(uv.y, uv.x);
   vec2 dir = uv / max(r, 1e-4);
 
-  // Lumpy core: radius pushed around by low-frequency angular noise.
+  // Blob: a lumpy disc. Spikes are uneven by sector: a slow noise mask lets
+  // some directions throw long sharp spikes while others stay smooth.
   float lump = 1.0 + 0.5 * (noise2(dir * 1.3 + t * 0.8) - 0.5) + 0.3 * (noise2(dir * 3.2 - t * 1.4 + 9.0) - 0.5);
-  // Spiky rim: thick, uneven rays pushing out of the white disc.
-  float spikes = pow(noise(a * 11.0 + 3.0), 2.5) + 0.7 * pow(noise(a * 26.0 + 11.0), 3.5);
-  float rc = r / (lump * (1.0 + 0.55 * spikes * e));
+  float sector = smoothstep(0.35, 0.75, noise2(dir * 1.8 + 4.0));
+  float spikes = (1.2 * pow(noise(a * 13.0 + 3.0), 4.0) + 0.9 * pow(noise(a * 31.0 + 11.0), 5.0)) * sector;
+  float rb = r / (lump * (1.0 + 0.9 * spikes * e));
 
-  // Thick, low-density shafts first, finer ones riding on top.
+  // Fully white core; edgeR is roughly where its clipped white ends.
+  float sig = 0.004 + 0.045 * e;
+  float core = exp(-rb * rb / sig);
+  float edgeR = sqrt(sig * 1.6);
+
+  // Fluorescent edge: a thin, saturated cyan band riding the white contour,
+  // its width breathing a little, and a softer blue bloom just outside.
+  float bandW = 0.012 + 0.012 * noise2(dir * 5.0 + t * 2.0);
+  float band = exp(-pow((rb - edgeR) / bandW, 2.0));
+  float bloom = exp(-max(rb - edgeR, 0.0) * 14.0);
+
+  // Shafts only where the sector mask lets spikes through, dying fast.
   float rays = streaks(a, r, 16.0, 0.8, 1.0) * 1.3
              + streaks(a, r, 29.0, 1.2, 7.0)
              + streaks(a, r, 61.0, 1.8, 13.0) * 0.5;
-  // Sparse and contained: most of the frame stays black, rays thin out with
-  // distance and some directions barely fire at all.
-  rays *= pow(noise2(dir * 2.2 + 3.0), 1.6) * 1.4 * smoothstep(0.02, 0.28, rc) * exp(-r * 6.0) / (0.22 + r);
+  rays *= (0.3 + 0.7 * sector) * smoothstep(0.02, 0.25, rb) * exp(-r * 9.0) / (0.22 + r);
 
-  // Big, fully saturated white core: clips to pure white well past its centre.
-  float core = exp(-rc * rc / (0.004 + 0.035 * e));
-  float halo = exp(-rc * (7.0 + 2.0 * noise2(dir * 2.4 + t))) * e;
   float spin = t * 0.15;
-  float star = pow(abs(cos(a * 2.0 + spin)), 70.0) * exp(-r * 8.0)
-             + pow(abs(sin(a * 2.0 + spin)), 90.0) * exp(-r * 13.0)
-             + pow(abs(cos(a * 4.0 - spin)), 120.0) * exp(-r * 20.0) * 0.6;
+  float star = pow(abs(cos(a * 2.0 + spin)), 90.0) * exp(-r * 14.0)
+             + pow(abs(sin(a * 2.0 + spin)), 110.0) * exp(-r * 18.0);
 
   // Tint wanders between electric blue, cyan and a little violet.
   vec3 tint = mix(vec3(0.1, 0.35, 1.0), vec3(0.25, 0.75, 1.0), noise2(dir * 1.5 + 2.0));
   tint = mix(tint, vec3(0.55, 0.4, 1.0), 0.25 * noise2(dir * 2.9 + 11.0));
 
-  vec3 col = tint * halo * 1.7;
-  col += mix(tint, vec3(1.0), 0.4) * rays * e * 1.3;
-  col += vec3(1.0) * (core * e * 9.0 + star * e * 1.5);
-  // Saturated electric-blue band hugging the core before it drops to black.
-  float rim = sqrt(0.004 + 0.035 * e);
-  col += vec3(0.04, 0.3, 1.0) * exp(-max(rc - rim * 1.2, 0.0) * 12.0) * e * 2.4;
+  vec3 col = vec3(1.0) * (core * e * 9.0 + star * e * 0.6);
+  col += vec3(0.15, 0.85, 1.0) * band * e * 3.2;
+  col += vec3(0.05, 0.3, 1.0) * bloom * e * 1.6;
+  col += mix(tint, vec3(1.0), 0.4) * rays * e * 0.9;
 
-  // Chromatic fringe where the halo meets the dark.
-  float edge = 0.3 * e * lump;
-  col.r += exp(-abs(rc - edge) * 30.0) * 0.18 * e;
-  col.b += exp(-abs(rc - edge * 1.12) * 30.0) * 0.25 * e;
-
-  // Black-hole edge: everything bright dies out past the flower.
-  col *= exp(-pow(max(r - 0.3, 0.0) / 0.16, 2.0));
+  // Black-hole edge: nothing bright survives much past the blob.
+  col *= exp(-pow(max(r - 0.38, 0.0) / 0.09, 2.0));
 
   // Filmic shoulder: the core clips to white unevenly instead of a hard disc.
   col = 1.0 - exp(-col * 1.8);
 
   // Black sonic: a dark, streaky star grows from the centre of the white core.
   if (u_inv > 0.0) {
-    float ri = (0.04 + 0.26 * u_inv) * (0.7 + 0.6 * pow(noise(a * 16.0 + 5.0), 2.0));
+    float ri = (0.04 + 0.18 * u_inv) * (0.7 + 0.6 * pow(noise(a * 16.0 + 5.0), 2.0));
     float fine = 0.55 + 0.45 * pow(noise(a * 70.0 + 2.0), 2.0);
     float dark = smoothstep(ri, ri * 0.25, r / fine) * smoothstep(0.0, 0.15, u_inv);
     vec3 inv = vec3(0.02, 0.02, 0.04) + vec3(0.6, 0.75, 1.0) * pow(noise(a * 110.0), 6.0) * 0.5;
@@ -140,6 +139,9 @@ void main() {
       col += hue(hash2(cell)) * 0.15 * u_glitch * (1.0 - f.y);
     }
   }
+
+  // Film grain over everything.
+  col += (hash2(gl_FragCoord.xy + fract(t * 7.3) * 100.0) - 0.5) * 0.07;
 
   gl_FragColor = vec4(col, 1.0);
 }
