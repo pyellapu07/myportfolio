@@ -257,12 +257,14 @@ const SUBTITLE_CLASS =
 const HEADLINE_CLASS =
   "font-sans font-extrabold leading-[0.92] tracking-[-0.045em] text-[clamp(2.75rem,8.5vw,8rem)]";
 
-function Headline({ wordRefs, lineRefs, lineShift, motions, speed, dockTransition }: {
+function Headline({ wordRefs, lineRefs, lineShift, motions, settled, speed, dockTransition }: {
   wordRefs?: MutableRefObject<(HTMLSpanElement | null)[]>;
   lineRefs?: MutableRefObject<(HTMLSpanElement | null)[]>;
   /** Per-line x offsets that left-align the lines when docked. */
   lineShift?: number[] | null;
   motions?: WordMotion[] | null;
+  /** Skipped or reduced motion: snap every word to its final state. */
+  settled?: boolean;
   speed: number;
   dockTransition?: object;
 }) {
@@ -290,11 +292,19 @@ function Headline({ wordRefs, lineRefs, lineShift, motions, speed, dockTransitio
                 }}
                 className="inline-block will-change-transform"
                 initial={wordRefs ? { opacity: 0 } : false}
-                animate={m ? { x: m.x, y: m.y, scale: m.scale, opacity: m.opacity, filter: m.filter } : undefined}
+                animate={
+                  m
+                    ? { x: m.x, y: m.y, scale: m.scale, opacity: m.opacity, filter: m.filter }
+                    : settled
+                      ? { x: 0, y: 0, scale: 1, opacity: 1, filter: "blur(0px)" }
+                      : undefined
+                }
                 transition={
                   m
                     ? { duration: T.assembled / speed, times: m.times, ease: m.times.slice(1).map(() => EASE) }
-                    : undefined
+                    : settled
+                      ? { duration: 0 }
+                      : undefined
                 }
               >
                 {word}
@@ -648,6 +658,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
             lineRefs={lineRefs}
             lineShift={docking ? dock?.lineShift : null}
             motions={phase === "measure" || instant ? null : motions}
+            settled={instant}
             speed={speed}
             dockTransition={dockTransition}
           />

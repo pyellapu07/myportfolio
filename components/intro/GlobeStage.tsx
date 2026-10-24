@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { LAND_GRID, MAP_PROJECTION } from "@/components/map/landGrid";
+import { LAND_GRID } from "@/components/map/landGrid";
+import { naturalEarth } from "@/components/map/projection";
 import { WORLD_MAP } from "@/components/map/worldMap";
 
 // After the blast, ocean blocks of uneven size and weight fly in from where
@@ -70,16 +71,6 @@ const SWIRL = 5.5;
 const AT_EDGE = 0.12;
 // Width of the dissolve wave's soft front, in px.
 const WAVE_FEATHER = 220;
-
-// d3's geoNaturalEarth1 raw projection, with the map's fitted transform.
-function naturalEarth(lonDeg: number, latDeg: number): [number, number] {
-  const l = (lonDeg * Math.PI) / 180;
-  const p = (latDeg * Math.PI) / 180;
-  const p2 = p * p, p4 = p2 * p2;
-  const x = l * (0.8707 - 0.131979 * p2 + p4 * (-0.013791 + p4 * (0.003971 * p2 - 0.001529 * p4)));
-  const y = p * (1.007226 + p2 * (0.015085 + p4 * (-0.044475 + 0.028874 * p2 - 0.005916 * p4)));
-  return [MAP_PROJECTION.tx + MAP_PROJECTION.scale * x, MAP_PROJECTION.ty - MAP_PROJECTION.scale * y];
-}
 
 function mulberry32(seed: number) {
   return () => {

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { BorderBeam } from "border-beam";
 import { WORLD_MAP } from "@/components/map/worldMap";
+import HeatLayer from "@/components/map/HeatLayer";
 
 // The wave starts at the map's centre.
 const AX = 50;
@@ -38,6 +39,7 @@ export default function MapStage({ play, instant, speed }: Props) {
         <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[20px] border border-black/[0.06] bg-white">
           {/* Revealed through the same wave that melts the blocks, soft-edged */}
           <div className="relative" style={{ ...BOX, maskImage: MASK, WebkitMaskImage: MASK }}>
+            <HeatLayer delay={instant ? 0 : 0.5 / speed} />
             <Image src={WORLD_MAP.src} alt="" fill unoptimized priority draggable={false} />
           </div>
           {/* Faint fluorescent ring riding the wave front */}
