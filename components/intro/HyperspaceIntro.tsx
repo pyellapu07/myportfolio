@@ -30,10 +30,10 @@ const T = {
   blast: 2.6, // the white blob blasts outwards, swallowing the star
   blastDur: 0.65,
   survivors: 3.6, // last stray cells are gone
-  globe: 3.05, // blocks thrown out by the blast start flying back in
-  dock: 3.05 + GLOBE_FLATTEN_AT, // headline docks as the globe unrolls
+  globe: 2.75, // blocks are already flying in from off screen as the blast clears
+  dock: 2.75 + GLOBE_FLATTEN_AT, // headline docks as the globe unrolls
   dockDur: 0.9,
-  end: 3.05 + GLOBE_DURATION + 0.4,
+  end: 2.75 + GLOBE_DURATION + 0.4,
 };
 
 // Where each word shows up on its own, and where it drifts before it joins the
@@ -515,7 +515,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       octx.clearRect(0, 0, w, h);
       const beam = octx.createConicGradient(e * 2.6, w / 2, h / 2);
       for (const [at, color] of BEAM_STOPS) beam.addColorStop(at, color);
-      traceOutline(octx, beam, 6, 1);
+      traceOutline(octx, beam, 4, 0.45);
     };
     const hide = "inset(0 0 100% 0)";
     let raf = 0;
