@@ -14,7 +14,7 @@ const G = {
   assemble: 2.4, // last block has landed
   turn: 0.45, // settle facing Africa
   flatten: 1.3,
-  dissolve: 1.2, // blocks melt away in a wave from Africa as the line map draws in
+  dissolve: 0.6, // one big zap from the centre melts the blocks as the line map draws in
 };
 export const GLOBE_DURATION = G.assemble + G.turn + G.flatten + G.dissolve;
 export const GLOBE_DISSOLVE = G.dissolve;
@@ -57,13 +57,16 @@ function bezier(x1: number, y1: number, x2: number, y2: number) {
   };
 }
 const EASE = bezier(0.65, 0, 0.35, 1);
-// Heavy deceleration: arrives fast from off screen and slowly settles.
-const ARRIVE = bezier(0.12, 0.85, 0.2, 1);
+// Vacuum: slow, then fast, then extra fast, as if sucked into place.
+const VACUUM = bezier(0.7, 0, 0.84, 0);
+// Extra revolutions (radians) a block makes round the globe's axis on its
+// way in, so everything enters spinning like a vortex.
+const SWIRL = 5.5;
 // Share of blocks already creeping in at the screen edges at the first frame;
 // the rest are still beyond it. Nothing starts on the globe itself.
 const AT_EDGE = 0.12;
 // Width of the dissolve wave's soft front, in px.
-const WAVE_FEATHER = 120;
+const WAVE_FEATHER = 220;
 
 // d3's geoNaturalEarth1 raw projection, with the map's fitted transform.
 function naturalEarth(lonDeg: number, latDeg: number): [number, number] {
@@ -95,13 +98,10 @@ export function mapRect(w: number, h: number) {
   return { left: inset + (fw - mw) / 2, top: 76 + (fh - mh) / 2, width: mw, height: mh };
 }
 
-/** Distance from Nairobi to the far corner of the flat map, in px. */
+/** Distance from the flat map's centre to its corner, in px. */
 export function waveMaxR(w: number, h: number) {
   const r = mapRect(w, h);
-  const s = r.width / WORLD_MAP.width;
-  const ax = WORLD_MAP.anchors.nairobi[0] * s;
-  const ay = WORLD_MAP.anchors.nairobi[1] * s;
-  return Math.hypot(Math.max(ax, r.width - ax), Math.max(ay, r.height - ay));
+  return Math.hypot(r.width, r.height) / 2;
 }
 
 function landBits() {
@@ -185,7 +185,7 @@ interface Props {
   speed: number;
   /** Fired once the blocks lie flat on the map. */
   onFlat?: () => void;
-  /** Each frame of the dissolve: the wave's radius from Nairobi, in px. */
+  /** Each frame of the dissolve: the wave's radius from the map centre, in px. */
   onWave?: (r: number) => void;
 }
 
@@ -248,9 +248,9 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
         const rect = mapRect(w, h);
         const mapScale = rect.width / WORLD_MAP.width;
         const flatCell = (rect.width / 360) * BLOCK_STEP * 0.9;
-        // Dissolve wave centre (Nairobi on the flat map), in world units.
-        const ax = rect.left + WORLD_MAP.anchors.nairobi[0] * mapScale - w / 2;
-        const ay = h / 2 - (rect.top + WORLD_MAP.anchors.nairobi[1] * mapScale);
+        // Dissolve wave centre: the middle of the flat map, in world units.
+        const ax = rect.left + rect.width / 2 - w / 2;
+        const ay = h / 2 - (rect.top + rect.height / 2);
         const maxR = waveMaxR(w, h);
         let waveR = 0;
 
@@ -373,7 +373,7 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
           const flatU = (t - G.assemble - G.turn) / G.flatten;
 
           const waveU = (flatU - 1) * (G.flatten / G.dissolve);
-          waveR = waveU > 0 ? EASE(clamp01(waveU)) * (maxR + WAVE_FEATHER) : 0;
+          waveR = waveU > 0 ? VACUUM(clamp01(waveU)) * (maxR + WAVE_FEATHER) : 0;
           key.position.set(Math.cos(t * 0.8) * 900, 600, 700 + Math.sin(t * 0.8) * 300);
           const counts = [0, 0, 0];
 
@@ -381,22 +381,33 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
             const la = (b.lat * Math.PI) / 180;
             const lo = (b.lon * Math.PI) / 180 + rotY;
             const tilt = 0.2;
+            const ct = Math.cos(tilt);
+            const st = Math.sin(tilt);
+            // Resting spot on the globe.
             const x0 = Math.cos(la) * Math.sin(lo);
             const y0 = Math.sin(la);
             const z0 = Math.cos(la) * Math.cos(lo);
-            sph.set(x0, y0 * Math.cos(tilt) - z0 * Math.sin(tilt), y0 * Math.sin(tilt) + z0 * Math.cos(tilt));
+            sph.set(x0, y0 * ct - z0 * st, y0 * st + z0 * ct);
             qSph.setFromUnitVectors(zAxis, sph);
             sph.multiplyScalar(R);
 
-            // Assembly: already in globe formation but pushed out radially past
-            // the screen edge (centre empty), closing in on a heavy ease-out.
+            // Assembly: a vortex round the globe's axis. Each block starts
+            // flung wide past the screen edge, revolving, and is sucked in on
+            // the vacuum curve; its orbit and its distance both collapse onto
+            // its resting spot. Blocks swinging past the front of the vortex
+            // are near the camera, so they read big and blurred, and shrink
+            // as they are drawn in.
             const u = clamp01(b.pre + (t - b.delay) / b.dur);
-            const k = ARRIVE(u);
-            const rad = Math.hypot(sph.x, sph.y);
-            const ang = rad > R * 0.08 ? Math.atan2(sph.y, sph.x) : b.push[1];
-            const out = b.push[0] * Math.max(w, h);
-            pos.set(sph.x + Math.cos(ang) * out, sph.y + Math.sin(ang) * out, sph.z + b.push[2]).lerp(sph, k);
-            e.set(b.spin[0] * (1 - k), b.spin[1] * (1 - k), b.spin[2] * (1 - k));
+            const k = VACUUM(u);
+            const away = 1 - k;
+            const lv = lo + away * SWIRL * (0.8 + b.push[1] / Math.PI / 5);
+            const flare = 1 + away * (b.push[0] * Math.max(w, h)) / R;
+            const xv = Math.cos(la) * Math.sin(lv) * flare;
+            const yv = Math.sin(la) * (1 + away * 0.6);
+            const zv = Math.cos(la) * Math.cos(lv) * flare;
+            pos.set(xv, yv * ct - zv * st, yv * st + zv * ct).multiplyScalar(R);
+            pos.z = Math.min(pos.z + away * b.push[2], camera.position.z * 0.82);
+            e.set(b.spin[0] * away, b.spin[1] * away, b.spin[2] * away);
             qSpin.setFromEuler(e);
             q.copy(qSph).multiply(qSpin);
             const sz = b.size * cell * Math.max(Math.cos(la), 0.35);
@@ -407,7 +418,7 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
 
             // Flatten: each block slides to its spot on the map and lies flat.
             if (flatU > 0) {
-              const f = EASE(clamp01((flatU - b.flatDelay) / (1 - 0.43)));
+              const f = VACUUM(clamp01((flatU - b.flatDelay) / (1 - 0.43)));
               const [mx, my] = naturalEarth(b.lon, b.lat);
               flat.set(rect.left + mx * mapScale - w / 2, h / 2 - (rect.top + my * mapScale), 0);
               pos.lerp(flat, f);

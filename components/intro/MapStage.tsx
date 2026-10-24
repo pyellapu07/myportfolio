@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 import { BorderBeam } from "border-beam";
 import { WORLD_MAP } from "@/components/map/worldMap";
 
-// The wave starts at Nairobi, as a share of the map box.
-const AX = (WORLD_MAP.anchors.nairobi[0] / WORLD_MAP.width) * 100;
-const AY = (WORLD_MAP.anchors.nairobi[1] / WORLD_MAP.height) * 100;
-const FEATHER = 120;
+// The wave starts at the map's centre.
+const AX = 50;
+const AY = 50;
+const FEATHER = 220;
 
 interface Props {
   play: boolean;
@@ -20,7 +20,7 @@ interface Props {
 // The wave radius comes in as the CSS variable --wave (px), set each frame by
 // the globe on an ancestor. Without it the map shows in full.
 const MASK = `radial-gradient(circle at ${AX}% ${AY}%, #000 calc(var(--wave, 4000px) - ${FEATHER}px), transparent var(--wave, 4000px))`;
-const RING = `radial-gradient(circle at ${AX}% ${AY}%, transparent calc(var(--wave, 0px) - 70px), rgba(70,160,255,0.22) calc(var(--wave, 0px) - 18px), rgba(160,240,255,0.32) calc(var(--wave, 0px) - 6px), transparent var(--wave, 0px))`;
+const RING = `radial-gradient(circle at ${AX}% ${AY}%, transparent calc(var(--wave, 0px) - 70px), rgba(70,160,255,0.22) calc(var(--wave, 0px) - 30px), rgba(160,240,255,0.32) calc(var(--wave, 0px) - 6px), transparent var(--wave, 0px))`;
 const BOX = { width: "min(92%, calc((100dvh - 150px) * 1000 / 520))", aspectRatio: `${WORLD_MAP.width} / ${WORLD_MAP.height}` };
 
 export default function MapStage({ play, instant, speed }: Props) {

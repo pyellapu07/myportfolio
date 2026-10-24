@@ -116,7 +116,12 @@ void main() {
     float blob = 1.0 + 0.35 * (noise2(dir * 1.4 + t * 1.1 + 31.0) - 0.5) + 0.2 * (noise2(dir * 2.7 - t * 1.7 + 47.0) - 0.5);
     float petalMask = smoothstep(0.45, 0.8, noise2(dir * 1.6 + 17.0 + t * 0.3));
     float petals = pow(noise(a * 7.0 + 9.0 + t * 0.4), 2.5) * petalMask;
-    float ri = (0.035 + 0.15 * grow) * blob * (1.0 + 1.1 * petals);
+    // A few long, sharp spikes on top, uneven and only in some sectors, like
+    // the white burst's: most directions throw none.
+    float spikeMask = smoothstep(0.5, 0.85, noise2(dir * 2.1 + 61.0 - t * 0.25));
+    float spikes = pow(noise(a * 19.0 + 23.0 + t * 0.6), 7.0) * spikeMask
+                 + 0.6 * pow(noise(a * 41.0 + 5.0 - t * 0.9), 9.0) * smoothstep(0.4, 0.8, noise2(dir * 1.3 + 73.0));
+    float ri = (0.035 + 0.15 * grow) * blob * (1.0 + 1.1 * petals + 2.2 * spikes);
     // Edge softness breathes too, so the outline never sits still.
     float soft = 0.72 + 0.12 * noise2(dir * 3.0 + t * 2.3);
     float dark = smoothstep(ri, ri * soft, r) * smoothstep(0.0, 0.15, u_inv);

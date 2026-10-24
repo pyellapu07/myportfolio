@@ -8,6 +8,8 @@ import GlobeStage, { GLOBE_DURATION, GLOBE_FLATTEN_AT } from "./GlobeStage";
 
 // Slow → fast → slow. Every word move, the convergence and the dock share it.
 const EASE = [0.65, 0, 0.35, 1] as const;
+// Vacuum: slow, then fast, then extra fast. Used for the dock.
+const VACUUM = [0.7, 0, 0.84, 0] as const;
 
 const LINES = [
   ["Pradeep", "Yellapu"],
@@ -623,7 +625,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
   const docking = phase === "dock" || phase === "final";
   const instant = phase === "final";
   const s = 1 / speed;
-  const dockTransition = { duration: instant ? 0 : T.dockDur * s, ease: EASE };
+  const dockTransition = { duration: instant ? 0 : T.dockDur * s, ease: VACUUM };
 
   return (
     <div ref={rootRef} className="fixed inset-0 overflow-hidden bg-white text-[#0a0a0a]" onClick={phase === "play" ? skip : undefined}>
