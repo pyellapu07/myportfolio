@@ -41,7 +41,7 @@ float noise2(vec2 p) {
 }
 
 float streaks(float a, float r, float density, float speed, float seed) {
-  float band = pow(noise(a * density + seed), 6.0);
+  float band = pow(noise(a * density + seed), 3.5);
   float lane = hash(floor(a * density) + seed);
   float len = 0.35 + 0.65 * hash(floor(a * density) + seed * 3.1);
   float travel = fract(r * (0.8 + lane) - u_time * speed * (0.7 + lane) + lane);
@@ -68,14 +68,16 @@ void main() {
   float spikes = pow(noise(a * 9.0 + 3.0), 3.0) + 0.6 * pow(noise(a * 23.0 + 11.0), 4.0);
   float rc = r / (lump * (1.0 + 0.55 * spikes * e));
 
-  float rays = streaks(a, r, 34.0, 0.9, 1.0)
-             + streaks(a, r, 57.0, 1.3, 7.0) * 0.8
-             + streaks(a, r, 91.0, 1.9, 13.0) * 0.6;
+  // Thick, low-density shafts first, finer ones riding on top.
+  float rays = streaks(a, r, 16.0, 0.8, 1.0) * 1.3
+             + streaks(a, r, 29.0, 1.2, 7.0)
+             + streaks(a, r, 61.0, 1.8, 13.0) * 0.5;
   // Sparse and contained: most of the frame stays black, rays thin out with
   // distance and some directions barely fire at all.
   rays *= pow(noise2(dir * 2.2 + 3.0), 1.6) * 1.4 * smoothstep(0.02, 0.28, rc) * exp(-r * 2.2) / (0.22 + r);
 
-  float core = exp(-rc * rc / (0.004 + 0.1 * e));
+  // Big, fully saturated white core: clips to pure white well past its centre.
+  float core = exp(-rc * rc / (0.005 + 0.06 * e));
   float halo = exp(-rc * (5.0 + 2.0 * noise2(dir * 2.4 + t))) * e;
   float spin = t * 0.15;
   float star = pow(abs(cos(a * 2.0 + spin)), 70.0) * exp(-r * 8.0)
@@ -87,11 +89,11 @@ void main() {
   tint = mix(tint, vec3(0.55, 0.4, 1.0), 0.25 * noise2(dir * 2.9 + 11.0));
 
   vec3 col = tint * halo * 1.7;
-  col += mix(tint, vec3(1.0), 0.35) * rays * e * 1.2;
-  col += vec3(1.0) * (core * e * 4.0 + star * e * 1.3);
+  col += mix(tint, vec3(1.0), 0.4) * rays * e * 1.3;
+  col += vec3(1.0) * (core * e * 6.0 + star * e * 1.5);
   // Saturated electric-blue band hugging the core before it drops to black.
-  float rim = sqrt(0.004 + 0.1 * e);
-  col += vec3(0.04, 0.3, 1.0) * exp(-max(rc - rim * 0.8, 0.0) * 6.0) * e * 1.6;
+  float rim = sqrt(0.005 + 0.06 * e);
+  col += vec3(0.04, 0.3, 1.0) * exp(-max(rc - rim, 0.0) * 6.5) * e * 2.0;
 
   // Chromatic fringe where the halo meets the dark.
   float edge = 0.3 * e * lump;
