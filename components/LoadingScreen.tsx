@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 const WORD = "pradeep.";
@@ -8,8 +9,11 @@ const WORD = "pradeep.";
 export default function LoadingScreen() {
   const [phase, setPhase] = useState<"idle" | "letters" | "bar" | "reveal">("idle");
   const [mounted, setMounted] = useState(true);
+  // Lab routes stage their own intros.
+  const isLab = usePathname()?.startsWith("/lab") ?? false;
 
   useEffect(() => {
+    if (isLab) return;
     if (sessionStorage.getItem("loadingSeen")) {
       setMounted(false);
       return;
@@ -33,9 +37,9 @@ export default function LoadingScreen() {
       [t1, t2, t3].forEach(clearTimeout);
       document.body.style.overflow = "";
     };
-  }, []);
+  }, [isLab]);
 
-  if (!mounted) return null;
+  if (!mounted || isLab) return null;
 
   const revealing = phase === "reveal";
 
