@@ -53,7 +53,7 @@ vec3 hue(float h) {
 void main() {
   float t = u_time;
   // Flicker, and a centre that wanders a little.
-  float e = u_energy * (0.88 + 0.12 * noise(t * 22.0));
+  float e = u_energy * (0.96 + 0.04 * noise(t * 6.0));
   vec2 c = 0.035 * vec2(noise(t * 1.3) - 0.5, noise(t * 0.9 + 4.0) - 0.5) * 2.0;
   vec2 uv = (gl_FragCoord.xy - 0.5 * u_res) / u_res.y - c;
   float r = length(uv);

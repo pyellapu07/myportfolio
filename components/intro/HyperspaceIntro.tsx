@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MutableRefObject } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MutableRefObject, type RefObject } from "react";
 import { motion } from "framer-motion";
 import { BURST_FRAG, VERT } from "./burstShader";
 import MapStage from "./MapStage";
@@ -15,20 +15,21 @@ const LINES = [
 const SUBTITLE = "From satellite pixel to shipped product.";
 const WORDS = LINES.flat();
 
-// Timeline in seconds at speed 1.
+// Timeline in seconds at speed 1. The intro proper is done by ~3.3s; the burst
+// is cut off on its way up rather than allowed to finish.
 const T = {
-  scatter: 0.35, // words start arriving after a blank beat
-  converge: 1.95,
-  assembled: 2.55,
-  flood: 2.8, // dark cells take the screen, centre first
-  floodDur: 0.35,
-  peak: 3.2,
-  clear: 3.8, // cells flip back to white in random order
-  clearDur: 0.7,
-  survivors: 5.0, // last lingering burst tiles are gone
-  dock: 5.2,
-  dockDur: 1.0,
-  end: 6.6,
+  scatter: 0.15, // words start arriving after a blank beat
+  converge: 1.2,
+  assembled: 1.65,
+  flood: 1.65, // dark cells take part of the screen, in clumps
+  floodDur: 0.3,
+  peak: 1.95,
+  clear: 2.15, // cells flip back to white in random clumps
+  clearDur: 0.6,
+  survivors: 3.2, // last lingering burst tiles are gone
+  dock: 3.25,
+  dockDur: 0.9,
+  end: 4.6,
 };
 
 // Where each word shows up on its own, and where it drifts before it joins the
@@ -78,10 +79,21 @@ function valueNoise(x: number, y: number, seed: number) {
 // Stretch noise (which bunches around 0.5) back out to roughly 0..1.
 const spread = (n: number) => clamp01((n - 0.2) / 0.6);
 
-type Cell = { x: number; y: number; on: number; off: number; blinkAt: number; blinkEnd: number };
+type Cell = {
+  x: number;
+  y: number;
+  on: number;
+  off: number;
+  blinkAt: number;
+  blinkEnd: number;
+  /** Distance of the cell centre from the screen centre, in px. */
+  dist: number;
+  /** Per-cell jitter on the core radius, so the black/white split is ragged. */
+  coreBias: number;
+};
 
 function buildCells(w: number, h: number): { size: number; cells: Cell[] } {
-  const size = Math.round(Math.max(w, h) / 20);
+  const size = Math.round(Math.max(w, h) / 10);
   const cols = Math.ceil(w / size);
   const rows = Math.ceil(h / size);
   const rand = mulberry32(7);
@@ -91,19 +103,22 @@ function buildCells(w: number, h: number): { size: number; cells: Cell[] } {
     for (let c = 0; c < cols; c++) {
       const x = c * size;
       const y = r * size;
-      const d = Math.hypot(x + size / 2 - w / 2, y + size / 2 - h / 2) / maxD;
-      // Flood: mostly clumps, loosely biased to the centre.
-      const on = T.flood + (0.35 * d + 0.65 * spread(valueNoise(c * 0.32, r * 0.32, 1))) * T.floodDur + rand() * 0.05;
+      const dist = Math.hypot(x + size / 2 - w / 2, y + size / 2 - h / 2);
+      const d = dist / maxD;
+      // About a third of the screen, in clumps, never goes dark at all.
+      const cover = 0.35 * d + 0.65 * spread(valueNoise(c * 0.45, r * 0.45, 1));
+      if (cover > 0.68) continue;
+      const on = T.flood + (cover / 0.68) * T.floodDur + rand() * 0.04;
       // Some cells punch a white hole in the dark mass for a beat.
       const blink = rand() < 0.1;
-      const blinkAt = blink ? T.peak - 0.15 + rand() * (T.clear - T.peak + 0.1) : -1;
-      const blinkEnd = blink ? blinkAt + 0.06 + rand() * 0.1 : -1;
-      // Clear: different clumps; a few small clusters linger with glitch residue.
-      const linger = valueNoise(c * 0.55, r * 0.55, 3) > 0.74 && rand() < 0.55;
+      const blinkAt = blink ? T.flood + 0.15 + rand() * (T.clear - T.flood) : -1;
+      const blinkEnd = blink ? blinkAt + 0.05 + rand() * 0.08 : -1;
+      // Clear: different clumps; a few cells linger with glitch residue.
+      const linger = valueNoise(c * 0.6, r * 0.6, 3) > 0.72 && rand() < 0.5;
       const off = linger
-        ? T.clear + T.clearDur + 0.1 + rand() * (T.survivors - T.clear - T.clearDur - 0.1)
-        : T.clear + spread(valueNoise(c * 0.28, r * 0.28, 2)) * T.clearDur + rand() * 0.08;
-      cells.push({ x, y, on, off, blinkAt, blinkEnd });
+        ? T.clear + T.clearDur + 0.05 + rand() * (T.survivors - T.clear - T.clearDur - 0.05)
+        : T.clear + spread(valueNoise(c * 0.4, r * 0.4, 2)) * T.clearDur + rand() * 0.06;
+      cells.push({ x, y, on, off, blinkAt, blinkEnd, dist, coreBias: 0.7 + rand() * 0.6 });
     }
   }
   return { size, cells };
@@ -115,13 +130,10 @@ const isDark = (c: Cell, e: number) =>
 const SUB_SPLIT = "-7px 1px 0 rgba(255,43,214,0.8), 6px -1px 0 rgba(0,225,255,0.8)";
 const SUB_NONE = "0px 0px 0 rgba(255,43,214,0), 0px 0px 0 rgba(0,225,255,0)";
 
-// Dark-phase type: solid white with a tight chromatic fringe whose width
-// (--ca, in px) follows the burst. A black copy is masked to the blown-out
-// core (--core, its radius in px), so letters crossing it stay legible.
-const GHOST_SHADOW =
-  "calc(var(--ca) * -1px) 0 0 rgba(255,0,64,0.9), calc(var(--ca) * 1px) 0 0 rgba(0,170,255,0.9), 0 calc(var(--ca) * 0.6px) 0 rgba(60,255,120,0.55)";
-const GHOST_SUB_SHADOW =
-  "calc(var(--ca) * -2px) 0 0 #ff2bd6, calc(var(--ca) * 2px) 0 0 #00e1ff, 0 calc(var(--ca) * 1px) 0 #ffe600";
+// Dark-phase type is plain and bold: white over dim cells, black over cells
+// inside the blown-out core, split hard on cell edges, with a fixed fringe.
+const GHOST_SHADOW = "-2px 0 0 rgba(255,0,64,0.85), 2px 0 0 rgba(0,170,255,0.85)";
+const GHOST_SUB_SHADOW = "-3px 0 0 #ff2bd6, 3px 0 0 #00e1ff, 0 2px 0 #ffe600";
 
 function compile(gl: WebGLRenderingContext, type: number, src: string) {
   const shader = gl.createShader(type);
@@ -182,7 +194,8 @@ function energyAt(e: number) {
 const glitchAt = (e: number) => clamp01((e - (T.clear + T.clearDur * 0.5)) / 0.35);
 
 type Phase = "measure" | "play" | "dock" | "final";
-type Layout = { motions: WordMotion[]; dock: { y: number; scale: number }; reduced: boolean };
+type Layout = { motions: WordMotion[]; reduced: boolean };
+type Dock = { x: number; y: number; scale: number; lineShift: number[] };
 type WordMotion = { x: number[]; y: number[]; scale: number[]; opacity: number[]; times: number[] };
 
 // The subtitle hangs below the headline out of flow, so the headline's centre
@@ -193,16 +206,28 @@ const SUBTITLE_CLASS =
 const HEADLINE_CLASS =
   "font-sans font-extrabold leading-[0.92] tracking-[-0.045em] text-[clamp(2.75rem,8.5vw,8rem)]";
 
-function Headline({ wordRefs, motions, speed }: {
+function Headline({ wordRefs, lineRefs, lineShift, motions, speed, dockTransition }: {
   wordRefs?: MutableRefObject<(HTMLSpanElement | null)[]>;
+  lineRefs?: MutableRefObject<(HTMLSpanElement | null)[]>;
+  /** Per-line x offsets that left-align the lines when docked. */
+  lineShift?: number[] | null;
   motions?: WordMotion[] | null;
   speed: number;
+  dockTransition?: object;
 }) {
   let i = 0;
   return (
     <>
       {LINES.map((line, li) => (
-        <span key={li} className="flex justify-center gap-[0.24em] whitespace-nowrap">
+        <motion.span
+          key={li}
+          ref={(el) => {
+            if (lineRefs) lineRefs.current[li] = el;
+          }}
+          className="flex justify-center gap-[0.24em] whitespace-nowrap"
+          animate={{ x: lineShift?.[li] ?? 0 }}
+          transition={dockTransition}
+        >
           {line.map((word) => {
             const idx = i++;
             const m = motions?.[idx];
@@ -225,19 +250,26 @@ function Headline({ wordRefs, motions, speed }: {
               </motion.span>
             );
           })}
-        </span>
+        </motion.span>
       ))}
     </>
   );
 }
 
-function GhostType({ className, style }: { className: string; style?: CSSProperties }) {
+// Full-screen so its clip-path is in viewport coordinates, like the cells.
+function GhostType({ className, clipRef }: { className: string; clipRef: RefObject<HTMLDivElement | null> }) {
   return (
-    <div className={`${HEADLINE_CLASS} ${className}`} style={{ ...style, textShadow: GHOST_SHADOW }}>
-      <Headline speed={1} />
-      <p className={`${SUBTITLE_CLASS} italic`} style={{ textShadow: GHOST_SUB_SHADOW }}>
-        {SUBTITLE}
-      </p>
+    <div
+      ref={clipRef}
+      className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center"
+      style={{ clipPath: "inset(0 0 100% 0)" }}
+    >
+      <div className={`${HEADLINE_CLASS} relative ${className}`} style={{ textShadow: GHOST_SHADOW }}>
+        <Headline speed={1} />
+        <p className={`${SUBTITLE_CLASS} italic`} style={{ textShadow: GHOST_SUB_SHADOW }}>
+          {SUBTITLE}
+        </p>
+      </div>
     </div>
   );
 }
@@ -253,15 +285,37 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
   const [stage, setStage] = useState<"run" | "dock" | "final">("run");
   const phase: Phase = !layout ? "measure" : layout.reduced ? "final" : stage === "run" ? "play" : stage;
   const motions = layout?.motions ?? null;
-  const dock = layout?.dock ?? { y: 0, scale: 1 };
+  const [dock, setDock] = useState<Dock | null>(null);
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const headlineRef = useRef<HTMLDivElement>(null);
   const darkRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const ghostRef = useRef<HTMLDivElement>(null);
+  const lineRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const whiteTypeRef = useRef<HTMLDivElement>(null);
+  const blackTypeRef = useRef<HTMLDivElement>(null);
   const skipRef = useRef<() => void>(() => {});
 
   const skip = useCallback(() => skipRef.current(), []);
+
+  // Docked: top-left, about 40px tall, lines left-aligned. Measured when the
+  // dock starts, so it reflects loaded fonts and the current viewport.
+  const measureDock = useCallback((): Dock => {
+    const head = headlineRef.current?.getBoundingClientRect();
+    if (!head) return { x: 0, y: 0, scale: 1, lineShift: [] };
+    const scale = 40 / head.height;
+    const inset = window.innerWidth < 640 ? 16 : 28;
+    return {
+      scale,
+      x: inset + (head.width * scale) / 2 - (head.left + head.width / 2),
+      y: 20 + (head.height * scale) / 2 - (head.top + head.height / 2),
+      // Lines are centred in the headline box; shift each so its first word
+      // starts at the box's left edge.
+      lineShift: lineRefs.current.map((el) => {
+        const first = el?.firstElementChild?.getBoundingClientRect();
+        return first ? head.left - first.left : 0;
+      }),
+    };
+  }, []);
 
   // Measure the assembled layout, then express each word's scattered poses as
   // offsets from its final slot so convergence is just animating to zero.
@@ -269,11 +323,6 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    // Docked: about 44px tall, centred on y = 44.
-    const head = headlineRef.current?.getBoundingClientRect();
-    const dock = head
-      ? { scale: 44 / head.height, y: 44 - (head.top + head.height / 2) }
-      : { scale: 1, y: 0 };
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const ms = WORDS.map((_, i) => {
@@ -288,10 +337,12 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       const by = sc.b.y * vh - cy;
       const ex = ax + (sc.enter === "left" ? -ENTER_OFFSET : sc.enter === "right" ? ENTER_OFFSET : 0);
       const ey = ay + (sc.enter === "up" ? -ENTER_OFFSET : sc.enter === "down" ? ENTER_OFFSET : 0);
-      const arrive = T.scatter + i * 0.17;
-      const times = [0, arrive, arrive + 0.45, arrive + 0.95, T.converge, T.assembled].map(
-        (t) => t / T.assembled,
-      );
+      const arrive = T.scatter + i * 0.12;
+      // Keyframe offsets must never go backwards, so the drift is clamped to
+      // finish before convergence even for the last word in.
+      const settle = Math.min(arrive + 0.3, T.converge - 0.25);
+      const drift = Math.min(arrive + 0.6, T.converge - 0.02);
+      const times = [0, arrive, settle, drift, T.converge, T.assembled].map((t) => t / T.assembled);
       return {
         x: [ex, ex, ax, bx, bx, 0],
         y: [ey, ey, ay, by, by, 0],
@@ -300,8 +351,9 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
         times,
       };
     });
-    setLayout({ motions: ms, dock, reduced });
-  }, []);
+    setLayout({ motions: ms, reduced });
+    if (reduced) setDock(measureDock());
+  }, [measureDock]);
 
   useEffect(() => {
     if (phase !== "play") return;
@@ -311,15 +363,18 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     const { size, cells } = buildCells(w, h);
     const canvas = canvasRef.current;
     const drawBurst = canvas ? createBurst(canvas, size) : null;
-    const ghost = ghostRef.current;
+    const whiteType = whiteTypeRef.current;
+    const blackType = blackTypeRef.current;
     const dark = darkRef.current;
+    const hide = "inset(0 0 100% 0)";
     let raf = 0;
     let docked = false;
     const t0 = performance.now();
 
     const finish = () => {
       cancelAnimationFrame(raf);
-      if (dark) dark.style.clipPath = "inset(0 0 100% 0)";
+      for (const el of [dark, whiteType, blackType]) if (el) el.style.clipPath = hide;
+      setDock(measureDock());
       setStage("final");
       onDone?.();
     };
@@ -333,28 +388,28 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     const tick = (now: number) => {
       const e = ((now - t0) / 1000) * speed;
 
-      if (dark) {
-        let d = "";
-        for (const c of cells) {
-          if (isDark(c, e)) d += `M${c.x} ${c.y}h${size}v${size}h${-size}Z`;
-        }
-        dark.style.clipPath = d ? `path("${d}")` : "inset(0 0 100% 0)";
-        if (d) {
-          const energy = energyAt(e);
-          drawBurst?.(e - T.flood, energy, glitchAt(e));
-          // Fringe widens with the burst and flickers; the type itself barely
-          // moves, so it stays readable.
-          if (ghost) {
-            const flick = 0.6 + 0.4 * Math.abs(Math.sin(e * 37) * Math.sin(e * 13.7));
-            ghost.style.setProperty("--ca", (1.2 + 5 * energy * flick).toFixed(2));
-            ghost.style.setProperty("--core", (h * 0.3 * energy * flick).toFixed(0));
-            ghost.style.transform = `translate(${(Math.sin(e * 53) * energy * 1.5).toFixed(2)}px, 0)`;
-          }
-        }
+      // Each dark cell shows the burst; type over it is black inside the
+      // blown-out core and white outside, split on cell edges.
+      let all = "";
+      let dim = "";
+      let bright = "";
+      const energy = energyAt(e);
+      const coreR = h * 0.34 * energy;
+      for (const c of cells) {
+        if (!isDark(c, e)) continue;
+        const sq = `M${c.x} ${c.y}h${size}v${size}h${-size}Z`;
+        all += sq;
+        if (c.dist < coreR * c.coreBias) bright += sq;
+        else dim += sq;
       }
+      if (dark) dark.style.clipPath = all ? `path("${all}")` : hide;
+      if (whiteType) whiteType.style.clipPath = dim ? `path("${dim}")` : hide;
+      if (blackType) blackType.style.clipPath = bright ? `path("${bright}")` : hide;
+      if (all) drawBurst?.(e - T.flood, energy, glitchAt(e));
 
       if (!docked && e >= T.dock) {
         docked = true;
+        setDock(measureDock());
         setStage("dock");
       }
       if (e >= T.end) {
@@ -370,7 +425,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", onKey);
     };
-  }, [phase === "play", speed, onDone]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [phase === "play", speed, onDone, measureDock]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const docking = phase === "dock" || phase === "final";
   const instant = phase === "final";
@@ -384,11 +439,18 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       {/* Base layer: what the white cells show */}
       <motion.div
         className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4 text-center"
-        animate={docking ? { y: dock.y, scale: dock.scale } : { y: 0, scale: 1 }}
+        animate={docking && dock ? { x: dock.x, y: dock.y, scale: dock.scale } : { x: 0, y: 0, scale: 1 }}
         transition={dockTransition}
       >
         <div ref={headlineRef} className={`${HEADLINE_CLASS} relative`}>
-          <Headline wordRefs={wordRefs} motions={phase === "measure" || instant ? null : motions} speed={speed} />
+          <Headline
+            wordRefs={wordRefs}
+            lineRefs={lineRefs}
+            lineShift={docking ? dock?.lineShift : null}
+            motions={phase === "measure" || instant ? null : motions}
+            speed={speed}
+            dockTransition={dockTransition}
+          />
         <motion.p
           className={`${SUBTITLE_CLASS} text-black/70`}
           initial={{ opacity: 0, textShadow: SUB_SPLIT }}
@@ -419,18 +481,8 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
         style={{ clipPath: "inset(0 0 100% 0)" }}
       >
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <div ref={ghostRef} className="relative" style={{ ["--ca" as string]: 1.2, ["--core" as string]: 0 }}>
-            <GhostType className="text-white" />
-            <GhostType
-              className="absolute inset-0 text-black"
-              style={{
-                maskImage: "radial-gradient(circle calc(var(--core) * 1px) at 50% 50%, #000 55%, transparent 100%)",
-                WebkitMaskImage: "radial-gradient(circle calc(var(--core) * 1px) at 50% 50%, #000 55%, transparent 100%)",
-              }}
-            />
-          </div>
-        </div>
+        <GhostType className="text-white" clipRef={whiteTypeRef} />
+        <GhostType className="text-black" clipRef={blackTypeRef} />
       </div>
 
       {phase === "play" && (

@@ -25,7 +25,7 @@ export default function MapStage({ play, instant, speed }: Props) {
 
   return (
     <motion.div
-      className="absolute inset-x-3 bottom-3 top-[92px] sm:inset-x-6 sm:bottom-6"
+      className="absolute inset-x-3 bottom-3 top-[76px] sm:inset-x-6 sm:bottom-6"
       initial={instant ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 * s }}
