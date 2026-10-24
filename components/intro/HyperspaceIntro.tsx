@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MutableRefObject } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MutableRefObject, type ReactNode, type RefObject } from "react";
 import { motion } from "framer-motion";
 import { BURST_FRAG, VERT } from "./burstShader";
 import MapStage from "./MapStage";
@@ -132,11 +132,11 @@ const isDark = (c: Cell, e: number) =>
 const SUB_SPLIT = "-7px 1px 0 rgba(255,43,214,0.8), 6px -1px 0 rgba(0,225,255,0.8)";
 const SUB_NONE = "0px 0px 0 rgba(255,43,214,0), 0px 0px 0 rgba(0,225,255,0)";
 
-// During the burst every letter takes one look, from the cell under its centre,
-// so no letter is ever cut in two: solid black on white cells, solid white on
-// dim dark cells, a black outline with a fluorescent beam travelling round it
-// in the blown-out core, and nothing deepest in the glare or under a blank
-// cell. Drawn on canvas, since CSS strokes can't take a moving gradient.
+// Dark-phase type, split on cell edges: plain solid white over dim cells; over
+// the blown-out core, black outlines with a fluorescent beam travelling round
+// them (drawn on canvas, since CSS strokes can't take a moving gradient).
+// Cells deepest in the glare show no type at all.
+
 // The beam's colour bands, as conic-gradient stops: mostly clear, with a red →
 // white → green flare and a smaller white → cyan one, swept round the screen.
 const BEAM_STOPS: [number, string][] = [
@@ -152,19 +152,7 @@ const BEAM_STOPS: [number, string][] = [
   [1, "rgba(255,45,85,0)"],
 ];
 
-// One letter of the type, as drawn on canvas during the burst. (cx, cy) is its
-// visual centre, used to pick the cell that decides how the whole letter looks.
-type Glyph = {
-  ch: string;
-  x: number;
-  y: number;
-  cx: number;
-  cy: number;
-  font: string;
-  tracking: string;
-  stroke: number;
-  color: string;
-};
+type Glyph = { text: string; x: number; y: number; font: string; tracking: string; width: number };
 
 function compile(gl: WebGLRenderingContext, type: number, src: string) {
   const shader = gl.createShader(type);
@@ -291,42 +279,44 @@ function Headline({ wordRefs, lineRefs, lineShift, motions, speed, dockTransitio
   );
 }
 
-// Letters to redraw on canvas, measured from the DOM so they sit exactly on
-// the HTML type: every character of the headline words and the subtitle.
+// Full-screen so its clip-path is in viewport coordinates, like the cells.
+function TypeClip({ clipRef, children }: { clipRef: RefObject<HTMLDivElement | null>; children: ReactNode }) {
+  return (
+    <div
+      ref={clipRef}
+      className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center"
+      style={{ clipPath: "inset(0 0 100% 0)" }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function WhiteType() {
+  return (
+    <div className={`${HEADLINE_CLASS} relative text-white`}>
+      <Headline speed={1} />
+      <p className={SUBTITLE_CLASS}>{SUBTITLE}</p>
+    </div>
+  );
+}
+
+// Text runs to redraw on canvas, measured from the DOM so they sit exactly on
+// the HTML type: each word of the headline plus the subtitle.
 function measureGlyphs(ctx: CanvasRenderingContext2D, els: (HTMLElement | null | undefined)[]): Glyph[] {
   const out: Glyph[] = [];
-  const ls = ctx as CanvasRenderingContext2D & { letterSpacing?: string };
   for (const el of els) {
-    const text = el?.textContent;
-    if (!el || !text) continue;
+    if (!el?.textContent) continue;
     const r = el.getBoundingClientRect();
     const cs = getComputedStyle(el);
-    const size = parseFloat(cs.fontSize);
     const font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-    // Canvas rejects "normal" and would keep the previous element's tracking.
-    const tracking = cs.letterSpacing === "normal" ? "0px" : cs.letterSpacing;
     ctx.font = font;
-    ls.letterSpacing = tracking;
     const m = ctx.measureText("Hg");
     // Line box height minus the font's own height, split evenly above and below.
     const y = r.top + (r.height - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
-    const big = size > 24;
-    for (let i = 0; i < text.length; i++) {
-      if (text[i] === " ") continue;
-      const x = r.left + ctx.measureText(text.slice(0, i)).width;
-      const wch = ctx.measureText(text.slice(0, i + 1)).width - (x - r.left);
-      out.push({
-        ch: text[i],
-        x,
-        y,
-        cx: x + wch / 2,
-        cy: y - size * 0.35,
-        font,
-        tracking,
-        stroke: big ? 2.2 : 0.8,
-        color: big ? "#0a0a0a" : "rgba(10,10,10,0.7)",
-      });
-    }
+    // Canvas rejects "normal" and would keep the previous run's tracking.
+    const tracking = cs.letterSpacing === "normal" ? "0px" : cs.letterSpacing;
+    out.push({ text: el.textContent, x: r.left, y, font, tracking, width: parseFloat(cs.fontSize) > 24 ? 2 : 0.8 });
   }
   return out;
 }
@@ -348,8 +338,10 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
   const darkRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lineRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const whiteTypeRef = useRef<HTMLDivElement>(null);
+  const blackTypeRef = useRef<HTMLDivElement>(null);
   const maskRef = useRef<HTMLDivElement>(null);
-  const typeRef = useRef<HTMLCanvasElement>(null);
+  const outlineRef = useRef<HTMLCanvasElement>(null);
   const skipRef = useRef<() => void>(() => {});
 
   const skip = useCallback(() => skipRef.current(), []);
@@ -420,71 +412,53 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     const { size, cells } = buildCells(w, h);
     const canvas = canvasRef.current;
     const drawBurst = canvas ? createBurst(canvas, size) : null;
+    const whiteType = whiteTypeRef.current;
+    const blackType = blackTypeRef.current;
     const mask = maskRef.current;
     const dark = darkRef.current;
-    const head = headlineRef.current;
-    const cols = Math.ceil(w / size);
-    const grid: (Cell | undefined)[] = [];
-    for (const c of cells) grid[(c.y / size) * cols + c.x / size] = c;
-    // Canvas type takes over from the HTML headline for the whole burst, until
-    // the last blank cell has cleared.
-    const handoff = cells.reduce((m, c) => Math.max(m, c.maskEnd), T.survivors);
 
-    const typeCanvas = typeRef.current;
-    const tctx = typeCanvas?.getContext("2d") ?? null;
-    const tdpr = Math.min(window.devicePixelRatio || 1, 2);
-    if (typeCanvas && tctx) {
-      typeCanvas.width = Math.round(w * tdpr);
-      typeCanvas.height = Math.round(h * tdpr);
-      tctx.setTransform(tdpr, 0, 0, tdpr, 0, 0);
+    // Outline type canvas, sized to the viewport.
+    const outline = outlineRef.current;
+    const octx = outline?.getContext("2d") ?? null;
+    const odpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (outline && octx) {
+      outline.width = Math.round(w * odpr);
+      outline.height = Math.round(h * odpr);
+      octx.setTransform(odpr, 0, 0, odpr, 0, 0);
     }
     let glyphs: Glyph[] | null = null;
-    type Look = "black" | "white" | "outline" | "none";
-    const lookOf = (g: Glyph, e: number, coreR: number): Look => {
-      const c = grid[Math.floor(g.cy / size) * cols + Math.floor(g.cx / size)];
-      if (!c) return "black";
-      if (isDark(c, e)) {
-        const k = c.dist / (coreR * c.coreBias);
-        return k >= 1 ? "white" : k >= 0.45 ? "outline" : "none";
-      }
-      return e >= c.off && e < c.maskEnd ? "none" : "black";
-    };
-    const drawType = (e: number, coreR: number) => {
-      if (!tctx) return;
+    const drawOutline = (e: number) => {
+      if (!octx) return;
       // Measured on first use, once the words have settled into place.
-      glyphs ??= measureGlyphs(tctx, [...wordRefs.current, head?.querySelector("p")]);
-      tctx.clearRect(0, 0, w, h);
-      const ls = tctx as CanvasRenderingContext2D & { letterSpacing?: string };
-      const looks = glyphs.map((g) => lookOf(g, e, coreR));
-      const beam = tctx.createConicGradient(e * 2.6, w / 2, h / 2);
+      glyphs ??= measureGlyphs(octx, [...wordRefs.current, headlineRef.current?.querySelector("p")]);
+      octx.clearRect(0, 0, w, h);
+      const beam = octx.createConicGradient(e * 2.6, w / 2, h / 2);
       for (const [at, color] of BEAM_STOPS) beam.addColorStop(at, color);
-      tctx.lineJoin = "round";
-      // Fills, then the outline's black stroke, then the beam glowing over it.
-      for (const pass of ["fill", "stroke", "beam"] as const) {
-        tctx.shadowColor = pass === "beam" ? "rgba(255,255,255,0.85)" : "transparent";
-        tctx.shadowBlur = pass === "beam" ? 8 : 0;
-        glyphs.forEach((g, i) => {
-          const look = looks[i];
-          if (look === "none" || (pass === "fill") !== (look !== "outline")) return;
-          tctx.font = g.font;
+      const ls = octx as CanvasRenderingContext2D & { letterSpacing?: string };
+      const each = (fn: (g: Glyph) => void) =>
+        glyphs!.forEach((g) => {
+          octx.font = g.font;
           ls.letterSpacing = g.tracking;
-          if (pass === "fill") {
-            tctx.fillStyle = look === "white" ? "#fff" : g.color;
-            tctx.fillText(g.ch, g.x, g.y);
-          } else {
-            tctx.lineWidth = g.stroke;
-            tctx.strokeStyle = pass === "beam" ? beam : "#000";
-            tctx.strokeText(g.ch, g.x, g.y);
-          }
+          fn(g);
+        });
+      // The font builds letters from overlapping shapes (P = bowl over stem),
+      // so a plain stroke traces the hidden insides too. Stroke at double
+      // width, then erase the filled letter: only the outer edge is left.
+      octx.globalCompositeOperation = "source-over";
+      octx.lineJoin = "round";
+      for (const pass of [0, 1]) {
+        octx.strokeStyle = pass ? beam : "#000";
+        octx.shadowColor = pass ? "rgba(255,255,255,0.85)" : "transparent";
+        octx.shadowBlur = pass ? 8 : 0;
+        each((g) => {
+          octx.lineWidth = g.width * 2;
+          octx.strokeText(g.text, g.x, g.y);
         });
       }
-    };
-    let typeOn = false;
-    const setTypeOn = (on: boolean) => {
-      if (on === typeOn) return;
-      typeOn = on;
-      if (head) head.style.visibility = on ? "hidden" : "";
-      if (!on) tctx?.clearRect(0, 0, w, h);
+      octx.shadowBlur = 0;
+      octx.globalCompositeOperation = "destination-out";
+      each((g) => octx.fillText(g.text, g.x, g.y));
+      octx.globalCompositeOperation = "source-over";
     };
     const hide = "inset(0 0 100% 0)";
     let raf = 0;
@@ -493,8 +467,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
 
     const finish = () => {
       cancelAnimationFrame(raf);
-      for (const el of [dark, mask]) if (el) el.style.clipPath = hide;
-      setTypeOn(false);
+      for (const el of [dark, whiteType, blackType, mask]) if (el) el.style.clipPath = hide;
       setDock(measureDock());
       setStage("final");
       onDone?.();
@@ -509,23 +482,32 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     const tick = (now: number) => {
       const e = ((now - t0) / 1000) * speed;
 
-      // Dark cells show the burst; freshly cleared cells can come back blank
-      // white for a beat. The type is drawn whole, letter by letter, on top.
+      // Each dark cell shows the burst. Type over it is plain white in dim
+      // cells, black outlines in the bright core, and nothing deepest in the
+      // glare; freshly cleared cells can come back blank white for a beat.
       let all = "";
+      let dim = "";
+      let bright = "";
       let blank = "";
       const energy = energyAt(e);
       const coreR = h * 0.3 * energy;
       for (const c of cells) {
         const sq = `M${c.x} ${c.y}h${size}v${size}h${-size}Z`;
-        if (isDark(c, e)) all += sq;
-        else if (e >= c.off && e < c.maskEnd) blank += sq;
+        if (isDark(c, e)) {
+          all += sq;
+          const k = c.dist / (coreR * c.coreBias);
+          if (k >= 1) dim += sq;
+          else if (k >= 0.45) bright += sq;
+        } else if (e >= c.off && e < c.maskEnd) {
+          blank += sq;
+        }
       }
       if (dark) dark.style.clipPath = all ? `path("${all}")` : hide;
+      if (whiteType) whiteType.style.clipPath = dim ? `path("${dim}")` : hide;
+      if (blackType) blackType.style.clipPath = bright ? `path("${bright}")` : hide;
       if (mask) mask.style.clipPath = blank ? `path("${blank}")` : hide;
       if (all) drawBurst?.(e - T.flood, energy, glitchAt(e), invertAt(e));
-      const inBurst = e >= T.flood && e < handoff;
-      setTypeOn(inBurst);
-      if (inBurst) drawType(e, coreR);
+      if (bright) drawOutline(e);
 
       if (!docked && e >= T.dock) {
         docked = true;
@@ -544,7 +526,6 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", onKey);
-      if (head) head.style.visibility = "";
     };
   }, [phase === "play", speed, onDone, measureDock]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -602,6 +583,12 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
         style={{ clipPath: "inset(0 0 100% 0)" }}
       >
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+        <TypeClip clipRef={whiteTypeRef}>
+          <WhiteType />
+        </TypeClip>
+        <TypeClip clipRef={blackTypeRef}>
+          <canvas ref={outlineRef} className="absolute inset-0 h-full w-full" />
+        </TypeClip>
       </div>
 
       {/* Blank white cells that briefly hide the type as the screen clears */}
@@ -611,9 +598,6 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
         className="pointer-events-none absolute inset-0 bg-white"
         style={{ clipPath: "inset(0 0 100% 0)" }}
       />
-
-      {/* The type during the burst, whole letters only, above every cell layer */}
-      <canvas ref={typeRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" />
 
       {phase === "play" && (
         <button
