@@ -107,12 +107,39 @@ const NODES: Node[] = PROJECTS.filter((p): p is Project & { parent: string } => 
   angle: Math.PI * (0.05 + (0.9 * (i + 0.5)) / all.length),
 }));
 
+// Film grain: an SVG turbulence tile laid over every card (above the haze,
+// hard-light so it reads on light images too) and shifted every few frames
+// so it crawls like real grain.
+const GRAIN = `url("data:image/svg+xml;utf8,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 2.6 -0.75"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>',
+)}")`;
+
+function Grain({ strength = 0.42 }: { strength?: number }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="map-grain pointer-events-none absolute inset-[-40px] mix-blend-hard-light"
+      style={{ backgroundImage: GRAIN, backgroundSize: "160px 160px", opacity: strength }}
+    />
+  );
+}
+
 export default function MapCards({ delay = 0 }: { delay?: number }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
-  const [cursor, setCursor] = useState({ x: 0, y: 0 }); // -1..1 from box centre
+  // Which card (or card group) is open. A group stays open until the pointer
+  // leaves its whole hit area, so nothing moving under the cursor can flicker it.
   const [hover, setHover] = useState<string | null>(null);
-  const [t, setT] = useState(0);
+  const [nodeHover, setNodeHover] = useState<string | null>(null);
+  const cardEls = useRef(new Map<string, HTMLDivElement>());
+  const lineEls = useRef(new Map<string, SVGLineElement>());
+  const nodeEls = useRef(new Map<string, HTMLDivElement>());
+  const hitEls = useRef(new Map<string, HTMLDivElement>());
+  const cursor = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
+  const hoverRef = useRef<string | null>(null);
+  useEffect(() => {
+    hoverRef.current = hover;
+  }, [hover]);
 
   useEffect(() => {
     const el = boxRef.current;
@@ -122,25 +149,67 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
     return () => ro.disconnect();
   }, []);
 
-  // A slow clock for the drift; 20fps is plenty for motion this gentle.
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const t0 = performance.now();
-    const id = setInterval(() => setT((performance.now() - t0) / 1000), 50);
-    return () => clearInterval(id);
-  }, []);
-
   const cards = useMemo(() => (box.w ? layout(box.w, box.h) : []), [box.w, box.h]);
 
-  const pos = (c: Placed) => {
-    // Nearer cards shift more with the cursor and drift a little further.
-    const near = 1 - c.depth;
-    const px = -cursor.x * PARALLAX * (0.25 + near);
-    const py = -cursor.y * PARALLAX * 0.6 * (0.25 + near);
-    const dx = Math.sin(t * 0.45 + c.phase) * 3 * (0.4 + near);
-    const dy = Math.cos(t * 0.38 + c.phase * 1.3) * 4 * (0.4 + near);
-    return { x: c.cx + px + dx, y: c.cy + py + dy };
-  };
+  // Drift, parallax and node orbits run on the frame loop and write
+  // transforms directly: no React renders, so motion is smooth.
+  useEffect(() => {
+    if (!cards.length) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const t0 = performance.now();
+    const spread = new Map<string, number>(); // eased 0..1 open amount per parent
+    let raf = 0;
+    let grainT = 0;
+    const frame = (now: number) => {
+      const t = reduce ? 0 : (now - t0) / 1000;
+      const cur = cursor.current;
+      cur.x += (cur.tx - cur.x) * 0.08;
+      cur.y += (cur.ty - cur.y) * 0.08;
+      const at = new Map<string, { x: number; y: number }>();
+      for (const c of cards) {
+        const near = 1 - c.depth;
+        const x = c.cx - cur.x * PARALLAX * (0.25 + near) + Math.sin(t * 0.45 + c.phase) * 3 * (0.4 + near);
+        const y = c.cy - cur.y * PARALLAX * 0.6 * (0.25 + near) + Math.cos(t * 0.38 + c.phase * 1.3) * 4 * (0.4 + near);
+        at.set(c.id, { x, y });
+        const el = cardEls.current.get(c.id);
+        if (el) el.style.transform = `translate3d(${(x - c.w / 2).toFixed(2)}px, ${(y - c.h / 2).toFixed(2)}px, 0)`;
+        const ln = lineEls.current.get(c.id);
+        if (ln) {
+          ln.setAttribute("x2", x.toFixed(1));
+          ln.setAttribute("y2", (y + c.h / 2).toFixed(1));
+        }
+        const hit = hitEls.current.get(c.id);
+        if (hit) hit.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
+      }
+      for (const n of NODES) {
+        const pc = cards.find((c) => c.id === n.parent);
+        const pp = at.get(n.parent);
+        const el = nodeEls.current.get(n.id);
+        if (!pc || !pp || !el) continue;
+        const goal = hoverRef.current === n.parent ? 1 : 0;
+        const k = (spread.get(n.parent) ?? 0) + (goal - (spread.get(n.parent) ?? 0)) * 0.12;
+        spread.set(n.parent, k);
+        const a = n.angle + t * 0.08;
+        const rx = (pc.w / 2 + ORBIT + W_NODE / 2) * (1 + 0.4 * k);
+        const ry = (pc.h / 2 + ORBIT + (W_NODE * ASPECT) / 2) * (1 + 0.55 * k);
+        const x = pp.x + Math.cos(a) * rx - W_NODE / 2;
+        const y = pp.y + Math.sin(a) * ry - (W_NODE * ASPECT) / 2;
+        el.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${(1 + 0.3 * k).toFixed(3)})`;
+      }
+      // Crawl the grain a few times a second, in jumps, like film.
+      if (!reduce && now - grainT > 70) {
+        grainT = now;
+        const gx = Math.floor(Math.random() * 160);
+        const gy = Math.floor(Math.random() * 160);
+        boxRef.current?.style.setProperty("--grain", `${gx}px ${gy}px`);
+      }
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(raf);
+  }, [cards]);
+
+  const lit = (id: string) => hover === id;
 
   return (
     <div
@@ -148,129 +217,166 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
       className="absolute inset-0"
       onPointerMove={(e) => {
         const r = boxRef.current?.getBoundingClientRect();
-        if (r) setCursor({ x: ((e.clientX - r.left) / r.width) * 2 - 1, y: ((e.clientY - r.top) / r.height) * 2 - 1 });
+        if (!r) return;
+        cursor.current.tx = ((e.clientX - r.left) / r.width) * 2 - 1;
+        cursor.current.ty = ((e.clientY - r.top) / r.height) * 2 - 1;
       }}
-      onPointerLeave={() => setCursor({ x: 0, y: 0 })}
+      onPointerLeave={() => {
+        cursor.current.tx = 0;
+        cursor.current.ty = 0;
+      }}
     >
       {/* Dotted threads from each card to its place */}
       <svg className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
-        {cards.map((c, i) => {
-          const p = pos(c);
-          const on = hover === c.id;
-          return (
-            <motion.g
-              key={c.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: on ? 0.9 : 0.35 }}
-              transition={{ opacity: { delay: hover ? 0 : delay + 0.3 + i * 0.04, duration: 0.4 } }}
-            >
-              <line x1={c.ax} y1={c.ay} x2={p.x} y2={p.y + c.h / 2} stroke="#0a0a0a" strokeWidth={1} strokeDasharray="1 4" strokeLinecap="round" />
-              <circle cx={c.ax} cy={c.ay} r={on ? 3 : 2} fill="#0a0a0a" />
-            </motion.g>
-          );
-        })}
+        {cards.map((c, i) => (
+          <motion.g
+            key={c.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: lit(c.id) ? 0.9 : 0.35 }}
+            transition={{ opacity: { delay: hover ? 0 : delay + 0.3 + i * 0.04, duration: 0.4 } }}
+          >
+            <line
+              ref={(el) => {
+                if (el) lineEls.current.set(c.id, el);
+              }}
+              x1={c.ax}
+              y1={c.ay}
+              x2={c.cx}
+              y2={c.cy + c.h / 2}
+              stroke="#0a0a0a"
+              strokeWidth={1}
+              strokeDasharray="1 4"
+              strokeLinecap="round"
+            />
+            <circle cx={c.ax} cy={c.ay} r={lit(c.id) ? 3 : 2} fill="#0a0a0a" />
+          </motion.g>
+        ))}
       </svg>
 
+      {/* Steady hit areas for cards with related nodes: they cover the whole
+          open orbit, so the group holds open while the pointer is anywhere in it. */}
+      {cards
+        .filter((c) => c.pad > 0)
+        .map((c) => (
+          <div
+            key={`hit-${c.id}`}
+            ref={(el) => {
+              if (el) hitEls.current.set(c.id, el);
+            }}
+            className="absolute left-0 top-0"
+            style={{ zIndex: lit(c.id) ? 205 : 1, pointerEvents: lit(c.id) ? "auto" : "none" }}
+            onPointerLeave={() => setHover((h) => (h === c.id ? null : h))}
+          >
+            <div
+              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{ width: (c.w / 2 + c.pad) * 2 * 1.5, height: (c.h / 2 + c.pad) * 2 * 1.6 }}
+            />
+          </div>
+        ))}
+
       {cards.map((c, i) => {
-        const p = pos(c);
-        const on = hover === c.id;
+        const on = lit(c.id);
         const dim = hover && !on;
-        // Depth haze: far cards are fainter and softer; the hovered one is crisp.
+        // Depth haze: far cards are softer and hazier; the hovered one is crisp.
         const blur = on ? 0 : +(c.depth * 1.6).toFixed(2);
-        // Opaque card; distance reads as a white haze over the image.
         const haze = on ? 0 : dim ? 0.55 : c.depth * 0.38;
         return (
-          <motion.div
+          <div
             key={c.id}
-            className="absolute"
-            style={{ left: 0, top: 0, width: c.w, height: c.h, zIndex: on ? 200 : Math.round((1 - c.depth) * 100) }}
-            initial={{ opacity: 0, x: c.ax - c.w / 2, y: c.ay - c.h / 2, scale: 0.4 }}
-            animate={{ opacity: 1, x: p.x - c.w / 2, y: p.y - c.h / 2, scale: on ? 1.08 : 1 }}
-            transition={{
-              x: { duration: 0.12, ease: "linear" },
-              y: { duration: 0.12, ease: "linear" },
-              scale: { delay: hover ? 0 : delay + i * 0.04, duration: 0.6, ease: SETTLE },
-              opacity: { delay: hover ? 0 : delay + i * 0.04, duration: 0.4 },
+            ref={(el) => {
+              if (el) cardEls.current.set(c.id, el);
             }}
+            className="absolute left-0 top-0 will-change-transform"
+            style={{ width: c.w, height: c.h, zIndex: on ? 210 : Math.round((1 - c.depth) * 100) }}
             onPointerEnter={() => setHover(c.id)}
-            onPointerLeave={() => setHover(null)}
+            onPointerLeave={() => {
+              if (c.pad === 0) setHover((h) => (h === c.id ? null : h));
+            }}
           >
-            <Link href={c.href} className="block h-full w-full" aria-label={`${c.title}, ${c.place}`}>
-              {/* Square, flat frame; the blur stays inside it. */}
-              <span className="relative block h-full w-full overflow-hidden bg-white">
-                {/* eslint-disable-next-line @next/next/no-img-element -- 320px thumbs, already sized */}
-                <img
-                  src={c.thumb}
-                  alt=""
-                  width={c.w}
-                  height={c.h}
-                  className="h-full w-full scale-[1.04] object-cover transition-[filter] duration-300 ease-out"
-                  style={{ filter: `blur(${blur}px)` }}
-                  draggable={false}
-                />
+            <motion.div
+              className="h-full w-full"
+              initial={{ opacity: 0, scale: 0.4 }}
+              animate={{ opacity: 1, scale: on ? 1.08 : 1 }}
+              transition={{
+                scale: { delay: hover ? 0 : delay + i * 0.04, duration: 0.6, ease: SETTLE },
+                opacity: { delay: delay + i * 0.04, duration: 0.4 },
+              }}
+            >
+              <Link href={c.href} className="block h-full w-full" aria-label={`${c.title}, ${c.place}`}>
+                {/* Square, flat frame; blur, haze and grain stay inside it. */}
+                <span className="relative block h-full w-full overflow-hidden bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- 320px thumbs, already sized */}
+                  <img
+                    src={c.thumb}
+                    alt=""
+                    width={c.w}
+                    height={c.h}
+                    className="h-full w-full scale-[1.04] object-cover transition-[filter] duration-300 ease-out"
+                    style={{ filter: `blur(${blur}px)` }}
+                    draggable={false}
+                  />
+                  <span className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300" style={{ opacity: haze }} />
+                  <Grain />
+                </span>
                 <span
-                  className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300"
-                  style={{ opacity: haze }}
-                />
-              </span>
-              <span
-                className={`pointer-events-none absolute left-1/2 top-full mt-2.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 ${
-                  on ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                {c.title}
-              </span>
-            </Link>
-          </motion.div>
+                  className={`pointer-events-none absolute left-1/2 top-full mt-2.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 ${
+                    on ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  {c.title}
+                </span>
+              </Link>
+            </motion.div>
+          </div>
         );
       })}
 
       {/* Related nodes: small, deep cards orbiting their parent, pulled into
-          focus when the parent is hovered. */}
+          focus while the parent group is open. They never move on their own
+          hover, so the pointer cannot chase them. */}
       {NODES.map((n, i) => {
-        const parent = cards.find((c) => c.id === n.parent);
-        if (!parent) return null;
-        const pp = pos(parent);
-        const lit = hover === n.parent || hover === n.id;
-        const r = parent.w / 2 + ORBIT + W_NODE / 2;
-        const spin = t * 0.08;
-        const x = pp.x + Math.cos(n.angle + spin) * r * (lit ? 1.4 : 1);
-        const y = pp.y + Math.sin(n.angle + spin) * (parent.h / 2 + ORBIT + W_NODE * ASPECT / 2) * (lit ? 1.55 : 1);
+        const open = lit(n.parent);
         const h = W_NODE * ASPECT;
         return (
-          <motion.div
+          <div
             key={n.id}
-            className="absolute"
-            style={{ left: 0, top: 0, width: W_NODE, height: h, zIndex: lit ? 210 : 5 }}
-            initial={{ opacity: 0, x: pp.x - W_NODE / 2, y: pp.y - h / 2 }}
-            animate={{ opacity: 1, x: x - W_NODE / 2, y: y - h / 2, scale: lit ? 1.3 : 1 }}
-            transition={{
-              x: { duration: 0.3, ease: SETTLE },
-              y: { duration: 0.3, ease: SETTLE },
-              scale: { duration: 0.35, ease: SETTLE },
-              opacity: { delay: delay + 0.6 + i * 0.05, duration: 0.4 },
+            ref={(el) => {
+              if (el) nodeEls.current.set(n.id, el);
             }}
-            onPointerEnter={() => setHover(n.id)}
-            onPointerLeave={() => setHover(null)}
+            className="absolute left-0 top-0 will-change-transform"
+            style={{ width: W_NODE, height: h, zIndex: open ? 215 : 5 }}
+            onPointerEnter={() => {
+              setHover(n.parent);
+              setNodeHover(n.id);
+            }}
+            onPointerLeave={() => setNodeHover((x) => (x === n.id ? null : x))}
           >
-            <Link href={n.href} className="block h-full w-full" aria-label={`${n.title}, ${n.role}`}>
-              <span className="relative block h-full w-full overflow-hidden bg-white">
-                {/* eslint-disable-next-line @next/next/no-img-element -- 320px thumbs, already sized */}
-                <img src={n.thumb} alt="" width={W_NODE} height={h} className="h-full w-full object-cover" draggable={false} />
+            <motion.div
+              className="h-full w-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: delay + 0.6 + i * 0.05, duration: 0.4 }}
+            >
+              <Link href={n.href} className="block h-full w-full" aria-label={`${n.title}, ${n.role}`}>
+                <span className="relative block h-full w-full overflow-hidden bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- 320px thumbs, already sized */}
+                  <img src={n.thumb} alt="" width={W_NODE} height={h} className="h-full w-full object-cover" draggable={false} />
+                  <span
+                    className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300"
+                    style={{ opacity: open ? 0 : 0.6 }}
+                  />
+                  <Grain strength={0.36} />
+                </span>
                 <span
-                  className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300"
-                  style={{ opacity: lit ? 0 : 0.6 }}
-                />
-              </span>
-              <span
-                className={`pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap text-[8px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 ${
-                  hover === n.id ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                {n.title}
-              </span>
-            </Link>
-          </motion.div>
+                  className={`pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap text-[8px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 ${
+                    nodeHover === n.id ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  {n.title}
+                </span>
+              </Link>
+            </motion.div>
+          </div>
         );
       })}
     </div>

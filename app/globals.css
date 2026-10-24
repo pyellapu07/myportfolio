@@ -516,3 +516,8 @@ body {
   color: #FFFFFF;
 }
 
+
+/* Map card grain: offset jumps each few frames, set from MapCards */
+.map-grain {
+  background-position: var(--grain, 0 0);
+}
