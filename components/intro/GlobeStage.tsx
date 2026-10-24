@@ -26,7 +26,9 @@ const BEAM = [
   [0.22, 1.0, 0.53],
   [0.37, 0.94, 1.0],
 ];
-const FACE_LON = 20; // degrees east: Africa faces the camera
+const FACE_LON = 20;
+// Bokeh strength at the start of assembly (blur in UV per px of depth off focus).
+const DOF_APERTURE = 4.5e-5; // degrees east: Africa faces the camera
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
@@ -180,21 +182,29 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
     if (!canvas) return;
     let disposed = false;
 
-    Promise.all([import("three"), import("three/examples/jsm/environments/RoomEnvironment.js")]).then(
-      ([THREE, { RoomEnvironment }]) => {
+    Promise.all([
+      import("three"),
+      import("three/examples/jsm/environments/RoomEnvironment.js"),
+      import("three/examples/jsm/postprocessing/EffectComposer.js"),
+      import("three/examples/jsm/postprocessing/RenderPass.js"),
+      import("three/examples/jsm/postprocessing/BokehPass.js"),
+      import("three/examples/jsm/postprocessing/OutputPass.js"),
+    ]).then(
+      ([THREE, { RoomEnvironment }, { EffectComposer }, { RenderPass }, { BokehPass }, { OutputPass }]) => {
         if (disposed) return;
         const w = window.innerWidth;
         const h = window.innerHeight;
         let renderer: InstanceType<typeof THREE.WebGLRenderer>;
         try {
-          renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+          renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
         } catch {
           failedRef.current = true;
           return;
         }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         renderer.setSize(w, h, false);
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        // No tone mapping: it would pull the white page background down to grey.
+        renderer.toneMapping = THREE.NoToneMapping;
 
         // One world unit is one CSS pixel on the z = 0 plane.
         const fov = 30;
@@ -202,6 +212,8 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
         camera.position.z = h / 2 / Math.tan((fov * Math.PI) / 360);
 
         const scene = new THREE.Scene();
+        // Opaque white, the page colour: the bokeh pass needs a solid background.
+        scene.background = new THREE.Color(0xffffff);
         const pmrem = new THREE.PMREMGenerator(renderer);
         scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
         const key = new THREE.DirectionalLight(0xffffff, 2.4);
@@ -238,6 +250,11 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
           col.setRGB(b.color[0], b.color[1], b.color[2]);
           mesh.setColorAt(i, col);
         });
+
+        let renderWith = (t: number) => {
+          void t;
+          renderer.render(scene, camera);
+        };
 
         /** Draws the stage at timeline time t (seconds); returns flatten progress. */
         const draw = (t: number) => {
@@ -297,9 +314,26 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
           });
           mesh.instanceMatrix.needsUpdate = true;
           if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-          renderer.render(scene, camera);
+          renderWith(t);
 
           return flatU;
+        };
+
+        // Depth of field: focus on the globe's front face. Blocks still flying in
+        // ahead of it are out of focus and pull sharp as they land.
+        const composer = new EffectComposer(renderer);
+        composer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        composer.setSize(w, h);
+        composer.addPass(new RenderPass(scene, camera));
+        const bokeh = new BokehPass(scene, camera, { focus: camera.position.z - R * 0.75, aperture: 0, maxblur: 0.018 });
+        composer.addPass(bokeh);
+        composer.addPass(new OutputPass());
+        // Typed as a bare object upstream; the shader does have this uniform.
+        const aperture = (bokeh.uniforms as Record<string, { value: number }>).aperture;
+        const apertureAt = (t: number) => DOF_APERTURE * Math.pow(1 - clamp01(t / G.assemble), 1.6);
+        renderWith = (t: number) => {
+          aperture.value = apertureAt(t);
+          composer.render();
         };
 
         renderer.compile(scene, camera);
@@ -309,6 +343,7 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
             geo.dispose();
             mat.dispose();
             pmrem.dispose();
+            composer.dispose();
             renderer.dispose();
           },
         };

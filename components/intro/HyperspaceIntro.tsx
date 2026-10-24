@@ -48,6 +48,7 @@ const SCATTER: Scatter[] = [
   { enter: "up", a: { x: 0.84, y: 0.24, s: 1.4 }, b: { x: 0.74, y: 0.66, s: 0.5 } },
 ];
 const ENTER_OFFSET = 140;
+const lensBlur = (scale: number) => +Math.min(10, Math.abs(Math.log2(scale)) * 6).toFixed(1);
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
@@ -244,7 +245,7 @@ const glitchAt = (e: number) => clamp01((e - (T.clear + T.clearDur * 0.5)) / 0.3
 type Phase = "measure" | "play" | "dock" | "final";
 type Layout = { motions: WordMotion[]; reduced: boolean };
 type Dock = { x: number; y: number; scale: number; lineShift: number[] };
-type WordMotion = { x: number[]; y: number[]; scale: number[]; opacity: number[]; times: number[] };
+type WordMotion = { x: number[]; y: number[]; scale: number[]; opacity: number[]; filter: string[]; times: number[] };
 
 // The subtitle hangs below the headline out of flow, so the headline's centre
 // is its container's centre and the dock transform can scale about it.
@@ -287,7 +288,7 @@ function Headline({ wordRefs, lineRefs, lineShift, motions, speed, dockTransitio
                 }}
                 className="inline-block will-change-transform"
                 initial={wordRefs ? { opacity: 0 } : false}
-                animate={m ? { x: m.x, y: m.y, scale: m.scale, opacity: m.opacity } : undefined}
+                animate={m ? { x: m.x, y: m.y, scale: m.scale, opacity: m.opacity, filter: m.filter } : undefined}
                 transition={
                   m
                     ? { duration: T.assembled / speed, times: m.times, ease: m.times.slice(1).map(() => EASE) }
@@ -427,6 +428,10 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
         y: [ey, ey, ay, by, by, 0],
         scale: [sc.a.s, sc.a.s, sc.a.s, sc.b.s, sc.b.s, 1],
         opacity: [0, 0, 1, 1, 1, 1],
+        // Lens blur: each word arrives out of focus and pulls sharp; words
+        // held far off their final size (as if near or far from the lens)
+        // stay soft until they settle into the headline.
+        filter: [18, 18, lensBlur(sc.a.s), lensBlur(sc.b.s), lensBlur(sc.b.s), 0].map((px) => `blur(${px}px)`),
         times,
       };
     });
