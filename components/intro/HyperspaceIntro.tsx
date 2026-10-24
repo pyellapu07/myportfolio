@@ -152,6 +152,15 @@ const BEAM_STOPS: [number, string][] = [
   [1, "rgba(255,45,85,0)"],
 ];
 
+// Neon echoes stepping back from the outline in one direction, so the letter
+// reads as extruded in depth: each copy further back, a little dimmer.
+const ECHOES = ["#ff2d55", "#39ff6a", "#5b8cff", "#c04bff"].map((color, i) => ({
+  color,
+  dx: -3 * (i + 1),
+  dy: 2.2 * (i + 1),
+  alpha: 1 - i * 0.18,
+}));
+
 type Glyph = { text: string; x: number; y: number; font: string; tracking: string; width: number };
 
 function compile(gl: WebGLRenderingContext, type: number, src: string) {
@@ -427,37 +436,61 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       octx.setTransform(odpr, 0, 0, odpr, 0, 0);
     }
     let glyphs: Glyph[] | null = null;
+    let echoes: { img: HTMLCanvasElement; dx: number; dy: number; alpha: number }[] | null = null;
+    const ls = (ctx: CanvasRenderingContext2D) => ctx as CanvasRenderingContext2D & { letterSpacing?: string };
+
+    // The font builds letters from overlapping shapes (P = bowl over stem), so
+    // a plain stroke traces the hidden insides too. Stroke at double width,
+    // then erase the filled letter: only the outer edge is left.
+    const traceOutline = (ctx: CanvasRenderingContext2D, styles: [string | CanvasGradient, number][]) => {
+      ctx.globalCompositeOperation = "source-over";
+      ctx.lineJoin = "round";
+      for (const [style, blur] of styles) {
+        ctx.strokeStyle = style;
+        ctx.shadowColor = blur ? (typeof style === "string" ? style : "rgba(255,255,255,0.85)") : "transparent";
+        ctx.shadowBlur = blur;
+        for (const g of glyphs!) {
+          ctx.font = g.font;
+          ls(ctx).letterSpacing = g.tracking;
+          ctx.lineWidth = g.width * 2;
+          ctx.strokeText(g.text, g.x, g.y);
+        }
+      }
+      ctx.shadowBlur = 0;
+      ctx.globalCompositeOperation = "destination-out";
+      for (const g of glyphs!) {
+        ctx.font = g.font;
+        ls(ctx).letterSpacing = g.tracking;
+        ctx.fillText(g.text, g.x, g.y);
+      }
+      ctx.globalCompositeOperation = "source-over";
+    };
+
     const drawOutline = (e: number) => {
-      if (!octx) return;
+      if (!octx || !outline) return;
       // Measured on first use, once the words have settled into place.
       glyphs ??= measureGlyphs(octx, [...wordRefs.current, headlineRef.current?.querySelector("p")]);
+      // Echo layers never change, so each is traced once and reused.
+      echoes ??= ECHOES.map(({ color, dx, dy, alpha }) => {
+        const img = document.createElement("canvas");
+        img.width = outline.width;
+        img.height = outline.height;
+        const ictx = img.getContext("2d")!;
+        ictx.setTransform(odpr, 0, 0, odpr, 0, 0);
+        traceOutline(ictx, [[color, 6]]);
+        return { img, dx, dy, alpha };
+      });
       octx.clearRect(0, 0, w, h);
       const beam = octx.createConicGradient(e * 2.6, w / 2, h / 2);
       for (const [at, color] of BEAM_STOPS) beam.addColorStop(at, color);
-      const ls = octx as CanvasRenderingContext2D & { letterSpacing?: string };
-      const each = (fn: (g: Glyph) => void) =>
-        glyphs!.forEach((g) => {
-          octx.font = g.font;
-          ls.letterSpacing = g.tracking;
-          fn(g);
-        });
-      // The font builds letters from overlapping shapes (P = bowl over stem),
-      // so a plain stroke traces the hidden insides too. Stroke at double
-      // width, then erase the filled letter: only the outer edge is left.
-      octx.globalCompositeOperation = "source-over";
-      octx.lineJoin = "round";
-      for (const pass of [0, 1]) {
-        octx.strokeStyle = pass ? beam : "#000";
-        octx.shadowColor = pass ? "rgba(255,255,255,0.85)" : "transparent";
-        octx.shadowBlur = pass ? 8 : 0;
-        each((g) => {
-          octx.lineWidth = g.width * 2;
-          octx.strokeText(g.text, g.x, g.y);
-        });
+      // Front: black outline with the travelling beam. Behind it: the echoes.
+      traceOutline(octx, [["#000", 0], [beam, 8]]);
+      octx.globalCompositeOperation = "destination-over";
+      for (const { img, dx, dy, alpha } of echoes) {
+        octx.globalAlpha = alpha;
+        octx.drawImage(img, dx, dy, w, h);
       }
-      octx.shadowBlur = 0;
-      octx.globalCompositeOperation = "destination-out";
-      each((g) => octx.fillText(g.text, g.x, g.y));
+      octx.globalAlpha = 1;
       octx.globalCompositeOperation = "source-over";
     };
     const hide = "inset(0 0 100% 0)";
