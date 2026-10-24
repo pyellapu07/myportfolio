@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import HyperspaceIntro from "@/components/intro/HyperspaceIntro";
 
 const SPEEDS = [1, 0.25];
 
-export default function IntroLab() {
+function Lab() {
+  // ?speed=0.05 slows the first run, for frame-by-frame review and recording.
+  const initial = Number(useSearchParams().get("speed")) || 1;
   const [run, setRun] = useState(0);
-  const [speed, setSpeed] = useState(1);
+  const [speed, setSpeed] = useState(initial);
 
   const replay = (next: number) => {
     setSpeed(next);
@@ -30,5 +33,13 @@ export default function IntroLab() {
         ))}
       </div>
     </main>
+  );
+}
+
+export default function IntroLab() {
+  return (
+    <Suspense>
+      <Lab />
+    </Suspense>
   );
 }
