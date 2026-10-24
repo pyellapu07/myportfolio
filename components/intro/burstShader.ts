@@ -65,7 +65,7 @@ void main() {
   // Lumpy core: radius pushed around by low-frequency angular noise.
   float lump = 1.0 + 0.5 * (noise2(dir * 1.3 + t * 0.8) - 0.5) + 0.3 * (noise2(dir * 3.2 - t * 1.4 + 9.0) - 0.5);
   // Spiky rim: thick, uneven rays pushing out of the white disc.
-  float spikes = pow(noise(a * 9.0 + 3.0), 3.0) + 0.6 * pow(noise(a * 23.0 + 11.0), 4.0);
+  float spikes = pow(noise(a * 11.0 + 3.0), 2.5) + 0.7 * pow(noise(a * 26.0 + 11.0), 3.5);
   float rc = r / (lump * (1.0 + 0.55 * spikes * e));
 
   // Thick, low-density shafts first, finer ones riding on top.
@@ -74,11 +74,11 @@ void main() {
              + streaks(a, r, 61.0, 1.8, 13.0) * 0.5;
   // Sparse and contained: most of the frame stays black, rays thin out with
   // distance and some directions barely fire at all.
-  rays *= pow(noise2(dir * 2.2 + 3.0), 1.6) * 1.4 * smoothstep(0.02, 0.28, rc) * exp(-r * 2.2) / (0.22 + r);
+  rays *= pow(noise2(dir * 2.2 + 3.0), 1.6) * 1.4 * smoothstep(0.02, 0.28, rc) * exp(-r * 6.0) / (0.22 + r);
 
   // Big, fully saturated white core: clips to pure white well past its centre.
-  float core = exp(-rc * rc / (0.005 + 0.06 * e));
-  float halo = exp(-rc * (5.0 + 2.0 * noise2(dir * 2.4 + t))) * e;
+  float core = exp(-rc * rc / (0.004 + 0.035 * e));
+  float halo = exp(-rc * (7.0 + 2.0 * noise2(dir * 2.4 + t))) * e;
   float spin = t * 0.15;
   float star = pow(abs(cos(a * 2.0 + spin)), 70.0) * exp(-r * 8.0)
              + pow(abs(sin(a * 2.0 + spin)), 90.0) * exp(-r * 13.0)
@@ -90,15 +90,18 @@ void main() {
 
   vec3 col = tint * halo * 1.7;
   col += mix(tint, vec3(1.0), 0.4) * rays * e * 1.3;
-  col += vec3(1.0) * (core * e * 6.0 + star * e * 1.5);
+  col += vec3(1.0) * (core * e * 9.0 + star * e * 1.5);
   // Saturated electric-blue band hugging the core before it drops to black.
-  float rim = sqrt(0.005 + 0.06 * e);
-  col += vec3(0.04, 0.3, 1.0) * exp(-max(rc - rim, 0.0) * 6.5) * e * 2.0;
+  float rim = sqrt(0.004 + 0.035 * e);
+  col += vec3(0.04, 0.3, 1.0) * exp(-max(rc - rim * 1.2, 0.0) * 12.0) * e * 2.4;
 
   // Chromatic fringe where the halo meets the dark.
   float edge = 0.3 * e * lump;
   col.r += exp(-abs(rc - edge) * 30.0) * 0.18 * e;
   col.b += exp(-abs(rc - edge * 1.12) * 30.0) * 0.25 * e;
+
+  // Black-hole edge: everything bright dies out past the flower.
+  col *= exp(-pow(max(r - 0.3, 0.0) / 0.16, 2.0));
 
   // Filmic shoulder: the core clips to white unevenly instead of a hard disc.
   col = 1.0 - exp(-col * 1.8);
@@ -114,6 +117,9 @@ void main() {
     float rim = exp(-abs(r / fine - ri) * 90.0) * smoothstep(0.0, 0.2, u_inv);
     col += vec3(0.9, 0.1, 0.3) * rim * 0.5 + vec3(0.1, 0.5, 1.0) * exp(-abs(r / fine - ri * 1.06) * 90.0) * 0.5 * smoothstep(0.0, 0.2, u_inv);
   }
+
+  // Beyond the flower it is near-black: faint dark streaks drifting outwards.
+  col += vec3(0.05, 0.07, 0.12) * streaks(a, r, 44.0, 0.35, 21.0) * smoothstep(0.2, 0.6, r);
 
   vec2 g = fract(gl_FragCoord.xy / 30.0) - 0.5;
   col += vec3(0.1) * smoothstep(0.09, 0.0, length(g)) * (1.0 - 0.7 * e);

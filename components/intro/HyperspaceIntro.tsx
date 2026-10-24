@@ -23,7 +23,7 @@ const T = {
   flood: 1.5, // dark cells sweep in, in clumps
   floodDur: 0.25,
   peak: 1.8,
-  invert: 2.0, // black star starts growing out of the white core, after the peak lands
+  invert: 1.85, // black star starts growing out of the white core as the peak lands
   clear: 2.0, // white cells close back over it, slowing to a long tail
   clearDur: 1.3,
   survivors: 3.6, // last stray cells are gone
@@ -92,6 +92,11 @@ type Cell = {
   dist: number;
   /** Per-cell jitter on the core radius, so the black/white split is ragged. */
   coreBias: number;
+  /** On black: whether this cell shows the faint outline of the type at all. */
+  faint: boolean;
+  /** Inside the black star: punched back to white (black type) or beam outline. */
+  punch: boolean;
+  beam: boolean;
 };
 
 // Small cells; the big dark and white areas are clumps of them.
@@ -120,7 +125,13 @@ function buildCells(w: number, h: number): { size: number; cells: Cell[] } {
       const off = T.clear + Math.pow(u, 2.4) * T.clearDur;
       // Some cells come back blank white and hide the type for a moment.
       const maskEnd = rand() < 0.45 ? off + 0.05 + rand() * 0.3 : off;
-      cells.push({ x, y, on, off, blinkAt, blinkEnd, maskEnd, dist, coreBias: 0.7 + rand() * 0.6 });
+      cells.push({
+        x, y, on, off, blinkAt, blinkEnd, maskEnd, dist,
+        coreBias: 0.7 + rand() * 0.6,
+        faint: rand() < 0.55,
+        punch: rand() < 0.22,
+        beam: rand() < 0.6,
+      });
     }
   }
   return { size, cells };
@@ -132,10 +143,12 @@ const isDark = (c: Cell, e: number) =>
 const SUB_SPLIT = "-7px 1px 0 rgba(255,43,214,0.8), 6px -1px 0 rgba(0,225,255,0.8)";
 const SUB_NONE = "0px 0px 0 rgba(255,43,214,0), 0px 0px 0 rgba(0,225,255,0)";
 
-// Dark-phase type, split on cell edges: plain solid white over dim cells; over
-// the blown-out core, black outlines with a fluorescent beam travelling round
-// them (drawn on canvas, since CSS strokes can't take a moving gradient).
-// Cells deepest in the glare show no type at all.
+// Dark-phase type, split on cell edges:
+// - on black, in a random scatter of cells: a faint, thin outline;
+// - over the white core: solid black;
+// - inside the black star once it grows: a few cells punched back to white
+//   (solid black type), and some with a fluorescent beam travelling round the
+//   outline (canvas, since CSS strokes can't take a moving gradient).
 
 // The beam's colour bands, as conic-gradient stops: mostly clear, with a red →
 // white → green flare and a smaller white → cyan one, swept round the screen.
@@ -152,14 +165,13 @@ const BEAM_STOPS: [number, string][] = [
   [1, "rgba(255,45,85,0)"],
 ];
 
-// Neon echoes stepping back from the outline in one direction, so the letter
-// reads as extruded in depth: each copy further back, a little dimmer.
-const ECHOES = ["#ff2d55", "#39ff6a", "#5b8cff", "#c04bff"].map((color, i) => ({
-  color,
-  dx: -3 * (i + 1),
-  dy: 2.2 * (i + 1),
-  alpha: 1 - i * 0.18,
-}));
+// Faint outline on black: a hairline with a barely-there red/blue split.
+const FAINT_LAYERS: [string, number][] = [
+  ["rgba(255,40,90,0.22)", -1.5],
+  ["rgba(0,160,255,0.22)", 1.5],
+  ["rgba(255,255,255,0.26)", 0],
+];
+
 
 type Glyph = { text: string; x: number; y: number; font: string; tracking: string; width: number };
 
@@ -301,9 +313,9 @@ function TypeClip({ clipRef, children }: { clipRef: RefObject<HTMLDivElement | n
   );
 }
 
-function WhiteType() {
+function SolidType() {
   return (
-    <div className={`${HEADLINE_CLASS} relative text-white`}>
+    <div className={`${HEADLINE_CLASS} relative text-black`}>
       <Headline speed={1} />
       <p className={SUBTITLE_CLASS}>{SUBTITLE}</p>
     </div>
@@ -347,8 +359,10 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
   const darkRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lineRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const whiteTypeRef = useRef<HTMLDivElement>(null);
-  const blackTypeRef = useRef<HTMLDivElement>(null);
+  const faintRef = useRef<HTMLDivElement>(null);
+  const solidRef = useRef<HTMLDivElement>(null);
+  const beamRef = useRef<HTMLDivElement>(null);
+  const faintCanvasRef = useRef<HTMLCanvasElement>(null);
   const maskRef = useRef<HTMLDivElement>(null);
   const outlineRef = useRef<HTMLCanvasElement>(null);
   const skipRef = useRef<() => void>(() => {});
@@ -421,44 +435,51 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     const { size, cells } = buildCells(w, h);
     const canvas = canvasRef.current;
     const drawBurst = canvas ? createBurst(canvas, size) : null;
-    const whiteType = whiteTypeRef.current;
-    const blackType = blackTypeRef.current;
+    const faintClip = faintRef.current;
+    const solidClip = solidRef.current;
+    const beamClip = beamRef.current;
     const mask = maskRef.current;
     const dark = darkRef.current;
 
-    // Outline type canvas, sized to the viewport.
-    const outline = outlineRef.current;
-    const octx = outline?.getContext("2d") ?? null;
+    // Outline canvases, sized to the viewport.
     const odpr = Math.min(window.devicePixelRatio || 1, 2);
-    if (outline && octx) {
-      outline.width = Math.round(w * odpr);
-      outline.height = Math.round(h * odpr);
-      octx.setTransform(odpr, 0, 0, odpr, 0, 0);
-    }
+    const fit = (c: HTMLCanvasElement | null) => {
+      const ctx = c?.getContext("2d") ?? null;
+      if (c && ctx) {
+        c.width = Math.round(w * odpr);
+        c.height = Math.round(h * odpr);
+        ctx.setTransform(odpr, 0, 0, odpr, 0, 0);
+      }
+      return ctx;
+    };
+    const octx = fit(outlineRef.current);
+    const fctx = fit(faintCanvasRef.current);
     let glyphs: Glyph[] | null = null;
-    let echoes: { img: HTMLCanvasElement; dx: number; dy: number; alpha: number }[] | null = null;
+    let faintDrawn = false;
     const ls = (ctx: CanvasRenderingContext2D) => ctx as CanvasRenderingContext2D & { letterSpacing?: string };
+    const ensureGlyphs = (ctx: CanvasRenderingContext2D) =>
+      // Measured on first use, once the words have settled into place.
+      (glyphs ??= measureGlyphs(ctx, [...wordRefs.current, headlineRef.current?.querySelector("p")]));
 
     // The font builds letters from overlapping shapes (P = bowl over stem), so
     // a plain stroke traces the hidden insides too. Stroke at double width,
     // then erase the filled letter: only the outer edge is left.
-    const traceOutline = (ctx: CanvasRenderingContext2D, styles: [string | CanvasGradient, number][]) => {
+    const traceOutline = (ctx: CanvasRenderingContext2D, style: string | CanvasGradient, glow: number, weight: number) => {
+      const gs = ensureGlyphs(ctx);
       ctx.globalCompositeOperation = "source-over";
       ctx.lineJoin = "round";
-      for (const [style, blur] of styles) {
-        ctx.strokeStyle = style;
-        ctx.shadowColor = blur ? (typeof style === "string" ? style : "rgba(255,255,255,0.85)") : "transparent";
-        ctx.shadowBlur = blur;
-        for (const g of glyphs!) {
-          ctx.font = g.font;
-          ls(ctx).letterSpacing = g.tracking;
-          ctx.lineWidth = g.width * 2;
-          ctx.strokeText(g.text, g.x, g.y);
-        }
+      ctx.strokeStyle = style;
+      ctx.shadowColor = glow ? "rgba(255,255,255,0.8)" : "transparent";
+      ctx.shadowBlur = glow;
+      for (const g of gs) {
+        ctx.font = g.font;
+        ls(ctx).letterSpacing = g.tracking;
+        ctx.lineWidth = g.width * weight * 2;
+        ctx.strokeText(g.text, g.x, g.y);
       }
       ctx.shadowBlur = 0;
       ctx.globalCompositeOperation = "destination-out";
-      for (const g of glyphs!) {
+      for (const g of gs) {
         ctx.font = g.font;
         ls(ctx).letterSpacing = g.tracking;
         ctx.fillText(g.text, g.x, g.y);
@@ -466,32 +487,28 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       ctx.globalCompositeOperation = "source-over";
     };
 
-    const drawOutline = (e: number) => {
-      if (!octx || !outline) return;
-      // Measured on first use, once the words have settled into place.
-      glyphs ??= measureGlyphs(octx, [...wordRefs.current, headlineRef.current?.querySelector("p")]);
-      // Echo layers never change, so each is traced once and reused.
-      echoes ??= ECHOES.map(({ color, dx, dy, alpha }) => {
-        const img = document.createElement("canvas");
-        img.width = outline.width;
-        img.height = outline.height;
-        const ictx = img.getContext("2d")!;
-        ictx.setTransform(odpr, 0, 0, odpr, 0, 0);
-        traceOutline(ictx, [[color, 6]]);
-        return { img, dx, dy, alpha };
-      });
+    // Faint outline never changes: each tinted layer is traced on its own
+    // canvas (so erasing one doesn't bite into another) and stacked once.
+    const drawFaint = () => {
+      if (faintDrawn || !fctx) return;
+      faintDrawn = true;
+      for (const [color, dx] of FAINT_LAYERS) {
+        const layer = document.createElement("canvas");
+        layer.width = Math.round(w * odpr);
+        layer.height = Math.round(h * odpr);
+        const lctx = layer.getContext("2d")!;
+        lctx.setTransform(odpr, 0, 0, odpr, 0, 0);
+        traceOutline(lctx, color, 0, 0.5);
+        fctx.drawImage(layer, dx, 0, w, h);
+      }
+    };
+
+    const drawBeam = (e: number) => {
+      if (!octx) return;
       octx.clearRect(0, 0, w, h);
       const beam = octx.createConicGradient(e * 2.6, w / 2, h / 2);
       for (const [at, color] of BEAM_STOPS) beam.addColorStop(at, color);
-      // Front: black outline with the travelling beam. Behind it: the echoes.
-      traceOutline(octx, [["#000", 0], [beam, 8]]);
-      octx.globalCompositeOperation = "destination-over";
-      for (const { img, dx, dy, alpha } of echoes) {
-        octx.globalAlpha = alpha;
-        octx.drawImage(img, dx, dy, w, h);
-      }
-      octx.globalAlpha = 1;
-      octx.globalCompositeOperation = "source-over";
+      traceOutline(octx, beam, 6, 1);
     };
     const hide = "inset(0 0 100% 0)";
     let raf = 0;
@@ -500,7 +517,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
 
     const finish = () => {
       cancelAnimationFrame(raf);
-      for (const el of [dark, whiteType, blackType, mask]) if (el) el.style.clipPath = hide;
+      for (const el of [dark, faintClip, solidClip, beamClip, mask]) if (el) el.style.clipPath = hide;
       setDock(measureDock());
       setStage("final");
       onDone?.();
@@ -515,32 +532,46 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     const tick = (now: number) => {
       const e = ((now - t0) / 1000) * speed;
 
-      // Each dark cell shows the burst. Type over it is plain white in dim
-      // cells, black outlines in the bright core, and nothing deepest in the
-      // glare; freshly cleared cells can come back blank white for a beat.
+      // Dark cells show the burst; freshly cleared cells can come back blank
+      // white for a beat. Type rules per cell are described at the top.
       let all = "";
-      let dim = "";
-      let bright = "";
+      let faint = "";
+      let solid = "";
+      let beamed = "";
       let blank = "";
       const energy = energyAt(e);
-      const coreR = h * 0.3 * energy;
+      const coreR = h * 0.24 * energy;
+      const inv = invertAt(e);
+      const invR = inv > 0 ? h * (0.04 + 0.26 * inv) * 0.8 : 0;
       for (const c of cells) {
         const sq = `M${c.x} ${c.y}h${size}v${size}h${-size}Z`;
         if (isDark(c, e)) {
-          all += sq;
-          const k = c.dist / (coreR * c.coreBias);
-          if (k >= 1) dim += sq;
-          else if (k >= 0.45) bright += sq;
+          if (c.dist < invR) {
+            // A few cells round the star (never over it) snap back to white,
+            // so the star always tears out of the boom itself.
+            if (c.punch && c.dist > invR * 0.6) continue;
+            all += sq;
+            if (c.beam) beamed += sq;
+          } else {
+            all += sq;
+            if (c.dist < coreR * c.coreBias) solid += sq;
+            else if (c.faint) faint += sq;
+          }
         } else if (e >= c.off && e < c.maskEnd) {
           blank += sq;
         }
       }
-      if (dark) dark.style.clipPath = all ? `path("${all}")` : hide;
-      if (whiteType) whiteType.style.clipPath = dim ? `path("${dim}")` : hide;
-      if (blackType) blackType.style.clipPath = bright ? `path("${bright}")` : hide;
-      if (mask) mask.style.clipPath = blank ? `path("${blank}")` : hide;
+      const clip = (el: HTMLElement | null, d: string) => {
+        if (el) el.style.clipPath = d ? `path("${d}")` : hide;
+      };
+      clip(dark, all);
+      clip(faintClip, faint);
+      clip(solidClip, solid);
+      clip(beamClip, beamed);
+      clip(mask, blank);
       if (all) drawBurst?.(e - T.flood, energy, glitchAt(e), invertAt(e));
-      if (bright) drawOutline(e);
+      if (faint) drawFaint();
+      if (beamed) drawBeam(e);
 
       if (!docked && e >= T.dock) {
         docked = true;
@@ -616,10 +647,13 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
         style={{ clipPath: "inset(0 0 100% 0)" }}
       >
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-        <TypeClip clipRef={whiteTypeRef}>
-          <WhiteType />
+        <TypeClip clipRef={faintRef}>
+          <canvas ref={faintCanvasRef} className="absolute inset-0 h-full w-full" />
         </TypeClip>
-        <TypeClip clipRef={blackTypeRef}>
+        <TypeClip clipRef={solidRef}>
+          <SolidType />
+        </TypeClip>
+        <TypeClip clipRef={beamRef}>
           <canvas ref={outlineRef} className="absolute inset-0 h-full w-full" />
         </TypeClip>
       </div>
