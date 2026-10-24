@@ -26,9 +26,13 @@ const BEAM = [
   [0.22, 1.0, 0.53],
   [0.37, 0.94, 1.0],
 ];
-const FACE_LON = 20;
-// Bokeh strength at the start of assembly (blur in UV per px of depth off focus).
-const DOF_APERTURE = 4.5e-5; // degrees east: Africa faces the camera
+const FACE_LON = 20; // degrees east: Africa faces the camera
+// Depth of field: blocks more than DOF_MID / DOF_NEAR px ahead of their spot
+// on the globe are drawn into the mid / near focus layer, blurred by these
+// radii (px) for the sharp, mid and near layers.
+const DOF_MID = 40;
+const DOF_NEAR = 150;
+const DOF_RADII = [0, 3.5, 9];
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
@@ -185,12 +189,8 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
     Promise.all([
       import("three"),
       import("three/examples/jsm/environments/RoomEnvironment.js"),
-      import("three/examples/jsm/postprocessing/EffectComposer.js"),
-      import("three/examples/jsm/postprocessing/RenderPass.js"),
-      import("three/examples/jsm/postprocessing/BokehPass.js"),
-      import("three/examples/jsm/postprocessing/OutputPass.js"),
     ]).then(
-      ([THREE, { RoomEnvironment }, { EffectComposer }, { RenderPass }, { BokehPass }, { OutputPass }]) => {
+      ([THREE, { RoomEnvironment }]) => {
         if (disposed) return;
         const w = window.innerWidth;
         const h = window.innerHeight;
@@ -212,12 +212,12 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
         camera.position.z = h / 2 / Math.tan((fov * Math.PI) / 360);
 
         const scene = new THREE.Scene();
-        // Opaque white, the page colour: the bokeh pass needs a solid background.
-        scene.background = new THREE.Color(0xffffff);
+        const white = new THREE.Color(0xffffff);
         const pmrem = new THREE.PMREMGenerator(renderer);
         scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-        const key = new THREE.DirectionalLight(0xffffff, 2.4);
-        scene.add(key, new THREE.AmbientLight(0xffffff, 0.35));
+        // Kept low so ink reads as ink; the env map supplies the moving gleam.
+        const key = new THREE.DirectionalLight(0xffffff, 1.1);
+        scene.add(key, new THREE.AmbientLight(0xffffff, 0.04));
 
         const blocks = buildBlocks();
         const R = Math.min(h * 0.3, w * 0.4);
@@ -227,12 +227,102 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
         const flatCell = (rect.width / 360) * BLOCK_STEP * 0.9;
 
         const geo = new THREE.BoxGeometry(1, 1, 1);
-        const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.32, metalness: 0.35, envMapIntensity: 0.7 });
-        const mesh = new THREE.InstancedMesh(geo, mat, blocks.length);
-        mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        scene.add(mesh);
+        const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.4, envMapIntensity: 0.18 });
+        // Three focus layers: settled blocks drawn sharp, blocks still in flight
+        // ahead of the globe drawn into their own buffers and Gaussian-blurred.
+        const layers = [0, 1, 2].map(() => {
+          const lm = new THREE.InstancedMesh(geo, mat, blocks.length);
+          lm.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+          lm.frustumCulled = false;
+          scene.add(lm);
+          return lm;
+        });
+        const col = new THREE.Color(1, 1, 1);
+        layers.forEach((lm) => {
+          for (let i = 0; i < blocks.length; i++) lm.setColorAt(i, col);
+        });
 
-        const col = new THREE.Color();
+        // Separable 13-tap Gaussian on premultiplied colour, so a blurred block
+        // keeps its own colour and only its edge softens out.
+        const dpr = renderer.getPixelRatio();
+        const rtOpts = { type: THREE.HalfFloatType, depthBuffer: true };
+        const rtA = new THREE.WebGLRenderTarget(w * dpr, h * dpr, rtOpts);
+        const rtB = new THREE.WebGLRenderTarget(w * dpr, h * dpr, rtOpts);
+        const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const quadGeo = new THREE.PlaneGeometry(2, 2);
+        const vert = "varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }";
+        const blurMat = new THREE.ShaderMaterial({
+          uniforms: { tMap: { value: null }, uStep: { value: new THREE.Vector2() } },
+          vertexShader: vert,
+          fragmentShader: `
+            uniform sampler2D tMap; uniform vec2 uStep; varying vec2 vUv;
+            void main() {
+              vec4 s = texture2D(tMap, vUv) * 0.19648255;
+              s += (texture2D(tMap, vUv + uStep * 1.41176471) + texture2D(tMap, vUv - uStep * 1.41176471)) * 0.29690696;
+              s += (texture2D(tMap, vUv + uStep * 3.29411765) + texture2D(tMap, vUv - uStep * 3.29411765)) * 0.09447040;
+              s += (texture2D(tMap, vUv + uStep * 5.17647059) + texture2D(tMap, vUv - uStep * 5.17647059)) * 0.01038136;
+              gl_FragColor = s;
+            }`,
+          depthTest: false,
+          depthWrite: false,
+        });
+        const compMat = new THREE.ShaderMaterial({
+          uniforms: { tMap: { value: null } },
+          vertexShader: vert,
+          fragmentShader: `
+            uniform sampler2D tMap; varying vec2 vUv;
+            void main() {
+              vec4 c = texture2D(tMap, vUv);
+              gl_FragColor = vec4(c.a > 0.0 ? c.rgb / c.a : vec3(0.0), 1.0);
+              #include <colorspace_fragment>
+              gl_FragColor = vec4(gl_FragColor.rgb * c.a, c.a);
+            }`,
+          transparent: true,
+          blending: THREE.CustomBlending,
+          blendSrc: THREE.OneFactor,
+          blendDst: THREE.OneMinusSrcAlphaFactor,
+          depthTest: false,
+          depthWrite: false,
+        });
+        const quad = new THREE.Mesh(quadGeo, blurMat);
+        const quadScene = new THREE.Scene();
+        quadScene.add(quad);
+        const pass = (material: InstanceType<typeof THREE.ShaderMaterial>, target: typeof rtA | null) => {
+          quad.material = material;
+          renderer.setRenderTarget(target);
+          renderer.render(quadScene, quadCam);
+        };
+        renderer.autoClear = false;
+
+        const showOnly = (k: number) => layers.forEach((lm, j) => (lm.visible = j === k));
+        const renderLayers = (radii: number[]) => {
+          // Sharp layer straight to screen, on the page white.
+          renderer.setRenderTarget(null);
+          renderer.setClearColor(white, 1);
+          renderer.clear();
+          showOnly(0);
+          renderer.render(scene, camera);
+          for (const k of [1, 2]) {
+            if (layers[k].count === 0) continue;
+            renderer.setRenderTarget(rtA);
+            renderer.setClearColor(0x000000, 0);
+            renderer.clear();
+            showOnly(k);
+            renderer.render(scene, camera);
+            const px = (radii[k] * dpr) / 5.2;
+            for (let it = 0; it < 2; it++) {
+              blurMat.uniforms.tMap.value = rtA.texture;
+              blurMat.uniforms.uStep.value.set(px / (w * dpr), 0);
+              pass(blurMat, rtB);
+              blurMat.uniforms.tMap.value = rtB.texture;
+              blurMat.uniforms.uStep.value.set(0, px / (h * dpr));
+              pass(blurMat, rtA);
+            }
+            compMat.uniforms.tMap.value = rtA.texture;
+            pass(compMat, null);
+          }
+        };
+
         const m = new THREE.Matrix4();
         const pos = new THREE.Vector3();
         const sph = new THREE.Vector3();
@@ -246,16 +336,6 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
         const zAxis = new THREE.Vector3(0, 0, 1);
         const faceRad = (FACE_LON * Math.PI) / 180;
 
-        blocks.forEach((b, i) => {
-          col.setRGB(b.color[0], b.color[1], b.color[2]);
-          mesh.setColorAt(i, col);
-        });
-
-        let renderWith = (t: number) => {
-          void t;
-          renderer.render(scene, camera);
-        };
-
         /** Draws the stage at timeline time t (seconds); returns flatten progress. */
         const draw = (t: number) => {
           // Globe spin: a lazy turn during assembly that eases to face Africa.
@@ -264,8 +344,9 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
           const flatU = (t - G.assemble - G.turn) / G.flatten;
 
           key.position.set(Math.cos(t * 0.8) * 900, 600, 700 + Math.sin(t * 0.8) * 300);
+          const counts = [0, 0, 0];
 
-          blocks.forEach((b, i) => {
+          blocks.forEach((b) => {
             const la = (b.lat * Math.PI) / 180;
             const lo = (b.lon * Math.PI) / 180 + rotY;
             const tilt = 0.2;
@@ -303,37 +384,28 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
               if (b.offMap) scl.multiplyScalar(1 - f);
             }
 
+            // Focus sits on the globe's surface: how far a block still is
+            // ahead of its resting spot picks its focus layer.
+            const ahead = Math.max(0, pos.z - sph.z);
+            const layer = ahead > DOF_NEAR ? 2 : ahead > DOF_MID ? 1 : 0;
             m.compose(pos, q, scl);
-            mesh.setMatrixAt(i, m);
-
-            if (b.beam >= 0) {
-              const c = BEAM[Math.floor(b.beam + t * 5) % BEAM.length];
-              col.setRGB(c[0] * 3, c[1] * 3, c[2] * 3);
-              mesh.setColorAt(i, col);
-            }
+            const lm = layers[layer];
+            const n = counts[layer]++;
+            lm.setMatrixAt(n, m);
+            const c = b.beam >= 0 ? BEAM[Math.floor(b.beam + t * 5) % BEAM.length] : null;
+            if (c) col.setRGB(c[0] * 3, c[1] * 3, c[2] * 3);
+            else col.setRGB(b.color[0], b.color[1], b.color[2]);
+            lm.setColorAt(n, col);
           });
-          mesh.instanceMatrix.needsUpdate = true;
-          if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-          renderWith(t);
+
+          layers.forEach((lm, k) => {
+            lm.count = counts[k];
+            lm.instanceMatrix.needsUpdate = true;
+            lm.instanceColor!.needsUpdate = true;
+          });
+          renderLayers(DOF_RADII);
 
           return flatU;
-        };
-
-        // Depth of field: focus on the globe's front face. Blocks still flying in
-        // ahead of it are out of focus and pull sharp as they land.
-        const composer = new EffectComposer(renderer);
-        composer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-        composer.setSize(w, h);
-        composer.addPass(new RenderPass(scene, camera));
-        const bokeh = new BokehPass(scene, camera, { focus: camera.position.z - R * 0.75, aperture: 0, maxblur: 0.018 });
-        composer.addPass(bokeh);
-        composer.addPass(new OutputPass());
-        // Typed as a bare object upstream; the shader does have this uniform.
-        const aperture = (bokeh.uniforms as Record<string, { value: number }>).aperture;
-        const apertureAt = (t: number) => DOF_APERTURE * Math.pow(1 - clamp01(t / G.assemble), 1.6);
-        renderWith = (t: number) => {
-          aperture.value = apertureAt(t);
-          composer.render();
         };
 
         renderer.compile(scene, camera);
@@ -342,8 +414,12 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
           dispose: () => {
             geo.dispose();
             mat.dispose();
+            quadGeo.dispose();
+            blurMat.dispose();
+            compMat.dispose();
+            rtA.dispose();
+            rtB.dispose();
             pmrem.dispose();
-            composer.dispose();
             renderer.dispose();
           },
         };
