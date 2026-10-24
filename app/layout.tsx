@@ -76,7 +76,12 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/Favicon.png" type="image/png" />
         <link rel="apple-touch-icon" href="/Favicon.png" />
       </head>
-      <body className={`${manrope.variable} ${dmMono.variable} ${instrumentSerif.variable} antialiased`}>
+      {/* Extensions (e.g. Demoway) stamp attributes on <body> before hydration; this
+          only ignores attribute diffs on this element, not on its children. */}
+      <body
+        className={`${manrope.variable} ${dmMono.variable} ${instrumentSerif.variable} antialiased`}
+        suppressHydrationWarning
+      >
         <Analytics />
         <LoadingScreen />
         <ScrollToTop />
