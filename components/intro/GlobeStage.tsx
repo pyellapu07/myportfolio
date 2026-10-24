@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { LAND_GRID } from "@/components/map/landGrid";
 import { naturalEarth } from "@/components/map/projection";
+import { PROJECTS } from "@/components/map/projects";
 import { WORLD_MAP } from "@/components/map/worldMap";
 
 // After the blast, ocean blocks of uneven size and weight fly in from where
@@ -268,6 +269,75 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
           scene.add(lm);
           return lm;
         });
+        // Project cards ride the same vortex to their place on the globe. Near
+        // the surface they are pulled like something falling into a black
+        // hole: vertices closer to the centre swing further round and sink
+        // deeper, so the card smears and bends round the globe before it is
+        // swallowed.
+        const cardGeo = new THREE.PlaneGeometry(1, 0.625, 24, 16);
+        const texLoader = new THREE.TextureLoader();
+        const cardRand = mulberry32(29);
+        const cards = PROJECTS.map((pr, i) => {
+          const tex = texLoader.load(pr.thumb);
+          tex.colorSpace = THREE.SRGBColorSpace;
+          const warp = { value: 0 };
+          // Focus blur is done inside the card, by sampling a softer mip
+          // level, so its edge stays crisp and nothing smears outside it.
+          const soft = { value: 0 };
+          const cmat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+          cmat.onBeforeCompile = (sh) => {
+            sh.uniforms.uWarp = warp;
+            sh.uniforms.uR = { value: R };
+            sh.uniforms.uSoft = soft;
+            sh.fragmentShader = sh.fragmentShader
+              .replace("#include <common>", "#include <common>\nuniform float uSoft;")
+              .replace(
+                "#include <map_fragment>",
+                `vec4 sampledDiffuseColor = texture2D(map, vMapUv, uSoft);
+                diffuseColor *= sampledDiffuseColor;`,
+              );
+            sh.vertexShader = sh.vertexShader
+              .replace("#include <common>", "#include <common>\nuniform float uWarp;\nuniform float uR;")
+              .replace(
+                "#include <project_vertex>",
+                `vec4 wp = modelMatrix * vec4(transformed, 1.0);
+                vec3 rel = wp.xyz;
+                float rr = max(length(rel), 1.0);
+                float near = clamp(uR / rr, 0.0, 1.6);
+                // Differential swirl round the globe's axis: the inner edge
+                // turns further than the outer, which bends the card.
+                float ang = uWarp * 1.6 * near * near;
+                float c = cos(ang), s = sin(ang);
+                rel.xz = mat2(c, -s, s, c) * rel.xz;
+                // Tidal pull: sink towards the surface, harder up close.
+                rel *= 1.0 - uWarp * 0.45 * near;
+                wp.xyz = rel;
+                vec4 mvPosition = viewMatrix * wp;
+                gl_Position = projectionMatrix * mvPosition;`,
+              );
+          };
+          const mesh = new THREE.Mesh(cardGeo, cmat);
+          mesh.frustumCulled = false;
+          mesh.renderOrder = 2;
+          scene.add(mesh);
+          return {
+            mesh,
+            mat: cmat,
+            tex,
+            warp,
+            soft,
+            lat: pr.lat,
+            lon: pr.lon,
+            // Cards are big and near: they start wide and swing in late.
+            delay: 0.05 + 0.03 * i + cardRand() * 0.15,
+            dur: 1.1 + cardRand() * 0.2,
+            push: 0.7 + cardRand() * 0.5,
+            z: 260 + cardRand() * 300,
+            phase: cardRand() * Math.PI * 2,
+            layer: 0,
+          };
+        });
+
         const col = new THREE.Color(1, 1, 1);
         layers.forEach((lm) => {
           for (let i = 0; i < blocks.length; i++) lm.setColorAt(i, col);
@@ -325,7 +395,10 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
         };
         renderer.autoClear = false;
 
-        const showOnly = (k: number) => layers.forEach((lm, j) => (lm.visible = j === k));
+        const showOnly = (k: number) => {
+          layers.forEach((lm, j) => (lm.visible = j === k));
+          cards.forEach((c) => (c.mesh.visible = c.layer === k && c.mesh.scale.x > 0.01));
+        };
         const renderLayers = (radii: number[]) => {
           // Sharp layer straight to screen.
           renderer.setRenderTarget(null);
@@ -334,7 +407,7 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
           showOnly(0);
           renderer.render(scene, camera);
           for (const k of [1, 2]) {
-            if (layers[k].count === 0) continue;
+            if (layers[k].count === 0 && !cards.some((c) => c.layer === k)) continue;
             renderer.setRenderTarget(rtA);
             renderer.setClearColor(0x000000, 0);
             renderer.clear();
@@ -461,6 +534,36 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
             lm.setColorAt(n, col);
           });
 
+          cards.forEach((c) => {
+            const la = (c.lat * Math.PI) / 180;
+            const lo = (c.lon * Math.PI) / 180 + rotY;
+            const tilt = 0.2;
+            const ct = Math.cos(tilt);
+            const st = Math.sin(tilt);
+            const raw = (t - c.delay) / c.dur;
+            const u = clamp01(raw);
+            const k = vacuumSettle(u);
+            const away = 1 - k;
+            const lv = lo + away * SWIRL * 0.9 + c.phase * away * 0.3;
+            const flare = 1 + away * (c.push * Math.max(w, h)) / R;
+            const xv = Math.cos(la) * Math.sin(lv) * flare;
+            const yv = Math.sin(la) * (1 + away * 0.6);
+            const zv = Math.cos(la) * Math.cos(lv) * flare;
+            c.mesh.position.set(xv, yv * ct - zv * st, yv * st + zv * ct).multiplyScalar(R);
+            c.mesh.position.z = Math.min(c.mesh.position.z + away * c.z, camera.position.z * 0.8);
+            // Face the camera with a lazy tumble that straightens on the way in.
+            c.mesh.rotation.set(Math.sin(c.phase + t) * 0.35 * away, Math.cos(c.phase + t * 0.8) * 0.5 * away, Math.sin(c.phase) * 0.2 * away);
+            // Full size out in the vortex, swallowed as it lands.
+            const size = raw <= 0 || u >= 1 ? 0 : 150 * (1 - Math.pow(k, 3));
+            c.mesh.scale.set(size, size, 1);
+            c.warp.value = Math.pow(clamp01((k - 0.45) / 0.55), 1.5);
+            c.mat.opacity = 1 - Math.pow(clamp01((k - 0.8) / 0.2), 2);
+            // Cards stay on the sharp layer; their blur is a mip bias by depth.
+            const ahead = Math.max(0, c.mesh.position.z - R * 0.9);
+            c.soft.value = Math.min(3.2, ahead / 90);
+            c.layer = 0;
+          });
+
           layers.forEach((lm, k) => {
             lm.count = counts[k];
             lm.instanceMatrix.needsUpdate = true;
@@ -476,6 +579,11 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
           draw,
           wave: () => waveR,
           dispose: () => {
+            cards.forEach((c) => {
+              c.mat.dispose();
+              c.tex.dispose();
+            });
+            cardGeo.dispose();
             geo.dispose();
             mat.dispose();
             quadGeo.dispose();
