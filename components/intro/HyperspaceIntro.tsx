@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MutableRefObject } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MutableRefObject } from "react";
 import { motion } from "framer-motion";
 import { BURST_FRAG, VERT } from "./burstShader";
 import MapStage from "./MapStage";
@@ -115,8 +115,13 @@ const isDark = (c: Cell, e: number) =>
 const SUB_SPLIT = "-7px 1px 0 rgba(255,43,214,0.8), 6px -1px 0 rgba(0,225,255,0.8)";
 const SUB_NONE = "0px 0px 0 rgba(255,43,214,0), 0px 0px 0 rgba(0,225,255,0)";
 
-// Rainbow layers the ghost type tears into while it sits on dark cells.
-const GHOST_LAYERS = ["#ff1f4b", "#ffb800", "#3dff6e", "#00d5ff", "#4d5bff", "#ff2bd6"];
+// Dark-phase type: solid white with a tight chromatic fringe whose width
+// (--ca, in px) follows the burst. A black copy is masked to the blown-out
+// core (--core, its radius in px), so letters crossing it stay legible.
+const GHOST_SHADOW =
+  "calc(var(--ca) * -1px) 0 0 rgba(255,0,64,0.9), calc(var(--ca) * 1px) 0 0 rgba(0,170,255,0.9), 0 calc(var(--ca) * 0.6px) 0 rgba(60,255,120,0.55)";
+const GHOST_SUB_SHADOW =
+  "calc(var(--ca) * -2px) 0 0 #ff2bd6, calc(var(--ca) * 2px) 0 0 #00e1ff, 0 calc(var(--ca) * 1px) 0 #ffe600";
 
 function compile(gl: WebGLRenderingContext, type: number, src: string) {
   const shader = gl.createShader(type);
@@ -226,6 +231,17 @@ function Headline({ wordRefs, motions, speed }: {
   );
 }
 
+function GhostType({ className, style }: { className: string; style?: CSSProperties }) {
+  return (
+    <div className={`${HEADLINE_CLASS} ${className}`} style={{ ...style, textShadow: GHOST_SHADOW }}>
+      <Headline speed={1} />
+      <p className={`${SUBTITLE_CLASS} italic`} style={{ textShadow: GHOST_SUB_SHADOW }}>
+        {SUBTITLE}
+      </p>
+    </div>
+  );
+}
+
 interface Props {
   /** Playback rate; 0.25 slows the whole timeline for inspection. */
   speed?: number;
@@ -242,7 +258,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
   const headlineRef = useRef<HTMLDivElement>(null);
   const darkRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const ghostRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const ghostRef = useRef<HTMLDivElement>(null);
   const skipRef = useRef<() => void>(() => {});
 
   const skip = useCallback(() => skipRef.current(), []);
@@ -295,7 +311,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     const { size, cells } = buildCells(w, h);
     const canvas = canvasRef.current;
     const drawBurst = canvas ? createBurst(canvas, size) : null;
-    const ghosts = ghostRefs.current;
+    const ghost = ghostRef.current;
     const dark = darkRef.current;
     let raf = 0;
     let docked = false;
@@ -326,16 +342,14 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
         if (d) {
           const energy = energyAt(e);
           drawBurst?.(e - T.flood, energy, glitchAt(e));
-          // Ghost layers fan apart with the burst and wobble out of phase.
-          const amp = 1.5 + 13 * energy;
-          ghosts.forEach((el, i) => {
-            if (!el) return;
-            const k = i - (GHOST_LAYERS.length - 1) / 2;
-            const dx = (k * 0.55 + Math.sin(e * (19 + i * 3.1) + i * 1.7) * 0.6) * amp;
-            const dy = Math.sin(e * (13 + i * 2.3) + i) * amp * 0.18;
-            const skew = Math.sin(e * (9 + i) + i * 2.1) * amp * 0.25;
-            el.style.transform = `translate(${dx}px, ${dy}px) skewX(${skew}deg)`;
-          });
+          // Fringe widens with the burst and flickers; the type itself barely
+          // moves, so it stays readable.
+          if (ghost) {
+            const flick = 0.6 + 0.4 * Math.abs(Math.sin(e * 37) * Math.sin(e * 13.7));
+            ghost.style.setProperty("--ca", (1.2 + 5 * energy * flick).toFixed(2));
+            ghost.style.setProperty("--core", (h * 0.3 * energy * flick).toFixed(0));
+            ghost.style.transform = `translate(${(Math.sin(e * 53) * energy * 1.5).toFixed(2)}px, 0)`;
+          }
         }
       }
 
@@ -406,28 +420,15 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       >
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <div className={`${HEADLINE_CLASS} relative text-transparent`}>
-            {GHOST_LAYERS.map((color, i) => (
-              <div
-                key={color}
-                ref={(el) => {
-                  ghostRefs.current[i] = el;
-                }}
-                className="absolute inset-0 will-change-transform"
-                style={{ WebkitTextStroke: `1.2px ${color}` }}
-              >
-                <Headline speed={speed} />
-              </div>
-            ))}
-            <div className="relative [-webkit-text-stroke:1px_rgba(255,255,255,0.5)]">
-              <Headline speed={speed} />
-            </div>
-            <p
-              className={`${SUBTITLE_CLASS} italic text-white/60 [-webkit-text-stroke:0]`}
-              style={{ textShadow: "-2px 0 #ff2bd6, 2px 0 #00e1ff, 0 1px #ffe600" }}
-            >
-              {SUBTITLE}
-            </p>
+          <div ref={ghostRef} className="relative" style={{ ["--ca" as string]: 1.2, ["--core" as string]: 0 }}>
+            <GhostType className="text-white" />
+            <GhostType
+              className="absolute inset-0 text-black"
+              style={{
+                maskImage: "radial-gradient(circle calc(var(--core) * 1px) at 50% 50%, #000 55%, transparent 100%)",
+                WebkitMaskImage: "radial-gradient(circle calc(var(--core) * 1px) at 50% 50%, #000 55%, transparent 100%)",
+              }}
+            />
           </div>
         </div>
       </div>
