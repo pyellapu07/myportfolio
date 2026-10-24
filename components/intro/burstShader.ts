@@ -107,17 +107,25 @@ void main() {
   // Filmic shoulder: the core clips to white unevenly instead of a hard disc.
   col = 1.0 - exp(-col * 1.8);
 
-  // Black sonic: a dark, streaky star grows from the centre of the white core.
+  // Black matter: a dark blob that tears out of the white core. Built like
+  // the white burst: a lumpy disc that breathes, with a few broad, soft
+  // petals where a slow sector mask allows them (other directions stay
+  // smooth), a wobbling edge, and only faint streak texture inside.
   if (u_inv > 0.0) {
-    // The blast eats the star from the outside in.
-    float ri = (0.04 + 0.18 * u_inv) * (1.0 - 0.95 * u_blast) * (0.7 + 0.6 * pow(noise(a * 16.0 + 5.0), 2.0));
-    float fine = 0.55 + 0.45 * pow(noise(a * 70.0 + 2.0), 2.0);
-    float dark = smoothstep(ri, ri * 0.25, r / fine) * smoothstep(0.0, 0.15, u_inv);
-    vec3 inv = vec3(0.02, 0.02, 0.04) + vec3(0.6, 0.75, 1.0) * pow(noise(a * 110.0), 6.0) * 0.5;
+    float grow = smoothstep(0.0, 1.0, u_inv) * (1.0 - 0.95 * u_blast);
+    float blob = 1.0 + 0.35 * (noise2(dir * 1.4 + t * 1.1 + 31.0) - 0.5) + 0.2 * (noise2(dir * 2.7 - t * 1.7 + 47.0) - 0.5);
+    float petalMask = smoothstep(0.45, 0.8, noise2(dir * 1.6 + 17.0 + t * 0.3));
+    float petals = pow(noise(a * 7.0 + 9.0 + t * 0.4), 2.5) * petalMask;
+    float ri = (0.035 + 0.15 * grow) * blob * (1.0 + 1.1 * petals);
+    // Edge softness breathes too, so the outline never sits still.
+    float soft = 0.72 + 0.12 * noise2(dir * 3.0 + t * 2.3);
+    float dark = smoothstep(ri, ri * soft, r) * smoothstep(0.0, 0.15, u_inv);
+    float streak = pow(noise(a * 40.0 + 2.0), 4.0) * smoothstep(0.2, 0.9, r / max(ri, 1e-3));
+    vec3 inv = vec3(0.015, 0.016, 0.03) + vec3(0.45, 0.55, 0.8) * streak * 0.35;
     col = mix(col, inv, dark);
-    // Thin chromatic rim round the dark star.
-    float rim = exp(-abs(r / fine - ri) * 90.0) * smoothstep(0.0, 0.2, u_inv);
-    col += vec3(0.9, 0.1, 0.3) * rim * 0.5 + vec3(0.1, 0.5, 1.0) * exp(-abs(r / fine - ri * 1.06) * 90.0) * 0.5 * smoothstep(0.0, 0.2, u_inv);
+    // Faint chromatic fringe where the dark meets the glare.
+    float fringe = smoothstep(0.0, 0.2, u_inv) * exp(-abs(r - ri * 1.02) / max(ri, 1e-3) * 22.0);
+    col += (vec3(0.9, 0.15, 0.35) * 0.25 + vec3(0.15, 0.5, 1.0) * 0.3) * fringe;
   }
 
   // Beyond the flower it is near-black: faint dark streaks drifting outwards.
