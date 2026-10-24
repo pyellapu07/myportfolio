@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type Mutable
 import { motion } from "framer-motion";
 import { BURST_FRAG, VERT } from "./burstShader";
 import MapStage from "./MapStage";
+import GlobeStage, { GLOBE_DURATION, GLOBE_FLATTEN_AT } from "./GlobeStage";
 
 // Slow → fast → slow. Every word move, the convergence and the dock share it.
 const EASE = [0.65, 0, 0.35, 1] as const;
@@ -29,9 +30,10 @@ const T = {
   blast: 2.6, // the white blob blasts outwards, swallowing the star
   blastDur: 0.65,
   survivors: 3.6, // last stray cells are gone
-  dock: 3.7,
+  globe: 3.05, // blocks thrown out by the blast start flying back in
+  dock: 3.05 + GLOBE_FLATTEN_AT, // headline docks as the globe unrolls
   dockDur: 0.9,
-  end: 5.0,
+  end: 3.05 + GLOBE_DURATION + 0.4,
 };
 
 // Where each word shows up on its own, and where it drifts before it joins the
@@ -356,6 +358,9 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
   const phase: Phase = !layout ? "measure" : layout.reduced ? "final" : stage === "run" ? "play" : stage;
   const motions = layout?.motions ?? null;
   const [dock, setDock] = useState<Dock | null>(null);
+  const [globeOn, setGlobeOn] = useState(false);
+  const [mapOn, setMapOn] = useState(false);
+  const showMap = useCallback(() => setMapOn(true), []);
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const headlineRef = useRef<HTMLDivElement>(null);
   const darkRef = useRef<HTMLDivElement>(null);
@@ -580,6 +585,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       if (faint) drawFaint();
       if (beamed) drawBeam(e);
 
+      if (e >= T.globe) setGlobeOn(true);
       if (!docked && e >= T.dock) {
         docked = true;
         setDock(measureDock());
@@ -607,7 +613,16 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-white text-[#0a0a0a]" onClick={phase === "play" ? skip : undefined}>
-      <MapStage play={docking} instant={instant} speed={speed} />
+      <MapStage play={mapOn || instant} instant={instant} speed={speed} />
+      {!instant && (
+        <motion.div
+          className="pointer-events-none absolute inset-0"
+          animate={{ opacity: mapOn ? 0 : 1 }}
+          transition={{ duration: 0.5 * s }}
+        >
+          <GlobeStage play={globeOn} speed={speed} onFlat={showMap} />
+        </motion.div>
+      )}
 
       {/* Base layer: what the white cells show */}
       <motion.div
