@@ -362,6 +362,8 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
   const [globeOn, setGlobeOn] = useState(false);
   const [mapOn, setMapOn] = useState(false);
   const showMap = useCallback(() => setMapOn(true), []);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const setWave = useCallback((r: number) => rootRef.current?.style.setProperty("--wave", `${r.toFixed(1)}px`), []);
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const headlineRef = useRef<HTMLDivElement>(null);
   const darkRef = useRef<HTMLDivElement>(null);
@@ -525,11 +527,14 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     const hide = "inset(0 0 100% 0)";
     let raf = 0;
     let docked = false;
+    let globeCued = false;
     const t0 = performance.now();
 
     const finish = () => {
       cancelAnimationFrame(raf);
       for (const el of [dark, faintClip, solidClip, beamClip, mask]) if (el) el.style.clipPath = hide;
+      // Skipped: show the whole map rather than wherever the wave had got to.
+      rootRef.current?.style.removeProperty("--wave");
       setDock(measureDock());
       setStage("final");
       onDone?.();
@@ -590,7 +595,11 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       if (faint) drawFaint();
       if (beamed) drawBeam(e);
 
-      if (e >= T.globe) setGlobeOn(true);
+      if (e >= T.globe && !globeCued) {
+        globeCued = true;
+        setWave(0);
+        setGlobeOn(true);
+      }
       if (!docked && e >= T.dock) {
         docked = true;
         setDock(measureDock());
@@ -609,7 +618,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", onKey);
     };
-  }, [phase === "play", speed, onDone, measureDock]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [phase === "play", speed, onDone, measureDock, setWave]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const docking = phase === "dock" || phase === "final";
   const instant = phase === "final";
@@ -617,16 +626,12 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
   const dockTransition = { duration: instant ? 0 : T.dockDur * s, ease: EASE };
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-white text-[#0a0a0a]" onClick={phase === "play" ? skip : undefined}>
+    <div ref={rootRef} className="fixed inset-0 overflow-hidden bg-white text-[#0a0a0a]" onClick={phase === "play" ? skip : undefined}>
       <MapStage play={mapOn || instant} instant={instant} speed={speed} />
       {!instant && (
-        <motion.div
-          className="pointer-events-none absolute inset-0"
-          animate={{ opacity: mapOn ? 0 : 1 }}
-          transition={{ duration: 0.5 * s }}
-        >
-          <GlobeStage play={globeOn} speed={speed} onFlat={showMap} />
-        </motion.div>
+        <div className="pointer-events-none absolute inset-0">
+          <GlobeStage play={globeOn} speed={speed} onFlat={showMap} onWave={setWave} />
+        </div>
       )}
 
       {/* Base layer: what the white cells show */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { LAND_GRID, MAP_PROJECTION } from "@/components/map/landGrid";
 import { WORLD_MAP } from "@/components/map/worldMap";
 
@@ -10,11 +11,13 @@ import { WORLD_MAP } from "@/components/map/worldMap";
 
 // Seconds at speed 1, from the moment `play` turns on.
 const G = {
-  assemble: 2.0, // last block has landed
+  assemble: 2.4, // last block has landed
   turn: 0.45, // settle facing Africa
   flatten: 1.3,
+  dissolve: 1.2, // blocks melt away in a wave from Africa as the line map draws in
 };
-export const GLOBE_DURATION = G.assemble + G.turn + G.flatten;
+export const GLOBE_DURATION = G.assemble + G.turn + G.flatten + G.dissolve;
+export const GLOBE_DISSOLVE = G.dissolve;
 export const GLOBE_FLATTEN_AT = G.assemble + G.turn;
 
 const INK = [0.02, 0.022, 0.03];
@@ -56,9 +59,11 @@ function bezier(x1: number, y1: number, x2: number, y2: number) {
 const EASE = bezier(0.65, 0, 0.35, 1);
 // Heavy deceleration: arrives fast from off screen and slowly settles.
 const ARRIVE = bezier(0.12, 0.85, 0.2, 1);
-// How far into its curve each block already is when the stage appears, so
-// nothing sits still: the blocks are mid-flight as the blast clears.
-const PREROLL = 0.26;
+// Share of blocks already creeping in at the screen edges at the first frame;
+// the rest are still beyond it. Nothing starts on the globe itself.
+const AT_EDGE = 0.12;
+// Width of the dissolve wave's soft front, in px.
+const WAVE_FEATHER = 120;
 
 // d3's geoNaturalEarth1 raw projection, with the map's fitted transform.
 function naturalEarth(lonDeg: number, latDeg: number): [number, number] {
@@ -90,6 +95,15 @@ export function mapRect(w: number, h: number) {
   return { left: inset + (fw - mw) / 2, top: 76 + (fh - mh) / 2, width: mw, height: mh };
 }
 
+/** Distance from Nairobi to the far corner of the flat map, in px. */
+export function waveMaxR(w: number, h: number) {
+  const r = mapRect(w, h);
+  const s = r.width / WORLD_MAP.width;
+  const ax = WORLD_MAP.anchors.nairobi[0] * s;
+  const ay = WORLD_MAP.anchors.nairobi[1] * s;
+  return Math.hypot(Math.max(ax, r.width - ax), Math.max(ay, r.height - ay));
+}
+
 function landBits() {
   const raw = atob(LAND_GRID.bits);
   return (row: number, col: number) => {
@@ -107,6 +121,8 @@ type Block = {
   spin: [number, number, number];
   delay: number;
   dur: number;
+  /** How far into its arrival curve the block already is at the first frame. */
+  pre: number;
   flatDelay: number;
   offMap: boolean;
   color: number[];
@@ -115,7 +131,7 @@ type Block = {
 
 // Blocks are coarser than the land grid: each covers COARSE × COARSE cells
 // and counts as ocean when most of them are.
-const COARSE = 2;
+const COARSE = 1;
 export const BLOCK_STEP = LAND_GRID.step * COARSE;
 
 function buildBlocks(): Block[] {
@@ -138,10 +154,12 @@ function buildBlocks(): Block[] {
       const lat = lat0 - (r + 0.5) * BLOCK_STEP;
       const lon = -180 + (c + 0.5) * BLOCK_STEP;
       const roll = rand();
-      const size = roll < 0.06 ? 1.25 + rand() * 0.2 : 0.88 + rand() * 0.14;
-      // Pushed out past the screen edge along a radial direction (set once the
-      // block's screen position is known), and some forward towards the camera.
-      const dist = 0.3 + rand() * 0.55;
+      const size = roll < 0.05 ? 0.9 + rand() * 0.15 : 0.6 + rand() * 0.16;
+      // Every block starts beyond the screen edge along a radial direction
+      // (set once its screen position is known), some forward towards the
+      // camera; a few are already creeping in at the edges.
+      const dist = 0.62 + rand() * 0.5;
+      const pre = rand() < AT_EDGE ? 0.14 + rand() * 0.1 : 0;
       const roll2 = rand();
       blocks.push({
         lat,
@@ -149,8 +167,9 @@ function buildBlocks(): Block[] {
         size,
         push: [dist, rand() * Math.PI * 2, rand() * 420],
         spin: [(rand() - 0.5) * 2.2, (rand() - 0.5) * 2.2, (rand() - 0.5) * 2.2],
-        delay: rand() * 0.25,
-        dur: 1.7 + rand() * 0.45,
+        delay: rand() * 0.9,
+        dur: 1.3 + rand() * 0.2,
+        pre,
         flatDelay: (Math.abs(((lon - FACE_LON + 540) % 360) - 180) / 180) * 0.35 + rand() * 0.08,
         offMap: r >= cRows,
         color: roll2 < 0.1 ? ACCENT : INK,
@@ -166,18 +185,22 @@ interface Props {
   speed: number;
   /** Fired once the blocks lie flat on the map. */
   onFlat?: () => void;
+  /** Each frame of the dissolve: the wave's radius from Nairobi, in px. */
+  onWave?: (r: number) => void;
 }
 
-type Stage = { draw: (t: number) => number; dispose: () => void };
+type Stage = { draw: (t: number) => number; wave: () => number; dispose: () => void };
 
-export default function GlobeStage({ play, speed, onFlat }: Props) {
+export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<Stage | null>(null);
   const failedRef = useRef(false);
   const onFlatRef = useRef(onFlat);
+  const onWaveRef = useRef(onWave);
   useEffect(() => {
     onFlatRef.current = onFlat;
-  }, [onFlat]);
+    onWaveRef.current = onWave;
+  }, [onFlat, onWave]);
 
   // Load three.js and build the whole scene when the intro mounts, compiling
   // the shaders up front, so the first globe frame costs nothing at the blast.
@@ -196,7 +219,8 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
         const h = window.innerHeight;
         let renderer: InstanceType<typeof THREE.WebGLRenderer>;
         try {
-          renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+          // Transparent, so the line map beneath shows through as blocks melt away.
+          renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
         } catch {
           failedRef.current = true;
           return;
@@ -212,7 +236,6 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
         camera.position.z = h / 2 / Math.tan((fov * Math.PI) / 360);
 
         const scene = new THREE.Scene();
-        const white = new THREE.Color(0xffffff);
         const pmrem = new THREE.PMREMGenerator(renderer);
         scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
         // Kept low so ink reads as ink; the env map supplies the moving gleam.
@@ -225,6 +248,11 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
         const rect = mapRect(w, h);
         const mapScale = rect.width / WORLD_MAP.width;
         const flatCell = (rect.width / 360) * BLOCK_STEP * 0.9;
+        // Dissolve wave centre (Nairobi on the flat map), in world units.
+        const ax = rect.left + WORLD_MAP.anchors.nairobi[0] * mapScale - w / 2;
+        const ay = h / 2 - (rect.top + WORLD_MAP.anchors.nairobi[1] * mapScale);
+        const maxR = waveMaxR(w, h);
+        let waveR = 0;
 
         const geo = new THREE.BoxGeometry(1, 1, 1);
         const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.4, envMapIntensity: 0.18 });
@@ -296,9 +324,9 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
 
         const showOnly = (k: number) => layers.forEach((lm, j) => (lm.visible = j === k));
         const renderLayers = (radii: number[]) => {
-          // Sharp layer straight to screen, on the page white.
+          // Sharp layer straight to screen.
           renderer.setRenderTarget(null);
-          renderer.setClearColor(white, 1);
+          renderer.setClearColor(0x000000, 0);
           renderer.clear();
           showOnly(0);
           renderer.render(scene, camera);
@@ -340,9 +368,12 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
         const draw = (t: number) => {
           // Globe spin: a lazy turn during assembly that eases to face Africa.
           const turnU = clamp01(t / (G.assemble + G.turn));
-          const rotY = -faceRad + (1 - EASE(turnU)) * 1.4;
+          // Spinning from the first frame, slowing into the Africa view.
+          const rotY = -faceRad + (1 - EASE(turnU)) * 2.6;
           const flatU = (t - G.assemble - G.turn) / G.flatten;
 
+          const waveU = (flatU - 1) * (G.flatten / G.dissolve);
+          waveR = waveU > 0 ? EASE(clamp01(waveU)) * (maxR + WAVE_FEATHER) : 0;
           key.position.set(Math.cos(t * 0.8) * 900, 600, 700 + Math.sin(t * 0.8) * 300);
           const counts = [0, 0, 0];
 
@@ -359,7 +390,7 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
 
             // Assembly: already in globe formation but pushed out radially past
             // the screen edge (centre empty), closing in on a heavy ease-out.
-            const u = clamp01(PREROLL + (t - b.delay) / b.dur);
+            const u = clamp01(b.pre + (t - b.delay) / b.dur);
             const k = ARRIVE(u);
             const rad = Math.hypot(sph.x, sph.y);
             const ang = rad > R * 0.08 ? Math.atan2(sph.y, sph.x) : b.push[1];
@@ -371,12 +402,16 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
             const sz = b.size * cell * Math.max(Math.cos(la), 0.35);
             scl.set(sz, sz, sz * 0.7);
 
+            // Where the block rests: its spot on the globe, then on the map.
+            let restZ = sph.z;
+
             // Flatten: each block slides to its spot on the map and lies flat.
             if (flatU > 0) {
               const f = EASE(clamp01((flatU - b.flatDelay) / (1 - 0.43)));
               const [mx, my] = naturalEarth(b.lon, b.lat);
               flat.set(rect.left + mx * mapScale - w / 2, h / 2 - (rect.top + my * mapScale), 0);
               pos.lerp(flat, f);
+              restZ *= 1 - f;
               qFlat.identity();
               q.slerp(qFlat, f);
               const fs = flatCell * Math.min(b.size, 1.1);
@@ -384,9 +419,18 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
               if (b.offMap) scl.multiplyScalar(1 - f);
             }
 
+            // Dissolve: a soft wave spreads from Africa; blocks it passes
+            // drift towards the camera into the blur layers and shrink away.
+            let melt = 0;
+            if (waveR > 0) {
+              melt = clamp01((waveR - Math.hypot(pos.x - ax, pos.y - ay)) / WAVE_FEATHER);
+              pos.z += melt * 220;
+              scl.multiplyScalar(1 - melt);
+            }
+
             // Focus sits on the globe's surface: how far a block still is
             // ahead of its resting spot picks its focus layer.
-            const ahead = Math.max(0, pos.z - sph.z);
+            const ahead = Math.max(0, pos.z - restZ);
             const layer = ahead > DOF_NEAR ? 2 : ahead > DOF_MID ? 1 : 0;
             m.compose(pos, q, scl);
             const lm = layers[layer];
@@ -411,6 +455,7 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
         renderer.compile(scene, camera);
         stageRef.current = {
           draw,
+          wave: () => waveR,
           dispose: () => {
             geo.dispose();
             mat.dispose();
@@ -448,15 +493,35 @@ export default function GlobeStage({ play, speed, onFlat }: Props) {
       // rAF timestamps can trail performance.now() slightly on the first frame.
       const t = Math.max(0, ((now - t0) / 1000) * speed);
       const flatU = stageRef.current?.draw(t) ?? -1;
+      if (flatU >= 1) onWaveRef.current?.(stageRef.current?.wave() ?? 0);
       if (!flatDone && flatU >= 1) {
         flatDone = true;
         onFlatRef.current?.();
       }
-      if (flatU < 1.6) raf = requestAnimationFrame(frame);
+      if (flatU < 1 + (G.dissolve + 0.2) / G.flatten) raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
   }, [play, speed]);
 
-  return <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" />;
+  return (
+    <>
+      <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" />
+      {/* Lens haze round the frame edges while the blocks drift in */}
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backdropFilter: "blur(14px)",
+          WebkitBackdropFilter: "blur(14px)",
+          background: "radial-gradient(ellipse at center, transparent 45%, rgba(255,255,255,0.55) 100%)",
+          maskImage: "radial-gradient(ellipse at center, transparent 42%, #000 92%)",
+          WebkitMaskImage: "radial-gradient(ellipse at center, transparent 42%, #000 92%)",
+        }}
+        initial={{ opacity: 1 }}
+        animate={{ opacity: play ? 0 : 1 }}
+        transition={{ delay: (G.assemble * 0.55) / speed, duration: (G.assemble * 0.5) / speed }}
+      />
+    </>
+  );
 }
