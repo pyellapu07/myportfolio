@@ -78,6 +78,10 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
         const ax = (st.x / 100) * box.w;
         const ay = (st.y / 100) * box.h;
         const fanned = open === st.place;
+        // A pile shows its top title only when no other pile crowds it.
+        const crowded = STACKS.some(
+          (o) => o !== st && Math.hypot(((o.x - st.x) / 100) * box.w, ((o.y - st.y) / 100) * box.h) < CARD_W * 0.9,
+        );
         const n = st.items.length;
         return (
           <div
@@ -94,7 +98,7 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
               // Fanned: a shallow arc above the pin, centred on it.
               const spread = n > 1 ? (i - (n - 1) / 2) * (CARD_W * 0.78) : 0;
               const x = fanned ? spread - CARD_W / 2 : j[0] - CARD_W / 2;
-              const y = fanned ? -CARD_H - 22 - Math.abs(i - (n - 1) / 2) * 6 : j[1] - CARD_H - 14;
+              const y = fanned ? -CARD_H - 40 - Math.abs(i - (n - 1) / 2) * 6 : j[1] - CARD_H - 32;
               const rot = fanned ? (i - (n - 1) / 2) * 2.5 : j[2];
               const blur = blurAt(ax + x + CARD_W / 2, ay + y + CARD_H / 2);
               return (
@@ -110,11 +114,9 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
                     scale: { delay: delay + si * 0.07 + i * 0.03, duration: 0.6, ease: SETTLE },
                   }}
                 >
-                  <Link
-                    href={p.href}
-                    className="group relative block h-full w-full overflow-hidden rounded-[6px] bg-white shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)] ring-1 ring-black/10 transition-shadow hover:shadow-[0_12px_30px_-10px_rgba(0,0,0,0.45)]"
-                    aria-label={`${p.title}, ${p.place}`}
-                  >
+                  <Link href={p.href} className="group block h-full w-full" aria-label={`${p.title}, ${p.place}`}>
+                    {/* Sharp-cornered frame; it clips the image so the focus blur stays inside. */}
+                    <span className="block h-full w-full overflow-hidden bg-white">
                     {/* Focus blur lives on the image inside the clipped card, so
                         the card edge stays crisp and nothing clouds outside it.
                         Scaled up a touch so the blurred edge never shows white. */}
@@ -128,9 +130,15 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
                       style={{ filter: `blur(${blur}px)` }}
                       draggable={false}
                     />
-                    <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-white/95 px-2 py-1 text-[9px] font-semibold leading-tight text-black opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                    </span>
+                    {/* Title sits below the card: the top card of each pile, every card
+                        in a fanned pile, and whichever card is hovered. */}
+                    <span
+                      className={`pointer-events-none absolute left-1/2 top-full mt-2.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 group-hover:opacity-100 ${
+                        fanned || (i === 0 && !crowded) ? "opacity-100" : "opacity-0"
+                      }`}
+                    >
                       {p.title}
-                      <span className="block font-normal text-black/55">{p.role}</span>
                     </span>
                   </Link>
                 </motion.div>
