@@ -11,7 +11,7 @@ import { WORLD_MAP } from "@/components/map/worldMap";
 
 // Seconds at speed 1, from the moment `play` turns on.
 const G = {
-  assemble: 2.4, // last block has landed
+  assemble: 1.9, // last block has landed
   turn: 0.45, // settle facing Africa
   flatten: 1.3,
   dissolve: 0.6, // one big zap from the centre melts the blocks as the line map draws in
@@ -59,6 +59,9 @@ function bezier(x1: number, y1: number, x2: number, y2: number) {
 const EASE = bezier(0.65, 0, 0.35, 1);
 // Vacuum: slow, then fast, then extra fast, as if sucked into place.
 const VACUUM = bezier(0.7, 0, 0.84, 0);
+const SETTLE = bezier(0.2, 0.6, 0.35, 1);
+// Vacuum for most of the trip, then a short soft settle instead of a dead stop.
+const vacuumSettle = (u: number) => (u < 0.86 ? VACUUM(u / 0.86) * 0.965 : 0.965 + 0.035 * SETTLE((u - 0.86) / 0.14));
 // Extra revolutions (radians) a block makes round the globe's axis on its
 // way in, so everything enters spinning like a vortex.
 const SWIRL = 5.5;
@@ -123,6 +126,8 @@ type Block = {
   dur: number;
   /** How far into its arrival curve the block already is at the first frame. */
   pre: number;
+  /** Flies the whole vortex from the screen edge; others appear partway in. */
+  tracer: boolean;
   flatDelay: number;
   offMap: boolean;
   color: number[];
@@ -158,18 +163,25 @@ function buildBlocks(): Block[] {
       // Every block starts beyond the screen edge along a radial direction
       // (set once its screen position is known), some forward towards the
       // camera; a few are already creeping in at the edges.
-      const dist = 0.62 + rand() * 0.5;
       const pre = rand() < AT_EDGE ? 0.14 + rand() * 0.1 : 0;
+      // Start times ramp up: only a trickle at first, then the rush.
+      const delay = pre > 0 ? 0 : 0.95 * Math.pow(rand(), 0.55);
+      // Later starters begin closer in, so the field empties from the screen
+      // edges towards the globe as it completes.
+      const late = delay / 0.95;
+      const dist = (0.62 + rand() * 0.5) * (1 - 0.8 * late);
       const roll2 = rand();
       blocks.push({
         lat,
         lon,
         size,
-        push: [dist, rand() * Math.PI * 2, rand() * 420],
+        push: [dist, rand() * Math.PI * 2, rand() * 420 * (1 - 0.85 * late)],
         spin: [(rand() - 0.5) * 2.2, (rand() - 0.5) * 2.2, (rand() - 0.5) * 2.2],
-        delay: rand() * 0.9,
-        dur: 1.3 + rand() * 0.2,
+        delay,
+        // A short trip, so a block is only on screen while it is travelling.
+        dur: 0.8 + rand() * 0.2,
         pre,
+        tracer: pre > 0 || (late < 0.45 && rand() < 0.45),
         flatDelay: (Math.abs(((lon - FACE_LON + 540) % 360) - 180) / 180) * 0.35 + rand() * 0.08,
         offMap: r >= cRows,
         color: roll2 < 0.1 ? ACCENT : INK,
@@ -397,8 +409,9 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
             // its resting spot. Blocks swinging past the front of the vortex
             // are near the camera, so they read big and blurred, and shrink
             // as they are drawn in.
-            const u = clamp01(b.pre + (t - b.delay) / b.dur);
-            const k = VACUUM(u);
+            const raw = b.pre + (t - b.delay) / b.dur;
+            const u = clamp01(raw);
+            const k = vacuumSettle(u);
             const away = 1 - k;
             const lv = lo + away * SWIRL * (0.8 + b.push[1] / Math.PI / 5);
             const flare = 1 + away * (b.push[0] * Math.max(w, h)) / R;
@@ -410,7 +423,11 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
             e.set(b.spin[0] * away, b.spin[1] * away, b.spin[2] * away);
             qSpin.setFromEuler(e);
             q.copy(qSph).multiply(qSpin);
-            const sz = b.size * cell * Math.max(Math.cos(la), 0.35);
+            // Not set off yet: hidden, so nothing waits around in an outer cloud.
+            // Only the tracers are visible all the way in; the rest grow out of
+            // the swirl partway, so the outer field stays sparse.
+            const show = b.tracer ? 1 : clamp01((k - 0.12) / 0.3);
+            const sz = raw <= 0 ? 0 : b.size * cell * Math.max(Math.cos(la), 0.35) * show;
             scl.set(sz, sz, sz * 0.7);
 
             // Where the block rests: its spot on the globe, then on the map.
@@ -418,7 +435,7 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
 
             // Flatten: each block slides to its spot on the map and lies flat.
             if (flatU > 0) {
-              const f = VACUUM(clamp01((flatU - b.flatDelay) / (1 - 0.43)));
+              const f = vacuumSettle(clamp01((flatU - b.flatDelay) / (1 - 0.43)));
               const [mx, my] = naturalEarth(b.lon, b.lat);
               flat.set(rect.left + mx * mapScale - w / 2, h / 2 - (rect.top + my * mapScale), 0);
               pos.lerp(flat, f);
