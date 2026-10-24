@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MutableRefObject, type RefObject } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MutableRefObject, type ReactNode, type RefObject } from "react";
 import { motion } from "framer-motion";
 import { BURST_FRAG, VERT } from "./burstShader";
 import MapStage from "./MapStage";
@@ -15,21 +15,21 @@ const LINES = [
 const SUBTITLE = "From satellite pixel to shipped product.";
 const WORDS = LINES.flat();
 
-// Timeline in seconds at speed 1. The intro proper is done by ~3.3s; the burst
-// is cut off on its way up rather than allowed to finish.
+// Timeline in seconds at speed 1. Everything but the dock is done by ~3.7s.
 const T = {
   scatter: 0.15, // words start arriving after a blank beat
-  converge: 1.2,
-  assembled: 1.65,
-  flood: 1.65, // dark cells take part of the screen, in clumps
-  floodDur: 0.3,
-  peak: 1.95,
-  clear: 2.15, // cells flip back to white in random clumps
-  clearDur: 0.6,
-  survivors: 3.2, // last lingering burst tiles are gone
-  dock: 3.25,
+  converge: 1.05,
+  assembled: 1.5,
+  flood: 1.5, // dark cells sweep in, in clumps
+  floodDur: 0.25,
+  peak: 1.8,
+  invert: 1.85, // black star starts growing out of the white core
+  clear: 2.0, // white cells close back over it, slowing to a long tail
+  clearDur: 1.3,
+  survivors: 3.6, // last stray cells are gone
+  dock: 3.7,
   dockDur: 0.9,
-  end: 4.6,
+  end: 5.0,
 };
 
 // Where each word shows up on its own, and where it drifts before it joins the
@@ -86,14 +86,17 @@ type Cell = {
   off: number;
   blinkAt: number;
   blinkEnd: number;
+  /** After clearing, the cell stays blank white (hiding the type) until here. */
+  maskEnd: number;
   /** Distance of the cell centre from the screen centre, in px. */
   dist: number;
   /** Per-cell jitter on the core radius, so the black/white split is ragged. */
   coreBias: number;
 };
 
+// Small cells; the big dark and white areas are clumps of them.
 function buildCells(w: number, h: number): { size: number; cells: Cell[] } {
-  const size = Math.round(Math.max(w, h) / 10);
+  const size = Math.round(Math.max(w, h) / 20);
   const cols = Math.ceil(w / size);
   const rows = Math.ceil(h / size);
   const rand = mulberry32(7);
@@ -105,20 +108,19 @@ function buildCells(w: number, h: number): { size: number; cells: Cell[] } {
       const y = r * size;
       const dist = Math.hypot(x + size / 2 - w / 2, y + size / 2 - h / 2);
       const d = dist / maxD;
-      // About a third of the screen, in clumps, never goes dark at all.
-      const cover = 0.35 * d + 0.65 * spread(valueNoise(c * 0.45, r * 0.45, 1));
-      if (cover > 0.68) continue;
-      const on = T.flood + (cover / 0.68) * T.floodDur + rand() * 0.04;
-      // Some cells punch a white hole in the dark mass for a beat.
-      const blink = rand() < 0.1;
-      const blinkAt = blink ? T.flood + 0.15 + rand() * (T.clear - T.flood) : -1;
-      const blinkEnd = blink ? blinkAt + 0.05 + rand() * 0.08 : -1;
-      // Clear: different clumps; a few cells linger with glitch residue.
-      const linger = valueNoise(c * 0.6, r * 0.6, 3) > 0.72 && rand() < 0.5;
-      const off = linger
-        ? T.clear + T.clearDur + 0.05 + rand() * (T.survivors - T.clear - T.clearDur - 0.05)
-        : T.clear + spread(valueNoise(c * 0.4, r * 0.4, 2)) * T.clearDur + rand() * 0.06;
-      cells.push({ x, y, on, off, blinkAt, blinkEnd, dist, coreBias: 0.7 + rand() * 0.6 });
+      // A scatter of small cells never goes dark, so white specks stay in the mass.
+      if (rand() < 0.07) continue;
+      const clump = spread(valueNoise(c * 0.18, r * 0.18, 1));
+      const on = T.flood + (0.4 * d + 0.6 * clump) * T.floodDur + rand() * 0.03;
+      const blink = rand() < 0.08;
+      const blinkAt = blink ? T.flood + 0.1 + rand() * (T.clear - T.flood) : -1;
+      const blinkEnd = blink ? blinkAt + 0.04 + rand() * 0.07 : -1;
+      // Clear in clumps, front-loaded: most cells go fast, a long tail lingers.
+      const u = clamp01(0.55 * spread(valueNoise(c * 0.22, r * 0.22, 2)) + 0.45 * rand());
+      const off = T.clear + Math.pow(u, 2.4) * T.clearDur;
+      // Some cells come back blank white and hide the type for a moment.
+      const maskEnd = rand() < 0.45 ? off + 0.05 + rand() * 0.3 : off;
+      cells.push({ x, y, on, off, blinkAt, blinkEnd, maskEnd, dist, coreBias: 0.7 + rand() * 0.6 });
     }
   }
   return { size, cells };
@@ -130,10 +132,14 @@ const isDark = (c: Cell, e: number) =>
 const SUB_SPLIT = "-7px 1px 0 rgba(255,43,214,0.8), 6px -1px 0 rgba(0,225,255,0.8)";
 const SUB_NONE = "0px 0px 0 rgba(255,43,214,0), 0px 0px 0 rgba(0,225,255,0)";
 
-// Dark-phase type is plain and bold: white over dim cells, black over cells
-// inside the blown-out core, split hard on cell edges, with a fixed fringe.
-const GHOST_SHADOW = "-2px 0 0 rgba(255,0,64,0.85), 2px 0 0 rgba(0,170,255,0.85)";
-const GHOST_SUB_SHADOW = "-3px 0 0 #ff2bd6, 3px 0 0 #00e1ff, 0 2px 0 #ffe600";
+// Dark-phase type, split on cell edges: plain solid white over dim cells; over
+// the blown-out core, black outlines with a red/blue split and no fill. Cells
+// deepest in the glare show no type at all.
+const OUTLINE_LAYERS = [
+  { stroke: "rgba(255,0,64,0.9)", dx: -2 },
+  { stroke: "rgba(0,150,255,0.9)", dx: 2 },
+  { stroke: "#000", dx: 0 },
+];
 
 function compile(gl: WebGLRenderingContext, type: number, src: string) {
   const shader = gl.createShader(type);
@@ -174,11 +180,13 @@ function createBurst(canvas: HTMLCanvasElement, cellCss: number) {
   const uTime = gl.getUniformLocation(prog, "u_time");
   const uEnergy = gl.getUniformLocation(prog, "u_energy");
   const uGlitch = gl.getUniformLocation(prog, "u_glitch");
+  const uInv = gl.getUniformLocation(prog, "u_inv");
 
-  return (time: number, energy: number, glitch: number) => {
+  return (time: number, energy: number, glitch: number, inv: number) => {
     gl.uniform1f(uTime, time);
     gl.uniform1f(uEnergy, energy);
     gl.uniform1f(uGlitch, glitch);
+    gl.uniform1f(uInv, inv);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   };
 }
@@ -189,6 +197,8 @@ function energyAt(e: number) {
   if (e < T.clear) return 1;
   return 1 - 0.65 * clamp01((e - T.clear) / (T.survivors - T.clear));
 }
+
+const invertAt = (e: number) => clamp01((e - T.invert) / 0.55);
 
 // Neon residue in the cells that linger after the clear.
 const glitchAt = (e: number) => clamp01((e - (T.clear + T.clearDur * 0.5)) / 0.35);
@@ -257,19 +267,42 @@ function Headline({ wordRefs, lineRefs, lineShift, motions, speed, dockTransitio
 }
 
 // Full-screen so its clip-path is in viewport coordinates, like the cells.
-function GhostType({ className, clipRef }: { className: string; clipRef: RefObject<HTMLDivElement | null> }) {
+function TypeClip({ clipRef, children }: { clipRef: RefObject<HTMLDivElement | null>; children: ReactNode }) {
   return (
     <div
       ref={clipRef}
       className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center"
       style={{ clipPath: "inset(0 0 100% 0)" }}
     >
-      <div className={`${HEADLINE_CLASS} relative ${className}`} style={{ textShadow: GHOST_SHADOW }}>
-        <Headline speed={1} />
-        <p className={`${SUBTITLE_CLASS} italic`} style={{ textShadow: GHOST_SUB_SHADOW }}>
-          {SUBTITLE}
-        </p>
-      </div>
+      {children}
+    </div>
+  );
+}
+
+function WhiteType() {
+  return (
+    <div className={`${HEADLINE_CLASS} relative text-white`}>
+      <Headline speed={1} />
+      <p className={SUBTITLE_CLASS}>{SUBTITLE}</p>
+    </div>
+  );
+}
+
+function OutlineType() {
+  return (
+    <div className={`${HEADLINE_CLASS} relative text-transparent`}>
+      {OUTLINE_LAYERS.map((l, i) => (
+        <div
+          key={i}
+          className={i < OUTLINE_LAYERS.length - 1 ? "absolute inset-0" : "relative"}
+          style={{ WebkitTextStroke: `1.5px ${l.stroke}`, transform: `translateX(${l.dx}px)` }}
+        >
+          <Headline speed={1} />
+          <p className={SUBTITLE_CLASS} style={{ WebkitTextStroke: `0.6px ${l.stroke}` }}>
+            {SUBTITLE}
+          </p>
+        </div>
+      ))}
     </div>
   );
 }
@@ -293,6 +326,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
   const lineRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const whiteTypeRef = useRef<HTMLDivElement>(null);
   const blackTypeRef = useRef<HTMLDivElement>(null);
+  const maskRef = useRef<HTMLDivElement>(null);
   const skipRef = useRef<() => void>(() => {});
 
   const skip = useCallback(() => skipRef.current(), []);
@@ -365,6 +399,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     const drawBurst = canvas ? createBurst(canvas, size) : null;
     const whiteType = whiteTypeRef.current;
     const blackType = blackTypeRef.current;
+    const mask = maskRef.current;
     const dark = darkRef.current;
     const hide = "inset(0 0 100% 0)";
     let raf = 0;
@@ -373,7 +408,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
 
     const finish = () => {
       cancelAnimationFrame(raf);
-      for (const el of [dark, whiteType, blackType]) if (el) el.style.clipPath = hide;
+      for (const el of [dark, whiteType, blackType, mask]) if (el) el.style.clipPath = hide;
       setDock(measureDock());
       setStage("final");
       onDone?.();
@@ -388,24 +423,31 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     const tick = (now: number) => {
       const e = ((now - t0) / 1000) * speed;
 
-      // Each dark cell shows the burst; type over it is black inside the
-      // blown-out core and white outside, split on cell edges.
+      // Each dark cell shows the burst. Type over it is plain white in dim
+      // cells, black outlines in the bright core, and nothing deepest in the
+      // glare; freshly cleared cells can come back blank white for a beat.
       let all = "";
       let dim = "";
       let bright = "";
+      let blank = "";
       const energy = energyAt(e);
-      const coreR = h * 0.34 * energy;
+      const coreR = h * 0.3 * energy;
       for (const c of cells) {
-        if (!isDark(c, e)) continue;
         const sq = `M${c.x} ${c.y}h${size}v${size}h${-size}Z`;
-        all += sq;
-        if (c.dist < coreR * c.coreBias) bright += sq;
-        else dim += sq;
+        if (isDark(c, e)) {
+          all += sq;
+          const k = c.dist / (coreR * c.coreBias);
+          if (k >= 1) dim += sq;
+          else if (k >= 0.45) bright += sq;
+        } else if (e >= c.off && e < c.maskEnd) {
+          blank += sq;
+        }
       }
       if (dark) dark.style.clipPath = all ? `path("${all}")` : hide;
       if (whiteType) whiteType.style.clipPath = dim ? `path("${dim}")` : hide;
       if (blackType) blackType.style.clipPath = bright ? `path("${bright}")` : hide;
-      if (all) drawBurst?.(e - T.flood, energy, glitchAt(e));
+      if (mask) mask.style.clipPath = blank ? `path("${blank}")` : hide;
+      if (all) drawBurst?.(e - T.flood, energy, glitchAt(e), invertAt(e));
 
       if (!docked && e >= T.dock) {
         docked = true;
@@ -481,9 +523,21 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
         style={{ clipPath: "inset(0 0 100% 0)" }}
       >
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-        <GhostType className="text-white" clipRef={whiteTypeRef} />
-        <GhostType className="text-black" clipRef={blackTypeRef} />
+        <TypeClip clipRef={whiteTypeRef}>
+          <WhiteType />
+        </TypeClip>
+        <TypeClip clipRef={blackTypeRef}>
+          <OutlineType />
+        </TypeClip>
       </div>
+
+      {/* Blank white cells that briefly hide the type as the screen clears */}
+      <div
+        ref={maskRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-white"
+        style={{ clipPath: "inset(0 0 100% 0)" }}
+      />
 
       {phase === "play" && (
         <button

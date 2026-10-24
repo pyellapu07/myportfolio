@@ -2,7 +2,8 @@
 // is a lumpy, drifting blob that blows out past white, streaks vary in length
 // and brightness, the halo's tint wanders, and the whole thing flickers.
 // u_energy is the envelope (0 = idle dot grid, 1 = peak); u_glitch fades in
-// neon line residue for the cells that linger after the clear.
+// neon line residue for the cells that linger after the clear; u_inv grows a
+// black star out of the white core once the boom has peaked.
 
 export const VERT = `
 attribute vec2 a_pos;
@@ -17,6 +18,7 @@ uniform float u_time;
 uniform float u_energy;
 uniform float u_glitch;
 uniform float u_cell;
+uniform float u_inv;
 
 float hash(float n) { return fract(sin(n) * 43758.5453); }
 float hash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -62,7 +64,9 @@ void main() {
 
   // Lumpy core: radius pushed around by low-frequency angular noise.
   float lump = 1.0 + 0.5 * (noise2(dir * 1.3 + t * 0.8) - 0.5) + 0.3 * (noise2(dir * 3.2 - t * 1.4 + 9.0) - 0.5);
-  float rc = r / lump;
+  // Spiky rim: thick, uneven rays pushing out of the white disc.
+  float spikes = pow(noise(a * 9.0 + 3.0), 3.0) + 0.6 * pow(noise(a * 23.0 + 11.0), 4.0);
+  float rc = r / (lump * (1.0 + 0.55 * spikes * e));
 
   float rays = streaks(a, r, 34.0, 0.9, 1.0)
              + streaks(a, r, 57.0, 1.3, 7.0) * 0.8
@@ -71,20 +75,23 @@ void main() {
   // distance and some directions barely fire at all.
   rays *= pow(noise2(dir * 2.2 + 3.0), 1.6) * 1.4 * smoothstep(0.02, 0.28, rc) * exp(-r * 2.2) / (0.22 + r);
 
-  float core = exp(-rc * rc / (0.003 + 0.06 * e));
-  float halo = exp(-rc * (3.8 + 2.2 * noise2(dir * 2.4 + t))) * e;
+  float core = exp(-rc * rc / (0.004 + 0.1 * e));
+  float halo = exp(-rc * (5.0 + 2.0 * noise2(dir * 2.4 + t))) * e;
   float spin = t * 0.15;
   float star = pow(abs(cos(a * 2.0 + spin)), 70.0) * exp(-r * 8.0)
              + pow(abs(sin(a * 2.0 + spin)), 90.0) * exp(-r * 13.0)
              + pow(abs(cos(a * 4.0 - spin)), 120.0) * exp(-r * 20.0) * 0.6;
 
   // Tint wanders between electric blue, cyan and a little violet.
-  vec3 tint = mix(vec3(0.18, 0.42, 1.0), vec3(0.3, 0.75, 1.0), noise2(dir * 1.5 + 2.0));
+  vec3 tint = mix(vec3(0.1, 0.35, 1.0), vec3(0.25, 0.75, 1.0), noise2(dir * 1.5 + 2.0));
   tint = mix(tint, vec3(0.55, 0.4, 1.0), 0.25 * noise2(dir * 2.9 + 11.0));
 
-  vec3 col = tint * halo * 1.1;
-  col += mix(tint, vec3(1.0), 0.5) * rays * e * 1.6;
-  col += vec3(1.0) * (core * e * 2.2 + star * e * 1.3);
+  vec3 col = tint * halo * 1.7;
+  col += mix(tint, vec3(1.0), 0.35) * rays * e * 1.2;
+  col += vec3(1.0) * (core * e * 4.0 + star * e * 1.3);
+  // Saturated electric-blue band hugging the core before it drops to black.
+  float rim = sqrt(0.004 + 0.1 * e);
+  col += vec3(0.04, 0.3, 1.0) * exp(-max(rc - rim * 0.8, 0.0) * 6.0) * e * 1.6;
 
   // Chromatic fringe where the halo meets the dark.
   float edge = 0.3 * e * lump;
@@ -92,7 +99,19 @@ void main() {
   col.b += exp(-abs(rc - edge * 1.12) * 30.0) * 0.25 * e;
 
   // Filmic shoulder: the core clips to white unevenly instead of a hard disc.
-  col = 1.0 - exp(-col * 1.6);
+  col = 1.0 - exp(-col * 1.8);
+
+  // Black sonic: a dark, streaky star grows from the centre of the white core.
+  if (u_inv > 0.0) {
+    float ri = (0.04 + 0.26 * u_inv) * (0.7 + 0.6 * pow(noise(a * 16.0 + 5.0), 2.0));
+    float fine = 0.55 + 0.45 * pow(noise(a * 70.0 + 2.0), 2.0);
+    float dark = smoothstep(ri, ri * 0.25, r / fine) * smoothstep(0.0, 0.15, u_inv);
+    vec3 inv = vec3(0.02, 0.02, 0.04) + vec3(0.6, 0.75, 1.0) * pow(noise(a * 110.0), 6.0) * 0.5;
+    col = mix(col, inv, dark);
+    // Thin chromatic rim round the dark star.
+    float rim = exp(-abs(r / fine - ri) * 90.0) * smoothstep(0.0, 0.2, u_inv);
+    col += vec3(0.9, 0.1, 0.3) * rim * 0.5 + vec3(0.1, 0.5, 1.0) * exp(-abs(r / fine - ri * 1.06) * 90.0) * 0.5 * smoothstep(0.0, 0.2, u_inv);
+  }
 
   vec2 g = fract(gl_FragCoord.xy / 30.0) - 0.5;
   col += vec3(0.1) * smoothstep(0.09, 0.0, length(g)) * (1.0 - 0.7 * e);
