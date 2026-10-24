@@ -3,7 +3,8 @@
 // and brightness, the halo's tint wanders, and the whole thing flickers.
 // u_energy is the envelope (0 = idle dot grid, 1 = peak); u_glitch fades in
 // neon line residue for the cells that linger after the clear; u_inv grows a
-// black star out of the white core once the boom has peaked.
+// black star out of the white core once the boom has peaked; u_blast then
+// grows the white blob past the screen, swallowing the star.
 
 export const VERT = `
 attribute vec2 a_pos;
@@ -19,6 +20,7 @@ uniform float u_energy;
 uniform float u_glitch;
 uniform float u_cell;
 uniform float u_inv;
+uniform float u_blast;
 
 float hash(float n) { return fract(sin(n) * 43758.5453); }
 float hash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -70,7 +72,7 @@ void main() {
   float rb = r / (lump * (1.0 + 0.9 * spikes * e));
 
   // Fully white core; edgeR is roughly where its clipped white ends.
-  float sig = 0.004 + 0.045 * e;
+  float sig = 0.004 + 0.045 * e + 2.2 * u_blast * u_blast;
   float core = exp(-rb * rb / sig);
   float edgeR = sqrt(sig * 1.6);
 
@@ -100,14 +102,15 @@ void main() {
   col += mix(tint, vec3(1.0), 0.4) * rays * e * 0.9;
 
   // Black-hole edge: nothing bright survives much past the blob.
-  col *= exp(-pow(max(r - 0.38, 0.0) / 0.09, 2.0));
+  col *= exp(-pow(max(r - (0.38 + 1.6 * u_blast), 0.0) / 0.09, 2.0));
 
   // Filmic shoulder: the core clips to white unevenly instead of a hard disc.
   col = 1.0 - exp(-col * 1.8);
 
   // Black sonic: a dark, streaky star grows from the centre of the white core.
   if (u_inv > 0.0) {
-    float ri = (0.04 + 0.18 * u_inv) * (0.7 + 0.6 * pow(noise(a * 16.0 + 5.0), 2.0));
+    // The blast eats the star from the outside in.
+    float ri = (0.04 + 0.18 * u_inv) * (1.0 - 0.95 * u_blast) * (0.7 + 0.6 * pow(noise(a * 16.0 + 5.0), 2.0));
     float fine = 0.55 + 0.45 * pow(noise(a * 70.0 + 2.0), 2.0);
     float dark = smoothstep(ri, ri * 0.25, r / fine) * smoothstep(0.0, 0.15, u_inv);
     vec3 inv = vec3(0.02, 0.02, 0.04) + vec3(0.6, 0.75, 1.0) * pow(noise(a * 110.0), 6.0) * 0.5;

@@ -20,12 +20,14 @@ const T = {
   scatter: 0.15, // words start arriving after a blank beat
   converge: 1.05,
   assembled: 1.5,
-  flood: 1.5, // dark cells sweep in, in clumps
-  floodDur: 0.25,
-  peak: 1.8,
-  invert: 1.85, // black star starts growing out of the white core as the peak lands
-  clear: 2.0, // white cells close back over it, slowing to a long tail
-  clearDur: 1.3,
+  flood: 1.5, // white falls away centre first, then the middle, then the edges
+  floodDur: 0.35,
+  peak: 1.85,
+  clear: 1.95, // white refills from the edges inward; the centre is last
+  clearDur: 1.25,
+  invert: 1.95, // black star forms inside the white core
+  blast: 2.6, // the white blob blasts outwards, swallowing the star
+  blastDur: 0.65,
   survivors: 3.6, // last stray cells are gone
   dock: 3.7,
   dockDur: 0.9,
@@ -113,15 +115,15 @@ function buildCells(w: number, h: number): { size: number; cells: Cell[] } {
       const dist = Math.hypot(x + size / 2 - w / 2, y + size / 2 - h / 2);
       const d = dist / maxD;
       // A scatter of small cells never goes dark, so white specks stay in the mass.
-      if (rand() < 0.07) continue;
+      if (rand() < 0.02) continue;
       const clump = spread(valueNoise(c * 0.18, r * 0.18, 1));
-      const on = T.flood + (0.4 * d + 0.6 * clump) * T.floodDur + rand() * 0.03;
+      const on = T.flood + (0.78 * d + 0.22 * clump) * T.floodDur + rand() * 0.03;
       const blink = rand() < 0.08;
       const blinkAt = blink ? T.flood + 0.1 + rand() * (T.clear - T.flood) : -1;
       const blinkEnd = blink ? blinkAt + 0.04 + rand() * 0.07 : -1;
-      // Clear in clumps, front-loaded: most cells go fast, a long tail lingers.
-      const u = clamp01(0.55 * spread(valueNoise(c * 0.22, r * 0.22, 2)) + 0.45 * rand());
-      const off = T.clear + Math.pow(u, 2.4) * T.clearDur;
+      // Refill from the edges inward, ragged, easing out so the centre lags.
+      const u = clamp01(0.75 * (1 - d) + 0.25 * spread(valueNoise(c * 0.22, r * 0.22, 2)) + (rand() - 0.5) * 0.1);
+      const off = T.clear + Math.pow(u, 1.6) * T.clearDur;
       // Some cells come back blank white and hide the type for a moment.
       const maskEnd = rand() < 0.45 ? off + 0.05 + rand() * 0.3 : off;
       cells.push({
@@ -213,12 +215,14 @@ function createBurst(canvas: HTMLCanvasElement, cellCss: number) {
   const uEnergy = gl.getUniformLocation(prog, "u_energy");
   const uGlitch = gl.getUniformLocation(prog, "u_glitch");
   const uInv = gl.getUniformLocation(prog, "u_inv");
+  const uBlast = gl.getUniformLocation(prog, "u_blast");
 
-  return (time: number, energy: number, glitch: number, inv: number) => {
+  return (time: number, energy: number, glitch: number, inv: number, blast: number) => {
     gl.uniform1f(uTime, time);
     gl.uniform1f(uEnergy, energy);
     gl.uniform1f(uGlitch, glitch);
     gl.uniform1f(uInv, inv);
+    gl.uniform1f(uBlast, blast);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   };
 }
@@ -226,11 +230,11 @@ function createBurst(canvas: HTMLCanvasElement, cellCss: number) {
 function energyAt(e: number) {
   if (e < T.flood) return 0;
   if (e < T.peak) return easeOutCubic((e - T.flood) / (T.peak - T.flood));
-  if (e < T.clear) return 1;
-  return 1 - 0.65 * clamp01((e - T.clear) / (T.survivors - T.clear));
+  return 1;
 }
 
-const invertAt = (e: number) => clamp01((e - T.invert) / 0.55);
+const invertAt = (e: number) => clamp01((e - T.invert) / 0.4);
+const blastAt = (e: number) => easeOutCubic(clamp01((e - T.blast) / T.blastDur));
 
 // Neon residue in the cells that linger after the clear.
 const glitchAt = (e: number) => clamp01((e - (T.clear + T.clearDur * 0.5)) / 0.35);
@@ -538,8 +542,10 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       let beamed = "";
       let blank = "";
       const energy = energyAt(e);
-      const coreR = h * 0.24 * energy;
-      const inv = invertAt(e);
+      // The blast grows the white core past the screen and swallows the star.
+      const blast = blastAt(e);
+      const coreR = h * (0.3 * energy + 1.6 * blast * blast);
+      const inv = invertAt(e) * (1 - blast);
       const invR = inv > 0 ? h * (0.04 + 0.18 * inv) * 0.85 : 0;
       for (const c of cells) {
         const sq = `M${c.x} ${c.y}h${size}v${size}h${-size}Z`;
@@ -570,7 +576,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       clip(solidClip, solid);
       clip(beamClip, beamed);
       clip(mask, blank);
-      if (all) drawBurst?.(e - T.flood, energy, glitchAt(e), invertAt(e));
+      if (all) drawBurst?.(e - T.flood, energy, glitchAt(e), invertAt(e), blast);
       if (faint) drawFaint();
       if (beamed) drawBeam(e);
 
