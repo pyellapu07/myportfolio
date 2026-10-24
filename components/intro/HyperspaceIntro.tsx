@@ -57,10 +57,31 @@ function mulberry32(seed: number) {
   };
 }
 
-type Cell = { x: number; y: number; on: number; off: number };
+// Smooth 2D value noise on a seeded lattice, so cells change in clumps
+// rather than in a clean ring or as uniform static.
+function valueNoise(x: number, y: number, seed: number) {
+  const h = (i: number, j: number) => {
+    const s = Math.sin(i * 127.1 + j * 311.7 + seed * 74.7) * 43758.5453;
+    return s - Math.floor(s);
+  };
+  const i = Math.floor(x);
+  const j = Math.floor(y);
+  const fx = x - i;
+  const fy = y - j;
+  const u = fx * fx * (3 - 2 * fx);
+  const v = fy * fy * (3 - 2 * fy);
+  const a = h(i, j) + (h(i + 1, j) - h(i, j)) * u;
+  const b = h(i, j + 1) + (h(i + 1, j + 1) - h(i, j + 1)) * u;
+  return a + (b - a) * v;
+}
+
+// Stretch noise (which bunches around 0.5) back out to roughly 0..1.
+const spread = (n: number) => clamp01((n - 0.2) / 0.6);
+
+type Cell = { x: number; y: number; on: number; off: number; blinkAt: number; blinkEnd: number };
 
 function buildCells(w: number, h: number): { size: number; cells: Cell[] } {
-  const size = Math.round(Math.max(w, h) / 11);
+  const size = Math.round(Math.max(w, h) / 20);
   const cols = Math.ceil(w / size);
   const rows = Math.ceil(h / size);
   const rand = mulberry32(7);
@@ -71,16 +92,31 @@ function buildCells(w: number, h: number): { size: number; cells: Cell[] } {
       const x = c * size;
       const y = r * size;
       const d = Math.hypot(x + size / 2 - w / 2, y + size / 2 - h / 2) / maxD;
-      const on = T.flood + (d * 0.7 + rand() * 0.3) * T.floodDur;
-      const linger = rand() < 0.07 && d > 0.3;
+      // Flood: mostly clumps, loosely biased to the centre.
+      const on = T.flood + (0.35 * d + 0.65 * spread(valueNoise(c * 0.32, r * 0.32, 1))) * T.floodDur + rand() * 0.05;
+      // Some cells punch a white hole in the dark mass for a beat.
+      const blink = rand() < 0.1;
+      const blinkAt = blink ? T.peak - 0.15 + rand() * (T.clear - T.peak + 0.1) : -1;
+      const blinkEnd = blink ? blinkAt + 0.06 + rand() * 0.1 : -1;
+      // Clear: different clumps; a few small clusters linger with glitch residue.
+      const linger = valueNoise(c * 0.55, r * 0.55, 3) > 0.74 && rand() < 0.55;
       const off = linger
-        ? T.clear + T.clearDur + 0.15 + rand() * (T.survivors - T.clear - T.clearDur - 0.15)
-        : T.clear + rand() * T.clearDur;
-      cells.push({ x, y, on, off });
+        ? T.clear + T.clearDur + 0.1 + rand() * (T.survivors - T.clear - T.clearDur - 0.1)
+        : T.clear + spread(valueNoise(c * 0.28, r * 0.28, 2)) * T.clearDur + rand() * 0.08;
+      cells.push({ x, y, on, off, blinkAt, blinkEnd });
     }
   }
   return { size, cells };
 }
+
+const isDark = (c: Cell, e: number) =>
+  e >= c.on && e < c.off && !(e >= c.blinkAt && e < c.blinkEnd);
+
+const SUB_SPLIT = "-7px 1px 0 rgba(255,43,214,0.8), 6px -1px 0 rgba(0,225,255,0.8)";
+const SUB_NONE = "0px 0px 0 rgba(255,43,214,0), 0px 0px 0 rgba(0,225,255,0)";
+
+// Rainbow layers the ghost type tears into while it sits on dark cells.
+const GHOST_LAYERS = ["#ff1f4b", "#ffb800", "#3dff6e", "#00d5ff", "#4d5bff", "#ff2bd6"];
 
 function compile(gl: WebGLRenderingContext, type: number, src: string) {
   const shader = gl.createShader(type);
@@ -94,7 +130,7 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
   return shader;
 }
 
-function createBurst(canvas: HTMLCanvasElement) {
+function createBurst(canvas: HTMLCanvasElement, cellCss: number) {
   const gl = canvas.getContext("webgl");
   if (!gl) return null;
   const vs = compile(gl, gl.VERTEX_SHADER, VERT);
@@ -117,12 +153,15 @@ function createBurst(canvas: HTMLCanvasElement) {
   gl.enableVertexAttribArray(aPos);
   gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
   gl.uniform2f(gl.getUniformLocation(prog, "u_res"), canvas.width, canvas.height);
+  gl.uniform1f(gl.getUniformLocation(prog, "u_cell"), cellCss * (canvas.width / window.innerWidth));
   const uTime = gl.getUniformLocation(prog, "u_time");
   const uEnergy = gl.getUniformLocation(prog, "u_energy");
+  const uGlitch = gl.getUniformLocation(prog, "u_glitch");
 
-  return (time: number, energy: number) => {
+  return (time: number, energy: number, glitch: number) => {
     gl.uniform1f(uTime, time);
     gl.uniform1f(uEnergy, energy);
+    gl.uniform1f(uGlitch, glitch);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   };
 }
@@ -133,6 +172,9 @@ function energyAt(e: number) {
   if (e < T.clear) return 1;
   return 1 - 0.65 * clamp01((e - T.clear) / (T.survivors - T.clear));
 }
+
+// Neon residue in the cells that linger after the clear.
+const glitchAt = (e: number) => clamp01((e - (T.clear + T.clearDur * 0.5)) / 0.35);
 
 type Phase = "measure" | "play" | "dock" | "final";
 type Layout = { motions: WordMotion[]; dock: { y: number; scale: number }; reduced: boolean };
@@ -200,6 +242,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
   const headlineRef = useRef<HTMLDivElement>(null);
   const darkRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const ghostRefs = useRef<(HTMLDivElement | null)[]>([]);
   const skipRef = useRef<() => void>(() => {});
 
   const skip = useCallback(() => skipRef.current(), []);
@@ -251,7 +294,8 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
     const h = window.innerHeight;
     const { size, cells } = buildCells(w, h);
     const canvas = canvasRef.current;
-    const drawBurst = canvas ? createBurst(canvas) : null;
+    const drawBurst = canvas ? createBurst(canvas, size) : null;
+    const ghosts = ghostRefs.current;
     const dark = darkRef.current;
     let raf = 0;
     let docked = false;
@@ -276,10 +320,23 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       if (dark) {
         let d = "";
         for (const c of cells) {
-          if (e >= c.on && e < c.off) d += `M${c.x} ${c.y}h${size}v${size}h${-size}Z`;
+          if (isDark(c, e)) d += `M${c.x} ${c.y}h${size}v${size}h${-size}Z`;
         }
         dark.style.clipPath = d ? `path("${d}")` : "inset(0 0 100% 0)";
-        if (d && drawBurst) drawBurst(e - T.flood, energyAt(e));
+        if (d) {
+          const energy = energyAt(e);
+          drawBurst?.(e - T.flood, energy, glitchAt(e));
+          // Ghost layers fan apart with the burst and wobble out of phase.
+          const amp = 1.5 + 13 * energy;
+          ghosts.forEach((el, i) => {
+            if (!el) return;
+            const k = i - (GHOST_LAYERS.length - 1) / 2;
+            const dx = (k * 0.55 + Math.sin(e * (19 + i * 3.1) + i * 1.7) * 0.6) * amp;
+            const dy = Math.sin(e * (13 + i * 2.3) + i) * amp * 0.18;
+            const skew = Math.sin(e * (9 + i) + i * 2.1) * amp * 0.25;
+            el.style.transform = `translate(${dx}px, ${dy}px) skewX(${skew}deg)`;
+          });
+        }
       }
 
       if (!docked && e >= T.dock) {
@@ -320,12 +377,19 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
           <Headline wordRefs={wordRefs} motions={phase === "measure" || instant ? null : motions} speed={speed} />
         <motion.p
           className={`${SUBTITLE_CLASS} text-black/70`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: docking ? 0 : phase === "play" ? 1 : 0 }}
+          initial={{ opacity: 0, textShadow: SUB_SPLIT }}
+          animate={{
+            opacity: docking ? 0 : phase === "play" ? 1 : 0,
+            textShadow: phase === "play" ? SUB_NONE : SUB_SPLIT,
+          }}
           transition={
             docking
               ? { duration: instant ? 0 : 0.3 * s }
-              : { delay: T.clear * s, duration: 0.01 }
+              : {
+                  opacity: { delay: T.clear * s, duration: 0.01 },
+                  // Colour copies drift back into register as the screen clears.
+                  textShadow: { delay: T.clear * s, duration: (T.clearDur + 0.5) * s, ease: EASE },
+                }
           }
         >
           {SUBTITLE}
@@ -343,13 +407,19 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
           <div className={`${HEADLINE_CLASS} relative text-transparent`}>
-            <div className="absolute inset-0 translate-x-[-3px] [-webkit-text-stroke:1px_rgba(255,40,90,0.7)]">
-              <Headline speed={speed} />
-            </div>
-            <div className="absolute inset-0 translate-x-[3px] [-webkit-text-stroke:1px_rgba(0,200,255,0.7)]">
-              <Headline speed={speed} />
-            </div>
-            <div className="relative [-webkit-text-stroke:1px_rgba(255,255,255,0.45)]">
+            {GHOST_LAYERS.map((color, i) => (
+              <div
+                key={color}
+                ref={(el) => {
+                  ghostRefs.current[i] = el;
+                }}
+                className="absolute inset-0 will-change-transform"
+                style={{ WebkitTextStroke: `1.2px ${color}` }}
+              >
+                <Headline speed={speed} />
+              </div>
+            ))}
+            <div className="relative [-webkit-text-stroke:1px_rgba(255,255,255,0.5)]">
               <Headline speed={speed} />
             </div>
             <p
