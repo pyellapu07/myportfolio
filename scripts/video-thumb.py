@@ -24,19 +24,19 @@ W, H = 1280, 800  # output, 16:10 like the other thumbnails
 FPS = 30
 BAR = 34  # title bar height
 RADIUS = 14
-# The window, set by layout(): for a 16:10 screen it sits low and bleeds off
-# the bottom edge; a wider recording keeps its own shape and sits centred.
+# The window, set by layout(): centred on the canvas, keeping the
+# recording's own shape, with room all round.
 WIN_W = WIN_X = WIN_Y = CONTENT_W = CONTENT_H = 0
 
 
 def layout(aspect):
     global WIN_W, WIN_X, WIN_Y, CONTENT_W, CONTENT_H
     wide = aspect > 1.75 or W / H < 1.4  # wide recording, or a squarer canvas
-    WIN_W = int(W * (0.86 if W / H >= 1.4 else 0.84) if wide else W * 0.8)
+    WIN_W = int(W * (0.86 if W / H >= 1.4 else 0.84) if wide else W * 0.76)
     WIN_X = (W - WIN_W) // 2
     CONTENT_W = WIN_W
     CONTENT_H = round(CONTENT_W / aspect)
-    WIN_Y = (H - BAR - CONTENT_H) // 2 + 24 if wide else int(H * 0.14)
+    WIN_Y = (H - BAR - CONTENT_H) // 2
 
 
 # Background palettes, each a project's own colours: (light top-left, mid,
