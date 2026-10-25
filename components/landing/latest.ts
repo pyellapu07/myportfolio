@@ -125,7 +125,7 @@ export const ARTIFACTS: Artifact[] = [
     href: "/about",
     image: "/latest/trusted-tester.webp",
     aspect: 0.9,
-    bg: "#1f4fd8",
+    bg: "#EFEBE3", // light sand: the badge brings its own colour
   },
   {
     id: "memory-device",
