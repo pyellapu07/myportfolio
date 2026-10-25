@@ -18,8 +18,8 @@ const CORE_R = 0.82;
 const CORES: Record<AgentCore, { color: number; metalness: number; roughness: number }> = {
   // Matte brushed brass.
   brass: { color: 0xb08a55, metalness: 0.75, roughness: 0.82 },
-  // Satin cyan, the globe's colour.
-  cyan: { color: 0x1fc8ff, metalness: 0.1, roughness: 0.78 },
+  // Satin pale fluorescent cyan, the globe's colour.
+  cyan: { color: 0x6edcff, metalness: 0.1, roughness: 0.78 },
 };
 
 export default function AgentOrb({
@@ -27,6 +27,7 @@ export default function AgentOrb({
   mood = "idle",
   core = "cyan",
   bg,
+  interactive = true,
   className = "",
 }: {
   size?: number;
@@ -35,6 +36,8 @@ export default function AgentOrb({
   /** The colour behind the agent. The glass refracts it; without it, three.js
    *  refracts a stand-in half-white, which reads as milky glass on dark. */
   bg?: string;
+  /** Follow the pointer with its eyes. Off where it is decoration only. */
+  interactive?: boolean;
   className?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -53,12 +56,16 @@ export default function AgentOrb({
     Promise.all([import("three"), import("three/examples/jsm/environments/RoomEnvironment.js")]).then(([THREE, { RoomEnvironment }]) => {
       if (disposed) return;
       const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      // Small instances render at 3x and are scaled down by the browser, so
+      // the glass edge and eyes stay crisp even on 1x screens.
+      const dpr = window.devicePixelRatio || 1;
+      renderer.setPixelRatio(size < 120 ? Math.max(3, dpr) : Math.min(dpr, 2));
       renderer.setSize(size, size, false);
       if (bg) renderer.setClearColor(new THREE.Color(bg), 1);
       else renderer.setClearColor(0x000000, 0);
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.1;
+      // No tone mapping: a filmic curve darkens pure white, so whatever the
+      // glass refracts (the white page) came out grey.
+      renderer.toneMapping = THREE.NoToneMapping;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
 
       const scene = new THREE.Scene();
@@ -110,7 +117,9 @@ export default function AgentOrb({
         transmission: 1,
         thickness: 0.35,
         roughness: 0.03,
-        ior: 1.48,
+        // Gentle refraction: a stronger lens folds the eyes into ghost Vs
+        // beneath them.
+        ior: 1.22,
         metalness: 0,
         clearcoat: 1,
         clearcoatRoughness: 0.02,
@@ -183,7 +192,7 @@ export default function AgentOrb({
         };
         gaze.next = performance.now() + 1800;
       };
-      window.addEventListener("pointermove", onMove);
+      if (interactive) window.addEventListener("pointermove", onMove);
 
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const t0 = performance.now();
@@ -242,7 +251,7 @@ export default function AgentOrb({
       cancelAnimationFrame(raf);
       cleanup();
     };
-  }, [size, core, bg]);
+  }, [size, core, bg, interactive]);
 
   return <canvas ref={ref} width={size} height={size} style={{ width: size, height: size }} className={className} aria-hidden="true" />;
 }

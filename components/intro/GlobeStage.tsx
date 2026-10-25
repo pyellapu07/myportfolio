@@ -652,7 +652,7 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
             delay: (G.assemble * 0.25) / speed,
           }}
         >
-          <AgentOrb size={orbSize} />
+          <AgentOrb size={orbSize} interactive={false} />
         </motion.div>
       )}
       {/* Lens haze round the frame edges while the blocks drift in */}
