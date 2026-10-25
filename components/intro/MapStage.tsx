@@ -39,7 +39,11 @@ export default function MapStage({ play, instant, speed }: Props) {
       <div className="h-full w-full">
         <div className="relative flex h-full w-full items-center justify-center">
           {/* Revealed through the same wave that melts the blocks, soft-edged */}
-          <div className="relative" style={{ ...BOX, maskImage: MASK, WebkitMaskImage: MASK }}>
+          {/* The map itself; immersive mode softens it without touching the cards. */}
+          <div
+            className="relative"
+            style={{ ...BOX, maskImage: MASK, WebkitMaskImage: MASK, filter: "var(--map-bg-filter, none)", opacity: "var(--map-bg-opacity, 1)" }}
+          >
             <HeatLayer delay={instant ? 0 : 0.5 / speed} />
             <Image src={WORLD_MAP.src} alt="" fill unoptimized priority draggable={false} />
           </div>

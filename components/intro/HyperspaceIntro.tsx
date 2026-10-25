@@ -257,6 +257,9 @@ type WordMotion = { x: number[]; y: number[]; scale: number[]; opacity: number[]
 const SUBTITLE_CLASS =
   "absolute left-1/2 top-full mt-6 w-[min(88vw,46rem)] -translate-x-1/2 text-balance text-xs font-medium leading-normal tracking-normal sm:text-base";
 
+// The landing statement's weight; the headline eases to it while docking.
+const DOCK_WEIGHT = 500;
+
 export const HEADLINE_CLASS =
   "font-sans font-extrabold leading-[0.92] tracking-[-0.045em] text-[clamp(1.5rem,6.6vw,6.5rem)]";
 
@@ -690,11 +693,20 @@ export default function HyperspaceIntro({ speed = 1, onDone, dockTo, hideHeadlin
       {/* Base layer: what the white cells show */}
       <motion.div
         className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4 text-center"
-        style={{ visibility: hideHeadline ? "hidden" : "visible" }}
+        style={{ opacity: hideHeadline ? 0 : 1, transition: "opacity 0.25s ease" }}
         animate={docking && dock ? { x: dock.x, y: dock.y, scale: dock.scale } : { x: 0, y: 0, scale: 1 }}
         transition={dockTransition}
       >
-        <div ref={headlineRef} className={`${HEADLINE_CLASS} relative`}>
+        {/* The weight eases down to the landing statement's while it docks
+            (Manrope is a variable font), so the hand-off doesn't jump. */}
+        <div
+          ref={headlineRef}
+          className={`${HEADLINE_CLASS} relative`}
+          style={{
+            fontWeight: docking ? DOCK_WEIGHT : 800,
+            transition: instant ? "none" : `font-weight ${T.dockDur * s}s cubic-bezier(0.7, 0, 0.84, 0)`,
+          }}
+        >
           <Headline
             wordRefs={wordRefs}
             lineRefs={lineRefs}

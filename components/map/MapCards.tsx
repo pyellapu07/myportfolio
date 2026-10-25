@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { PROJECTS, type Project } from "./projects";
 import { naturalEarth } from "./projection";
 import { WORLD_MAP } from "./worldMap";
+import { immersion } from "./immersion";
 
 // Project cards floating over the map, AIRLA-style: dead straight, each with
 // its own space, sized and faded by depth, drifting slowly and shifting with
@@ -13,10 +14,18 @@ import { WORLD_MAP } from "./worldMap";
 // Hovering brings a card forward into focus with its title beneath.
 
 const ASPECT = 0.625; // 16:10, as the thumbnails
-const W_NEAR = 124; // card width at depth 0 (closest)
-const W_FAR = 84; // card width at depth 1 (farthest)
-const W_NODE = 44; // related-node width
-const ORBIT = 26; // px between a parent card's edge and its nodes
+const W_NEAR = 188; // card width at depth 0 (closest)
+const W_FAR = 128; // card width at depth 1 (farthest)
+const W_NODE = 62; // related-node width
+const ORBIT = 30; // px between a parent card's edge and its nodes
+// Immersive 3D: perspective, each card's Z by depth (near → far), how far
+// the cards spread and the camera flies, and where a card passes the camera.
+const PERSPECTIVE = 900;
+const Z_NEAR = 260;
+const Z_FAR = -620;
+const SPREAD = 1.05;
+const FLY_DEPTH = 1300;
+const PASS_Z = 640;
 const GAP = 14; // px kept clear between cards
 const LIFT = 46; // px a card floats above its place before relaxing
 const PARALLAX = 22; // px the nearest card shifts at the box edge
@@ -135,6 +144,8 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
   const lineEls = useRef(new Map<string, SVGLineElement>());
   const nodeEls = useRef(new Map<string, HTMLDivElement>());
   const hitEls = useRef(new Map<string, HTMLDivElement>());
+  const imgEls = useRef(new Map<string, HTMLImageElement>());
+  const svgRef = useRef<SVGSVGElement>(null);
   const cursor = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
   const hoverRef = useRef<string | null>(null);
   useEffect(() => {
@@ -160,8 +171,31 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
     const spread = new Map<string, number>(); // eased 0..1 open amount per parent
     let raf = 0;
     let grainT = 0;
+    const zOf = (depth: number) => Z_NEAR + (Z_FAR - Z_NEAR) * depth;
     const frame = (now: number) => {
       const t = reduce ? 0 : (now - t0) / 1000;
+      immersion.tick(now);
+      const im = immersion.get();
+      const k = im.k;
+      const ox = box.w / 2;
+      const oy = box.h / 2;
+      // Flat position → 3D: spread out from the centre, pushed back or forward
+      // by depth, flown through by the camera, panned by the drag.
+      const place = (x: number, y: number, depth: number) => {
+        const s = 1 + SPREAD * k;
+        const z = k * (zOf(depth) + im.flight * FLY_DEPTH);
+        return { x: ox + (x - ox) * s - im.camX * k, y: oy + (y - oy) * s - im.camY * k, z };
+      };
+      const lensBlur = (z: number) => Math.min(9, Math.abs(z) / 150);
+      if (svgRef.current) svgRef.current.style.opacity = (1 - k).toFixed(3);
+      // The landing's Index view shows its own list; the map cards step aside.
+      // (Set on the box: cards set their own visibility, which a parent's
+      // visibility could not override.)
+      const hidden = document.documentElement.dataset.view === "index";
+      if (boxRef.current) {
+        boxRef.current.style.opacity = hidden ? "0" : "1";
+        boxRef.current.style.pointerEvents = hidden ? "none" : "";
+      }
       const cur = cursor.current;
       cur.x += (cur.tx - cur.x) * 0.08;
       cur.y += (cur.ty - cur.y) * 0.08;
@@ -172,7 +206,19 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
         const y = c.cy - cur.y * PARALLAX * 0.6 * (0.25 + near) + Math.cos(t * 0.38 + c.phase * 1.3) * 4 * (0.4 + near);
         at.set(c.id, { x, y });
         const el = cardEls.current.get(c.id);
-        if (el) el.style.transform = `translate3d(${(x - c.w / 2).toFixed(2)}px, ${(y - c.h / 2).toFixed(2)}px, 0)`;
+        if (el) {
+          const q = place(x, y, c.depth);
+          el.style.transform = `translate3d(${(q.x - c.w / 2).toFixed(2)}px, ${(q.y - c.h / 2).toFixed(2)}px, ${q.z.toFixed(1)}px)`;
+          // Cards that have flown past the camera fade away rather than fill the screen.
+          el.style.opacity = (1 - Math.min(1, Math.max(0, (q.z - PASS_Z * 0.55) / (PASS_Z * 0.45)))).toFixed(3);
+          el.style.visibility = q.z > PASS_Z ? "hidden" : "visible";
+          const img = imgEls.current.get(c.id);
+          if (img) {
+            const base = Number(img.dataset.blur ?? 0);
+            const b = hoverRef.current === c.id ? 0 : base * (1 - k) + lensBlur(q.z) * k;
+            img.style.filter = b > 0.05 ? `blur(${b.toFixed(2)}px)` : "none";
+          }
+        }
         const ln = lineEls.current.get(c.id);
         if (ln) {
           ln.setAttribute("x2", x.toFixed(1));
@@ -187,14 +233,16 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
         const el = nodeEls.current.get(n.id);
         if (!pc || !pp || !el) continue;
         const goal = hoverRef.current === n.parent ? 1 : 0;
-        const k = (spread.get(n.parent) ?? 0) + (goal - (spread.get(n.parent) ?? 0)) * 0.12;
-        spread.set(n.parent, k);
+        const o = (spread.get(n.parent) ?? 0) + (goal - (spread.get(n.parent) ?? 0)) * 0.12;
+        spread.set(n.parent, o);
         const a = n.angle + t * 0.08;
-        const rx = (pc.w / 2 + ORBIT + W_NODE / 2) * (1 + 0.4 * k);
-        const ry = (pc.h / 2 + ORBIT + (W_NODE * ASPECT) / 2) * (1 + 0.55 * k);
-        const x = pp.x + Math.cos(a) * rx - W_NODE / 2;
-        const y = pp.y + Math.sin(a) * ry - (W_NODE * ASPECT) / 2;
-        el.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${(1 + 0.3 * k).toFixed(3)})`;
+        const rx = (pc.w / 2 + ORBIT + W_NODE / 2) * (1 + 0.4 * o);
+        const ry = (pc.h / 2 + ORBIT + (W_NODE * ASPECT) / 2) * (1 + 0.55 * o);
+        const nx = pp.x + Math.cos(a) * rx;
+        const ny = pp.y + Math.sin(a) * ry;
+        const q = place(nx, ny, Math.min(1, pc.depth + 0.25));
+        el.style.transform = `translate3d(${(q.x - W_NODE / 2).toFixed(2)}px, ${(q.y - (W_NODE * ASPECT) / 2).toFixed(2)}px, ${q.z.toFixed(1)}px) scale(${(1 + 0.3 * o).toFixed(3)})`;
+        el.style.visibility = q.z > PASS_Z ? "hidden" : "visible";
       }
       // Crawl the grain a few times a second, in jumps, like film.
       if (!reduce && now - grainT > 70) {
@@ -207,7 +255,7 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [cards]);
+  }, [cards, box.w, box.h]);
 
   const lit = (id: string) => hover === id;
 
@@ -216,7 +264,9 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
       ref={boxRef}
       className="map-cards absolute inset-0 transition-opacity duration-500"
       // The landing's index view hides the map cards (it shows the grid instead).
-      style={{ opacity: "var(--map-cards-opacity, 1)", visibility: "var(--map-cards-visibility, visible)" as "visible" }}
+      style={{
+        perspective: PERSPECTIVE,
+      }}
       onPointerMove={(e) => {
         const r = boxRef.current?.getBoundingClientRect();
         if (!r) return;
@@ -229,7 +279,7 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
       }}
     >
       {/* Dotted threads from each card to its place */}
-      <svg className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
+      <svg ref={svgRef} className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
         {cards.map((c, i) => (
           <motion.g
             key={c.id}
@@ -307,14 +357,19 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
               <Link href={c.href} className="block h-full w-full" aria-label={`${c.title}, ${c.place}`}>
                 {/* Square, flat frame; blur, haze and grain stay inside it. */}
                 <span className="relative block h-full w-full overflow-hidden bg-white">
+                  {/* Blur is written by the frame loop: depth blur when flat, lens
+                      blur by distance when immersed. data-blur holds the flat value. */}
                   {/* eslint-disable-next-line @next/next/no-img-element -- 320px thumbs, already sized */}
                   <img
+                    ref={(el) => {
+                      if (el) imgEls.current.set(c.id, el);
+                    }}
                     src={c.thumb}
                     alt=""
                     width={c.w}
                     height={c.h}
-                    className="h-full w-full scale-[1.04] object-cover transition-[filter] duration-300 ease-out"
-                    style={{ filter: `blur(${blur}px)` }}
+                    data-blur={blur}
+                    className="h-full w-full scale-[1.04] object-cover"
                     draggable={false}
                   />
                   <span className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300" style={{ opacity: haze }} />

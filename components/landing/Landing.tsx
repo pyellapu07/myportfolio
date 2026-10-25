@@ -1,17 +1,23 @@
 "use client";
 
-import { forwardRef, useEffect, useRef, type ReactNode } from "react";
+import { forwardRef, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { BorderBeam } from "border-beam";
 import { HEADLINE_CLASS, LINES, SUBTITLE } from "@/components/intro/HyperspaceIntro";
-import { PROJECTS } from "@/components/map/projects";
+import { immersion, type Mode } from "@/components/map/immersion";
+import { RecruiterProvider } from "@/lib/recruiter-context";
+import Projects from "@/components/Projects";
 
 export type View = "spatial" | "index";
 
 const EASE = [0.65, 0, 0.35, 1] as const;
-// Landing headline size: the intro headline docks to exactly this box.
+// Landing headline size and weight: the intro headline docks to exactly this
+// box, easing its weight down to match on the way.
 const STATEMENT_SIZE = "text-[clamp(1.9rem,3.6vw,3.4rem)]";
+export const STATEMENT_WEIGHT = 500;
+// Page margins.
+const GUTTER = "px-6 sm:px-16 lg:px-24";
 
 // [blur px, mask start %, mask full %]: each layer blurs harder and starts lower.
 const PROGRESSIVE: [number, number, number][] = [
@@ -22,13 +28,12 @@ const PROGRESSIVE: [number, number, number][] = [
 ];
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
-const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 /** The statement as the landing sets it: same font and word spacing as the
  * intro headline, lines left-aligned, so the docking hand-off is seamless. */
 export const Statement = forwardRef<HTMLDivElement, { className?: string }>(function Statement({ className = "" }, ref) {
   return (
-    <div ref={ref} className={`${HEADLINE_CLASS} ${STATEMENT_SIZE} w-max ${className}`}>
+    <div ref={ref} className={`${HEADLINE_CLASS} ${STATEMENT_SIZE} w-max ${className}`} style={{ fontWeight: STATEMENT_WEIGHT }}>
       {LINES.map((line, i) => (
         <span key={i} className="flex gap-[0.24em] whitespace-nowrap">
           {line.map((w) => (
@@ -40,7 +45,14 @@ export const Statement = forwardRef<HTMLDivElement, { className?: string }>(func
   );
 });
 
-function Switch({ view, onChange }: { view: View; onChange: (v: View) => void }) {
+const HINTS: Record<Mode, string> = {
+  map: "Scroll to enter · drag to explore",
+  entering: "Scroll to fly through · drag to explore",
+  immersed: "Scroll to fly through · drag to explore",
+  leaving: "Scroll to enter · drag to explore",
+};
+
+function Switch({ view, onChange, mode }: { view: View; onChange: (v: View) => void; mode: Mode }) {
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="flex rounded-[10px] bg-black/[0.05] p-[3px] text-[13px] font-medium">
@@ -63,7 +75,7 @@ function Switch({ view, onChange }: { view: View; onChange: (v: View) => void })
         ))}
       </div>
       <p className="text-[11px] tracking-[-0.01em] text-black/45">
-        {view === "spatial" ? "Scroll to zoom in · move to explore" : "Scroll to browse the work"}
+        {view === "spatial" ? HINTS[mode] : "Scroll to browse the work"}
       </p>
     </div>
   );
@@ -85,67 +97,138 @@ interface Props {
 export default function Landing({ view, onView, shown, ready, statementRef, children }: Props) {
   const heroRef = useRef<HTMLDivElement>(null);
 
-  // Scroll camera. Spatial: zoom into the map about the pointer, then blur
-  // and fade it away as the page continues. Index: the map stays put as a
-  // backdrop and only defocuses. Written straight to CSS variables.
+  const [mode, setMode] = useState<Mode>(immersion.get().mode);
+  useEffect(() => immersion.onMode(setMode), []);
+
+  // Immersive Spatial view, AIRLA-style. From the top of the page a scroll
+  // down flies into a 3D field of the work (MapCards renders it); there,
+  // scroll flies through and drag pans the camera. Scrolling back past the
+  // start returns to the map; past the end, on into the page sections.
+  useEffect(() => {
+    if (view !== "spatial" || !ready) return;
+    const fine = window.matchMedia("(pointer: fine)").matches;
+    if (!fine) return;
+    const root = document.documentElement;
+    let over = 0; // wheel pushed past either end of the flight
+    let drag: { x: number; y: number; moved: number } | null = null;
+    let lastDragMoved = 0;
+    const lock = (on: boolean) => (root.style.overflow = on ? "hidden" : "");
+
+    const onWheel = (e: WheelEvent) => {
+      const m = immersion.get().mode;
+      if (m === "map") {
+        if (window.scrollY > 2 || e.deltaY <= 0) return;
+        e.preventDefault();
+        lock(true);
+        over = 0;
+        immersion.enter();
+        return;
+      }
+      e.preventDefault();
+      if (m !== "immersed") return;
+      const s = immersion.get();
+      if (e.deltaY > 0 && s.flightTarget >= 1) over += e.deltaY;
+      else if (e.deltaY < 0 && s.flightTarget <= 0) over += e.deltaY;
+      else over = 0;
+      if (over > 260) {
+        // Past the end: leave and carry on down into the sections.
+        over = 0;
+        immersion.leave();
+        lock(false);
+        window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+      } else if (over < -200) {
+        over = 0;
+        immersion.leave();
+        lock(false);
+      } else {
+        immersion.fly(e.deltaY / 2600);
+      }
+    };
+    const onDown = (e: PointerEvent) => {
+      if (immersion.get().mode !== "immersed" || e.button !== 0) return;
+      if ((e.target as HTMLElement).closest("header, button")) return;
+      drag = { x: e.clientX, y: e.clientY, moved: 0 };
+      root.style.cursor = "grabbing";
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!drag) return;
+      const dx = e.clientX - drag.x;
+      const dy = e.clientY - drag.y;
+      drag.x = e.clientX;
+      drag.y = e.clientY;
+      drag.moved += Math.abs(dx) + Math.abs(dy);
+      immersion.pan(-dx * 1.6, -dy * 1.6);
+    };
+    const onUp = () => {
+      if (!drag) return;
+      lastDragMoved = drag.moved;
+      drag = null;
+      root.style.cursor = "";
+    };
+    // A drag that ends on a card must not open it.
+    const onClick = (e: MouseEvent) => {
+      if (lastDragMoved > 6) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      lastDragMoved = 0;
+    };
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("click", onClick, true);
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("click", onClick, true);
+      immersion.leave();
+      lock(false);
+    };
+  }, [view, ready]);
+
+  // Map backdrop. Immersed: the map softens and recedes behind the cards.
+  // Scrolled (Spatial, past the hero): it blurs, fades and lifts away. Index:
+  // it stays as a backdrop and defocuses. Written straight to CSS variables.
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.view = view;
-    const pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    const set = (k: string, v: string) => root.style.setProperty(k, v);
+    set("--map-zoom", "1");
     let raf = 0;
     const apply = () => {
       raf = 0;
       const vh = window.innerHeight;
       const p = window.scrollY / vh;
-      const set = (k: string, v: string) => {
-        root.style.setProperty(k, v);
-        // Only filter once there is blur to show; "none" keeps the map vector-sharp.
-        if (k === "--map-blur") root.style.setProperty("--map-filter", parseFloat(v) > 0.05 ? `blur(${v})` : "none");
-      };
-      set("--map-cards-opacity", view === "spatial" ? "1" : "0");
-      set("--map-cards-visibility", view === "spatial" ? "visible" : "hidden");
-      if (view === "spatial") {
-        const zoomU = ease(clamp01(p / 1.0));
-        const out = clamp01((p - 1.0) / 0.8);
-        // Re-aim only while unzoomed, so the view never jumps mid-zoom.
-        if (p < 0.02) {
-          set("--map-ox", `${pointer.x}px`);
-          set("--map-oy", `${pointer.y}px`);
-        }
-        set("--map-zoom", (1 + 2.2 * zoomU).toFixed(4));
-        set("--map-blur", `${(out * 16).toFixed(2)}px`);
-        set("--map-opacity", (1 - out).toFixed(3));
-        set("--map-y", `${(-out * 0.12 * vh).toFixed(1)}px`);
-        if (heroRef.current) {
-          const h = clamp01(p / 0.6);
-          heroRef.current.style.opacity = (1 - h).toFixed(3);
-          heroRef.current.style.filter = `blur(${(h * 8).toFixed(2)}px)`;
-        }
-      } else {
-        const d = clamp01(p / 0.9);
-        set("--map-zoom", "1");
-        set("--map-y", "0px");
-        set("--map-blur", `${(d * 14).toFixed(2)}px`);
-        set("--map-opacity", (1 - 0.35 * d).toFixed(3));
+      const k = immersion.get().k;
+      const out = view === "spatial" ? clamp01(p / 0.75) : 0;
+      const d = view === "index" ? clamp01(p / 0.9) : 0;
+      const blur = view === "spatial" ? out * 16 : d * 14;
+      set("--map-filter", blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : "none");
+      set("--map-opacity", (view === "spatial" ? 1 - out : 1 - 0.35 * d).toFixed(3));
+      set("--map-y", `${(-out * 0.12 * vh).toFixed(1)}px`);
+      set("--map-bg-filter", k > 0.01 ? `blur(${(k * 6).toFixed(2)}px)` : "none");
+      set("--map-bg-opacity", (1 - 0.88 * k).toFixed(3));
+      if (heroRef.current) {
+        const h = Math.max(clamp01(p / 0.5), k);
+        heroRef.current.style.opacity = (1 - h).toFixed(3);
+        heroRef.current.style.filter = h > 0.01 ? `blur(${(h * 8).toFixed(2)}px)` : "none";
       }
     };
     const kick = () => {
       if (!raf) raf = requestAnimationFrame(apply);
     };
-    const onPointer = (e: PointerEvent) => {
-      pointer.x = e.clientX;
-      pointer.y = e.clientY;
-      if (window.scrollY < window.innerHeight * 0.02) kick();
-    };
+    const offTick = immersion.onTick(apply);
     window.addEventListener("scroll", kick, { passive: true });
     window.addEventListener("resize", kick);
-    window.addEventListener("pointermove", onPointer, { passive: true });
     apply();
     return () => {
+      offTick();
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", kick);
       window.removeEventListener("resize", kick);
-      window.removeEventListener("pointermove", onPointer);
     };
   }, [view]);
 
@@ -157,11 +240,11 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       <motion.header {...frame} className={`fixed inset-x-0 top-0 z-40 ${shown ? "" : "pointer-events-none"}`}>
         {/* Soft white backing so content scrolling underneath never collides with the nav */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white via-white/85 to-transparent" />
-        <div className="relative grid grid-cols-[1fr_auto_1fr] items-start px-4 pt-5 sm:px-10 sm:pt-7">
+        <div className={`relative grid grid-cols-[1fr_auto_1fr] items-start pt-6 sm:pt-9 ${GUTTER}`}>
           <Link href="/" className="whitespace-nowrap text-[13px] font-bold tracking-[-0.03em] text-black sm:text-[15px]">
             Pradeep Yellapu
           </Link>
-          <Switch view={view} onChange={onView} />
+          <Switch view={view} onChange={onView} mode={mode} />
           <nav className="flex justify-end gap-3 text-[13px] font-semibold tracking-[-0.02em] text-black sm:gap-12 sm:text-[14px]">
             <Link href="/about">Info</Link>
             <a href="#contact">Contact</a>
@@ -202,7 +285,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       {view === "spatial" ? (
         <>
           {/* Statement, bottom-left over the map. Always laid out so the intro can dock to it. */}
-          <div ref={heroRef} className="pointer-events-none fixed bottom-8 left-4 z-30 sm:bottom-12 sm:left-10">
+          <div ref={heroRef} className="pointer-events-none fixed bottom-10 left-6 z-30 sm:bottom-16 sm:left-16 lg:bottom-20 lg:left-24">
             <Statement ref={statementRef} className={`text-black ${ready ? "" : "invisible"}`} />
             <motion.p
               className="mt-4 max-w-[34rem] text-[13px] leading-snug tracking-[-0.01em] text-black/55 sm:text-[15px]"
@@ -213,8 +296,8 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
               {SUBTITLE}
             </motion.p>
           </div>
-          {/* Scroll room for the zoom and the fade-out; the map shows through. */}
-          <div aria-hidden="true" className="pointer-events-none h-[190vh]" />
+          {/* Scroll room for the fade-out; the map shows through. */}
+          <div aria-hidden="true" className="pointer-events-none h-screen" />
         </>
       ) : (
         <IndexView statementRef={statementRef} ready={ready} />
@@ -226,47 +309,18 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
 }
 
 function IndexView({ statementRef, ready }: { statementRef: Props["statementRef"]; ready: boolean }) {
-  const work = PROJECTS.filter((p) => !p.parent);
   return (
-    <div className="relative z-20 px-4 sm:px-10">
-      {/* Statement sits high; the grid starts 60% down the first screen. */}
-      <div className="flex h-[60vh] flex-col justify-end pb-12">
+    <div className="relative z-20">
+      {/* Statement sits high; the work starts 60% down the first screen. */}
+      <div className={`flex h-[60vh] flex-col justify-end pb-12 ${GUTTER}`}>
         <Statement ref={statementRef} className={`text-black ${ready ? "" : "invisible"}`} />
         <p className="mt-4 max-w-[34rem] text-[13px] leading-snug tracking-[-0.01em] text-black/55 sm:text-[15px]">{SUBTITLE}</p>
       </div>
-      <div className="flex items-baseline justify-between pb-5 text-[15px] tracking-[-0.02em]">
-        <p className="font-medium text-black">
-          Selected work <span className="ml-1 text-[11px] text-black/40">(01–{String(work.length).padStart(2, "0")})</span>
-        </p>
-        <p className="hidden text-black/55 sm:block">Product design, research and code for AI and spatial systems</p>
-      </div>
-      <div className="grid grid-cols-1 gap-x-6 gap-y-12 pb-28 sm:grid-cols-2 lg:grid-cols-3">
-        {work.map((p, i) => (
-          <motion.div
-            key={p.id}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-10% 0px" }}
-            transition={{ duration: 0.6, ease: EASE, delay: (i % 3) * 0.06 }}
-          >
-            <Link href={p.href} className="group block">
-              <span className="block aspect-[5/4] overflow-hidden bg-black/[0.04]">
-                {/* eslint-disable-next-line @next/next/no-img-element -- mixed gif/webp covers */}
-                <img
-                  src={p.cover ?? p.thumb}
-                  alt={p.title}
-                  className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                  loading="lazy"
-                />
-              </span>
-              <span className="mt-4 flex items-baseline justify-between gap-4">
-                <span className="text-[17px] font-medium tracking-[-0.03em] text-black">{p.title}</span>
-                <span className="text-[11px] tabular-nums text-black/40">{String(i + 1).padStart(2, "0")}</span>
-              </span>
-              <span className="mt-2 block max-w-[30rem] text-[14px] leading-snug tracking-[-0.01em] text-black/55">{p.blurb ?? p.role}</span>
-            </Link>
-          </motion.div>
-        ))}
+      {/* The home page's own case-study cards, one per row, on white. */}
+      <div className="bg-white/90 backdrop-blur-[2px]">
+        <RecruiterProvider>
+          <Projects />
+        </RecruiterProvider>
       </div>
     </div>
   );
