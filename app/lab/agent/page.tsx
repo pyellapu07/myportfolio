@@ -1,18 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import AgentMark, { type AgentMood } from "@/components/agent/AgentMark";
+import AgentOrb, { type AgentMood } from "@/components/agent/AgentOrb";
 
-// Lab page for the agent mark: sizes and moods side by side.
+// Lab page for the agent: the glass orb on white and on dark, both cores,
+// every mood, and the smaller sizes it has to survive at.
 const MOODS: AgentMood[] = ["idle", "listening", "thinking", "answered"];
 
 export default function AgentLab() {
   const [mood, setMood] = useState<AgentMood>("idle");
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-12 bg-white p-10">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-10 bg-white p-10">
       <div className="flex items-center gap-6">
-        <AgentMark size={300} mood={mood} form="orbit" />
-        <AgentMark size={300} mood={mood} form="knot" />
+        <div className="grid place-items-center rounded-[20px] bg-white p-4">
+          <AgentOrb size={300} mood={mood} core="brass" />
+        </div>
+        <div className="grid place-items-center rounded-[20px] bg-[#0b0d12] p-4">
+          <AgentOrb size={300} mood={mood} core="brass" />
+        </div>
+        <div className="grid place-items-center rounded-[20px] bg-white p-4">
+          <AgentOrb size={300} mood={mood} core="cyan" />
+        </div>
       </div>
       <div className="flex gap-2">
         {MOODS.map((m) => (
@@ -26,11 +34,11 @@ export default function AgentLab() {
           </button>
         ))}
       </div>
-      <div className="flex items-end gap-10">
-        <AgentMark size={120} mood={mood} form="orbit" />
-        <AgentMark size={64} mood={mood} form="orbit" />
-        <AgentMark size={120} mood={mood} form="knot" />
-        <AgentMark size={64} mood={mood} form="knot" />
+      <div className="flex items-end gap-8">
+        <AgentOrb size={120} mood={mood} />
+        <AgentOrb size={64} mood={mood} />
+        <AgentOrb size={120} mood={mood} core="cyan" />
+        <AgentOrb size={64} mood={mood} core="cyan" />
       </div>
     </main>
   );
