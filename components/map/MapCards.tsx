@@ -130,23 +130,6 @@ const NODES: Node[] = PROJECTS.filter((p): p is Project & { parent: string } => 
   angle: Math.PI * (0.05 + (0.9 * (i + 0.5)) / all.length),
 }));
 
-// Film grain: an SVG turbulence tile laid over every card (above the haze,
-// hard-light so it reads on light images too) and shifted every few frames
-// so it crawls like real grain.
-const GRAIN = `url("data:image/svg+xml;utf8,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 2.6 -0.75"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>',
-)}")`;
-
-function Grain({ strength = 0.05 }: { strength?: number }) {
-  return (
-    <span
-      aria-hidden="true"
-      className="map-grain pointer-events-none absolute inset-[-40px] mix-blend-hard-light"
-      style={{ backgroundImage: GRAIN, backgroundSize: "160px 160px", opacity: strength }}
-    />
-  );
-}
-
 export default function MapCards({ delay = 0 }: { delay?: number }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
@@ -204,7 +187,6 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
     const t0 = performance.now();
     const spread = new Map<string, number>(); // eased 0..1 open amount per parent
     let raf = 0;
-    let grainT = 0;
     // The work clusters in a few regions, which would leave most of a
     // geographic globe bare. Immersed, cards take evenly spaced slots round
     // it instead, keeping their west → east order; latitudes are scattered
@@ -340,13 +322,6 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
         el.style.visibility = q.z > PASS_Z || detailRef.current === n.id ? "hidden" : "visible";
         if (goal === 0) el.style.zIndex = String(k > 0.01 ? Math.min(199, Math.max(1, Math.round(99 + q.z / 10))) : 5);
       }
-      // Crawl the grain a few times a second, in jumps, like film.
-      if (!reduce && now - grainT > 70) {
-        grainT = now;
-        const gx = Math.floor(Math.random() * 160);
-        const gy = Math.floor(Math.random() * 160);
-        boxRef.current?.style.setProperty("--grain", `${gx}px ${gy}px`);
-      }
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
@@ -459,7 +434,7 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
                 className="block h-full w-full"
                 aria-label={`${c.title}, ${c.place}`}
               >
-                {/* Square, flat frame; blur, haze and grain stay inside it. */}
+                {/* Square, flat frame; blur and haze stay inside it. */}
                 <span className="relative block h-full w-full overflow-hidden bg-white">
                   {/* Blur is written by the frame loop: depth blur when flat, lens
                       blur by distance when immersed. data-blur holds the flat value. */}
@@ -477,7 +452,6 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
                     draggable={false}
                   />
                   <span className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300" style={{ opacity: `calc(${haze} * var(--haze-k, 1))` }} />
-                  <Grain />
                 </span>
                 <span
                   className={`pointer-events-none absolute left-1/2 top-full mt-2.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 ${
@@ -532,7 +506,6 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
                     className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300"
                     style={{ opacity: open ? 0 : "calc(0.3 * var(--haze-k, 1))" }}
                   />
-                  <Grain strength={0.04} />
                 </span>
                 <span
                   className={`pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap text-[8px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 ${

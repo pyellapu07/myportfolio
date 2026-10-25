@@ -25,6 +25,8 @@ export const HEAT_SOURCES: HeatSource[] = [
   { name: "Seattle, WA (UW)", lon: -122.3, lat: 47.6, weight: 0.5, radius: 6 },
   // MarketCrunch AI
   { name: "San Francisco, CA", lon: -122.4, lat: 37.8, weight: 0.6, radius: 6 },
+  // My Equation: market research and UI/UX
+  { name: "Ahmedabad, India", lon: 72.6, lat: 23.0, weight: 0.6, radius: 6 },
   // Where it started
   { name: "Visakhapatnam, India", lon: 83.2, lat: 17.7, weight: 0.65, radius: 7 },
   { name: "Chennai, India (SRM)", lon: 80.2, lat: 13.1, weight: 0.6, radius: 6 },
