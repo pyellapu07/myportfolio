@@ -52,6 +52,9 @@ PALETTES = {
     "tgi": ((248, 251, 255), (214, 232, 248), (158, 196, 232), (255, 255, 255), 100),
 }
 PALETTE = PALETTES["terracotta"]
+# Window chrome: (body/title bar, hairline under the bar).
+FRAMES = {"light": ((246, 245, 243), (226, 224, 220)), "dark": ((14, 14, 15), (38, 38, 40))}
+FRAME = FRAMES["light"]
 
 
 def gradient_bg():
@@ -88,8 +91,8 @@ def window_layers():
     under.paste((60, 20, 10, 255), (0, 0), sh)
     # Window body and title bar.
     d = ImageDraw.Draw(under)
-    d.rounded_rectangle((WIN_X, WIN_Y, WIN_X + WIN_W, WIN_Y + win_h), RADIUS, fill=(246, 245, 243, 255))
-    d.line((WIN_X, WIN_Y + BAR, WIN_X + WIN_W, WIN_Y + BAR), fill=(226, 224, 220, 255), width=1)
+    d.rounded_rectangle((WIN_X, WIN_Y, WIN_X + WIN_W, WIN_Y + win_h), RADIUS, fill=FRAME[0] + (255,))
+    d.line((WIN_X, WIN_Y + BAR, WIN_X + WIN_W, WIN_Y + BAR), fill=FRAME[1] + (255,), width=1)
     for i, col in enumerate([(255, 95, 87), (254, 188, 46), (40, 200, 64)]):
         cx, cy = WIN_X + 20 + i * 18, WIN_Y + BAR // 2
         d.ellipse((cx - 5, cy - 5, cx + 5, cy + 5), fill=col + (255,))
@@ -163,12 +166,14 @@ def main():
     ap.add_argument("--loop-fade", type=float, default=0.5, help="seconds of end-to-start crossfade")
     ap.add_argument("--out", required=True)
     ap.add_argument("--poster-at", type=float, default=0.34, help="seconds into the loop for the poster frame")
+    ap.add_argument("--frame", choices=sorted(FRAMES), default="light", help="window chrome colour")
     ap.add_argument("--palette", choices=sorted(PALETTES), default="terracotta")
     ap.add_argument("--size", default="1280x800", help="canvas WxH, e.g. 1100x1000 for a squarer card")
     a = ap.parse_args()
 
-    global W, H, PALETTE
+    global W, H, PALETTE, FRAME
     PALETTE = PALETTES[a.palette]
+    FRAME = FRAMES[a.frame]
     W, H = (int(v) for v in a.size.lower().split("x"))
     layout(probe_aspect(a.video) if a.video else 16 / 10)
     bg = gradient_bg()
