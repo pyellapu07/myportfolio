@@ -42,7 +42,15 @@ export default function MapStage({ play, instant, speed }: Props) {
           {/* The map itself; immersive mode softens it without touching the cards. */}
           <div
             className="relative"
-            style={{ ...BOX, maskImage: MASK, WebkitMaskImage: MASK, filter: "var(--map-bg-filter, none)", opacity: "var(--map-bg-opacity, 1)" }}
+            style={{
+              ...BOX,
+              maskImage: MASK,
+              WebkitMaskImage: MASK,
+              filter: "var(--map-bg-filter, none)",
+              opacity: "var(--map-bg-opacity, 1)",
+              // Turns with the camera orbit when immersed; "none" when flat.
+              transform: "var(--map-tilt, none)",
+            }}
           >
             <HeatLayer delay={instant ? 0 : 0.5 / speed} />
             <Image src={WORLD_MAP.src} alt="" fill unoptimized priority draggable={false} />

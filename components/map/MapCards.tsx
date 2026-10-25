@@ -20,10 +20,10 @@ const W_NODE = 62; // related-node width
 const ORBIT = 30; // px between a parent card's edge and its nodes
 // Immersive 3D: perspective, each card's Z by depth (near → far), how far
 // the cards spread and the camera flies, and where a card passes the camera.
-const PERSPECTIVE = 900;
+const PERSPECTIVE = 1100;
 const Z_NEAR = 260;
 const Z_FAR = -620;
-const SPREAD = 1.05;
+const SPREAD = 0.35; // on top of the map zoom (1 + 0.9k), which the cards share
 const FLY_DEPTH = 1300;
 const PASS_Z = 640;
 const GAP = 14; // px kept clear between cards
@@ -180,12 +180,23 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
       const ox = box.w / 2;
       const oy = box.h / 2;
       // Flat position → 3D: spread out from the centre, pushed back or forward
-      // by depth, flown through by the camera, panned by the drag.
+      // by depth, flown through by the camera, then orbited round the centre
+      // by the drag (yaw about Y, pitch about X). The map plane gets the same
+      // rotation in CSS (--map-tilt), so cards and map turn together.
+      const cy_ = Math.cos(im.yaw * k), sy_ = Math.sin(im.yaw * k);
+      const cp_ = Math.cos(im.pitch * k), sp_ = Math.sin(im.pitch * k);
       const place = (x: number, y: number, depth: number) => {
         const s = 1 + SPREAD * k;
-        const z = k * (zOf(depth) + im.flight * FLY_DEPTH);
-        return { x: ox + (x - ox) * s - im.camX * k, y: oy + (y - oy) * s - im.camY * k, z };
+        const wx = (x - ox) * s;
+        const wy = (y - oy) * s;
+        const wz = k * zOf(depth);
+        const rx = wx * cy_ + wz * sy_;
+        const rz = -wx * sy_ + wz * cy_;
+        const ry = wy * cp_ - rz * sp_;
+        const rz2 = wy * sp_ + rz * cp_;
+        return { x: ox + rx, y: oy + ry, z: rz2 + k * im.flight * FLY_DEPTH };
       };
+      const turn = k > 0.001 ? ` rotateY(${(im.yaw * k).toFixed(4)}rad) rotateX(${(-im.pitch * k).toFixed(4)}rad)` : "";
       const lensBlur = (z: number) => Math.min(9, Math.abs(z) / 150);
       if (svgRef.current) svgRef.current.style.opacity = (1 - k).toFixed(3);
       // The landing's Index view shows its own list; the map cards step aside.
@@ -208,7 +219,7 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
         const el = cardEls.current.get(c.id);
         if (el) {
           const q = place(x, y, c.depth);
-          el.style.transform = `translate3d(${(q.x - c.w / 2).toFixed(2)}px, ${(q.y - c.h / 2).toFixed(2)}px, ${q.z.toFixed(1)}px)`;
+          el.style.transform = `translate3d(${(q.x - c.w / 2).toFixed(2)}px, ${(q.y - c.h / 2).toFixed(2)}px, ${q.z.toFixed(1)}px)${turn}`;
           // Cards that have flown past the camera fade away rather than fill the screen.
           el.style.opacity = (1 - Math.min(1, Math.max(0, (q.z - PASS_Z * 0.55) / (PASS_Z * 0.45)))).toFixed(3);
           el.style.visibility = q.z > PASS_Z ? "hidden" : "visible";

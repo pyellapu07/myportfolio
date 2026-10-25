@@ -21,8 +21,12 @@ function bezier(x1: number, y1: number, x2: number, y2: number) {
 
 // The fly-in and fly-out: slow, a hard rush, then a long settle.
 const FLY = bezier(0.76, 0, 0.24, 1);
-const ENTER_MS = 1100;
-const LEAVE_MS = 900;
+const ENTER_MS = 850;
+const LEAVE_MS = 700;
+// Orbit limits (radians) and drag sensitivity (radians per px).
+const MAX_YAW = 0.9;
+const MAX_PITCH = 0.5;
+const ORBIT_PER_PX = 0.0042;
 
 const state = {
   mode: "map" as Mode,
@@ -35,11 +39,13 @@ const state = {
   /** How far the camera has flown forward through the cards, 0..1. */
   flight: 0,
   flightTarget: 0,
-  /** Camera pan (px) and look (rad), with targets for inertia. */
-  camX: 0,
-  camY: 0,
-  camTX: 0,
-  camTY: 0,
+  /** Camera orbit round the scene centre (rad), with targets for inertia. */
+  yaw: 0,
+  pitch: 0,
+  yawT: 0,
+  pitchT: 0,
+  /** When the last mode change happened, for debouncing trackpad momentum. */
+  changedAt: 0,
 };
 
 const modeListeners = new Set<(m: Mode) => void>();
@@ -48,6 +54,7 @@ const tickListeners = new Set<(s: Readonly<typeof state>) => void>();
 function setMode(m: Mode) {
   if (state.mode === m) return;
   state.mode = m;
+  state.changedAt = performance.now();
   modeListeners.forEach((f) => f(m));
 }
 
@@ -62,28 +69,32 @@ let pendingMode: Mode | null = null;
 
 export const immersion = {
   get: () => state as Readonly<typeof state>,
-  enter() {
+  /** Fly in; from the sections, arrive at the far end (atEnd) to fly back. */
+  enter(atEnd = false) {
     if (state.mode !== "map") return;
-    state.flight = state.flightTarget = 0;
-    state.camX = state.camY = state.camTX = state.camTY = 0;
+    state.flight = state.flightTarget = atEnd ? 1 : 0;
+    state.yaw = state.pitch = state.yawT = state.pitchT = 0;
     setMode("entering");
     animateK(1, ENTER_MS, "immersed");
   },
-  leave() {
+  /** Fly out; toEnd keeps flying forward (on into the sections). */
+  leave(toEnd = false) {
     if (state.mode !== "immersed" && state.mode !== "entering") return;
     setMode("leaving");
-    state.flightTarget = 0;
+    state.flightTarget = toEnd ? 1 : 0;
     animateK(0, LEAVE_MS, "map");
   },
   /** Wheel while immersed: fly forward/back. */
   fly(delta: number) {
     state.flightTarget = Math.min(1, Math.max(0, state.flightTarget + delta));
   },
-  /** Drag while immersed: pan the camera. */
-  pan(dx: number, dy: number) {
-    state.camTX = Math.max(-900, Math.min(900, state.camTX + dx));
-    state.camTY = Math.max(-600, Math.min(600, state.camTY + dy));
+  /** Drag while immersed: orbit the camera round the scene. */
+  orbit(dx: number, dy: number) {
+    state.yawT = Math.max(-MAX_YAW, Math.min(MAX_YAW, state.yawT + dx * ORBIT_PER_PX));
+    state.pitchT = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, state.pitchT - dy * ORBIT_PER_PX));
   },
+  /** Milliseconds since the last mode change. */
+  sinceChange: () => performance.now() - state.changedAt,
   /** Advance easing and inertia; call once per frame. */
   tick(now: number) {
     if (pendingMode) {
@@ -95,12 +106,12 @@ export const immersion = {
         setMode(m);
       }
     }
-    state.flight += (state.flightTarget - state.flight) * 0.075;
-    state.camX += (state.camTX - state.camX) * 0.09;
-    state.camY += (state.camTY - state.camY) * 0.09;
+    state.flight += (state.flightTarget - state.flight) * 0.14;
+    state.yaw += (state.yawT - state.yaw) * 0.1;
+    state.pitch += (state.pitchT - state.pitch) * 0.1;
     if (state.mode === "leaving") {
-      state.camTX *= 0.9;
-      state.camTY *= 0.9;
+      state.yawT *= 0.88;
+      state.pitchT *= 0.88;
     }
     tickListeners.forEach((f) => f(state));
   },
