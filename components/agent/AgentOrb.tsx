@@ -29,6 +29,7 @@ export default function AgentOrb({
   bg,
   interactive = true,
   active = true,
+  onReady,
   className = "",
 }: {
   size?: number;
@@ -41,11 +42,17 @@ export default function AgentOrb({
   interactive?: boolean;
   /** Render frames. Off keeps it built (shaders compiled) but costs nothing. */
   active?: boolean;
+  /** Every shader compiled and the first frame drawn. */
+  onReady?: () => void;
   className?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const moodRef = useRef(mood);
   const activeRef = useRef(active);
+  const onReadyRef = useRef(onReady);
+  useEffect(() => {
+    onReadyRef.current = onReady;
+  });
   useEffect(() => {
     moodRef.current = mood;
     activeRef.current = active;
@@ -254,6 +261,7 @@ export default function AgentOrb({
       renderer.compileAsync(scene, camera).then(() => {
         if (disposed) return;
         renderer.render(scene, camera);
+        onReadyRef.current?.();
         raf = requestAnimationFrame(frame);
       });
 

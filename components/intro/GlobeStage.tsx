@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
 import AgentOrb from "@/components/agent/AgentOrb";
 import { LAND_GRID } from "@/components/map/landGrid";
@@ -188,11 +188,13 @@ interface Props {
   onFlat?: () => void;
   /** Each frame of the dissolve: the wave's radius from the map centre, in px. */
   onWave?: (r: number) => void;
+  /** Everything compiled and uploaded: the intro can start without stalls. */
+  onReady?: () => void;
 }
 
 type Stage = { draw: (t: number) => number; wave: () => number; dispose: () => void };
 
-export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
+export default function GlobeStage({ play, speed, onFlat, onWave, onReady }: Props) {
   const [orbDone, setOrbDone] = useState(false);
   // The agent fills most of the globe's inside (its canvas is ~1.45 R; the
   // bubble takes about two thirds of that).
@@ -205,11 +207,22 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
   const stageRef = useRef<Stage | null>(null);
   const failedRef = useRef(false);
   const onFlatRef = useRef(onFlat);
+  const onReadyRef = useRef(onReady);
+  // Three things must land before the intro starts: the scene, the card
+  // textures and the agent. Each ticks this off; the last calls onReady.
+  const pendingRef = useRef(3);
+  const tick = useCallback(() => {
+    if (--pendingRef.current === 0) {
+      performance.mark("intro:warm");
+      onReadyRef.current?.();
+    }
+  }, []);
   const onWaveRef = useRef(onWave);
   useEffect(() => {
     onFlatRef.current = onFlat;
     onWaveRef.current = onWave;
-  }, [onFlat, onWave]);
+    onReadyRef.current = onReady;
+  }, [onFlat, onWave, onReady]);
 
   // Load three.js and build the whole scene when the intro mounts, compiling
   // the shaders up front, so the first globe frame costs nothing at the blast.
@@ -280,11 +293,18 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
         // deeper, so the card smears and bends round the globe before it is
         // swallowed.
         const cardGeo = new THREE.PlaneGeometry(1, 0.625, 24, 16);
+        let texLeft = PROJECTS.length;
+        const texDone = () => {
+          if (--texLeft === 0) tick();
+        };
         const texLoader = new THREE.TextureLoader();
         const cardRand = mulberry32(29);
         const cards = PROJECTS.map((pr, i) => {
           // Uploaded as soon as it loads, not on the frame the card first shows.
-          const tex = texLoader.load(pr.thumb, (t) => renderer.initTexture(t));
+          const tex = texLoader.load(pr.thumb, (t) => {
+            renderer.initTexture(t);
+            texDone();
+          }, undefined, texDone);
           tex.colorSpace = THREE.SRGBColorSpace;
           const warp = { value: 0 };
           // Focus blur is done inside the card, by sampling a softer mip
@@ -599,6 +619,7 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
         pass(compMat, null);
         renderer.setRenderTarget(null);
         renderer.clear();
+        tick();
         stageRef.current = {
           draw,
           wave: () => waveR,
@@ -627,7 +648,7 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
       stageRef.current?.dispose();
       stageRef.current = null;
     };
-  }, []);
+  }, [tick]);
 
   useEffect(() => {
     if (!play) return;
@@ -676,7 +697,7 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
         >
           {/* Built from the start (shaders compiled while the intro is quiet),
               rendered only while the globe is on. */}
-          <AgentOrb size={orbSize} interactive={false} active={play} />
+          <AgentOrb size={orbSize} interactive={false} active={play} onReady={tick} />
         </motion.div>
       )}
       {/* Lens haze round the frame edges while the blocks drift in */}

@@ -248,6 +248,9 @@ const blastAt = (e: number) => easeOutCubic(clamp01((e - T.blast) / T.blastDur))
 const glitchAt = (e: number) => clamp01((e - (T.clear + T.clearDur * 0.5)) / 0.35);
 
 type Phase = "measure" | "play" | "dock" | "final";
+
+// Longest the intro waits on the globe being built before it starts anyway.
+const WARM_CAP_MS = 1500;
 type Layout = { motions: WordMotion[]; reduced: boolean };
 type Dock = { x: number; y: number; scale: number; lineShift: number[] };
 type WordMotion = { x: number[]; y: number[]; scale: number[]; opacity: number[]; filter: string[]; times: number[] };
@@ -384,7 +387,19 @@ interface Props {
 export default function HyperspaceIntro({ speed = 1, onDone, dockTo, dockAlign = "left", hideHeadline = false, onDock }: Props) {
   const [layout, setLayout] = useState<Layout | null>(null);
   const [stage, setStage] = useState<"run" | "dock" | "final">("run");
-  const phase: Phase = !layout ? "measure" : layout.reduced ? "final" : stage === "run" ? "play" : stage;
+  // Held on the blank white beat until the globe is built and compiled, so
+  // no shader compile lands while the words pull into focus. Capped, so a
+  // slow device still starts.
+  const [warm, setWarm] = useState(false);
+  const markWarm = useCallback(() => setWarm(true), []);
+  useEffect(() => {
+    const id = setTimeout(() => {
+      performance.mark("intro:warm-cap");
+      markWarm();
+    }, WARM_CAP_MS);
+    return () => clearTimeout(id);
+  }, [markWarm]);
+  const phase: Phase = !layout ? "measure" : layout.reduced ? "final" : !warm ? "measure" : stage === "run" ? "play" : stage;
   const motions = layout?.motions ?? null;
   const [dock, setDock] = useState<Dock | null>(null);
   const [globeOn, setGlobeOn] = useState(false);
@@ -702,7 +717,7 @@ export default function HyperspaceIntro({ speed = 1, onDone, dockTo, dockAlign =
       </div>
       {!instant && (
         <div className="pointer-events-none absolute inset-0">
-          <GlobeStage play={globeOn} speed={speed} onFlat={showMap} onWave={setWave} />
+          <GlobeStage play={globeOn} speed={speed} onFlat={showMap} onWave={setWave} onReady={markWarm} />
         </div>
       )}
 
