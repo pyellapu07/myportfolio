@@ -80,7 +80,7 @@ void main() {
   if (land < 0.01) { gl_FragColor = vec4(0.0); return; }
   float h = heat(vUv) * u_reveal;
   // 3D relief: normal from the height field, lit from a light that circles.
-  vec2 e = vec2(1.5 / u_res.x, 0.0);
+  vec2 e = vec2(1.5 / max(u_res.x, 1.0), 0.0);
   float hx = heat(vUv + e.xy) - heat(vUv - e.xy);
   float hy = heat(vUv + e.yx) - heat(vUv - e.yx);
   vec3 n = normalize(vec3(-hx * 9.0, -hy * 9.0, 1.0));
@@ -195,6 +195,9 @@ export default function HeatLayer({ delay = 0 }: { delay?: number }) {
       const sw = canvas.getBoundingClientRect().width;
       if (Math.abs(sw - lastW) > lastW * 0.04) resize();
       if (ready) {
+        // Every frame: the size can be settled before the first resize check
+        // runs, and a zero resolution turns the lighting maths into NaN (black).
+        gl.uniform2f(u("u_res"), canvas.width, canvas.height);
         gl.uniform1f(u("u_time"), reduce ? 0 : t);
         gl.uniform1f(u("u_wind"), reduce ? 0 : wind);
         gl.uniform1f(u("u_gust"), gust);
