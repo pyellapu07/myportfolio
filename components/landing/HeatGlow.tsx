@@ -61,7 +61,7 @@ void main() {
   float t = clamp(h * 0.85, 0.0, 1.0);
   // Lifted a little towards white so it stays light on the page.
   vec3 col = mix(warm(t), vec3(1.0), 0.15);
-  float a = smoothstep(0.04, 0.85, h) * 0.34;
+  float a = smoothstep(0.04, 0.85, h) * 0.16;
   a *= 0.88 + 0.24 * hash(gl_FragCoord.xy + fract(u_t) * 61.0);
   gl_FragColor = vec4(col * a, a);
 }
@@ -130,7 +130,7 @@ export default function HeatGlow({ shown }: { shown: boolean }) {
   return (
     // The wrapper fades it in once; the canvas follows the scroll (--glow,
     // set by Landing) so it is gone by the time the page content arrives.
-    <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 bottom-0 z-[25] h-[38vh] transition-opacity duration-1000" style={{ opacity: shown ? 1 : 0 }}>
+    <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 bottom-0 z-[25] h-[16vh] transition-opacity duration-1000" style={{ opacity: shown ? 1 : 0 }}>
       <canvas ref={ref} className="h-full w-full" style={{ opacity: "var(--glow, 1)" }} />
     </div>
   );

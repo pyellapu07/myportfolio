@@ -1,12 +1,14 @@
 "use client";
 
-import { forwardRef, useEffect, useRef, useState, type ReactNode } from "react";
+import { forwardRef, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { BorderBeam } from "border-beam";
 import { HEADLINE_CLASS, LINES } from "@/components/intro/HyperspaceIntro";
 import AskBar from "./AskBar";
 import HeatGlow from "./HeatGlow";
+import Latest from "./Latest";
+import Artifacts from "./Artifacts";
 import { immersion, type Mode } from "@/components/map/immersion";
 import { RecruiterProvider } from "@/lib/recruiter-context";
 import Projects from "@/components/Projects";
@@ -54,32 +56,72 @@ const HINTS: Record<Mode, string> = {
   past: "Scroll up to fly back",
 };
 
-function Switch({ view, onChange, mode }: { view: View; onChange: (v: View) => void; mode: Mode }) {
+// View switcher: a vertical glass pill on the right edge, icons only, the
+// label showing on hover (Air-style).
+const VIEWS: { v: View; label: string; icon: ReactNode }[] = [
+  {
+    v: "spatial",
+    label: "Spatial",
+    icon: (
+      <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]" aria-hidden="true">
+        <circle cx="10" cy="10" r="7.25" stroke="currentColor" strokeWidth="1.5" />
+        <ellipse cx="10" cy="10" rx="3.2" ry="7.25" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M2.9 10h14.2" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    ),
+  },
+  {
+    v: "index",
+    label: "Index",
+    icon: (
+      <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]" aria-hidden="true">
+        <path d="M3 5.5h14M3 10h14M3 14.5h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+];
+
+function Switch({ view, onChange }: { view: View; onChange: (v: View) => void }) {
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="flex rounded-[10px] bg-black/[0.05] p-[3px] text-[13px] font-medium">
-        {(["index", "spatial"] as const).map((v) => (
-          <button
-            key={v}
-            type="button"
-            onClick={() => onChange(v)}
-            className={`relative rounded-[8px] px-2.5 py-1.5 capitalize sm:px-4 transition-colors ${view === v ? "text-black" : "text-black/55 hover:text-black"}`}
-          >
-            {view === v && (
-              <motion.span
-                layoutId="view-pill"
-                className="absolute inset-0 rounded-[8px] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.12)]"
-                transition={{ duration: 0.35, ease: EASE }}
-              />
-            )}
-            <span className="relative">{v}</span>
-          </button>
-        ))}
-      </div>
-      <p className="text-[11px] tracking-[-0.01em] text-black/45">
-        {view === "spatial" ? HINTS[mode] : "Scroll to browse the work"}
-      </p>
+    <div className="flex flex-col gap-1 rounded-[14px] border border-white/80 bg-white/45 p-1 shadow-[0_10px_30px_-14px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+      {VIEWS.map(({ v, label, icon }) => (
+        <button
+          key={v}
+          type="button"
+          onClick={() => onChange(v)}
+          aria-label={`${label} view`}
+          aria-pressed={view === v}
+          className={`group relative grid h-9 w-9 place-items-center rounded-[10px] transition-colors ${view === v ? "text-black" : "text-black/45 hover:text-black"}`}
+        >
+          {view === v && (
+            <motion.span
+              layoutId="view-pill"
+              className="absolute inset-0 rounded-[10px] bg-white shadow-[0_1px_4px_rgba(0,0,0,0.14)]"
+              transition={{ duration: 0.35, ease: EASE }}
+            />
+          )}
+          <span className="relative">{icon}</span>
+          <span className="pointer-events-none absolute right-full mr-2.5 whitespace-nowrap rounded-[6px] bg-black px-2 py-1 text-[11px] font-medium text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            {label}
+          </span>
+        </button>
+      ))}
     </div>
+  );
+}
+
+// Local time where the work is based, ticking by the minute.
+const timeFmt = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" });
+const subscribeMinute = (cb: () => void) => {
+  const id = setInterval(cb, 15_000);
+  return () => clearInterval(id);
+};
+function LocalTime() {
+  const time = useSyncExternalStore(subscribeMinute, () => timeFmt.format(new Date()), () => "");
+  return (
+    <span className="whitespace-nowrap text-[12px] font-medium tracking-[-0.02em] text-black/55 sm:text-[13px]">
+      College Park, MD<span className="ml-2 tabular-nums text-black/35">{time}</span>
+    </span>
   );
 }
 
@@ -292,16 +334,31 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
         {/* Soft white backing so content scrolling underneath never collides with the nav */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white via-white/85 to-transparent" />
         <div className={`relative grid grid-cols-[1fr_auto_1fr] items-start pt-6 sm:pt-9 ${GUTTER}`}>
-          <Link href="/" className="whitespace-nowrap text-[13px] font-bold tracking-[-0.03em] text-black sm:text-[15px]">
-            Pradeep Yellapu
-          </Link>
-          <Switch view={view} onChange={onView} mode={mode} />
-          <nav className="flex justify-end gap-3 text-[13px] font-semibold tracking-[-0.02em] text-black sm:gap-12 sm:text-[14px]">
-            <Link href="/about">Info</Link>
-            <a href="#contact">Contact</a>
+          <div className="pt-0.5">
+            <LocalTime />
+          </div>
+          <div className="flex flex-col items-center gap-1.5">
+            <Link href="/" className="whitespace-nowrap text-[14px] font-bold tracking-[-0.03em] text-black sm:text-[15px]">
+              Pradeep Yellapu
+            </Link>
+            <p className="text-[11px] tracking-[-0.01em] text-black/45">{view === "spatial" ? HINTS[mode] : "Scroll to browse the work"}</p>
+          </div>
+          <nav className="flex items-center justify-end gap-3 text-[13px] font-semibold tracking-[-0.02em] text-black sm:gap-8 sm:text-[14px]">
+            <Link href="/about" className="hidden sm:inline">
+              Info
+            </Link>
+            <a href="#contact" className="hidden sm:inline">
+              Contact
+            </a>
+            <Latest />
           </nav>
         </div>
       </motion.header>
+
+      {/* View switcher, glass, on the right edge. */}
+      <motion.div {...frame} className={`fixed right-4 top-1/2 z-40 -translate-y-1/2 sm:right-6 ${shown ? "" : "pointer-events-none"}`}>
+        <Switch view={view} onChange={onView} />
+      </motion.div>
 
       <HeatGlow shown={shown && ready} />
       <AskBar shown={shown && ready} onActive={setAsking} />
@@ -326,7 +383,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       </div>
       {/* First screen: the map shows through. Spatial scrolls on into the
           sections; Index into the case studies first. */}
-      <div aria-hidden="true" className="pointer-events-none h-screen" />
+      <div className="pointer-events-none relative h-screen">{view === "index" && <Artifacts shown={shown && ready} />}</div>
       {view === "index" && <IndexView />}
 
       {ready && <div className="relative z-20 bg-white">{children}</div>}
