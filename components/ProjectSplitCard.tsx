@@ -28,8 +28,11 @@ export default function ProjectSplitCard({
   onMouseMove,
   onMouseEnter,
   onMouseLeave,
+  video,
 }: {
   project: Project;
+  /** A silent loop to play in place of the image (the lab sets it; `/` does not). */
+  video?: { src: string; poster: string };
   index: number;
   onMouseMove: (e: React.MouseEvent) => void;
   onMouseEnter: () => void;
@@ -74,10 +77,21 @@ export default function ProjectSplitCard({
           // what left the widest thumbnail floating in a tall empty box.
           // A tinted surface is the exception: there the panel is meant to
           // fill, because the tint is what covers the space the art cannot.
-          isContain && !surface ? "flex items-center" : ""
+          isContain && !surface && !video ? "flex items-center" : ""
         }`}
       >
-        {isContain && surface ? (
+        {video ? (
+          // Fitted, never cropped: the loop sits over its own poster, blurred
+          // to fill whatever room the cell has.
+          <div className="relative h-full min-h-[300px] w-full overflow-hidden rounded-lg sm:min-h-[360px] md:min-h-[420px]">
+            {/* eslint-disable-next-line @next/next/no-img-element -- blurred backdrop of the poster */}
+            <img src={video.poster} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl" />
+            <video poster={video.poster} muted loop playsInline autoPlay aria-label={project.title} className="absolute inset-0 h-full w-full object-contain">
+              <source src={video.src.replace(/\.mp4$/, ".webm")} type="video/webm" />
+              <source src={video.src} type="video/mp4" />
+            </video>
+          </div>
+        ) : isContain && surface ? (
           <div
             className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg px-4 py-6 sm:px-6"
             style={{ background: surface }}

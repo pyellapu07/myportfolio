@@ -403,7 +403,11 @@ function IndexView() {
       {/* The home page's own case-study cards, one per row, on white. */}
       <RecruiterProvider>
         {/* The squarer render of the Jeevy loop suits this nearly square cell. */}
-        <Projects jeevyVideo="/thumbs/jeevy-os-tall.mp4" jeevyPoster="/thumbs/jeevy-os-tall-poster.webp" />
+        <Projects
+          jeevyVideo="/thumbs/jeevy-os-tall.mp4"
+          jeevyPoster="/thumbs/jeevy-os-tall-poster.webp"
+          videos={{ "/work/xylem-institute": { src: "/thumbs/xylem-tall.mp4", poster: "/thumbs/xylem-tall-poster.webp" } }}
+        />
       </RecruiterProvider>
     </div>
   );

@@ -8,8 +8,15 @@ import ProjectSplitCard from "./ProjectSplitCard";
 import { PROJECTS } from "@/lib/constants";
 import { useState } from "react";
 
-/** jeevyVideo: play the Jeevy OS loop in its card (the lab sets it; `/` does not). */
-export default function Projects({ jeevyVideo, jeevyPoster }: { jeevyVideo?: string; jeevyPoster?: string } = {}) {
+/**
+ * jeevyVideo: play the Jeevy OS loop in its card. videos: loops for the other
+ * cards, keyed by case-study link. The lab sets both; `/` does not.
+ */
+export default function Projects({
+  jeevyVideo,
+  jeevyPoster,
+  videos,
+}: { jeevyVideo?: string; jeevyPoster?: string; videos?: Record<string, { src: string; poster: string }> } = {}) {
 
   // Floating cursor label
   const rawX = useMotionValue(-200);
@@ -61,6 +68,7 @@ export default function Projects({ jeevyVideo, jeevyPoster }: { jeevyVideo?: str
           key={project.title}
           project={project}
           index={i}
+          video={project.link ? videos?.[project.link] : undefined}
           onMouseMove={handleMouseMove}
           onMouseEnter={() => handleMouseEnter(project.cursorLabel ?? "View case study →")}
           onMouseLeave={handleMouseLeave}

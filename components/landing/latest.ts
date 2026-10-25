@@ -72,7 +72,8 @@ export const LATEST: LatestItem[] = [
     date: "2026-03",
     when: "Mar 2026",
     href: "/work/xylem-institute",
-    image: "/thumbs/xylem.webp",
+    image: "/thumbs/xylem-tall-poster.webp",
+    video: "/thumbs/xylem-tall.mp4",
   },
   {
     id: "marketcrunch",
