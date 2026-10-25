@@ -12,6 +12,14 @@ const EASE = [0.65, 0, 0.35, 1] as const;
 // Landing headline size: the intro headline docks to exactly this box.
 const STATEMENT_SIZE = "text-[clamp(1.9rem,3.6vw,3.4rem)]";
 
+// [blur px, mask start %, mask full %]: each layer blurs harder and starts lower.
+const PROGRESSIVE: [number, number, number][] = [
+  [1.5, 0, 30],
+  [4, 25, 55],
+  [9, 50, 80],
+  [18, 72, 100],
+];
+
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
@@ -155,6 +163,29 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
           </nav>
         </div>
       </motion.header>
+
+      {/* Progressive blur along the bottom, Apple-style: the map softens and
+          fades as it leaves the eye line. Above the map, below all content. */}
+      <motion.div
+        aria-hidden="true"
+        {...frame}
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-10 h-[46vh]"
+        style={{ opacity: "var(--map-opacity, 1)" }}
+      >
+        {PROGRESSIVE.map(([blur, from, to], i) => (
+          <div
+            key={i}
+            className="absolute inset-0"
+            style={{
+              backdropFilter: `blur(${blur}px)`,
+              WebkitBackdropFilter: `blur(${blur}px)`,
+              maskImage: `linear-gradient(to bottom, transparent ${from}%, #000 ${to}%)`,
+              WebkitMaskImage: `linear-gradient(to bottom, transparent ${from}%, #000 ${to}%)`,
+            }}
+          />
+        ))}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white" />
+      </motion.div>
 
       {view === "spatial" ? (
         <>

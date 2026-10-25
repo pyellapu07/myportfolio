@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { BorderBeam } from "border-beam";
 import { WORLD_MAP } from "@/components/map/worldMap";
 import HeatLayer from "@/components/map/HeatLayer";
 import MapCards from "@/components/map/MapCards";
@@ -23,7 +22,7 @@ interface Props {
 // the globe on an ancestor. Without it the map shows in full.
 const MASK = `radial-gradient(circle at ${AX}% ${AY}%, #000 calc(var(--wave, 4000px) - ${FEATHER}px), transparent var(--wave, 4000px))`;
 const RING = `radial-gradient(circle at ${AX}% ${AY}%, transparent calc(var(--wave, 0px) - 70px), rgba(70,160,255,0.22) calc(var(--wave, 0px) - 30px), rgba(160,240,255,0.32) calc(var(--wave, 0px) - 6px), transparent var(--wave, 0px))`;
-const BOX = { width: "min(92%, calc((100dvh - 150px) * 1000 / 520))", aspectRatio: `${WORLD_MAP.width} / ${WORLD_MAP.height}` };
+const BOX = { width: "min(84%, calc((100dvh - 190px) * 1000 / 520))", aspectRatio: `${WORLD_MAP.width} / ${WORLD_MAP.height}` };
 
 export default function MapStage({ play, instant, speed }: Props) {
   if (!play) return null;
@@ -36,8 +35,9 @@ export default function MapStage({ play, instant, speed }: Props) {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 * s }}
     >
-      <BorderBeam theme="light" colorVariant="colorful" size="md" className="h-full w-full" style={{ height: "100%" }}>
-        <div className="relative flex h-full w-full items-center justify-center rounded-[20px] border border-black/[0.06] bg-white">
+      {/* No frame: the map sits straight on the page with room round it. */}
+      <div className="h-full w-full">
+        <div className="relative flex h-full w-full items-center justify-center">
           {/* Revealed through the same wave that melts the blocks, soft-edged */}
           <div className="relative" style={{ ...BOX, maskImage: MASK, WebkitMaskImage: MASK }}>
             <HeatLayer delay={instant ? 0 : 0.5 / speed} />
@@ -52,7 +52,7 @@ export default function MapStage({ play, instant, speed }: Props) {
             </div>
           </div>
         </div>
-      </BorderBeam>
+      </div>
     </motion.div>
   );
 }

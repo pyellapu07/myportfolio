@@ -472,8 +472,13 @@ export default function HyperspaceIntro({ speed = 1, onDone, dockTo, hideHeadlin
     }
   }, [measureDock]); // eslint-disable-line react-hooks/exhaustive-deps -- runs once on mount
 
+  // The frame loop runs from play through the dock to the end. Keyed on this
+  // rather than on "play" alone: switching to "dock" must not tear the loop
+  // down, or it never reaches the end and never reports done.
+  const running = phase === "play" || phase === "dock";
+
   useEffect(() => {
-    if (phase !== "play") return;
+    if (!running) return;
 
     const w = window.innerWidth;
     const h = window.innerHeight;
@@ -651,7 +656,7 @@ export default function HyperspaceIntro({ speed = 1, onDone, dockTo, hideHeadlin
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", onKey);
     };
-  }, [phase === "play", speed, onDone, onDock, measureDock, setWave]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [running, speed, onDone, onDock, measureDock, setWave]);
 
   const docking = phase === "dock" || phase === "final";
   const instant = phase === "final";
