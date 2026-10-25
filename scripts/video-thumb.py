@@ -47,9 +47,9 @@ PALETTES = {
     # Xylem Lab, light: its beige (#EFE7DA) to a pale lime, settling into a
     # soft leaf green, with a near-white glow behind the window.
     "xylem": ((246, 241, 230), (228, 233, 178), (176, 204, 120), (252, 252, 236), 95),
-    # TGI, light: the workbench's warm paper (#F7F5F0) into sand, settling
-    # into a muted crop green, with a soft white glow.
-    "tgi": ((250, 248, 243), (236, 229, 212), (186, 198, 160), (255, 253, 247), 100),
+    # TGI, light sky: near-white at the top-left into a pale sky blue,
+    # settling into a soft clear blue, with a white glow.
+    "tgi": ((248, 251, 255), (214, 232, 248), (158, 196, 232), (255, 255, 255), 100),
 }
 PALETTE = PALETTES["terracotta"]
 
