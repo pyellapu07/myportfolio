@@ -4,6 +4,7 @@ set on a terracotta gradient, exported as a short silent loop.
 
     # From a screen recording (trimmed to --start/--duration):
     python3 scripts/video-thumb.py --video ~/jeevy.mp4 --start 2 --duration 12 --out public/thumbs/jeevy-os
+    # A project with its own colours: --palette xylem (see PALETTES)
 
     # Or from still screenshots (slow pan + crossfade between them):
     python3 scripts/video-thumb.py --images public/jeevy/a.webp public/jeevy/b.webp --out public/thumbs/jeevy-os
@@ -38,11 +39,22 @@ def layout(aspect):
     WIN_Y = (H - BAR - CONTENT_H) // 2 + 24 if wide else int(H * 0.14)
 
 
+# Background palettes, each a project's own colours: (light top-left, mid,
+# deep bottom-right, bloom behind the window, bloom strength 0-255).
+PALETTES = {
+    # Jeevy: terracotta.
+    "terracotta": ((244, 176, 140), (214, 112, 78), (176, 74, 48), (255, 214, 190), 90),
+    # Xylem Lab: its brand brown, warming to leaf green, with a lime glow.
+    "xylem": ((100, 166, 53), (66, 70, 28), (46, 23, 14), (205, 220, 60), 70),
+}
+PALETTE = PALETTES["terracotta"]
+
+
 def gradient_bg():
-    """Terracotta: deep at the bottom-right, warm peach light at the top-left."""
+    """Diagonal gradient: light at the top-left, deep at the bottom-right."""
     bg = Image.new("RGB", (W, H))
     px = bg.load()
-    deep, mid, light = (176, 74, 48), (214, 112, 78), (244, 176, 140)
+    light, mid, deep, bloom, bloom_a = PALETTE
     for y in range(H):
         for x in range(W):
             t = (x / W) * 0.45 + (y / H) * 0.55  # diagonal
@@ -55,9 +67,9 @@ def gradient_bg():
             px[x, y] = tuple(int(v) for v in c)
     # A soft bloom behind the window so it lifts off the colour.
     glow = Image.new("L", (W, H), 0)
-    ImageDraw.Draw(glow).ellipse((W * 0.2, H * 0.25, W * 0.8, H * 1.1), fill=90)
+    ImageDraw.Draw(glow).ellipse((W * 0.2, H * 0.25, W * 0.8, H * 1.1), fill=bloom_a)
     glow = glow.filter(ImageFilter.GaussianBlur(120))
-    bg = Image.composite(Image.new("RGB", (W, H), (255, 214, 190)), bg, glow)
+    bg = Image.composite(Image.new("RGB", (W, H), bloom), bg, glow)
     return bg
 
 
@@ -146,10 +158,12 @@ def main():
     ap.add_argument("--speed", type=float, default=1.0, help="playback speed, e.g. 0.75 to slow a short clip")
     ap.add_argument("--loop-fade", type=float, default=0.5, help="seconds of end-to-start crossfade")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--palette", choices=sorted(PALETTES), default="terracotta")
     ap.add_argument("--size", default="1280x800", help="canvas WxH, e.g. 1100x1000 for a squarer card")
     a = ap.parse_args()
 
-    global W, H
+    global W, H, PALETTE
+    PALETTE = PALETTES[a.palette]
     W, H = (int(v) for v in a.size.lower().split("x"))
     layout(probe_aspect(a.video) if a.video else 16 / 10)
     bg = gradient_bg()
