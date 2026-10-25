@@ -44,8 +44,9 @@ def layout(aspect):
 PALETTES = {
     # Jeevy: terracotta.
     "terracotta": ((244, 176, 140), (214, 112, 78), (176, 74, 48), (255, 214, 190), 90),
-    # Xylem Lab: its brand brown, warming to leaf green, with a lime glow.
-    "xylem": ((100, 166, 53), (66, 70, 28), (46, 23, 14), (205, 220, 60), 70),
+    # Xylem Lab, light: its beige (#EFE7DA) to a pale lime, settling into a
+    # soft leaf green, with a near-white glow behind the window.
+    "xylem": ((246, 241, 230), (228, 233, 178), (176, 204, 120), (252, 252, 236), 95),
 }
 PALETTE = PALETTES["terracotta"]
 
