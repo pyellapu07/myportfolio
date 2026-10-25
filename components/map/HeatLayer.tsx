@@ -149,13 +149,22 @@ export default function HeatLayer({ delay = 0 }: { delay?: number }) {
     };
     img.src = "/maps/world-land.svg";
 
+    // Backing store follows the canvas's on-screen size, transforms included,
+    // so the heat is redrawn at the zoomed resolution instead of stretched.
+    const MAX_W = 4096;
+    let lastW = 0;
     const resize = () => {
       const r = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      canvas.width = Math.max(1, Math.round(r.width * dpr));
-      canvas.height = Math.max(1, Math.round(r.height * dpr));
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.uniform2f(u("u_res"), canvas.width, canvas.height);
+      const k = Math.min(1, MAX_W / Math.max(1, r.width * dpr));
+      const w = Math.max(1, Math.round(r.width * dpr * k));
+      const h = Math.max(1, Math.round(r.height * dpr * k));
+      if (w === canvas.width && h === canvas.height) return;
+      canvas.width = w;
+      canvas.height = h;
+      lastW = r.width;
+      gl.viewport(0, 0, w, h);
+      gl.uniform2f(u("u_res"), w, h);
     };
     resize();
     const ro = new ResizeObserver(resize);
@@ -182,6 +191,9 @@ export default function HeatLayer({ delay = 0 }: { delay?: number }) {
       }
       const gust = gustAmp * gustCurve((t - gustAt) / gustLen);
       wind += dt * (0.06 + 0.5 * gust);
+      // Zoom is a CSS transform, which ResizeObserver doesn't see; check here.
+      const sw = canvas.getBoundingClientRect().width;
+      if (Math.abs(sw - lastW) > lastW * 0.04) resize();
       if (ready) {
         gl.uniform1f(u("u_time"), reduce ? 0 : t);
         gl.uniform1f(u("u_wind"), reduce ? 0 : wind);

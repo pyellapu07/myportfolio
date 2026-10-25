@@ -97,7 +97,11 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       raf = 0;
       const vh = window.innerHeight;
       const p = window.scrollY / vh;
-      const set = (k: string, v: string) => root.style.setProperty(k, v);
+      const set = (k: string, v: string) => {
+        root.style.setProperty(k, v);
+        // Only filter once there is blur to show; "none" keeps the map vector-sharp.
+        if (k === "--map-blur") root.style.setProperty("--map-filter", parseFloat(v) > 0.05 ? `blur(${v})` : "none");
+      };
       set("--map-cards-opacity", view === "spatial" ? "1" : "0");
       set("--map-cards-visibility", view === "spatial" ? "visible" : "hidden");
       if (view === "spatial") {

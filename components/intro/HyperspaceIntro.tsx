@@ -666,13 +666,16 @@ export default function HyperspaceIntro({ speed = 1, onDone, dockTo, hideHeadlin
   return (
     <div ref={rootRef} className="fixed inset-0 overflow-hidden bg-white text-[#0a0a0a]" onClick={phase === "play" ? skip : undefined}>
       {/* Scroll-driven camera for the landing: zoom about the pointer, then
-          blur and fade out. Driven by CSS variables set on <html>. */}
+          blur and fade out. Driven by CSS variables set on <html>. No
+          will-change, no 3D transform and no filter while sharp: any of them
+          makes the browser rasterise the layer once at 1× and stretch it, so
+          the vector map would pixelate when zoomed. */}
       <div
-        className="absolute inset-0 will-change-transform"
+        className="absolute inset-0"
         style={{
-          transform: "translate3d(0, var(--map-y, 0px), 0) scale(var(--map-zoom, 1))",
+          transform: "translate(0, var(--map-y, 0px)) scale(var(--map-zoom, 1))",
           transformOrigin: "var(--map-ox, 50%) var(--map-oy, 50%)",
-          filter: "blur(var(--map-blur, 0px))",
+          filter: "var(--map-filter, none)",
           opacity: "var(--map-opacity, 1)",
         }}
       >
