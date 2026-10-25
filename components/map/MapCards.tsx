@@ -121,7 +121,7 @@ const GRAIN = `url("data:image/svg+xml;utf8,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 2.6 -0.75"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>',
 )}")`;
 
-function Grain({ strength = 0.16 }: { strength?: number }) {
+function Grain({ strength = 0.05 }: { strength?: number }) {
   return (
     <span
       aria-hidden="true"
@@ -395,9 +395,9 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
       {cards.map((c, i) => {
         const on = lit(c.id);
         const dim = hover && !on;
-        // Depth haze: far cards are softer and hazier; the hovered one is crisp.
-        const blur = on ? 0 : +(c.depth * 1.6).toFixed(2);
-        const haze = on ? 0 : dim ? 0.55 : c.depth * 0.38;
+        // Every card is sharp; only cards outside an open hover group dim.
+        const blur = 0;
+        const haze = dim ? 0.55 : 0;
         return (
           <div
             key={c.id}
@@ -498,9 +498,9 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
                   <img src={n.thumb} alt="" width={W_NODE} height={h} className="h-full w-full object-cover" draggable={false} />
                   <span
                     className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300"
-                    style={{ opacity: open ? 0 : "calc(0.6 * var(--haze-k, 1))" }}
+                    style={{ opacity: open ? 0 : "calc(0.3 * var(--haze-k, 1))" }}
                   />
-                  <Grain strength={0.14} />
+                  <Grain strength={0.04} />
                 </span>
                 <span
                   className={`pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap text-[8px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 ${

@@ -22,6 +22,13 @@ interface Props {
 // the globe on an ancestor. Without it the map shows in full.
 const MASK = `radial-gradient(circle at ${AX}% ${AY}%, #000 calc(var(--wave, 4000px) - ${FEATHER}px), transparent var(--wave, 4000px))`;
 const RING = `radial-gradient(circle at ${AX}% ${AY}%, transparent calc(var(--wave, 0px) - 70px), rgba(70,160,255,0.22) calc(var(--wave, 0px) - 30px), rgba(160,240,255,0.32) calc(var(--wave, 0px) - 6px), transparent var(--wave, 0px))`;
+// Progressive blur along the bottom, Apple-style: [blur px, mask from %, to %].
+const PROGRESSIVE: [number, number, number][] = [
+  [1.5, 0, 30],
+  [4, 25, 55],
+  [9, 50, 80],
+  [18, 72, 100],
+];
 const BOX = { width: "min(84%, calc((100dvh - 190px) * 1000 / 520))", aspectRatio: `${WORLD_MAP.width} / ${WORLD_MAP.height}` };
 
 export default function MapStage({ play, instant, speed }: Props) {
@@ -54,6 +61,27 @@ export default function MapStage({ play, instant, speed }: Props) {
           >
             <HeatLayer delay={instant ? 0 : 0.5 / speed} />
             <Image src={WORLD_MAP.src} alt="" fill unoptimized priority draggable={false} />
+          </div>
+          {/* The map softens and fades as it leaves the eye line. Over the map
+              but under the cards, so no card is ever blurred; gone when zoomed in. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[46%]"
+            style={{ opacity: "calc(1 - var(--immersed, 0))" }}
+          >
+            {PROGRESSIVE.map(([blur, from, to], i) => (
+              <div
+                key={i}
+                className="absolute inset-0"
+                style={{
+                  backdropFilter: `blur(${blur}px)`,
+                  WebkitBackdropFilter: `blur(${blur}px)`,
+                  maskImage: `linear-gradient(to bottom, transparent ${from}%, #000 ${to}%)`,
+                  WebkitMaskImage: `linear-gradient(to bottom, transparent ${from}%, #000 ${to}%)`,
+                }}
+              />
+            ))}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white" />
           </div>
           {/* Faint fluorescent ring riding the wave front */}
           {!instant && <div aria-hidden="true" className="pointer-events-none absolute" style={{ ...BOX, background: RING }} />}

@@ -20,12 +20,6 @@ export const STATEMENT_WEIGHT = 500;
 const GUTTER = "px-6 sm:px-16 lg:px-24";
 
 // [blur px, mask start %, mask full %]: each layer blurs harder and starts lower.
-const PROGRESSIVE: [number, number, number][] = [
-  [1.5, 0, 30],
-  [4, 25, 55],
-  [9, 50, 80],
-  [18, 72, 100],
-];
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
@@ -303,32 +297,6 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
         <BorderBeam theme="light" colorVariant="colorful" size="md" borderRadius={0} brightness={1.8} strength={1} duration={4} className="h-full w-full" style={{ height: "100%" }}>
           <div className="h-full w-full" />
         </BorderBeam>
-      </motion.div>
-
-      {/* Progressive blur along the bottom, Apple-style: the map softens and
-          fades as it leaves the eye line. Above the map, below all content. */}
-      <motion.div
-        aria-hidden="true"
-        {...frame}
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-10 h-[46vh]"
-      >
-        {/* The fade lives on an inner layer: framer owns the outer opacity.
-            Gone while zoomed in, so no card in the scene is ever blurred. */}
-        <div className="absolute inset-0" style={{ opacity: "calc(var(--map-opacity, 1) * (1 - var(--immersed, 0)))" }}>
-          {PROGRESSIVE.map(([blur, from, to], i) => (
-            <div
-              key={i}
-              className="absolute inset-0"
-              style={{
-                backdropFilter: `blur(${blur}px)`,
-                WebkitBackdropFilter: `blur(${blur}px)`,
-                maskImage: `linear-gradient(to bottom, transparent ${from}%, #000 ${to}%)`,
-                WebkitMaskImage: `linear-gradient(to bottom, transparent ${from}%, #000 ${to}%)`,
-              }}
-            />
-          ))}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white" />
-        </div>
       </motion.div>
 
       {view === "spatial" ? (
