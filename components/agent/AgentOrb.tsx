@@ -75,7 +75,9 @@ export default function AgentOrb({
 
       const scene = new THREE.Scene();
       const pmrem = new THREE.PMREMGenerator(renderer);
-      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.02).texture;
+      // A small environment (128px): reflections here are soft anyway, and a
+      // full-size one costs a visible stall to build.
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.02, 0.1, 100, { size: 128 }).texture;
       // Turn the room so its softbox reflection sits high and left on the
       // ball, clear of the eyes.
       scene.environmentRotation.set(-0.5, 0.9, 0);
@@ -100,11 +102,13 @@ export default function AgentOrb({
         new THREE.SphereGeometry(CORE_R, 96, 64),
         // Low environment on the core: its room reflections are fixed in world
         // space and read as a mouth that does not move with the eyes.
-        new THREE.MeshPhysicalMaterial({ color: c.color, metalness: c.metalness, roughness: c.roughness, envMapIntensity: 0.3 }),
+        // Standard, not Physical: the core needs none of the extras, and every
+        // Physical feature makes a bigger shader to compile.
+        new THREE.MeshStandardMaterial({ color: c.color, metalness: c.metalness, roughness: c.roughness, envMapIntensity: 0.3 }),
       );
       head.add(ball);
       // Glossy black pill eyes.
-      const eyeMat = new THREE.MeshPhysicalMaterial({ color: 0x08090c, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.05 });
+      const eyeMat = new THREE.MeshStandardMaterial({ color: 0x08090c, roughness: 0.12, metalness: 0.1 });
       const eyes = [-1, 1].map((side) => {
         const e = new THREE.Mesh(new THREE.CapsuleGeometry(0.06, 0.18, 8, 16), eyeMat);
         const p = new THREE.Vector3(side * 0.24, 0.1, 0).setZ(Math.sqrt(CORE_R ** 2 - 0.24 ** 2 - 0.1 ** 2) - 0.02);
@@ -243,9 +247,14 @@ export default function AgentOrb({
         raf = requestAnimationFrame(frame);
       };
       // Compile every shader off the main thread before the first frame, so
-      // creating the agent never stalls whatever else is animating.
+      // creating the agent never stalls whatever else is animating. Then one
+      // render, active or not: the transmission pass draws the core into its
+      // own buffer, a second shader variant compileAsync doesn't cover, and a
+      // paused orb would otherwise compile it the moment it un-pauses.
       renderer.compileAsync(scene, camera).then(() => {
-        if (!disposed) raf = requestAnimationFrame(frame);
+        if (disposed) return;
+        renderer.render(scene, camera);
+        raf = requestAnimationFrame(frame);
       });
 
       cleanup = () => {

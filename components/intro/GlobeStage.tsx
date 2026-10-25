@@ -283,7 +283,8 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
         const texLoader = new THREE.TextureLoader();
         const cardRand = mulberry32(29);
         const cards = PROJECTS.map((pr, i) => {
-          const tex = texLoader.load(pr.thumb);
+          // Uploaded as soon as it loads, not on the frame the card first shows.
+          const tex = texLoader.load(pr.thumb, (t) => renderer.initTexture(t));
           tex.colorSpace = THREE.SRGBColorSpace;
           const warp = { value: 0 };
           // Focus blur is done inside the card, by sampling a softer mip
@@ -589,6 +590,15 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
         };
 
         renderer.compile(scene, camera);
+        // Warm the focus-blur path too: blocks drawn into a half-float buffer,
+        // the blur and the composite are each their own shader variant, and
+        // left cold they compile mid-intro, the frame the globe first blurs.
+        renderer.setRenderTarget(rtA);
+        renderer.render(scene, camera);
+        pass(blurMat, rtB);
+        pass(compMat, null);
+        renderer.setRenderTarget(null);
+        renderer.clear();
         stageRef.current = {
           draw,
           wave: () => waveR,

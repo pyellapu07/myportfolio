@@ -78,11 +78,19 @@ float heat(vec2 p) {
 void main() {
   float land = texture2D(u_land, vUv).a;
   if (land < 0.01) { gl_FragColor = vec4(0.0); return; }
-  float h = heat(vUv) * u_reveal;
+  float h0 = heat(vUv);
+  float h = h0 * u_reveal;
   // 3D relief: normal from the height field, lit from a light that circles.
+  // With derivatives the slope comes free from neighbouring pixels; without,
+  // it costs four more evaluations of the heat field.
+#ifdef DERIV
+  float hx = dFdx(h0) * 3.0;
+  float hy = -dFdy(h0) * 3.0;
+#else
   vec2 e = vec2(1.5 / max(u_res.x, 1.0), 0.0);
   float hx = heat(vUv + e.xy) - heat(vUv - e.xy);
   float hy = heat(vUv + e.yx) - heat(vUv - e.yx);
+#endif
   vec3 n = normalize(vec3(-hx * 9.0, -hy * 9.0, 1.0));
   vec3 l = normalize(vec3(cos(u_time * 0.35), sin(u_time * 0.35), 1.4));
   float shade = 0.82 + 0.3 * dot(n, l);
@@ -97,43 +105,77 @@ void main() {
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 // Smooth, slow-in slow-out gust envelope.
-const gustCurve = (u: number) => (u <= 0 || u >= 1 ? 0 : Math.pow(Math.sin(Math.PI * u), 2));
+const gustCurve = (u: number) =>
+  u <= 0 || u >= 1 ? 0 : Math.pow(Math.sin(Math.PI * u), 2);
 
 export default function HeatLayer({ delay = 0 }: { delay?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const gl = canvas?.getContext("webgl", { premultipliedAlpha: true, alpha: true });
+    const gl = canvas?.getContext("webgl", {
+      premultipliedAlpha: true,
+      alpha: true,
+    });
     if (!canvas || !gl) return;
 
     const compile = (type: number, src: string) => {
       const sh = gl.createShader(type)!;
       gl.shaderSource(sh, src);
       gl.compileShader(sh);
-      if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(sh));
+      if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS))
+        console.error(gl.getShaderInfoLog(sh));
       return sh;
     };
+    const deriv = gl.getExtension("OES_standard_derivatives");
+    // Compile in parallel where the browser can (KHR_parallel_shader_compile):
+    // the program is polled each frame instead of blocking the main thread at
+    // the hand-over, where the rest of the landing is starting up.
+    const parallel = gl.getExtension("KHR_parallel_shader_compile");
     const prog = gl.createProgram()!;
     gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
-    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
+    gl.attachShader(
+      prog,
+      compile(
+        gl.FRAGMENT_SHADER,
+        (deriv
+          ? "#extension GL_OES_standard_derivatives : enable\n#define DERIV\n"
+          : "") + FRAG,
+      ),
+    );
     gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
-    gl.useProgram(prog);
-    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-    const aPos = gl.getAttribLocation(prog, "a_pos");
-    gl.enableVertexAttribArray(aPos);
-    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
     const u = (n: string) => gl.getUniformLocation(prog, n);
+    let linked = false;
+    const setup = () => {
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return false;
+      gl.useProgram(prog);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
+        gl.STATIC_DRAW,
+      );
+      const aPos = gl.getAttribLocation(prog, "a_pos");
+      gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
-    const src = new Float32Array(MAX * 4);
-    HEAT_SOURCES.slice(0, MAX).forEach((s, i) => {
-      const [x, y] = naturalEarth(s.lon, s.lat);
-      src.set([x / WORLD_MAP.width, y / WORLD_MAP.height, s.weight, ((s.radius / 360) * 0.9)], i * 4);
-    });
-    gl.uniform4fv(u("u_src"), src);
-    gl.uniform1i(u("u_count"), Math.min(MAX, HEAT_SOURCES.length));
+      const src = new Float32Array(MAX * 4);
+      HEAT_SOURCES.slice(0, MAX).forEach((s, i) => {
+        const [x, y] = naturalEarth(s.lon, s.lat);
+        src.set(
+          [
+            x / WORLD_MAP.width,
+            y / WORLD_MAP.height,
+            s.weight,
+            (s.radius / 360) * 0.9,
+          ],
+          i * 4,
+        );
+      });
+      gl.uniform4fv(u("u_src"), src);
+      gl.uniform1i(u("u_count"), Math.min(MAX, HEAT_SOURCES.length));
+      return true;
+    };
 
     // Land mask from the land-fill SVG, rasterised by the browser.
     const tex = gl.createTexture();
@@ -150,13 +192,16 @@ export default function HeatLayer({ delay = 0 }: { delay?: number }) {
     img.src = "/maps/world-land.svg";
 
     // Backing store follows the canvas's on-screen size, transforms included,
-    // so the heat is redrawn at the zoomed resolution instead of stretched.
-    const MAX_W = 4096;
+    // so the heat is redrawn at the zoomed resolution instead of stretched,
+    // at half resolution: it is a soft field, and the browser's upscale of
+    // it is indistinguishable while costing a quarter of the pixels.
+    const RES = 0.5;
+    const MAX_W = 2048;
     let lastW = 0;
     const resize = () => {
       const r = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      const k = Math.min(1, MAX_W / Math.max(1, r.width * dpr));
+      const k = Math.min(1, MAX_W / Math.max(1, r.width * dpr * RES)) * RES;
       const w = Math.max(1, Math.round(r.width * dpr * k));
       const h = Math.max(1, Math.round(r.height * dpr * k));
       if (w === canvas.width && h === canvas.height) return;
@@ -164,13 +209,14 @@ export default function HeatLayer({ delay = 0 }: { delay?: number }) {
       canvas.height = h;
       lastW = r.width;
       gl.viewport(0, 0, w, h);
-      gl.uniform2f(u("u_res"), w, h);
     };
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     const t0 = performance.now();
     let last = t0;
     let wind = 0;
@@ -179,8 +225,25 @@ export default function HeatLayer({ delay = 0 }: { delay?: number }) {
     let gustLen = 2.5;
     let gustAmp = 1;
     let raf = 0;
+    let drawnAt = 0;
 
     const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
+      if (!linked) {
+        if (
+          parallel &&
+          !gl.getProgramParameter(prog, parallel.COMPLETION_STATUS_KHR)
+        )
+          return;
+        if (!setup()) {
+          cancelAnimationFrame(raf);
+          return;
+        }
+        linked = true;
+      }
+      // 30 fps: the field drifts slowly, and each frame is a full-map shader.
+      if (now - drawnAt < 32) return;
+      drawnAt = now;
       const t = (now - t0) / 1000;
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
@@ -207,7 +270,6 @@ export default function HeatLayer({ delay = 0 }: { delay?: number }) {
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
-      raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
 
@@ -217,5 +279,11 @@ export default function HeatLayer({ delay = 0 }: { delay?: number }) {
     };
   }, [delay]);
 
-  return <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+    />
+  );
 }

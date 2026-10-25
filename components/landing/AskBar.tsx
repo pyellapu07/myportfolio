@@ -122,6 +122,21 @@ export default function AskBar({ shown, onActive }: { shown: boolean; onActive?:
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const active = focused || open;
+
+  // The agent is created a beat after the bar appears, in idle time.
+  const [orbReady, setOrbReady] = useState(false);
+  useEffect(() => {
+    if (!shown || orbReady) return;
+    let idle = 0;
+    const t = window.setTimeout(() => {
+      const ric = window.requestIdleCallback ?? ((f: () => void) => window.setTimeout(f, 1));
+      idle = ric(() => setOrbReady(true)) as number;
+    }, 1400);
+    return () => {
+      window.clearTimeout(t);
+      window.cancelIdleCallback?.(idle);
+    };
+  }, [shown, orbReady]);
   useEffect(() => onActive?.(active), [active, onActive]);
 
   // While the panel is open the scene holds still; its own scroll still works.
@@ -240,11 +255,15 @@ export default function AskBar({ shown, onActive }: { shown: boolean; onActive?:
           >
             {/* The agent, in place of a search icon. */}
             <span className="-my-2 -ml-2 shrink-0 self-end">
-              {/* Created only once the bar shows, so it costs nothing in the intro. */}
-              {shown ? (
+              {/* Created once the landing has settled, so compiling its glass
+                  shader never lands on the intro's hand-over. */}
+              {orbReady ? (
                 <AgentOrb size={48} mood={turns.some((t) => t.state === "loading") ? "thinking" : focused ? "listening" : "idle"} />
               ) : (
-                <span className="block h-12 w-12" />
+                <span className="grid h-12 w-12 place-items-center">
+                  {/* CSS stand-in: the orb's look, until the 3D one takes over. */}
+                  <span className="h-8 w-8 rounded-full border border-[#9fc1d6]/60 bg-[radial-gradient(circle_at_50%_45%,#8fe4ff_0,#6edcff_38%,#ffffff_42%)]" />
+                </span>
               )}
             </span>
             <div className="relative min-w-0 flex-1">
