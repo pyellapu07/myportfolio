@@ -3,6 +3,7 @@
 import { forwardRef, useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { BorderBeam } from "border-beam";
 import { HEADLINE_CLASS, LINES, SUBTITLE } from "@/components/intro/HyperspaceIntro";
 import { PROJECTS } from "@/components/map/projects";
 
@@ -163,6 +164,13 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
           </nav>
         </div>
       </motion.header>
+
+      {/* Border beam round the whole screen edge, not a box round the map. */}
+      <motion.div {...frame} aria-hidden="true" className="pointer-events-none fixed inset-0 z-50">
+        <BorderBeam theme="light" colorVariant="colorful" size="md" borderRadius={0} brightness={1.8} strength={1} duration={4} className="h-full w-full" style={{ height: "100%" }}>
+          <div className="h-full w-full" />
+        </BorderBeam>
+      </motion.div>
 
       {/* Progressive blur along the bottom, Apple-style: the map softens and
           fades as it leaves the eye line. Above the map, below all content. */}
