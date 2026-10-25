@@ -114,7 +114,7 @@ const GRAIN = `url("data:image/svg+xml;utf8,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 2.6 -0.75"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>',
 )}")`;
 
-function Grain({ strength = 0.42 }: { strength?: number }) {
+function Grain({ strength = 0.16 }: { strength?: number }) {
   return (
     <span
       aria-hidden="true"
@@ -365,7 +365,7 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
                     className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300"
                     style={{ opacity: open ? 0 : 0.6 }}
                   />
-                  <Grain strength={0.36} />
+                  <Grain strength={0.14} />
                 </span>
                 <span
                   className={`pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap text-[8px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 ${
