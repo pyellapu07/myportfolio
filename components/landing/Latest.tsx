@@ -58,9 +58,9 @@ export default function Latest() {
                 <motion.button
                   type="button"
                   aria-label="Close"
-                  // Deep frosted blur with a little extra colour, densest
-                  // behind the stack so the cards separate from the page.
-                  className="absolute inset-0 h-full w-full cursor-default bg-gradient-to-l from-white/55 via-white/30 to-white/10 backdrop-blur-[22px] backdrop-saturate-150"
+                  // Deep frosted blur under a black wash, darkest behind the
+                  // stack so the glass cards stand out from the page.
+                  className="absolute inset-0 h-full w-full cursor-default bg-gradient-to-l from-black/45 via-black/30 to-black/20 backdrop-blur-[22px] backdrop-saturate-150"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -72,12 +72,12 @@ export default function Latest() {
                   className="absolute bottom-4 right-4 top-4 w-[min(440px,calc(100vw-32px))] space-y-3.5 overflow-y-auto overscroll-contain pb-4 pr-1 sm:right-6 sm:top-6"
                 >
                   <div className="flex items-center justify-between px-1 pb-2">
-                    <span className="text-[12px] font-semibold tracking-[-0.01em] text-black/55">Latest · {LATEST.length}</span>
+                    <span className="text-[12px] font-semibold tracking-[-0.01em] text-white/75">Latest · {LATEST.length}</span>
                     <button
                       type="button"
                       onClick={() => setOpen(false)}
                       aria-label="Close latest"
-                      className="grid h-7 w-7 place-items-center rounded-[8px] bg-black text-[15px] leading-none text-white"
+                      className="grid h-7 w-7 place-items-center rounded-[4px] bg-white text-[15px] leading-none text-black"
                     >
                       ×
                     </button>
@@ -86,7 +86,7 @@ export default function Latest() {
                     const body = (
                       <>
                         {/* eslint-disable-next-line @next/next/no-img-element -- small, already-sized thumbs */}
-                        <img src={item.image} alt="" className="h-[104px] w-[104px] shrink-0 rounded-[10px] object-cover" draggable={false} />
+                        <img src={item.image} alt="" className="h-[104px] w-[104px] shrink-0 rounded-[3px] object-cover" draggable={false} />
                         <span className="flex min-w-0 flex-1 flex-col justify-between py-1">
                           <span className="line-clamp-3 text-[14.5px] font-semibold leading-[1.35] tracking-[-0.02em] text-black">{item.title}</span>
                           <span className="mt-3 text-[11.5px] tracking-[-0.01em] text-black/45">
@@ -96,7 +96,7 @@ export default function Latest() {
                       </>
                     );
                     const cls =
-                      "flex min-h-[128px] items-stretch gap-4 rounded-[16px] border border-white/80 bg-white/65 p-3 shadow-[0_16px_40px_-20px_rgba(0,0,0,0.3)] backdrop-blur-2xl transition-[background-color,transform] duration-300 hover:-translate-x-1 hover:bg-white/80";
+                      "flex min-h-[128px] items-stretch gap-4 rounded-[6px] border border-white/80 bg-white/75 p-3 shadow-[0_16px_40px_-20px_rgba(0,0,0,0.3)] backdrop-blur-2xl transition-[background-color,transform] duration-300 hover:-translate-x-1 hover:bg-white/80";
                     return (
                       <motion.div
                         key={item.id}
