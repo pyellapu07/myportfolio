@@ -12,10 +12,10 @@ const EASE = [0.65, 0, 0.35, 1] as const;
 const VACUUM = [0.7, 0, 0.84, 0] as const;
 
 const LINES = [
-  ["Pradeep", "Yellapu"],
-  ["Geospatial", "AI"],
+  ["Leading", "design", "for"],
+  ["AI", "and", "spatial", "systems."],
 ];
-const SUBTITLE = "From satellite pixel to shipped product.";
+const SUBTITLE = "Leading design at Jeevy Fabrication and NASA Harvest. Building the systems, the team, and the code.";
 const WORDS = LINES.flat();
 
 // Timeline in seconds at speed 1. Everything but the dock is done by ~3.7s.
@@ -48,6 +48,9 @@ const SCATTER: Scatter[] = [
   { enter: "right", a: { x: 0.72, y: 0.58, s: 0.32 }, b: { x: 0.64, y: 0.52, s: 0.6 } },
   { enter: "down", a: { x: 0.22, y: 0.7, s: 0.3 }, b: { x: 0.3, y: 0.62, s: 0.45 } },
   { enter: "up", a: { x: 0.84, y: 0.24, s: 1.4 }, b: { x: 0.74, y: 0.66, s: 0.5 } },
+  { enter: "right", a: { x: 0.62, y: 0.2, s: 0.4 }, b: { x: 0.56, y: 0.3, s: 0.7 } },
+  { enter: "left", a: { x: 0.16, y: 0.44, s: 1.15 }, b: { x: 0.24, y: 0.4, s: 0.8 } },
+  { enter: "down", a: { x: 0.5, y: 0.8, s: 0.35 }, b: { x: 0.48, y: 0.7, s: 0.55 } },
 ];
 const ENTER_OFFSET = 140;
 const lensBlur = (scale: number) => +Math.min(10, Math.abs(Math.log2(scale)) * 6).toFixed(1);
@@ -252,10 +255,10 @@ type WordMotion = { x: number[]; y: number[]; scale: number[]; opacity: number[]
 // The subtitle hangs below the headline out of flow, so the headline's centre
 // is its container's centre and the dock transform can scale about it.
 const SUBTITLE_CLASS =
-  "absolute left-1/2 top-full mt-6 -translate-x-1/2 whitespace-nowrap text-sm font-medium leading-normal tracking-normal sm:text-base";
+  "absolute left-1/2 top-full mt-6 w-[min(88vw,46rem)] -translate-x-1/2 text-balance text-xs font-medium leading-normal tracking-normal sm:text-base";
 
 const HEADLINE_CLASS =
-  "font-sans font-extrabold leading-[0.92] tracking-[-0.045em] text-[clamp(2.75rem,8.5vw,8rem)]";
+  "font-sans font-extrabold leading-[0.92] tracking-[-0.045em] text-[clamp(1.5rem,6.6vw,6.5rem)]";
 
 function Headline({ wordRefs, lineRefs, lineShift, motions, settled, speed, dockTransition }: {
   wordRefs?: MutableRefObject<(HTMLSpanElement | null)[]>;
@@ -347,6 +350,8 @@ function measureGlyphs(ctx: CanvasRenderingContext2D, els: (HTMLElement | null |
     if (!el?.textContent) continue;
     const r = el.getBoundingClientRect();
     const cs = getComputedStyle(el);
+    // Canvas text is one line; skip anything the browser wrapped.
+    if (r.height > parseFloat(cs.fontSize) * 2.2) continue;
     const font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
     ctx.font = font;
     const m = ctx.measureText("Hg");
@@ -431,11 +436,12 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       const by = sc.b.y * vh - cy;
       const ex = ax + (sc.enter === "left" ? -ENTER_OFFSET : sc.enter === "right" ? ENTER_OFFSET : 0);
       const ey = ay + (sc.enter === "up" ? -ENTER_OFFSET : sc.enter === "down" ? ENTER_OFFSET : 0);
-      const arrive = T.scatter + i * 0.12;
-      // Keyframe offsets must never go backwards, so the drift is clamped to
-      // finish before convergence even for the last word in.
-      const settle = Math.min(arrive + 0.3, T.converge - 0.25);
-      const drift = Math.min(arrive + 0.6, T.converge - 0.02);
+      // Arrivals spread over the scatter window however many words there are.
+      const arrive = T.scatter + (i / Math.max(1, WORDS.length - 1)) * 0.5;
+      // Keyframe offsets must never go backwards: each is clamped between the
+      // one before it and convergence, even for the last word in.
+      const settle = Math.max(arrive + 0.02, Math.min(arrive + 0.3, T.converge - 0.25));
+      const drift = Math.max(settle + 0.02, Math.min(arrive + 0.6, T.converge - 0.02));
       const times = [0, arrive, settle, drift, T.converge, T.assembled].map((t) => t / T.assembled);
       return {
         x: [ex, ex, ax, bx, bx, 0],
