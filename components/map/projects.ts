@@ -15,6 +15,8 @@ export type Project = {
   cover?: string;
   /** One line for the index grid. */
   blurb?: string;
+  /** A short silent loop (scripts/video-thumb.py), played over the thumb. */
+  video?: string;
 };
 
 // Index-grid details for the top-level projects.
@@ -35,7 +37,7 @@ const UMD = { place: "College Park, MD", lon: -76.9, lat: 39.0 };
 export const PROJECTS: Project[] = [
   { id: "xylem", title: "Xylem AutoPilot", role: "Product & pipeline design", href: "/work/xylem-institute", thumb: "/thumbs/xylem.webp", place: "Nairobi, Kenya", lon: 36.8, lat: -1.3 },
   { id: "tgi", title: "TGI Crop Intelligence", role: "Product design, conflict-zone cropland", href: "/work/tgi", thumb: "/thumbs/tgi.webp", place: "Sudan & Syria", lon: 30.2, lat: 15.5 },
-  { id: "jeevy-os", title: "Jeevy OS", role: "Aerospace fabrication OS", href: "/work/jeevy-os", thumb: "/thumbs/jeevy-os.webp", ...JEEVY },
+  { id: "jeevy-os", title: "Jeevy OS", role: "Aerospace fabrication OS", href: "/work/jeevy-os", thumb: "/thumbs/jeevy-os-poster.webp", video: "/thumbs/jeevy-os.mp4", ...JEEVY },
   { id: "jeevy-tasking", title: "Tasking & CPM engine", role: "Jeevy OS", href: "/work/jeevy-os/tasking-cpm-engine", thumb: "/thumbs/jeevy-tasking.webp", ...JEEVY, parent: "jeevy-os" },
   { id: "jeevy-deliverables", title: "Deliverables map", role: "Jeevy OS", href: "/work/jeevy-os/deliverables-map-dashboard", thumb: "/thumbs/jeevy-deliverables.webp", ...JEEVY, parent: "jeevy-os" },
   { id: "jeevy-design-system", title: "Industrial design system", role: "Jeevy OS", href: "/work/jeevy-os/industrial-design-system", thumb: "/thumbs/jeevy-design-system.webp", ...JEEVY, parent: "jeevy-os" },

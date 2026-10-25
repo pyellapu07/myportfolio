@@ -451,6 +451,23 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
                     className="h-full w-full scale-[1.04] object-cover"
                     draggable={false}
                   />
+                  {c.video && (
+                    // A live loop over the poster still: muted, so it can autoplay.
+                    <video
+                      poster={c.thumb}
+                      muted
+                      loop
+                      playsInline
+                      autoPlay
+                      preload="auto"
+                      aria-hidden="true"
+                      className="absolute inset-0 h-full w-full object-cover"
+                    >
+                      {/* WebM first (smaller, and open-source Chromium lacks H.264). */}
+                      <source src={c.video.replace(/\.mp4$/, ".webm")} type="video/webm" />
+                      <source src={c.video} type="video/mp4" />
+                    </video>
+                  )}
                   <span className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300" style={{ opacity: `calc(${haze} * var(--haze-k, 1))` }} />
                 </span>
                 <span

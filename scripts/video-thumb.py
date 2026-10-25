@@ -8,7 +8,7 @@ set on a terracotta gradient, exported as a short silent loop.
     # Or from still screenshots (slow pan + crossfade between them):
     python3 scripts/video-thumb.py --images public/jeevy/a.webp public/jeevy/b.webp --out public/thumbs/jeevy-os
 
-Writes <out>.mp4 (H.264) and <out>-poster.webp.
+Writes <out>.mp4 (H.264), <out>.webm (VP9; the site tries it first) and <out>-poster.webp.
 Needs Pillow and ffmpeg.
 """
 import argparse
@@ -21,14 +21,21 @@ from PIL import Image, ImageDraw, ImageFilter
 
 W, H = 1280, 800  # output, 16:10 like the other thumbnails
 FPS = 30
-# The window: centred, sitting low so it bleeds off the bottom edge.
-WIN_W = int(W * 0.8)
-WIN_X = (W - WIN_W) // 2
-WIN_Y = int(H * 0.14)
 BAR = 34  # title bar height
 RADIUS = 14
-CONTENT_W = WIN_W
-CONTENT_H = round(CONTENT_W * 10 / 16)  # 16:10 screen inside the window
+# The window, set by layout(): for a 16:10 screen it sits low and bleeds off
+# the bottom edge; a wider recording keeps its own shape and sits centred.
+WIN_W = WIN_X = WIN_Y = CONTENT_W = CONTENT_H = 0
+
+
+def layout(aspect):
+    global WIN_W, WIN_X, WIN_Y, CONTENT_W, CONTENT_H
+    wide = aspect > 1.75
+    WIN_W = int(W * (0.86 if wide else 0.8))
+    WIN_X = (W - WIN_W) // 2
+    CONTENT_W = WIN_W
+    CONTENT_H = round(CONTENT_W / aspect)
+    WIN_Y = (H - BAR - CONTENT_H) // 2 + 24 if wide else int(H * 0.14)
 
 
 def gradient_bg():
@@ -103,15 +110,30 @@ def slideshow(paths, seconds_each=2.6, fade=0.45):
         yield cur
 
 
-def video_frames(path, start, duration, tmp):
-    """Frames from a recording, cover-fitted to the screen."""
+def probe_aspect(path):
+    out = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height",
+                          "-of", "csv=p=0", path], capture_output=True, text=True, check=True).stdout.strip()
+    w, h = (int(v) for v in out.split(",")[:2])
+    return w / h
+
+
+def video_frames(path, start, duration, speed, loop_fade, tmp):
+    """Frames from a recording, fitted to the screen, slowed by `speed`, with
+    the end crossfaded into the start so the loop has no jump."""
     pat = os.path.join(tmp, "src_%05d.png")
     subprocess.run(
         ["ffmpeg", "-loglevel", "error", "-y", "-ss", str(start), "-t", str(duration), "-i", path,
-         "-vf", f"fps={FPS},scale={CONTENT_W}:{CONTENT_H}:force_original_aspect_ratio=increase,crop={CONTENT_W}:{CONTENT_H}:0:0",
+         "-vf", f"setpts=PTS/{speed},fps={FPS},scale={CONTENT_W}:{CONTENT_H}:force_original_aspect_ratio=increase:flags=lanczos,crop={CONTENT_W}:{CONTENT_H}",
          pat], check=True)
-    for name in sorted(n for n in os.listdir(tmp) if n.startswith("src_")):
-        yield Image.open(os.path.join(tmp, name)).convert("RGB")
+    names = sorted(n for n in os.listdir(tmp) if n.startswith("src_"))
+    load = lambda i: Image.open(os.path.join(tmp, names[i])).convert("RGB")
+    total = len(names)
+    nf = min(int(loop_fade * FPS), total // 3)
+    # Play frames nf..end; over the last nf, blend towards frames 0..nf-1, so
+    # the last frame leads straight into frame nf at the top of the loop.
+    for i in range(nf, total):
+        j = i - (total - nf)
+        yield Image.blend(load(i), load(j), (j + 1) / nf) if j >= 0 else load(i)
 
 
 def main():
@@ -121,9 +143,12 @@ def main():
     src.add_argument("--images", nargs="+")
     ap.add_argument("--start", type=float, default=0)
     ap.add_argument("--duration", type=float, default=12)
+    ap.add_argument("--speed", type=float, default=1.0, help="playback speed, e.g. 0.75 to slow a short clip")
+    ap.add_argument("--loop-fade", type=float, default=0.5, help="seconds of end-to-start crossfade")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
+    layout(probe_aspect(a.video) if a.video else 16 / 10)
     bg = gradient_bg()
     under, mask = window_layers()
     base = bg.convert("RGBA")
@@ -131,7 +156,7 @@ def main():
     base = base.convert("RGB")
 
     with tempfile.TemporaryDirectory() as tmp:
-        frames = video_frames(a.video, a.start, a.duration, tmp) if a.video else slideshow(a.images)
+        frames = video_frames(a.video, a.start, a.duration, a.speed, a.loop_fade, tmp) if a.video else slideshow(a.images)
         for n, content in enumerate(frames):
             frame = base.copy()
             frame.paste(content, (WIN_X, WIN_Y + BAR), mask)
@@ -142,7 +167,9 @@ def main():
         subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-framerate", str(FPS), "-i", pat,
                         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "26", "-preset", "slow",
                         "-movflags", "+faststart", "-an", f"{a.out}.mp4"], check=True)
-    for ext in (".mp4", "-poster.webp"):
+        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", f"{a.out}.mp4", "-c:v", "libvpx-vp9", "-b:v", "0",
+                        "-crf", "42", "-row-mt", "1", "-deadline", "good", "-an", f"{a.out}.webm"], check=True)
+    for ext in (".mp4", ".webm", "-poster.webp"):
         print(f"{a.out}{ext}", os.path.getsize(f"{a.out}{ext}") // 1024, "KB")
 
 

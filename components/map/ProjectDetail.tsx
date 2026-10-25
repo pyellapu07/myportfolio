@@ -93,7 +93,12 @@ function Panel({ open, onClose }: { open: DetailOpen; onClose: () => void }) {
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- already-sized thumb, swapped for the cover */}
         <img src={p.thumb} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
-        {p.cover && (
+        {p.video ? (
+          <video poster={p.thumb} muted loop playsInline autoPlay className="absolute inset-0 h-full w-full object-cover">
+            <source src={p.video.replace(/\.mp4$/, ".webm")} type="video/webm" />
+            <source src={p.video} type="video/mp4" />
+          </video>
+        ) : p.cover && (
           // eslint-disable-next-line @next/next/no-img-element -- covers include GIFs
           <img
             src={p.cover}
