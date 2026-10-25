@@ -88,7 +88,7 @@ function Lab() {
 
   return (
     <main>
-      <HyperspaceIntro key={run} speed={speed} dockTo={dockTo} onDock={onDock} onDone={onDone} hideHeadline={ready} />
+      <HyperspaceIntro key={run} speed={speed} dockTo={dockTo} dockAlign={view === "spatial" ? "center" : "left"} onDock={onDock} onDone={onDone} hideHeadline={ready} />
       <Landing view={view} onView={changeView} shown={shown} ready={ready} statementRef={statementRef}>
         <RecruiterProvider>
           <ImpactMetrics />
@@ -101,8 +101,8 @@ function Lab() {
         </RecruiterProvider>
       </Landing>
 
-      {/* Lab controls, bottom centre so they clear the statement */}
-      <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2">
+      {/* Lab controls, top right under the nav so they clear the statement and chat */}
+      <div className="fixed right-4 top-[92px] z-50 flex items-center gap-2">
         <button type="button" onClick={toggle} className={`${btn} w-16`} aria-label={paused ? "Play" : "Pause"}>
           {paused ? "▶ Play" : "❚❚ Pause"}
         </button>

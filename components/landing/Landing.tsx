@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { BorderBeam } from "border-beam";
 import { HEADLINE_CLASS, LINES, SUBTITLE } from "@/components/intro/HyperspaceIntro";
+import AskBar from "./AskBar";
 import { immersion, type Mode } from "@/components/map/immersion";
 import { RecruiterProvider } from "@/lib/recruiter-context";
 import Projects from "@/components/Projects";
@@ -15,6 +16,8 @@ const EASE = [0.65, 0, 0.35, 1] as const;
 // Landing headline size and weight: the intro headline docks to exactly this
 // box, easing its weight down to match on the way.
 const STATEMENT_SIZE = "text-[clamp(1.9rem,3.6vw,3.4rem)]";
+// Spatial hero: a touch smaller, since it sits centred above the chat input.
+const HERO_SIZE = "text-[clamp(1.6rem,3vw,2.8rem)]";
 export const STATEMENT_WEIGHT = 500;
 // Page margins.
 const GUTTER = "px-6 sm:px-16 lg:px-24";
@@ -25,11 +28,14 @@ const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
 /** The statement as the landing sets it: same font and word spacing as the
  * intro headline, lines left-aligned, so the docking hand-off is seamless. */
-export const Statement = forwardRef<HTMLDivElement, { className?: string }>(function Statement({ className = "" }, ref) {
+export const Statement = forwardRef<HTMLDivElement, { className?: string; align?: "left" | "center"; size?: string }>(function Statement(
+  { className = "", align = "left", size = STATEMENT_SIZE },
+  ref,
+) {
   return (
-    <div ref={ref} className={`${HEADLINE_CLASS} ${STATEMENT_SIZE} w-max ${className}`} style={{ fontWeight: STATEMENT_WEIGHT }}>
+    <div ref={ref} className={`${HEADLINE_CLASS} ${size} w-max ${className}`} style={{ fontWeight: STATEMENT_WEIGHT }}>
       {LINES.map((line, i) => (
-        <span key={i} className="flex gap-[0.24em] whitespace-nowrap">
+        <span key={i} className={`flex gap-[0.24em] whitespace-nowrap ${align === "center" ? "justify-center" : ""}`}>
           {line.map((w) => (
             <span key={w}>{w}</span>
           ))}
@@ -93,6 +99,8 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
   const heroRef = useRef<HTMLDivElement>(null);
 
   const [mode, setMode] = useState<Mode>(immersion.get().mode);
+  // The chat input is focused or its answers are open: the statement steps back.
+  const [asking, setAsking] = useState(false);
   useEffect(() => immersion.onMode(setMode), []);
 
   // Immersive Spatial view, AIRLA-style. From the top of the page a scroll
@@ -115,9 +123,10 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
     const PAST_END = 90; // wheel px past the end before leaving
 
     const onWheel = (e: WheelEvent) => {
-      // A project is open in the detail view: the scene holds still.
+      // A project or the chat is open: the scene holds still, but the chat
+      // panel keeps its own scroll.
       if (immersion.get().detail) {
-        e.preventDefault();
+        if (!(e.target as HTMLElement).closest?.("[data-own-scroll]")) e.preventDefault();
         return;
       }
       const m = immersion.get().mode;
@@ -174,7 +183,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
     };
     const onDown = (e: PointerEvent) => {
       if (immersion.get().mode !== "immersed" || immersion.get().detail || e.button !== 0) return;
-      if ((e.target as HTMLElement).closest("header, button")) return;
+      if ((e.target as HTMLElement).closest("header, button, form, [data-own-scroll]")) return;
       drag = { x: e.clientX, y: e.clientY, moved: 0 };
       root.style.cursor = "grabbing";
       root.style.userSelect = "none";
@@ -292,6 +301,8 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
         </div>
       </motion.header>
 
+      <AskBar shown={shown && ready} onActive={setAsking} />
+
       {/* Border beam round the whole screen edge, not a box round the map. */}
       <motion.div {...frame} aria-hidden="true" className="pointer-events-none fixed inset-0 z-50">
         <BorderBeam theme="light" colorVariant="colorful" size="md" borderRadius={0} brightness={1.8} strength={1} duration={4} className="h-full w-full" style={{ height: "100%" }}>
@@ -301,17 +312,15 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
 
       {view === "spatial" ? (
         <>
-          {/* Statement, bottom-left over the map. Always laid out so the intro can dock to it. */}
-          <div ref={heroRef} className="pointer-events-none fixed bottom-10 left-6 z-30 sm:bottom-16 sm:left-16 lg:bottom-20 lg:left-24">
-            <Statement ref={statementRef} className={`text-black ${ready ? "" : "invisible"}`} />
-            <motion.p
-              className="mt-4 max-w-[34rem] text-[13px] leading-snug tracking-[-0.01em] text-black/55 sm:text-[15px]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: ready ? 1 : 0 }}
-              transition={{ duration: 0.6, ease: EASE, delay: 0.1 }}
+          {/* Statement, centred at the foot of the screen as the label of the
+              chat input under it. Always laid out so the intro can dock to it. */}
+          <div ref={heroRef} className="pointer-events-none fixed inset-x-0 bottom-[96px] z-30 flex justify-center px-4 sm:bottom-[112px]">
+            <div
+              className="transition-[opacity,transform] duration-500"
+              style={{ opacity: asking ? 0 : 1, transform: asking ? "translateY(-8px)" : "none", transitionTimingFunction: "cubic-bezier(.2,.6,.35,1)" }}
             >
-              {SUBTITLE}
-            </motion.p>
+              <Statement ref={statementRef} align="center" size={HERO_SIZE} className={`text-black ${ready ? "" : "invisible"}`} />
+            </div>
           </div>
           {/* Scroll room for the fade-out; the map shows through. */}
           <div aria-hidden="true" className="pointer-events-none h-screen" />

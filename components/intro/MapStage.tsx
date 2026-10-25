@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { WORLD_MAP } from "@/components/map/worldMap";
+import { WORLD_MAP, MAP_BOX_WIDTH, MAP_RESERVE, MAP_TOP } from "@/components/map/worldMap";
 import HeatLayer from "@/components/map/HeatLayer";
 import MapCards from "@/components/map/MapCards";
 
@@ -29,7 +29,7 @@ const PROGRESSIVE: [number, number, number][] = [
   [9, 50, 80],
   [18, 72, 100],
 ];
-const BOX = { width: "min(84%, calc((100dvh - 190px) * 1000 / 520))", aspectRatio: `${WORLD_MAP.width} / ${WORLD_MAP.height}` };
+const BOX = { width: MAP_BOX_WIDTH, aspectRatio: `${WORLD_MAP.width} / ${WORLD_MAP.height}` };
 
 export default function MapStage({ play, instant, speed }: Props) {
   if (!play) return null;
@@ -37,7 +37,9 @@ export default function MapStage({ play, instant, speed }: Props) {
 
   return (
     <motion.div
-      className="absolute inset-x-3 bottom-3 top-[76px] sm:inset-x-6 sm:bottom-6"
+      // Leaves the bottom band to the statement and chat (see mapRect).
+      className="absolute inset-x-3 sm:inset-x-6"
+      style={{ top: MAP_TOP, bottom: MAP_RESERVE }}
       initial={instant ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 * s }}

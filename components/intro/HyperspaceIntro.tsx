@@ -373,13 +373,15 @@ interface Props {
   onDone?: () => void;
   /** Where the headline docks: the landing headline's box. Falls back to top-left. */
   dockTo?: () => DOMRect | null;
+  /** How the landing sets the statement's lines: the dock matches it. */
+  dockAlign?: "left" | "center";
   /** Hand-off: once the landing shows its own headline, hide this one. */
   hideHeadline?: boolean;
   /** The headline starts docking (or the intro was skipped). */
   onDock?: () => void;
 }
 
-export default function HyperspaceIntro({ speed = 1, onDone, dockTo, hideHeadline = false, onDock }: Props) {
+export default function HyperspaceIntro({ speed = 1, onDone, dockTo, dockAlign = "left", hideHeadline = false, onDock }: Props) {
   const [layout, setLayout] = useState<Layout | null>(null);
   const [stage, setStage] = useState<"run" | "dock" | "final">("run");
   const phase: Phase = !layout ? "measure" : layout.reduced ? "final" : stage === "run" ? "play" : stage;
@@ -417,16 +419,20 @@ export default function HyperspaceIntro({ speed = 1, onDone, dockTo, hideHeadlin
     const top = target ? target.top : 20;
     return {
       scale,
-      x: left + (head.width * scale) / 2 - (head.left + head.width / 2),
+      x:
+        target && dockAlign === "center"
+          ? target.left + target.width / 2 - (head.left + head.width / 2)
+          : left + (head.width * scale) / 2 - (head.left + head.width / 2),
       y: top + (head.height * scale) / 2 - (head.top + head.height / 2),
-      // Lines are centred in the headline box; shift each so its first word
-      // starts at the box's left edge.
+      // Lines are centred in the headline box. A centred statement keeps them
+      // so; a left-aligned one shifts each so its first word starts at the edge.
       lineShift: lineRefs.current.map((el) => {
+        if (dockAlign === "center") return 0;
         const first = el?.firstElementChild?.getBoundingClientRect();
         return first ? head.left - first.left : 0;
       }),
     };
-  }, [dockTo]);
+  }, [dockTo, dockAlign]);
 
   // Measure the assembled layout, then express each word's scattered poses as
   // offsets from its final slot so convergence is just animating to zero.

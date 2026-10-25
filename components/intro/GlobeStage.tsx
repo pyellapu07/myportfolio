@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { LAND_GRID } from "@/components/map/landGrid";
 import { naturalEarth } from "@/components/map/projection";
 import { PROJECTS } from "@/components/map/projects";
-import { WORLD_MAP } from "@/components/map/worldMap";
+import { WORLD_MAP, mapRect } from "@/components/map/worldMap";
 
 // After the blast, ocean blocks of uneven size and weight fly in from where
 // the explosion threw them, settle onto a sphere (land left hollow), the globe
@@ -84,14 +84,6 @@ function mulberry32(seed: number) {
 }
 
 /** Where the flat map sits on screen; must match MapStage's layout. */
-export function mapRect(w: number, h: number) {
-  const inset = w >= 640 ? 24 : 12;
-  const fw = w - 2 * inset;
-  const fh = h - 76 - inset;
-  const mw = Math.min(fw * 0.92, (h - 150) * (WORLD_MAP.width / WORLD_MAP.height));
-  const mh = mw * (WORLD_MAP.height / WORLD_MAP.width);
-  return { left: inset + (fw - mw) / 2, top: 76 + (fh - mh) / 2, width: mw, height: mh };
-}
 
 /** Distance from the flat map's centre to its corner, in px. */
 export function waveMaxR(w: number, h: number) {
