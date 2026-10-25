@@ -1,8 +1,15 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import HyperspaceIntro from "@/components/intro/HyperspaceIntro";
+import Landing, { type View } from "@/components/landing/Landing";
+import { RecruiterProvider } from "@/lib/recruiter-context";
+import ImpactMetrics from "@/components/ImpactMetrics";
+import Timeline from "@/components/Timeline";
+import Testimonials from "@/components/Testimonials";
+import Contact from "@/components/Contact";
+import Footer from "@/components/Footer";
 import { installLabClock } from "@/components/intro/labClock";
 
 const SPEEDS = [1, 0.25];
@@ -21,12 +28,33 @@ function Lab() {
   const [paused, setPaused] = useState(false);
   const [time, setTime] = useState(0);
   const [lab] = useState(getClock);
+  const [view, setView] = useState<View>("spatial");
+  const [shown, setShown] = useState(false);
+  const [ready, setReady] = useState(false);
+  const statementRef = useRef<HTMLDivElement>(null);
+  const dockTo = useCallback(() => statementRef.current?.getBoundingClientRect() ?? null, []);
+  const onDock = useCallback(() => setShown(true), []);
+  const onDone = useCallback(() => setReady(true), []);
+
+  // No scrolling until the intro has handed over.
+  useEffect(() => {
+    document.documentElement.style.overflow = ready ? "" : "hidden";
+    if (!ready) window.scrollTo(0, 0);
+  }, [ready]);
 
   const replay = (next: number) => {
     lab?.play();
     setPaused(false);
     setSpeed(next);
+    setShown(false);
+    setReady(false);
+    setView("spatial");
+    window.scrollTo(0, 0);
     setRun((n) => n + 1);
+  };
+  const changeView = (v: View) => {
+    window.scrollTo({ top: 0 });
+    setView(v);
   };
   const toggle = () => {
     if (!lab) return;
@@ -38,7 +66,7 @@ function Lab() {
   // Space pauses or plays; arrow right steps one frame while paused.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.code === "Space") {
+      if (e.code === "Space" && !ready) {
         e.preventDefault();
         toggle();
       } else if (e.code === "ArrowRight" && lab?.paused()) {
@@ -60,8 +88,21 @@ function Lab() {
 
   return (
     <main>
-      <HyperspaceIntro key={run} speed={speed} />
-      <div className="fixed bottom-5 left-5 z-10 flex items-center gap-2 sm:bottom-7 sm:left-8">
+      <HyperspaceIntro key={run} speed={speed} dockTo={dockTo} onDock={onDock} onDone={onDone} hideHeadline={ready} />
+      <Landing view={view} onView={changeView} shown={shown} ready={ready} statementRef={statementRef}>
+        <RecruiterProvider>
+          <ImpactMetrics />
+          <Timeline />
+          <Testimonials />
+          <div id="contact">
+            <Contact />
+          </div>
+          <Footer />
+        </RecruiterProvider>
+      </Landing>
+
+      {/* Lab controls, bottom centre so they clear the statement */}
+      <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2">
         <button type="button" onClick={toggle} className={`${btn} w-16`} aria-label={paused ? "Play" : "Pause"}>
           {paused ? "▶ Play" : "❚❚ Pause"}
         </button>

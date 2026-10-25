@@ -11,11 +11,11 @@ const EASE = [0.65, 0, 0.35, 1] as const;
 // Vacuum: slow, then fast, then extra fast. Used for the dock.
 const VACUUM = [0.7, 0, 0.84, 0] as const;
 
-const LINES = [
+export const LINES = [
   ["Leading", "design", "for"],
   ["AI", "and", "spatial", "systems."],
 ];
-const SUBTITLE = "Leading design at Jeevy Fabrication and NASA Harvest. Building the systems, the team, and the code.";
+export const SUBTITLE = "Leading design at Jeevy Fabrication and NASA Harvest. Building the systems, the team, and the code.";
 const WORDS = LINES.flat();
 
 // Timeline in seconds at speed 1. Everything but the dock is done by ~3.7s.
@@ -257,7 +257,7 @@ type WordMotion = { x: number[]; y: number[]; scale: number[]; opacity: number[]
 const SUBTITLE_CLASS =
   "absolute left-1/2 top-full mt-6 w-[min(88vw,46rem)] -translate-x-1/2 text-balance text-xs font-medium leading-normal tracking-normal sm:text-base";
 
-const HEADLINE_CLASS =
+export const HEADLINE_CLASS =
   "font-sans font-extrabold leading-[0.92] tracking-[-0.045em] text-[clamp(1.5rem,6.6vw,6.5rem)]";
 
 function Headline({ wordRefs, lineRefs, lineShift, motions, settled, speed, dockTransition }: {
@@ -368,9 +368,15 @@ interface Props {
   /** Playback rate; 0.25 slows the whole timeline for inspection. */
   speed?: number;
   onDone?: () => void;
+  /** Where the headline docks: the landing headline's box. Falls back to top-left. */
+  dockTo?: () => DOMRect | null;
+  /** Hand-off: once the landing shows its own headline, hide this one. */
+  hideHeadline?: boolean;
+  /** The headline starts docking (or the intro was skipped). */
+  onDock?: () => void;
 }
 
-export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
+export default function HyperspaceIntro({ speed = 1, onDone, dockTo, hideHeadline = false, onDock }: Props) {
   const [layout, setLayout] = useState<Layout | null>(null);
   const [stage, setStage] = useState<"run" | "dock" | "final">("run");
   const phase: Phase = !layout ? "measure" : layout.reduced ? "final" : stage === "run" ? "play" : stage;
@@ -401,12 +407,15 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
   const measureDock = useCallback((): Dock => {
     const head = headlineRef.current?.getBoundingClientRect();
     if (!head) return { x: 0, y: 0, scale: 1, lineShift: [] };
-    const scale = 40 / head.height;
-    const inset = window.innerWidth < 640 ? 16 : 28;
+    // Dock onto the landing headline's box if there is one, else top-left.
+    const target = dockTo?.();
+    const scale = target ? target.height / head.height : 40 / head.height;
+    const left = target ? target.left : window.innerWidth < 640 ? 16 : 28;
+    const top = target ? target.top : 20;
     return {
       scale,
-      x: inset + (head.width * scale) / 2 - (head.left + head.width / 2),
-      y: 20 + (head.height * scale) / 2 - (head.top + head.height / 2),
+      x: left + (head.width * scale) / 2 - (head.left + head.width / 2),
+      y: top + (head.height * scale) / 2 - (head.top + head.height / 2),
       // Lines are centred in the headline box; shift each so its first word
       // starts at the box's left edge.
       lineShift: lineRefs.current.map((el) => {
@@ -414,7 +423,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
         return first ? head.left - first.left : 0;
       }),
     };
-  }, []);
+  }, [dockTo]);
 
   // Measure the assembled layout, then express each word's scattered poses as
   // offsets from its final slot so convergence is just animating to zero.
@@ -456,8 +465,12 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       };
     });
     setLayout({ motions: ms, reduced });
-    if (reduced) setDock(measureDock());
-  }, [measureDock]);
+    if (reduced) {
+      setDock(measureDock());
+      onDock?.();
+      onDone?.();
+    }
+  }, [measureDock]); // eslint-disable-line react-hooks/exhaustive-deps -- runs once on mount
 
   useEffect(() => {
     if (phase !== "play") return;
@@ -555,6 +568,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       rootRef.current?.style.removeProperty("--wave");
       setDock(measureDock());
       setStage("final");
+      onDock?.();
       onDone?.();
     };
     skipRef.current = finish;
@@ -622,6 +636,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
         docked = true;
         setDock(measureDock());
         setStage("dock");
+        onDock?.();
       }
       if (e >= T.end) {
         window.removeEventListener("keydown", onKey);
@@ -636,7 +651,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", onKey);
     };
-  }, [phase === "play", speed, onDone, measureDock, setWave]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [phase === "play", speed, onDone, onDock, measureDock, setWave]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const docking = phase === "dock" || phase === "final";
   const instant = phase === "final";
@@ -645,7 +660,19 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
 
   return (
     <div ref={rootRef} className="fixed inset-0 overflow-hidden bg-white text-[#0a0a0a]" onClick={phase === "play" ? skip : undefined}>
-      <MapStage play={mapOn || instant} instant={instant} speed={speed} />
+      {/* Scroll-driven camera for the landing: zoom about the pointer, then
+          blur and fade out. Driven by CSS variables set on <html>. */}
+      <div
+        className="absolute inset-0 will-change-transform"
+        style={{
+          transform: "translate3d(0, var(--map-y, 0px), 0) scale(var(--map-zoom, 1))",
+          transformOrigin: "var(--map-ox, 50%) var(--map-oy, 50%)",
+          filter: "blur(var(--map-blur, 0px))",
+          opacity: "var(--map-opacity, 1)",
+        }}
+      >
+        <MapStage play={mapOn || instant} instant={instant} speed={speed} />
+      </div>
       {!instant && (
         <div className="pointer-events-none absolute inset-0">
           <GlobeStage play={globeOn} speed={speed} onFlat={showMap} onWave={setWave} />
@@ -655,6 +682,7 @@ export default function HyperspaceIntro({ speed = 1, onDone }: Props) {
       {/* Base layer: what the white cells show */}
       <motion.div
         className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4 text-center"
+        style={{ visibility: hideHeadline ? "hidden" : "visible" }}
         animate={docking && dock ? { x: dock.x, y: dock.y, scale: dock.scale } : { x: 0, y: 0, scale: 1 }}
         transition={dockTransition}
       >

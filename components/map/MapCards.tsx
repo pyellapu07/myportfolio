@@ -214,7 +214,9 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
   return (
     <div
       ref={boxRef}
-      className="absolute inset-0"
+      className="map-cards absolute inset-0 transition-opacity duration-500"
+      // The landing's index view hides the map cards (it shows the grid instead).
+      style={{ opacity: "var(--map-cards-opacity, 1)", visibility: "var(--map-cards-visibility, visible)" as "visible" }}
       onPointerMove={(e) => {
         const r = boxRef.current?.getBoundingClientRect();
         if (!r) return;

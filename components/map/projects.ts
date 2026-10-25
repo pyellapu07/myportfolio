@@ -11,6 +11,22 @@ export type Project = {
   lat: number;
   /** Subsystem of another project: shown as a small related node around it. */
   parent?: string;
+  /** Full-size image for the index grid. */
+  cover?: string;
+  /** One line for the index grid. */
+  blurb?: string;
+};
+
+// Index-grid details for the top-level projects.
+const INDEX: Record<string, { cover: string; blurb: string }> = {
+  xylem: { cover: "/xylem-autopilot/01-nairobi-live-demo.webp", blurb: "A 3-day satellite workflow turned into 30-minute food-security bulletins for analysts in 9 countries." },
+  tgi: { cover: "/tgi/01-hero-full-platform.webp", blurb: "Crop intelligence for conflict-affected regions, built across ASU, UMD and the University of Washington." },
+  "jeevy-os": { cover: "/jeevy/cpm-overview-workstreams.webp", blurb: "An operating system for aerospace fabrication: scheduling, materials, CAD and the shop floor." },
+  hack4impact: { cover: "/hack4impactpreview.gif", blurb: "A recruitment portal for 750+ applicants a semester, as sole product designer." },
+  "terps-esports": { cover: "/Esports/TerpsEsportsGraphic.jpeg", blurb: "Two years of creative direction: brand, motion and events for UMD's esports org." },
+  workflow: { cover: "/facultydashboardpreview.jpg", blurb: "UX research into how a college tracks faculty workload, and the dashboard that followed." },
+  transurban: { cover: "/transurbanpreview.gif", blurb: "Research into toll payment and wayfinding on Virginia's Express Lanes." },
+  marketcrunch: { cover: "/marketcrunchaipreview.gif", blurb: "Sole designer at an AI investing startup: audit to shipped React, as MAU grew about 16×." },
 };
 
 const JEEVY = { place: "Fort Worth, TX", lon: -97.3, lat: 32.8 };
@@ -31,4 +47,4 @@ export const PROJECTS: Project[] = [
   { id: "workflow", title: "Faculty dashboard", role: "UX research", href: "/work/workflow", thumb: "/thumbs/workflow.webp", ...UMD },
   { id: "transurban", title: "Transurban Express Lanes", role: "UX research", href: "/work/transurban", thumb: "/thumbs/transurban.webp", place: "Virginia", lon: -77.4, lat: 37.9 },
   { id: "marketcrunch", title: "MarketCrunch AI", role: "Product design & UXR", href: "/work/marketcrunch", thumb: "/thumbs/marketcrunch.webp", place: "San Francisco, CA", lon: -122.4, lat: 37.8 },
-];
+].map((p) => ({ ...p, ...INDEX[p.id] }));
