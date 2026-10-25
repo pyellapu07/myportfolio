@@ -406,7 +406,10 @@ function IndexView() {
         <Projects
           jeevyVideo="/thumbs/jeevy-os-tall.mp4"
           jeevyPoster="/thumbs/jeevy-os-tall-poster.webp"
-          videos={{ "/work/xylem-institute": { src: "/thumbs/xylem-tall.mp4", poster: "/thumbs/xylem-tall-poster.webp" } }}
+          videos={{
+            "/work/xylem-institute": { src: "/thumbs/xylem-tall.mp4", poster: "/thumbs/xylem-tall-poster.webp" },
+            "/work/tgi": { src: "/thumbs/tgi-tall.mp4", poster: "/thumbs/tgi-tall-poster.webp" },
+          }}
         />
       </RecruiterProvider>
     </div>

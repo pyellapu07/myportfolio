@@ -36,7 +36,7 @@ const UMD = { place: "College Park, MD", lon: -76.9, lat: 39.0 };
 
 export const PROJECTS: Project[] = [
   { id: "xylem", title: "Xylem AutoPilot", role: "Product & pipeline design", href: "/work/xylem-institute", thumb: "/thumbs/xylem-poster.webp", video: "/thumbs/xylem.mp4", place: "Nairobi, Kenya", lon: 36.8, lat: -1.3 },
-  { id: "tgi", title: "TGI Crop Intelligence", role: "Product design, conflict-zone cropland", href: "/work/tgi", thumb: "/thumbs/tgi.webp", place: "Sudan & Syria", lon: 30.2, lat: 15.5 },
+  { id: "tgi", title: "TGI Crop Intelligence", role: "Product design, conflict-zone cropland", href: "/work/tgi", thumb: "/thumbs/tgi-poster.webp", video: "/thumbs/tgi.mp4", place: "Sudan & Syria", lon: 30.2, lat: 15.5 },
   { id: "jeevy-os", title: "Jeevy OS", role: "Aerospace fabrication OS", href: "/work/jeevy-os", thumb: "/thumbs/jeevy-os-poster.webp", video: "/thumbs/jeevy-os.mp4", ...JEEVY },
   { id: "jeevy-tasking", title: "Tasking & CPM engine", role: "Jeevy OS", href: "/work/jeevy-os/tasking-cpm-engine", thumb: "/thumbs/jeevy-tasking.webp", ...JEEVY, parent: "jeevy-os" },
   { id: "jeevy-deliverables", title: "Deliverables map", role: "Jeevy OS", href: "/work/jeevy-os/deliverables-map-dashboard", thumb: "/thumbs/jeevy-deliverables.webp", ...JEEVY, parent: "jeevy-os" },

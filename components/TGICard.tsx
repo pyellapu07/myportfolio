@@ -30,7 +30,10 @@ export default function TGICard({
   onMouseMove,
   onMouseEnter,
   onMouseLeave,
+  video,
 }: {
+  /** A silent loop to play in place of the image (the lab sets it; `/` does not). */
+  video?: { src: string; poster: string };
   onMouseMove: (e: React.MouseEvent) => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
@@ -40,7 +43,10 @@ export default function TGICard({
       initial={{ opacity: 0, y: 32 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: "some", margin: "0px 0px -120px 0px" }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+      transition={{
+        duration: 0.7,
+        ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+      }}
       onMouseMove={onMouseMove}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -56,15 +62,44 @@ export default function TGICard({
       {/* ── Left: media cell ── */}
       <div className="p-2 md:col-span-3 md:p-3">
         <div className="relative h-full w-full min-h-[420px] overflow-hidden rounded-lg bg-bg-alt">
-          <Image
-            src="/tgi/17-production-492-in-season.webp"
-            alt="The TGI workbench showing 492 Al Jazirah reference points over September true-colour imagery"
-            fill
-            sizes="(max-width: 768px) 100vw, 60vw"
-            // object-top keeps the command bar; the month dock at the
-            // bottom is what a short crop gives up
-            className="h-full w-full object-cover object-top"
-          />
+          {video ? (
+            // Desktop: fills the cell (cover only trims the canvas's margin, not
+            // the window). Phones: fits, over its own poster blurred.
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element -- blurred backdrop of the poster */}
+              <img
+                src={video.poster}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl"
+              />
+              <video
+                poster={video.poster}
+                muted
+                loop
+                playsInline
+                autoPlay
+                aria-label="The TGI workbench estimating Al Jazirah cropland month by month"
+                className="absolute inset-0 h-full w-full object-contain md:object-cover"
+              >
+                <source
+                  src={video.src.replace(/\.mp4$/, ".webm")}
+                  type="video/webm"
+                />
+                <source src={video.src} type="video/mp4" />
+              </video>
+            </>
+          ) : (
+            <Image
+              src="/tgi/17-production-492-in-season.webp"
+              alt="The TGI workbench showing 492 Al Jazirah reference points over September true-colour imagery"
+              fill
+              sizes="(max-width: 768px) 100vw, 60vw"
+              // object-top keeps the command bar; the month dock at the
+              // bottom is what a short crop gives up
+              className="h-full w-full object-cover object-top"
+            />
+          )}
         </div>
       </div>
 
@@ -83,16 +118,20 @@ export default function TGICard({
             className="shrink-0 rounded-full border border-border p-2.5 text-text-muted transition-all duration-300 group-hover:border-text group-hover:text-text"
             aria-hidden
           >
-            <ArrowUpRight size={18} className="transition-transform duration-300 group-hover:rotate-[30deg]" />
+            <ArrowUpRight
+              size={18}
+              className="transition-transform duration-300 group-hover:rotate-[30deg]"
+            />
           </span>
         </div>
 
         <p className="mt-4 text-[14px] leading-relaxed text-text-secondary">
-          Famine early warning in conflict zones depends on crop area estimates that cannot be
-          checked on the ground. As Lead Product &amp; Systems Designer for an ASU, WashU and UMD
-          consortium, I took a 50-point prototype to 1,636 ground reference points: a 43% narrower
-          confidence interval, every season reported, and a data validation safeguard in the
-          calibration pipeline.
+          Famine early warning in conflict zones depends on crop area estimates
+          that cannot be checked on the ground. As Lead Product &amp; Systems
+          Designer for an ASU, WashU and UMD consortium, I took a 50-point
+          prototype to 1,636 ground reference points: a 43% narrower confidence
+          interval, every season reported, and a data validation safeguard in
+          the calibration pipeline.
         </p>
 
         <ul className="mt-4 grid grid-cols-1 gap-x-4 gap-y-1.5 border-t border-border pt-4 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2">

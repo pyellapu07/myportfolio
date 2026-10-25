@@ -81,12 +81,12 @@ export default function ProjectSplitCard({
         }`}
       >
         {video ? (
-          // Fitted, never cropped: the loop sits over its own poster, blurred
-          // to fill whatever room the cell has.
+          // Desktop: fills the cell (cover only trims the canvas's margin, not
+          // the window). Phones: fits, over its own poster blurred.
           <div className="relative h-full min-h-[300px] w-full overflow-hidden rounded-lg sm:min-h-[360px] md:min-h-[420px]">
             {/* eslint-disable-next-line @next/next/no-img-element -- blurred backdrop of the poster */}
             <img src={video.poster} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl" />
-            <video poster={video.poster} muted loop playsInline autoPlay aria-label={project.title} className="absolute inset-0 h-full w-full object-contain">
+            <video poster={video.poster} muted loop playsInline autoPlay aria-label={project.title} className="absolute inset-0 h-full w-full object-contain md:object-cover">
               <source src={video.src.replace(/\.mp4$/, ".webm")} type="video/webm" />
               <source src={video.src} type="video/mp4" />
             </video>

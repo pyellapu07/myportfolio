@@ -53,13 +53,13 @@ export default function JeevyOSCard({ video, poster }: { video?: string; poster?
         <div className="relative h-full w-full min-h-[420px] overflow-hidden rounded-lg bg-bg-alt">
           {video ? (
             // The live loop (the lab's Index view), muted so it can autoplay.
-            // Fitted, never cropped, whatever shape the cell takes: any spare
-            // room is filled by its own poster, blurred, so the gradient edge
-            // runs on seamlessly.
+            // On desktop the loop fills the cell (cover only trims the canvas's
+            // margin round the window, never the window). On phones, where the
+            // cell turns tall, it fits instead, over its own poster blurred.
             <>
               {/* eslint-disable-next-line @next/next/no-img-element -- blurred backdrop of the poster */}
               <img src={poster} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl" />
-              <video poster={poster} muted loop playsInline autoPlay aria-label={HERO.alt} className="absolute inset-0 h-full w-full object-contain">
+              <video poster={poster} muted loop playsInline autoPlay aria-label={HERO.alt} className="absolute inset-0 h-full w-full object-contain md:object-cover">
                 <source src={video.replace(/\.mp4$/, ".webm")} type="video/webm" />
                 <source src={video} type="video/mp4" />
               </video>

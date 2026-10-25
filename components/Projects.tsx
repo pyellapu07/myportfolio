@@ -58,6 +58,7 @@ export default function Projects({
       <JeevyOSCard video={jeevyVideo} poster={jeevyPoster} />
 
       <TGICard
+        video={videos?.["/work/tgi"]}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => handleMouseEnter("Work ongoing")}
         onMouseLeave={handleMouseLeave}

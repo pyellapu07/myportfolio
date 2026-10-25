@@ -47,6 +47,9 @@ PALETTES = {
     # Xylem Lab, light: its beige (#EFE7DA) to a pale lime, settling into a
     # soft leaf green, with a near-white glow behind the window.
     "xylem": ((246, 241, 230), (228, 233, 178), (176, 204, 120), (252, 252, 236), 95),
+    # TGI, light: the workbench's warm paper (#F7F5F0) into sand, settling
+    # into a muted crop green, with a soft white glow.
+    "tgi": ((250, 248, 243), (236, 229, 212), (186, 198, 160), (255, 253, 247), 100),
 }
 PALETTE = PALETTES["terracotta"]
 
@@ -159,6 +162,7 @@ def main():
     ap.add_argument("--speed", type=float, default=1.0, help="playback speed, e.g. 0.75 to slow a short clip")
     ap.add_argument("--loop-fade", type=float, default=0.5, help="seconds of end-to-start crossfade")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--poster-at", type=float, default=0.34, help="seconds into the loop for the poster frame")
     ap.add_argument("--palette", choices=sorted(PALETTES), default="terracotta")
     ap.add_argument("--size", default="1280x800", help="canvas WxH, e.g. 1100x1000 for a squarer card")
     a = ap.parse_args()
@@ -179,7 +183,7 @@ def main():
             frame = base.copy()
             frame.paste(content, (WIN_X, WIN_Y + BAR), mask)
             frame.save(os.path.join(tmp, f"out_{n:05d}.png"))
-            if n == 10:  # poster: an early frame, past any fade-in
+            if n == int(a.poster_at * FPS):  # poster: the still shown before playback
                 frame.save(f"{a.out}-poster.webp", "WEBP", quality=82)
         pat = os.path.join(tmp, "out_%05d.png")
         subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-framerate", str(FPS), "-i", pat,

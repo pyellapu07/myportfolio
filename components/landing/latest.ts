@@ -51,7 +51,8 @@ export const LATEST: LatestItem[] = [
     date: "2026-09",
     when: "Sep 2026",
     href: "/work/tgi",
-    image: "/thumbs/tgi.webp",
+    image: "/thumbs/tgi-tall-poster.webp",
+    video: "/thumbs/tgi-tall.mp4",
   },
   {
     id: "jeevy-os",
