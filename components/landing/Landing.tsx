@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { BorderBeam } from "border-beam";
 import { HEADLINE_CLASS, LINES } from "@/components/intro/HyperspaceIntro";
 import AskBar from "./AskBar";
+import HeatGlow from "./HeatGlow";
 import { immersion, type Mode } from "@/components/map/immersion";
 import { RecruiterProvider } from "@/lib/recruiter-context";
 import Projects from "@/components/Projects";
@@ -260,6 +261,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       set("--map-tilt", k > 0.001 ? `translate(${slide.toFixed(1)}px, ${(im.pitch * 30 * k).toFixed(1)}px)` : "none");
       set("--map-bg-opacity", (1 - 0.88 * k).toFixed(3));
       set("--immersed", k.toFixed(3));
+      set("--glow", (1 - clamp01(p / 0.6)).toFixed(3));
       if (heroRef.current) {
         const h = Math.max(clamp01(p / 0.5), k);
         heroRef.current.style.opacity = (1 - h).toFixed(3);
@@ -301,6 +303,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
         </div>
       </motion.header>
 
+      <HeatGlow shown={shown && ready} />
       <AskBar shown={shown && ready} onActive={setAsking} />
 
       {/* Border beam round the whole screen edge, not a box round the map. */}
