@@ -50,6 +50,7 @@ const HINTS: Record<Mode, string> = {
   entering: "Scroll to fly through · drag to explore",
   immersed: "Scroll to fly through · drag to explore",
   leaving: "Scroll to enter · drag to explore",
+  past: "Scroll up to fly back",
 };
 
 function Switch({ view, onChange, mode }: { view: View; onChange: (v: View) => void; mode: Mode }) {
@@ -115,9 +116,9 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
     const lock = (on: boolean) => (root.style.overflow = on ? "hidden" : "");
     // Trackpads keep sending wheel events after a flick; ignore input for a
     // moment after any change of mode so momentum can't bounce it back.
-    const COOLDOWN = 450;
-    const SPEED = 1 / 1100; // flight per wheel px
-    const PAST_END = 120; // wheel px past the end before leaving
+    const COOLDOWN = 300;
+    const SPEED = 1 / 520; // flight per wheel px
+    const PAST_END = 90; // wheel px past the end before leaving
 
     const onWheel = (e: WheelEvent) => {
       const m = immersion.get().mode;
@@ -135,25 +136,31 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
           immersion.enter();
           return;
         }
-        // Coming back up from the sections: once the map is back in view,
-        // fly in at the far end and play the flight in reverse.
-        if (e.deltaY < 0 && window.scrollY > 2 && window.scrollY <= vh * 0.12) {
+        return;
+      }
+      if (m === "past") {
+        // Back up from the sections: the scene is parked at its end frame, so
+        // reaching the top drops straight into it, and the scroll keeps going
+        // as a fly-back. Further up flies out to the flat map.
+        if (e.deltaY < 0 && window.scrollY <= vh * 0.04) {
           e.preventDefault();
           window.scrollTo({ top: 0 });
           lock(true);
           over = 0;
-          immersion.enter(true);
+          immersion.resume();
         }
         return;
       }
       e.preventDefault();
       if (m !== "immersed" || immersion.sinceChange() < COOLDOWN) return;
       const s = immersion.get();
-      if (e.deltaY > 0 && s.flightTarget >= 1) over += e.deltaY;
-      else if (e.deltaY < 0 && s.flightTarget <= 0) over += e.deltaY;
+      // Only a push past an end the camera has actually reached counts.
+      if (e.deltaY > 0 && s.flightTarget >= 1 && s.flight > 0.97) over += e.deltaY;
+      else if (e.deltaY < 0 && s.flightTarget <= 0 && s.flight < 0.03) over += e.deltaY;
       else over = 0;
       if (over > PAST_END) {
-        // Past the end: fly out forward and on down into the sections.
+        // Past the end: park the scene at its end frame and scroll on down
+        // into the sections; the map fades with the scroll.
         over = 0;
         immersion.leave(true);
         lock(false);
@@ -231,17 +238,16 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       set("--map-opacity", (view === "spatial" ? 1 - out : 1 - 0.35 * d).toFixed(3));
       set("--map-y", `${(-out * 0.12 * vh).toFixed(1)}px`);
       set("--map-bg-filter", k > 0.01 ? `blur(${(k * 6).toFixed(2)}px)` : "none");
-      // Immersed: the whole map zooms in about the centre and turns with the
-      // camera orbit (cards turn the same way in MapCards). Flat: no 3D
-      // transform at all, so the vector map stays sharp.
+      // Immersed: the whole map zooms in about the centre. Flat: no transform
+      // at all, so the vector map stays sharp.
       const im = immersion.get();
       set("--map-ox", "50%");
       set("--map-oy", "50%");
       set("--map-zoom", (1 + 0.9 * k).toFixed(4));
-      set(
-        "--map-tilt",
-        k > 0.001 ? `perspective(1100px) rotateY(${(im.yaw * k).toFixed(4)}rad) rotateX(${(-im.pitch * k).toFixed(4)}rad)` : "none",
-      );
+      // The camera is fixed: the map never tilts, it only slides a touch
+      // with the globe's spin so the backdrop feels attached to it.
+      const slide = Math.sin(im.yaw) * 40 * k;
+      set("--map-tilt", k > 0.001 ? `translate(${slide.toFixed(1)}px, ${(im.pitch * 30 * k).toFixed(1)}px)` : "none");
       set("--map-bg-opacity", (1 - 0.88 * k).toFixed(3));
       if (heroRef.current) {
         const h = Math.max(clamp01(p / 0.5), k);

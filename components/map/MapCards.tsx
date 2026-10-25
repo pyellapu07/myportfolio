@@ -18,13 +18,10 @@ const W_NEAR = 188; // card width at depth 0 (closest)
 const W_FAR = 128; // card width at depth 1 (farthest)
 const W_NODE = 62; // related-node width
 const ORBIT = 30; // px between a parent card's edge and its nodes
-// Immersive 3D: perspective, each card's Z by depth (near → far), how far
-// the cards spread and the camera flies, and where a card passes the camera.
+// Immersive 3D: perspective, how far the flat cards spread as they lift off,
+// and where a card passes the camera.
 const PERSPECTIVE = 1100;
-const Z_NEAR = 260;
-const Z_FAR = -620;
 const SPREAD = 0.35; // on top of the map zoom (1 + 0.9k), which the cards share
-const FLY_DEPTH = 1300;
 const PASS_Z = 640;
 const GAP = 14; // px kept clear between cards
 const LIFT = 46; // px a card floats above its place before relaxing
@@ -171,7 +168,18 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
     const spread = new Map<string, number>(); // eased 0..1 open amount per parent
     let raf = 0;
     let grainT = 0;
-    const zOf = (depth: number) => Z_NEAR + (Z_FAR - Z_NEAR) * depth;
+    // The work clusters in a few regions, which would leave most of a
+    // geographic globe bare. Immersed, cards take evenly spaced slots round
+    // it instead, keeping their west → east order; latitudes are scattered
+    // by the golden ratio so no two neighbours share a row.
+    const slots = new Map<string, { lon: number; lat: number; cx: number; cy: number }>();
+    [...cards]
+      .sort((a, b) => a.cx - b.cx)
+      .forEach((c, i, all) => {
+        const lon = ((i + 0.5) / all.length - 0.5) * 2 * Math.PI;
+        const lat = ((((i * 0.618034) % 1) + 1) % 1 - 0.5) * 1.5;
+        slots.set(c.id, { lon, lat, cx: c.cx, cy: c.cy });
+      });
     const frame = (now: number) => {
       const t = reduce ? 0 : (now - t0) / 1000;
       immersion.tick(now);
@@ -179,25 +187,42 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
       const k = im.k;
       const ox = box.w / 2;
       const oy = box.h / 2;
-      // Flat position → 3D: spread out from the centre, pushed back or forward
-      // by depth, flown through by the camera, then orbited round the centre
-      // by the drag (yaw about Y, pitch about X). The map plane gets the same
-      // rotation in CSS (--map-tilt), so cards and map turn together.
-      const cy_ = Math.cos(im.yaw * k), sy_ = Math.sin(im.yaw * k);
-      const cp_ = Math.cos(im.pitch * k), sp_ = Math.sin(im.pitch * k);
-      const place = (x: number, y: number, depth: number) => {
-        const s = 1 + SPREAD * k;
-        const wx = (x - ox) * s;
-        const wy = (y - oy) * s;
-        const wz = k * zOf(depth);
-        const rx = wx * cy_ + wz * sy_;
-        const rz = -wx * sy_ + wz * cy_;
-        const ry = wy * cp_ - rz * sp_;
-        const rz2 = wy * sp_ + rz * cp_;
-        return { x: ox + rx, y: oy + ry, z: rz2 + k * im.flight * FLY_DEPTH };
+      // Flat position → globe. Immersed, the map wraps round a sphere: x
+      // becomes longitude, y latitude. Drag spins the globe (yaw) and tips it
+      // (pitch); the camera never turns and every card stays square to it,
+      // AIRLA-style, so cards revolve round in front of you. Scroll flies the
+      // camera in through the globe. k blends flat → globe.
+      const R = Math.min(box.w * 0.36, box.h * 0.62);
+      const zC = -R * 0.55; // globe centre, behind the screen plane
+      const flyDepth = R * 1.25 + 160; // ends with the far side of the globe in focus
+      const cosP = Math.cos(im.pitch), sinP = Math.sin(im.pitch);
+      const place = (x: number, y: number, depth: number, id: string) => {
+        // Even slot on the globe, nudged by the point's offset from its card.
+        const sl = slots.get(id)!;
+        const lon = sl.lon + ((x - sl.cx) / (box.w / 2)) * Math.PI * 0.92 + im.yaw;
+        const lat = sl.lat - ((y - sl.cy) / (box.h / 2)) * 1.05;
+        const r = R * (1 - 0.12 * depth);
+        const sx = r * Math.cos(lat) * Math.sin(lon);
+        const sy = -r * Math.sin(lat);
+        const sz = r * Math.cos(lat) * Math.cos(lon);
+        // Tip about the globe's centre: dragging down brings the top towards you.
+        const gy = sy * cosP + sz * sinP;
+        const gz = -sy * sinP + sz * cosP + zC;
+        const fx = (x - ox) * (1 + SPREAD * k);
+        const fy = y - oy;
+        return {
+          x: ox + fx + (sx - fx) * k,
+          y: oy + fy + (gy - fy) * k,
+          z: gz * k + k * im.flight * flyDepth,
+        };
       };
-      const turn = k > 0.001 ? ` rotateY(${(im.yaw * k).toFixed(4)}rad) rotateX(${(-im.pitch * k).toFixed(4)}rad)` : "";
-      const lensBlur = (z: number) => Math.min(9, Math.abs(z) / 150);
+      // Screen position and scale of a 3D point (perspective origin = box centre).
+      const project = (q: { x: number; y: number; z: number }) => {
+        const f = PERSPECTIVE / Math.max(1, PERSPECTIVE - q.z);
+        return { x: ox + (q.x - ox) * f, y: oy + (q.y - oy) * f, f };
+      };
+      const focusZ = R * 0.3 + k * im.flight * flyDepth * 0.5;
+      const lensBlur = (z: number) => Math.min(7, Math.max(0, Math.abs(z - focusZ) - 60) / 170);
       if (svgRef.current) svgRef.current.style.opacity = (1 - k).toFixed(3);
       // The landing's Index view shows its own list; the map cards step aside.
       // (Set on the box: cards set their own visibility, which a parent's
@@ -218,8 +243,10 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
         at.set(c.id, { x, y });
         const el = cardEls.current.get(c.id);
         if (el) {
-          const q = place(x, y, c.depth);
-          el.style.transform = `translate3d(${(q.x - c.w / 2).toFixed(2)}px, ${(q.y - c.h / 2).toFixed(2)}px, ${q.z.toFixed(1)}px)${turn}`;
+          const q = place(x, y, c.depth, c.id);
+          el.style.transform = `translate3d(${(q.x - c.w / 2).toFixed(2)}px, ${(q.y - c.h / 2).toFixed(2)}px, ${q.z.toFixed(1)}px)`;
+          // Stack by distance: the box is not preserve-3d, so z-index decides.
+          if (hoverRef.current !== c.id) el.style.zIndex = String(k > 0.01 ? Math.min(199, Math.max(1, Math.round(100 + q.z / 10))) : Math.round((1 - c.depth) * 100));
           // Cards that have flown past the camera fade away rather than fill the screen.
           el.style.opacity = (1 - Math.min(1, Math.max(0, (q.z - PASS_Z * 0.55) / (PASS_Z * 0.45)))).toFixed(3);
           el.style.visibility = q.z > PASS_Z ? "hidden" : "visible";
@@ -236,7 +263,10 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
           ln.setAttribute("y2", (y + c.h / 2).toFixed(1));
         }
         const hit = hitEls.current.get(c.id);
-        if (hit) hit.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
+        if (hit) {
+          const sp = project(place(x, y, c.depth, c.id));
+          hit.style.transform = `translate3d(${sp.x.toFixed(2)}px, ${sp.y.toFixed(2)}px, 0) scale(${sp.f.toFixed(3)})`;
+        }
       }
       for (const n of NODES) {
         const pc = cards.find((c) => c.id === n.parent);
@@ -251,9 +281,10 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
         const ry = (pc.h / 2 + ORBIT + (W_NODE * ASPECT) / 2) * (1 + 0.55 * o);
         const nx = pp.x + Math.cos(a) * rx;
         const ny = pp.y + Math.sin(a) * ry;
-        const q = place(nx, ny, Math.min(1, pc.depth + 0.25));
+        const q = place(nx, ny, Math.min(1, pc.depth + 0.25), pc.id);
         el.style.transform = `translate3d(${(q.x - W_NODE / 2).toFixed(2)}px, ${(q.y - (W_NODE * ASPECT) / 2).toFixed(2)}px, ${q.z.toFixed(1)}px) scale(${(1 + 0.3 * o).toFixed(3)})`;
         el.style.visibility = q.z > PASS_Z ? "hidden" : "visible";
+        if (goal === 0) el.style.zIndex = String(k > 0.01 ? Math.min(199, Math.max(1, Math.round(99 + q.z / 10))) : 5);
       }
       // Crawl the grain a few times a second, in jumps, like film.
       if (!reduce && now - grainT > 70) {

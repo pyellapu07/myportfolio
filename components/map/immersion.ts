@@ -2,7 +2,9 @@
 // it from wheel and drag; MapCards ticks it once per frame and renders from
 // it; listeners (Landing's map backdrop) are told each tick.
 
-export type Mode = "map" | "entering" | "immersed" | "leaving";
+// "past": flown out of the far end into the page sections. The scene stays
+// at its end frame (k 1, flight 1) so scrolling back up arrives in it.
+export type Mode = "map" | "entering" | "immersed" | "leaving" | "past";
 
 function bezier(x1: number, y1: number, x2: number, y2: number) {
   const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
@@ -21,12 +23,13 @@ function bezier(x1: number, y1: number, x2: number, y2: number) {
 
 // The fly-in and fly-out: slow, a hard rush, then a long settle.
 const FLY = bezier(0.76, 0, 0.24, 1);
-const ENTER_MS = 850;
-const LEAVE_MS = 700;
-// Orbit limits (radians) and drag sensitivity (radians per px).
-const MAX_YAW = 0.9;
-const MAX_PITCH = 0.5;
-const ORBIT_PER_PX = 0.0042;
+const ENTER_MS = 620;
+const LEAVE_MS = 520;
+// The cards sit on a globe: yaw spins it freely, pitch tips it within limits.
+// Drag sensitivity (radians per px) and the spin carried on after release.
+const MAX_PITCH = 0.6;
+const ORBIT_PER_PX = 0.005;
+const SPIN_DECAY = 0.93;
 
 const state = {
   mode: "map" as Mode,
@@ -44,6 +47,10 @@ const state = {
   pitch: 0,
   yawT: 0,
   pitchT: 0,
+  /** Spin velocity (rad/frame) after a drag is let go. */
+  vYaw: 0,
+  vPitch: 0,
+  orbitAt: 0,
   /** When the last mode change happened, for debouncing trackpad momentum. */
   changedAt: 0,
 };
@@ -73,16 +80,32 @@ export const immersion = {
   enter(atEnd = false) {
     if (state.mode !== "map") return;
     state.flight = state.flightTarget = atEnd ? 1 : 0;
-    state.yaw = state.pitch = state.yawT = state.pitchT = 0;
+    state.yaw = state.pitch = state.yawT = state.pitchT = state.vYaw = state.vPitch = 0;
     setMode("entering");
     animateK(1, ENTER_MS, "immersed");
   },
-  /** Fly out; toEnd keeps flying forward (on into the sections). */
+  /** Zoom back out to the flat map; toEnd instead parks the scene at its
+   *  end frame while the page scrolls on into the sections. */
   leave(toEnd = false) {
-    if (state.mode !== "immersed" && state.mode !== "entering") return;
+    if (state.mode !== "immersed" && state.mode !== "entering" && state.mode !== "past") return;
+    if (toEnd) {
+      if (state.mode === "past") return;
+      pendingMode = null;
+      state.k = 1;
+      state.flight = state.flightTarget = 1;
+      setMode("past");
+      return;
+    }
     setMode("leaving");
-    state.flightTarget = toEnd ? 1 : 0;
+    state.flightTarget = 0;
     animateK(0, LEAVE_MS, "map");
+  },
+  /** Back up from the sections: straight into the end frame, no fly-in. */
+  resume() {
+    if (state.mode !== "past") return;
+    state.k = 1;
+    state.flight = state.flightTarget = 1;
+    setMode("immersed");
   },
   /** Wheel while immersed: fly forward/back. */
   fly(delta: number) {
@@ -90,8 +113,11 @@ export const immersion = {
   },
   /** Drag while immersed: orbit the camera round the scene. */
   orbit(dx: number, dy: number) {
-    state.yawT = Math.max(-MAX_YAW, Math.min(MAX_YAW, state.yawT + dx * ORBIT_PER_PX));
-    state.pitchT = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, state.pitchT - dy * ORBIT_PER_PX));
+    state.vYaw = dx * ORBIT_PER_PX;
+    state.vPitch = dy * ORBIT_PER_PX;
+    state.yawT += state.vYaw;
+    state.pitchT = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, state.pitchT + state.vPitch));
+    state.orbitAt = performance.now();
   },
   /** Milliseconds since the last mode change. */
   sinceChange: () => performance.now() - state.changedAt,
@@ -106,12 +132,23 @@ export const immersion = {
         setMode(m);
       }
     }
-    state.flight += (state.flightTarget - state.flight) * 0.14;
+    // Let go mid-drag: the globe keeps spinning and slows to a stop.
+    if (now - state.orbitAt > 60 && (state.vYaw || state.vPitch)) {
+      state.yawT += state.vYaw;
+      state.pitchT = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, state.pitchT + state.vPitch));
+      state.vYaw *= SPIN_DECAY;
+      state.vPitch *= SPIN_DECAY;
+      if (Math.abs(state.vYaw) + Math.abs(state.vPitch) < 1e-5) state.vYaw = state.vPitch = 0;
+    }
+    state.flight += (state.flightTarget - state.flight) * 0.2;
     state.yaw += (state.yawT - state.yaw) * 0.1;
     state.pitch += (state.pitchT - state.pitch) * 0.1;
     if (state.mode === "leaving") {
-      state.yawT *= 0.88;
+      // Unwind to the nearest whole turn so the map lands the right way round.
+      const home = Math.round(state.yawT / (2 * Math.PI)) * 2 * Math.PI;
+      state.yawT = home + (state.yawT - home) * 0.88;
       state.pitchT *= 0.88;
+      state.vYaw = state.vPitch = 0;
     }
     tickListeners.forEach((f) => f(state));
   },
