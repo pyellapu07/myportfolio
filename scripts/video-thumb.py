@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+"""Video thumbnails, AIRLA-style: a screen recording inside a desktop window,
+set on a terracotta gradient, exported as a short silent loop.
+
+    # From a screen recording (trimmed to --start/--duration):
+    python3 scripts/video-thumb.py --video ~/jeevy.mp4 --start 2 --duration 12 --out public/thumbs/jeevy-os
+
+    # Or from still screenshots (slow pan + crossfade between them):
+    python3 scripts/video-thumb.py --images public/jeevy/a.webp public/jeevy/b.webp --out public/thumbs/jeevy-os
+
+Writes <out>.mp4 (H.264) and <out>-poster.webp.
+Needs Pillow and ffmpeg.
+"""
+import argparse
+import math
+import os
+import subprocess
+import tempfile
+
+from PIL import Image, ImageDraw, ImageFilter
+
+W, H = 1280, 800  # output, 16:10 like the other thumbnails
+FPS = 30
+# The window: centred, sitting low so it bleeds off the bottom edge.
+WIN_W = int(W * 0.8)
+WIN_X = (W - WIN_W) // 2
+WIN_Y = int(H * 0.14)
+BAR = 34  # title bar height
+RADIUS = 14
+CONTENT_W = WIN_W
+CONTENT_H = round(CONTENT_W * 10 / 16)  # 16:10 screen inside the window
+
+
+def gradient_bg():
+    """Terracotta: deep at the bottom-right, warm peach light at the top-left."""
+    bg = Image.new("RGB", (W, H))
+    px = bg.load()
+    deep, mid, light = (176, 74, 48), (214, 112, 78), (244, 176, 140)
+    for y in range(H):
+        for x in range(W):
+            t = (x / W) * 0.45 + (y / H) * 0.55  # diagonal
+            if t < 0.5:
+                u = t / 0.5
+                c = [light[i] + (mid[i] - light[i]) * u for i in range(3)]
+            else:
+                u = (t - 0.5) / 0.5
+                c = [mid[i] + (deep[i] - mid[i]) * u for i in range(3)]
+            px[x, y] = tuple(int(v) for v in c)
+    # A soft bloom behind the window so it lifts off the colour.
+    glow = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(glow).ellipse((W * 0.2, H * 0.25, W * 0.8, H * 1.1), fill=90)
+    glow = glow.filter(ImageFilter.GaussianBlur(120))
+    bg = Image.composite(Image.new("RGB", (W, H), (255, 214, 190)), bg, glow)
+    return bg
+
+
+def window_layers():
+    """Chrome (shadow, title bar) under the content, and a mask for the content."""
+    win_h = BAR + CONTENT_H
+    under = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    # Shadow.
+    sh = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(sh).rounded_rectangle((WIN_X, WIN_Y + 18, WIN_X + WIN_W, WIN_Y + win_h + 18), RADIUS, fill=110)
+    sh = sh.filter(ImageFilter.GaussianBlur(28))
+    under.paste((60, 20, 10, 255), (0, 0), sh)
+    # Window body and title bar.
+    d = ImageDraw.Draw(under)
+    d.rounded_rectangle((WIN_X, WIN_Y, WIN_X + WIN_W, WIN_Y + win_h), RADIUS, fill=(246, 245, 243, 255))
+    d.line((WIN_X, WIN_Y + BAR, WIN_X + WIN_W, WIN_Y + BAR), fill=(226, 224, 220, 255), width=1)
+    for i, col in enumerate([(255, 95, 87), (254, 188, 46), (40, 200, 64)]):
+        cx, cy = WIN_X + 20 + i * 18, WIN_Y + BAR // 2
+        d.ellipse((cx - 5, cy - 5, cx + 5, cy + 5), fill=col + (255,))
+    # Content mask: square top (under the bar), rounded bottom corners.
+    mask = Image.new("L", (CONTENT_W, CONTENT_H), 0)
+    md = ImageDraw.Draw(mask)
+    md.rounded_rectangle((0, -RADIUS, CONTENT_W, CONTENT_H), RADIUS, fill=255)
+    return under, mask
+
+
+def fit(img, w, h, zoom=1.0, fx=0.5, fy=0.0):
+    """Cover-crop img to w×h at a zoom, focused on (fx, fy) of the spare area."""
+    s = max(w / img.width, h / img.height) * zoom
+    r = img.resize((math.ceil(img.width * s), math.ceil(img.height * s)), Image.LANCZOS)
+    x = int((r.width - w) * fx)
+    y = int((r.height - h) * fy)
+    return r.crop((x, y, x + w, y + h))
+
+
+def slideshow(paths, seconds_each=2.6, fade=0.45):
+    """Frames for stills: each pans slowly, crossfading into the next."""
+    imgs = [Image.open(p).convert("RGB") for p in paths]
+    per = int(seconds_each * FPS)
+    nf = int(fade * FPS)
+    total = per * len(imgs)
+    ease = lambda u: u * u * (3 - 2 * u)
+    for f in range(total):
+        i, k = divmod(f, per)
+        u = k / per
+        cur = fit(imgs[i], CONTENT_W, CONTENT_H, 1.06 - 0.06 * ease(u), 0.5, 0.15 * u)
+        if k >= per - nf:  # crossfade into the next (wraps, so the loop is seamless)
+            nxt = fit(imgs[(i + 1) % len(imgs)], CONTENT_W, CONTENT_H, 1.06, 0.5, 0.0)
+            cur = Image.blend(cur, nxt, ease((k - (per - nf)) / nf))
+        yield cur
+
+
+def video_frames(path, start, duration, tmp):
+    """Frames from a recording, cover-fitted to the screen."""
+    pat = os.path.join(tmp, "src_%05d.png")
+    subprocess.run(
+        ["ffmpeg", "-loglevel", "error", "-y", "-ss", str(start), "-t", str(duration), "-i", path,
+         "-vf", f"fps={FPS},scale={CONTENT_W}:{CONTENT_H}:force_original_aspect_ratio=increase,crop={CONTENT_W}:{CONTENT_H}:0:0",
+         pat], check=True)
+    for name in sorted(n for n in os.listdir(tmp) if n.startswith("src_")):
+        yield Image.open(os.path.join(tmp, name)).convert("RGB")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    src = ap.add_mutually_exclusive_group(required=True)
+    src.add_argument("--video")
+    src.add_argument("--images", nargs="+")
+    ap.add_argument("--start", type=float, default=0)
+    ap.add_argument("--duration", type=float, default=12)
+    ap.add_argument("--out", required=True)
+    a = ap.parse_args()
+
+    bg = gradient_bg()
+    under, mask = window_layers()
+    base = bg.convert("RGBA")
+    base.alpha_composite(under)
+    base = base.convert("RGB")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        frames = video_frames(a.video, a.start, a.duration, tmp) if a.video else slideshow(a.images)
+        for n, content in enumerate(frames):
+            frame = base.copy()
+            frame.paste(content, (WIN_X, WIN_Y + BAR), mask)
+            frame.save(os.path.join(tmp, f"out_{n:05d}.png"))
+            if n == 10:  # poster: an early frame, past any fade-in
+                frame.save(f"{a.out}-poster.webp", "WEBP", quality=82)
+        pat = os.path.join(tmp, "out_%05d.png")
+        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-framerate", str(FPS), "-i", pat,
+                        "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "26", "-preset", "slow",
+                        "-movflags", "+faststart", "-an", f"{a.out}.mp4"], check=True)
+    for ext in (".mp4", "-poster.webp"):
+        print(f"{a.out}{ext}", os.path.getsize(f"{a.out}{ext}") // 1024, "KB")
+
+
+if __name__ == "__main__":
+    main()
