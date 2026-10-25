@@ -4,7 +4,7 @@ import { forwardRef, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { BorderBeam } from "border-beam";
-import { HEADLINE_CLASS, LINES, SUBTITLE } from "@/components/intro/HyperspaceIntro";
+import { HEADLINE_CLASS, LINES } from "@/components/intro/HyperspaceIntro";
 import AskBar from "./AskBar";
 import { immersion, type Mode } from "@/components/map/immersion";
 import { RecruiterProvider } from "@/lib/recruiter-context";
@@ -310,44 +310,34 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
         </BorderBeam>
       </motion.div>
 
-      {view === "spatial" ? (
-        <>
-          {/* Statement, centred at the foot of the screen as the label of the
-              chat input under it. Always laid out so the intro can dock to it. */}
-          <div ref={heroRef} className="pointer-events-none fixed inset-x-0 bottom-[96px] z-30 flex justify-center px-4 sm:bottom-[112px]">
-            <div
-              className="transition-[opacity,transform] duration-500"
-              style={{ opacity: asking ? 0 : 1, transform: asking ? "translateY(-8px)" : "none", transitionTimingFunction: "cubic-bezier(.2,.6,.35,1)" }}
-            >
-              <Statement ref={statementRef} align="center" size={HERO_SIZE} className={`text-black ${ready ? "" : "invisible"}`} />
-            </div>
-          </div>
-          {/* Scroll room for the fade-out; the map shows through. */}
-          <div aria-hidden="true" className="pointer-events-none h-screen" />
-        </>
-      ) : (
-        <IndexView statementRef={statementRef} ready={ready} />
-      )}
+      {/* Statement, centred at the foot of the screen as the label of the
+          chat input under it, in both views. Always laid out so the intro
+          can dock to it. */}
+      <div ref={heroRef} className="pointer-events-none fixed inset-x-0 bottom-[96px] z-30 flex justify-center px-4 sm:bottom-[112px]">
+        <div
+          className="transition-[opacity,transform] duration-500"
+          style={{ opacity: asking ? 0 : 1, transform: asking ? "translateY(-8px)" : "none", transitionTimingFunction: "cubic-bezier(.2,.6,.35,1)" }}
+        >
+          <Statement ref={statementRef} align="center" size={HERO_SIZE} className={`text-black ${ready ? "" : "invisible"}`} />
+        </div>
+      </div>
+      {/* First screen: the map shows through. Spatial scrolls on into the
+          sections; Index into the case studies first. */}
+      <div aria-hidden="true" className="pointer-events-none h-screen" />
+      {view === "index" && <IndexView />}
 
       {ready && <div className="relative z-20 bg-white">{children}</div>}
     </>
   );
 }
 
-function IndexView({ statementRef, ready }: { statementRef: Props["statementRef"]; ready: boolean }) {
+function IndexView() {
   return (
-    <div className="relative z-20">
-      {/* Statement sits high; the work starts 60% down the first screen. */}
-      <div className={`flex h-[60vh] flex-col justify-end pb-12 ${GUTTER}`}>
-        <Statement ref={statementRef} className={`text-black ${ready ? "" : "invisible"}`} />
-        <p className="mt-4 max-w-[34rem] text-[13px] leading-snug tracking-[-0.01em] text-black/55 sm:text-[15px]">{SUBTITLE}</p>
-      </div>
+    <div className="relative z-20 bg-white/90 backdrop-blur-[2px]">
       {/* The home page's own case-study cards, one per row, on white. */}
-      <div className="bg-white/90 backdrop-blur-[2px]">
-        <RecruiterProvider>
-          <Projects />
-        </RecruiterProvider>
-      </div>
+      <RecruiterProvider>
+        <Projects />
+      </RecruiterProvider>
     </div>
   );
 }

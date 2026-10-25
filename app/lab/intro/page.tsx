@@ -88,7 +88,7 @@ function Lab() {
 
   return (
     <main>
-      <HyperspaceIntro key={run} speed={speed} dockTo={dockTo} dockAlign={view === "spatial" ? "center" : "left"} onDock={onDock} onDone={onDone} hideHeadline={ready} />
+      <HyperspaceIntro key={run} speed={speed} dockTo={dockTo} dockAlign="center" onDock={onDock} onDone={onDone} hideHeadline={ready} />
       <Landing view={view} onView={changeView} shown={shown} ready={ready} statementRef={statementRef}>
         <RecruiterProvider>
           <ImpactMetrics />

@@ -409,7 +409,17 @@ export default function HyperspaceIntro({ speed = 1, onDone, dockTo, dockAlign =
 
   // Docked: top-left, about 40px tall, lines left-aligned. Measured when the
   // dock starts, so it reflects loaded fonts and the current viewport.
+  // The dock target and alignment are read through refs, so a view switch
+  // (new props) never gives measureDock a new identity and restarts the intro.
+  const dockToRef = useRef(dockTo);
+  const dockAlignRef = useRef(dockAlign);
+  useEffect(() => {
+    dockToRef.current = dockTo;
+    dockAlignRef.current = dockAlign;
+  });
   const measureDock = useCallback((): Dock => {
+    const dockTo = dockToRef.current;
+    const dockAlign = dockAlignRef.current;
     const head = headlineRef.current?.getBoundingClientRect();
     if (!head) return { x: 0, y: 0, scale: 1, lineShift: [] };
     // Dock onto the landing headline's box if there is one, else top-left.
@@ -432,7 +442,7 @@ export default function HyperspaceIntro({ speed = 1, onDone, dockTo, dockAlign =
         return first ? head.left - first.left : 0;
       }),
     };
-  }, [dockTo, dockAlign]);
+  }, []);
 
   // Measure the assembled layout, then express each word's scattered poses as
   // offsets from its final slot so convergence is just animating to zero.
