@@ -30,6 +30,11 @@ const LEAVE_MS = 520;
 const MAX_PITCH = 0.6;
 const ORBIT_PER_PX = 0.005;
 const SPIN_DECAY = 0.93;
+// Scroll elasticity: spring stiffness and damping per frame (a touch of
+// overshoot, settles in ~0.5s), and how far the flight stretches past an end.
+const SPRING_K = 0.09;
+const SPRING_DAMP = 0.71;
+const STRETCH = 0.04;
 
 const state = {
   mode: "map" as Mode,
@@ -42,6 +47,9 @@ const state = {
   /** How far the camera has flown forward through the cards, 0..1. */
   flight: 0,
   flightTarget: 0,
+  /** Flight velocity for the spring, and when the wheel last moved it. */
+  vFlight: 0,
+  flyAt: 0,
   /** Camera orbit round the scene centre (rad), with targets for inertia. */
   yaw: 0,
   pitch: 0,
@@ -82,6 +90,7 @@ export const immersion = {
   enter(atEnd = false) {
     if (state.mode !== "map") return;
     state.flight = state.flightTarget = atEnd ? 1 : 0;
+    state.vFlight = 0;
     state.yaw = state.pitch = state.yawT = state.pitchT = state.vYaw = state.vPitch = 0;
     setMode("entering");
     animateK(1, ENTER_MS, "immersed");
@@ -95,6 +104,7 @@ export const immersion = {
       pendingMode = null;
       state.k = 1;
       state.flight = state.flightTarget = 1;
+      state.vFlight = 0;
       setMode("past");
       return;
     }
@@ -107,11 +117,17 @@ export const immersion = {
     if (state.mode !== "past") return;
     state.k = 1;
     state.flight = state.flightTarget = 1;
+    state.vFlight = 0;
     setMode("immersed");
   },
   /** Wheel while immersed: fly forward/back. */
   fly(delta: number) {
-    state.flightTarget = Math.min(1, Math.max(0, state.flightTarget + delta));
+    // Past either end the scroll meets resistance and stretches a little
+    // (rubber band); tick springs it back once the wheel goes quiet.
+    const t = state.flightTarget;
+    const beyond = (delta > 0 && t >= 1) || (delta < 0 && t <= 0);
+    state.flightTarget = Math.min(1 + STRETCH, Math.max(-STRETCH, t + delta * (beyond ? 0.3 : 1)));
+    state.flyAt = performance.now();
   },
   /** Drag while immersed: orbit the camera round the scene. */
   orbit(dx: number, dy: number) {
@@ -148,7 +164,11 @@ export const immersion = {
     // Idle, the globe turns very slowly on its own, so it always reads as a
     // globe; any drag takes over at once.
     if (state.mode === "immersed" && !state.detail && !state.vYaw && now - state.orbitAt > 1500) state.yawT += 0.0007;
-    state.flight += (state.flightTarget - state.flight) * 0.2;
+    // Elastic flight: a light spring rather than plain easing, so each
+    // scroll lands with a small overshoot and settles back.
+    if (now - state.flyAt > 140) state.flightTarget = Math.min(1, Math.max(0, state.flightTarget));
+    state.vFlight = (state.vFlight + (state.flightTarget - state.flight) * SPRING_K) * SPRING_DAMP;
+    state.flight += state.vFlight;
     state.yaw += (state.yawT - state.yaw) * 0.1;
     state.pitch += (state.pitchT - state.pitch) * 0.1;
     if (state.mode === "leaving") {
