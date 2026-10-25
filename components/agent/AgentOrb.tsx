@@ -28,6 +28,7 @@ export default function AgentOrb({
   core = "cyan",
   bg,
   interactive = true,
+  active = true,
   className = "",
 }: {
   size?: number;
@@ -38,13 +39,17 @@ export default function AgentOrb({
   bg?: string;
   /** Follow the pointer with its eyes. Off where it is decoration only. */
   interactive?: boolean;
+  /** Render frames. Off keeps it built (shaders compiled) but costs nothing. */
+  active?: boolean;
   className?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const moodRef = useRef(mood);
+  const activeRef = useRef(active);
   useEffect(() => {
     moodRef.current = mood;
-  }, [mood]);
+    activeRef.current = active;
+  }, [mood, active]);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -59,7 +64,7 @@ export default function AgentOrb({
       // Small instances render at 3x and are scaled down by the browser, so
       // the glass edge and eyes stay crisp even on 1x screens.
       const dpr = window.devicePixelRatio || 1;
-      renderer.setPixelRatio(size < 120 ? Math.max(3, dpr) : Math.min(dpr, 2));
+      renderer.setPixelRatio(size < 120 ? Math.max(3, dpr) : Math.min(dpr, 1.5));
       renderer.setSize(size, size, false);
       if (bg) renderer.setClearColor(new THREE.Color(bg), 1);
       else renderer.setClearColor(0x000000, 0);
@@ -233,10 +238,15 @@ export default function AgentOrb({
             s.scale.set(sc, sc, 1);
           });
         }
-        renderer.render(scene, camera);
+        // Paused: keep the loop alive but skip the (transmission-heavy) render.
+        if (activeRef.current) renderer.render(scene, camera);
         raf = requestAnimationFrame(frame);
       };
-      raf = requestAnimationFrame(frame);
+      // Compile every shader off the main thread before the first frame, so
+      // creating the agent never stalls whatever else is animating.
+      renderer.compileAsync(scene, camera).then(() => {
+        if (!disposed) raf = requestAnimationFrame(frame);
+      });
 
       cleanup = () => {
         window.removeEventListener("pointermove", onMove);

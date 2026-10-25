@@ -240,7 +240,12 @@ export default function AskBar({ shown, onActive }: { shown: boolean; onActive?:
           >
             {/* The agent, in place of a search icon. */}
             <span className="-my-2 -ml-2 shrink-0 self-end">
-              <AgentOrb size={48} bg="#ffffff" mood={turns.some((t) => t.state === "loading") ? "thinking" : focused ? "listening" : "idle"} />
+              {/* Created only once the bar shows, so it costs nothing in the intro. */}
+              {shown ? (
+                <AgentOrb size={48} mood={turns.some((t) => t.state === "loading") ? "thinking" : focused ? "listening" : "idle"} />
+              ) : (
+                <span className="block h-12 w-12" />
+              )}
             </span>
             <div className="relative min-w-0 flex-1">
               <textarea

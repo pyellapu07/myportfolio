@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
 import AgentOrb from "@/components/agent/AgentOrb";
 import { LAND_GRID } from "@/components/map/landGrid";
@@ -27,6 +27,8 @@ export const GLOBE_FLATTEN_AT = G.assemble + G.turn;
 // slightly deeper tone mixed in so the sphere keeps some texture.
 const INK = [0.43, 0.86, 1.0];
 const ACCENT = [0.3, 0.78, 1.0];
+// The flat map's block colour: a deep cyan that reads on the white page.
+const FLAT_INK = [0.0, 0.42, 0.72];
 // The beam's colours, cycled on a scatter of blocks.
 const BEAM = [
   [1.0, 0.18, 0.33],
@@ -191,6 +193,7 @@ interface Props {
 type Stage = { draw: (t: number) => number; wave: () => number; dispose: () => void };
 
 export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
+  const [orbDone, setOrbDone] = useState(false);
   // The agent fills most of the globe's inside (its canvas is ~1.45 R; the
   // bubble takes about two thirds of that).
   const orbSize = useSyncExternalStore(
@@ -500,8 +503,10 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
             let restZ = sph.z;
 
             // Flatten: each block slides to its spot on the map and lies flat.
+            let flatF = 0;
             if (flatU > 0) {
               const f = vacuumSettle(clamp01((flatU - b.flatDelay) / (1 - 0.43)));
+              flatF = f;
               const [mx, my] = naturalEarth(b.lon, b.lat);
               flat.set(rect.left + mx * mapScale - w / 2, h / 2 - (rect.top + my * mapScale), 0);
               pos.lerp(flat, f);
@@ -533,7 +538,13 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
             const c = b.beam >= 0 ? BEAM[Math.floor(b.beam + t * 5) % BEAM.length] : null;
             // Gleams stay in the same hue: a brighter, whiter cyan flash.
             if (c) col.setRGB(0.82, 0.98, 1.0);
-            else col.setRGB(b.color[0], b.color[1], b.color[2]);
+            // Flat on white, pale cyan loses all contrast: deepen as it lies down.
+            else
+              col.setRGB(
+                b.color[0] + (FLAT_INK[0] - b.color[0]) * flatF,
+                b.color[1] + (FLAT_INK[1] - b.color[1]) * flatF,
+                b.color[2] + (FLAT_INK[2] - b.color[2]) * flatF,
+              );
             lm.setColorAt(n, col);
           });
 
@@ -639,20 +650,23 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
       <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" />
       {/* The agent sits at the globe's centre while it forms (drawn over the
           blocks so it stays visible); it leaves as the globe flattens. */}
-      {play && orbSize > 0 && (
+      {orbSize > 0 && !orbDone && (
         <motion.div
           aria-hidden="true"
           className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
           initial={{ opacity: 0, scale: 0.4 }}
-          animate={{ opacity: [0, 1, 1, 0], scale: [0.4, 1, 1, 0.6] }}
+          animate={play ? { opacity: [0, 1, 1, 0], scale: [0.4, 1, 1, 0.6] } : { opacity: 0, scale: 0.4 }}
           transition={{
             duration: (GLOBE_FLATTEN_AT + 0.35) / speed,
             times: [0, 0.45, 0.85, 1],
             ease: [0.2, 0.6, 0.35, 1],
             delay: (G.assemble * 0.25) / speed,
           }}
+          onAnimationComplete={() => play && setOrbDone(true)}
         >
-          <AgentOrb size={orbSize} interactive={false} />
+          {/* Built from the start (shaders compiled while the intro is quiet),
+              rendered only while the globe is on. */}
+          <AgentOrb size={orbSize} interactive={false} active={play} />
         </motion.div>
       )}
       {/* Lens haze round the frame edges while the blocks drift in */}
