@@ -22,8 +22,10 @@ export const GLOBE_DURATION = G.assemble + G.turn + G.flatten + G.dissolve;
 export const GLOBE_DISSOLVE = G.dissolve;
 export const GLOBE_FLATTEN_AT = G.assemble + G.turn;
 
-const INK = [0.02, 0.022, 0.03];
-const ACCENT = [0.12, 0.3, 1.0];
+// One colour for every block: a fluorescent cyan sky blue (#1FC8FF),
+// with a slightly deeper tone mixed in so the sphere keeps some texture.
+const INK = [0.12, 0.78, 1.0];
+const ACCENT = [0.05, 0.6, 1.0];
 // The beam's colours, cycled on a scatter of blocks.
 const BEAM = [
   [1.0, 0.18, 0.33],
@@ -251,7 +253,7 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
         let waveR = 0;
 
         const geo = new THREE.BoxGeometry(1, 1, 1);
-        const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.4, envMapIntensity: 0.18 });
+        const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35, metalness: 0.1, envMapIntensity: 0.25, emissive: 0x0a9fe0, emissiveIntensity: 0.22 });
         // Three focus layers: settled blocks drawn sharp, blocks still in flight
         // ahead of the globe drawn into their own buffers and Gaussian-blurred.
         const layers = [0, 1, 2].map(() => {
@@ -521,7 +523,8 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
             const n = counts[layer]++;
             lm.setMatrixAt(n, m);
             const c = b.beam >= 0 ? BEAM[Math.floor(b.beam + t * 5) % BEAM.length] : null;
-            if (c) col.setRGB(c[0] * 3, c[1] * 3, c[2] * 3);
+            // Gleams stay in the same hue: a brighter, whiter cyan flash.
+            if (c) col.setRGB(0.6, 0.95, 1.0);
             else col.setRGB(b.color[0], b.color[1], b.color[2]);
             lm.setColorAt(n, col);
           });
