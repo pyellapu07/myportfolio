@@ -334,8 +334,17 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
         {/* Soft white backing so content scrolling underneath never collides with the nav */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white via-white/85 to-transparent" />
         <div className={`relative grid grid-cols-[1fr_auto_1fr] items-start pt-6 sm:pt-9 ${GUTTER}`}>
-          <div className="pt-0.5">
+          {/* Where I am, and under it a tiny key for the map's heat. The key
+              fades with the map (scrolled away or flown into). */}
+          <div className="flex flex-col items-start gap-2 pt-0.5">
             <LocalTime />
+            <span
+              className="flex items-center gap-2 text-[11px] tracking-[-0.01em] text-black/40"
+              style={{ opacity: "calc(var(--map-opacity, 1) * (1 - var(--immersed, 0)))" }}
+            >
+              <span aria-hidden="true" className="h-[3px] w-5" style={{ background: "linear-gradient(90deg, #1f40ff, #1abfff, #4de659, #ffeb26, #ff8c1a, #f22626)" }} />
+              Where my work has reached
+            </span>
           </div>
           <div className="flex flex-col items-center gap-1.5">
             <Link href="/" className="whitespace-nowrap text-[14px] font-bold tracking-[-0.03em] text-black sm:text-[15px]">

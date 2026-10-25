@@ -87,26 +87,6 @@ export default function MapStage({ play, instant, speed }: Props) {
           </div>
           {/* Faint fluorescent ring riding the wave front */}
           {!instant && <div aria-hidden="true" className="pointer-events-none absolute" style={{ ...BOX, background: RING }} />}
-          {/* Legend: one line on what the heat means, in the empty South
-              Pacific at the map's bottom-left. Outside the map's filter so it
-              stays sharp; gone when the camera flies in. */}
-          <div className="pointer-events-none absolute" style={{ ...BOX, opacity: "calc(1 - var(--immersed, 0))" }}>
-            <motion.div
-              className="absolute bottom-[3%] left-[1%] flex items-center gap-2.5"
-              initial={instant ? false : { opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: instant ? 0 : 1.6 * s }}
-            >
-              <span
-                aria-hidden="true"
-                className="h-[5px] w-14 shrink-0"
-                style={{ background: "linear-gradient(90deg, #1f40ff, #1abfff, #4de659, #ffeb26, #ff8c1a, #f22626)" }}
-              />
-              <span className="whitespace-nowrap font-mono text-[10px] leading-none tracking-[0.01em] text-black/50">
-                Heat: where the work happened and who it served, by depth of work
-              </span>
-            </motion.div>
-          </div>
           {/* Project cards, outside the mask so stacks can rise above the map edge */}
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div className="pointer-events-auto relative" style={BOX}>
