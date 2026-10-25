@@ -121,6 +121,11 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
     const PAST_END = 90; // wheel px past the end before leaving
 
     const onWheel = (e: WheelEvent) => {
+      // A project is open in the detail view: the scene holds still.
+      if (immersion.get().detail) {
+        e.preventDefault();
+        return;
+      }
       const m = immersion.get().mode;
       const vh = window.innerHeight;
       if (m === "map") {
@@ -174,10 +179,11 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       }
     };
     const onDown = (e: PointerEvent) => {
-      if (immersion.get().mode !== "immersed" || e.button !== 0) return;
+      if (immersion.get().mode !== "immersed" || immersion.get().detail || e.button !== 0) return;
       if ((e.target as HTMLElement).closest("header, button")) return;
       drag = { x: e.clientX, y: e.clientY, moved: 0 };
       root.style.cursor = "grabbing";
+      root.style.userSelect = "none";
     };
     const onMove = (e: PointerEvent) => {
       if (!drag) return;
@@ -193,6 +199,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       lastDragMoved = drag.moved;
       drag = null;
       root.style.cursor = "";
+      root.style.userSelect = "";
     };
     // A drag that ends on a card must not open it.
     const onClick = (e: MouseEvent) => {
@@ -249,6 +256,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       const slide = Math.sin(im.yaw) * 40 * k;
       set("--map-tilt", k > 0.001 ? `translate(${slide.toFixed(1)}px, ${(im.pitch * 30 * k).toFixed(1)}px)` : "none");
       set("--map-bg-opacity", (1 - 0.88 * k).toFixed(3));
+      set("--immersed", k.toFixed(3));
       if (heroRef.current) {
         const h = Math.max(clamp01(p / 0.5), k);
         heroRef.current.style.opacity = (1 - h).toFixed(3);
@@ -303,21 +311,24 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
         aria-hidden="true"
         {...frame}
         className="pointer-events-none fixed inset-x-0 bottom-0 z-10 h-[46vh]"
-        style={{ opacity: "var(--map-opacity, 1)" }}
       >
-        {PROGRESSIVE.map(([blur, from, to], i) => (
-          <div
-            key={i}
-            className="absolute inset-0"
-            style={{
-              backdropFilter: `blur(${blur}px)`,
-              WebkitBackdropFilter: `blur(${blur}px)`,
-              maskImage: `linear-gradient(to bottom, transparent ${from}%, #000 ${to}%)`,
-              WebkitMaskImage: `linear-gradient(to bottom, transparent ${from}%, #000 ${to}%)`,
-            }}
-          />
-        ))}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white" />
+        {/* The fade lives on an inner layer: framer owns the outer opacity.
+            Gone while zoomed in, so no card in the scene is ever blurred. */}
+        <div className="absolute inset-0" style={{ opacity: "calc(var(--map-opacity, 1) * (1 - var(--immersed, 0)))" }}>
+          {PROGRESSIVE.map(([blur, from, to], i) => (
+            <div
+              key={i}
+              className="absolute inset-0"
+              style={{
+                backdropFilter: `blur(${blur}px)`,
+                WebkitBackdropFilter: `blur(${blur}px)`,
+                maskImage: `linear-gradient(to bottom, transparent ${from}%, #000 ${to}%)`,
+                WebkitMaskImage: `linear-gradient(to bottom, transparent ${from}%, #000 ${to}%)`,
+              }}
+            />
+          ))}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white" />
+        </div>
       </motion.div>
 
       {view === "spatial" ? (

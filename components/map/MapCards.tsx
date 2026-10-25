@@ -7,6 +7,7 @@ import { PROJECTS, type Project } from "./projects";
 import { naturalEarth } from "./projection";
 import { WORLD_MAP } from "./worldMap";
 import { immersion } from "./immersion";
+import ProjectDetail, { type DetailOpen } from "./ProjectDetail";
 
 // Project cards floating over the map, AIRLA-style: dead straight, each with
 // its own space, sized and faded by depth, drifting slowly and shifting with
@@ -145,6 +146,26 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const cursor = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
   const hoverRef = useRef<string | null>(null);
+  // Clicked card, shown centred with its details; its place in the scene
+  // stays empty meanwhile so it reads as the same object.
+  const [detail, setDetail] = useState<DetailOpen | null>(null);
+  const detailRef = useRef<string | null>(null);
+  const openDetail = (p: Project) => (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    const from = e.currentTarget.getBoundingClientRect();
+    detailRef.current = p.id;
+    immersion.setDetail(p.id);
+    setHover(null);
+    setDetail({ project: p, from });
+  };
+  const closeDetail = () => {
+    setDetail(null);
+    immersion.setDetail(null);
+    // Let the card fly home before it reappears in the scene.
+    setTimeout(() => {
+      if (!immersion.get().detail) detailRef.current = null;
+    }, 700);
+  };
   useEffect(() => {
     hoverRef.current = hover;
   }, [hover]);
@@ -194,7 +215,7 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
       // camera in through the globe. k blends flat → globe.
       const R = Math.min(box.w * 0.36, box.h * 0.62);
       const zC = -R * 0.55; // globe centre, behind the screen plane
-      const flyDepth = R * 1.25 + 160; // ends with the far side of the globe in focus
+      const flyDepth = R * 1.25 + 160; // ends with the far side of the globe in view
       const cosP = Math.cos(im.pitch), sinP = Math.sin(im.pitch);
       const place = (x: number, y: number, depth: number, id: string) => {
         // Even slot on the globe, nudged by the point's offset from its card.
@@ -221,9 +242,9 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
         const f = PERSPECTIVE / Math.max(1, PERSPECTIVE - q.z);
         return { x: ox + (q.x - ox) * f, y: oy + (q.y - oy) * f, f };
       };
-      const focusZ = R * 0.3 + k * im.flight * flyDepth * 0.5;
-      const lensBlur = (z: number) => Math.min(7, Math.max(0, Math.abs(z - focusZ) - 60) / 170);
       if (svgRef.current) svgRef.current.style.opacity = (1 - k).toFixed(3);
+      // Depth haze fades out as the camera goes in: immersed cards are clear.
+      boxRef.current?.style.setProperty("--haze-k", (1 - k).toFixed(3));
       // The landing's Index view shows its own list; the map cards step aside.
       // (Set on the box: cards set their own visibility, which a parent's
       // visibility could not override.)
@@ -249,11 +270,12 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
           if (hoverRef.current !== c.id) el.style.zIndex = String(k > 0.01 ? Math.min(199, Math.max(1, Math.round(100 + q.z / 10))) : Math.round((1 - c.depth) * 100));
           // Cards that have flown past the camera fade away rather than fill the screen.
           el.style.opacity = (1 - Math.min(1, Math.max(0, (q.z - PASS_Z * 0.55) / (PASS_Z * 0.45)))).toFixed(3);
-          el.style.visibility = q.z > PASS_Z ? "hidden" : "visible";
+          el.style.visibility = q.z > PASS_Z || detailRef.current === c.id ? "hidden" : "visible";
           const img = imgEls.current.get(c.id);
           if (img) {
             const base = Number(img.dataset.blur ?? 0);
-            const b = hoverRef.current === c.id ? 0 : base * (1 - k) + lensBlur(q.z) * k;
+            // Zoomed in, every card is sharp: no lens or depth blur.
+            const b = hoverRef.current === c.id ? 0 : base * (1 - k);
             img.style.filter = b > 0.05 ? `blur(${b.toFixed(2)}px)` : "none";
           }
         }
@@ -283,7 +305,7 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
         const ny = pp.y + Math.sin(a) * ry;
         const q = place(nx, ny, Math.min(1, pc.depth + 0.25), pc.id);
         el.style.transform = `translate3d(${(q.x - W_NODE / 2).toFixed(2)}px, ${(q.y - (W_NODE * ASPECT) / 2).toFixed(2)}px, ${q.z.toFixed(1)}px) scale(${(1 + 0.3 * o).toFixed(3)})`;
-        el.style.visibility = q.z > PASS_Z ? "hidden" : "visible";
+        el.style.visibility = q.z > PASS_Z || detailRef.current === n.id ? "hidden" : "visible";
         if (goal === 0) el.style.zIndex = String(k > 0.01 ? Math.min(199, Math.max(1, Math.round(99 + q.z / 10))) : 5);
       }
       // Crawl the grain a few times a second, in jumps, like film.
@@ -304,7 +326,9 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
   return (
     <div
       ref={boxRef}
-      className="map-cards absolute inset-0 transition-opacity duration-500"
+      className="map-cards absolute inset-0 select-none transition-opacity duration-500"
+      // Dragging orbits the scene; never start a native image or link drag.
+      onDragStart={(e) => e.preventDefault()}
       // The landing's index view hides the map cards (it shows the grid instead).
       style={{
         perspective: PERSPECTIVE,
@@ -396,7 +420,13 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
                 opacity: { delay: delay + i * 0.04, duration: 0.4 },
               }}
             >
-              <Link href={c.href} className="block h-full w-full" aria-label={`${c.title}, ${c.place}`}>
+              <Link
+                href={c.href}
+                draggable={false}
+                onClick={openDetail(c)}
+                className="block h-full w-full"
+                aria-label={`${c.title}, ${c.place}`}
+              >
                 {/* Square, flat frame; blur, haze and grain stay inside it. */}
                 <span className="relative block h-full w-full overflow-hidden bg-white">
                   {/* Blur is written by the frame loop: depth blur when flat, lens
@@ -414,7 +444,7 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
                     className="h-full w-full scale-[1.04] object-cover"
                     draggable={false}
                   />
-                  <span className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300" style={{ opacity: haze }} />
+                  <span className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300" style={{ opacity: `calc(${haze} * var(--haze-k, 1))` }} />
                   <Grain />
                 </span>
                 <span
@@ -456,13 +486,19 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
               animate={{ opacity: 1 }}
               transition={{ delay: delay + 0.6 + i * 0.05, duration: 0.4 }}
             >
-              <Link href={n.href} className="block h-full w-full" aria-label={`${n.title}, ${n.role}`}>
+              <Link
+                href={n.href}
+                draggable={false}
+                onClick={openDetail(n)}
+                className="block h-full w-full"
+                aria-label={`${n.title}, ${n.role}`}
+              >
                 <span className="relative block h-full w-full overflow-hidden bg-white">
                   {/* eslint-disable-next-line @next/next/no-img-element -- 320px thumbs, already sized */}
                   <img src={n.thumb} alt="" width={W_NODE} height={h} className="h-full w-full object-cover" draggable={false} />
                   <span
                     className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300"
-                    style={{ opacity: open ? 0 : 0.6 }}
+                    style={{ opacity: open ? 0 : "calc(0.6 * var(--haze-k, 1))" }}
                   />
                   <Grain strength={0.14} />
                 </span>
@@ -478,6 +514,8 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
           </div>
         );
       })}
+
+      <ProjectDetail open={detail} onClose={closeDetail} />
     </div>
   );
 }

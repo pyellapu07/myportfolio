@@ -51,6 +51,8 @@ const state = {
   vYaw: 0,
   vPitch: 0,
   orbitAt: 0,
+  /** A project open in the detail view: input to the scene is paused. */
+  detail: null as string | null,
   /** When the last mode change happened, for debouncing trackpad momentum. */
   changedAt: 0,
 };
@@ -118,6 +120,9 @@ export const immersion = {
     state.yawT += state.vYaw;
     state.pitchT = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, state.pitchT + state.vPitch));
     state.orbitAt = performance.now();
+  },
+  setDetail(id: string | null) {
+    state.detail = id;
   },
   /** Milliseconds since the last mode change. */
   sinceChange: () => performance.now() - state.changedAt,
