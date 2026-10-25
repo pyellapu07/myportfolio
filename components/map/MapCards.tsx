@@ -126,8 +126,8 @@ function layout(bw: number, bh: number): Placed[] {
 
 const NODES: Node[] = PROJECTS.filter((p): p is Project & { parent: string } => !!p.parent).map((p, i, all) => ({
   ...p,
-  // Evenly round the parent, like satellites, so none crowd each other.
-  angle: -Math.PI / 2 + (Math.PI * 2 * (i + 0.5)) / all.length,
+  // Spread round the lower half and sides of the parent, like satellites.
+  angle: Math.PI * (0.05 + (0.9 * (i + 0.5)) / all.length),
 }));
 
 // Film grain: an SVG turbulence tile laid over every card (above the haze,
@@ -324,8 +324,19 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
         const ry = (pc.h / 2 + ORBIT + (W_NODE * ASPECT) / 2) * (1 + 0.55 * o);
         const nx = pp.x + Math.cos(a) * rx;
         const ny = pp.y + Math.sin(a) * ry;
-        const q = place(nx, ny, Math.min(1, pc.depth + 0.25), pc.id);
-        el.style.transform = `translate3d(${(q.x - W_NODE / 2).toFixed(2)}px, ${(q.y - (W_NODE * ASPECT) / 2).toFixed(2)}px, ${q.z.toFixed(1)}px) scale(${(1 + 0.3 * o).toFixed(3)})`;
+        // Flat, a node sits on its orbit. Immersed, it stays clustered beside
+        // its parent card in 3D (same depth and depth scale), rather than
+        // going through the globe mapping, which would fling it across the
+        // globe as if it were a project of its own.
+        const flat = place(nx, ny, Math.min(1, pc.depth + 0.25), pc.id);
+        const pq = place(pp.x, pp.y, pc.depth, pc.id);
+        const ds = 1 + (Math.max(0.55, Math.min(1.3, 1 + pq.z / 900)) - 1) * k;
+        const q = {
+          x: flat.x + (pq.x + (nx - pp.x) * ds - flat.x) * k,
+          y: flat.y + (pq.y + (ny - pp.y) * ds - flat.y) * k,
+          z: flat.z + (pq.z - 2 - flat.z) * k,
+        };
+        el.style.transform = `translate3d(${(q.x - W_NODE / 2).toFixed(2)}px, ${(q.y - (W_NODE * ASPECT) / 2).toFixed(2)}px, ${q.z.toFixed(1)}px) scale(${((1 + 0.3 * o) * ds).toFixed(3)})`;
         el.style.visibility = q.z > PASS_Z || detailRef.current === n.id ? "hidden" : "visible";
         if (goal === 0) el.style.zIndex = String(k > 0.01 ? Math.min(199, Math.max(1, Math.round(99 + q.z / 10))) : 5);
       }
