@@ -30,11 +30,10 @@ const LEAVE_MS = 520;
 const MAX_PITCH = 0.6;
 const ORBIT_PER_PX = 0.005;
 const SPIN_DECAY = 0.93;
-// Scroll elasticity: spring stiffness and damping per frame (a touch of
-// overshoot, settles in ~0.5s), and how far the flight stretches past an end.
-const SPRING_K = 0.09;
-const SPRING_DAMP = 0.71;
-const STRETCH = 0.04;
+// Scroll momentum: once the wheel goes quiet the flight keeps gliding the
+// same way and slows to a stop, carrying on about 40% of the last step.
+const GLIDE = 0.04;
+const GLIDE_DECAY = 0.9;
 
 const state = {
   mode: "map" as Mode,
@@ -47,7 +46,7 @@ const state = {
   /** How far the camera has flown forward through the cards, 0..1. */
   flight: 0,
   flightTarget: 0,
-  /** Flight velocity for the spring, and when the wheel last moved it. */
+  /** Recent wheel velocity (flight per event) and when the wheel last moved. */
   vFlight: 0,
   flyAt: 0,
   /** Camera orbit round the scene centre (rad), with targets for inertia. */
@@ -122,11 +121,9 @@ export const immersion = {
   },
   /** Wheel while immersed: fly forward/back. */
   fly(delta: number) {
-    // Past either end the scroll meets resistance and stretches a little
-    // (rubber band); tick springs it back once the wheel goes quiet.
-    const t = state.flightTarget;
-    const beyond = (delta > 0 && t >= 1) || (delta < 0 && t <= 0);
-    state.flightTarget = Math.min(1 + STRETCH, Math.max(-STRETCH, t + delta * (beyond ? 0.3 : 1)));
+    state.flightTarget = Math.min(1, Math.max(0, state.flightTarget + delta));
+    // Remember how fast it's going (a reversal resets it) for the glide.
+    state.vFlight = Math.sign(delta) !== Math.sign(state.vFlight) ? delta : state.vFlight * 0.5 + delta * 0.5;
     state.flyAt = performance.now();
   },
   /** Drag while immersed: orbit the camera round the scene. */
@@ -164,11 +161,13 @@ export const immersion = {
     // Idle, the globe turns very slowly on its own, so it always reads as a
     // globe; any drag takes over at once.
     if (state.mode === "immersed" && !state.detail && !state.vYaw && now - state.orbitAt > 1500) state.yawT += 0.0007;
-    // Elastic flight: a light spring rather than plain easing, so each
-    // scroll lands with a small overshoot and settles back.
-    if (now - state.flyAt > 140) state.flightTarget = Math.min(1, Math.max(0, state.flightTarget));
-    state.vFlight = (state.vFlight + (state.flightTarget - state.flight) * SPRING_K) * SPRING_DAMP;
-    state.flight += state.vFlight;
+    // Momentum: after the last wheel event, keep gliding a little further.
+    if (state.vFlight && now - state.flyAt > 60) {
+      state.flightTarget = Math.min(1, Math.max(0, state.flightTarget + state.vFlight * GLIDE));
+      state.vFlight *= GLIDE_DECAY;
+      if (Math.abs(state.vFlight) < 1e-4) state.vFlight = 0;
+    }
+    state.flight += (state.flightTarget - state.flight) * 0.2;
     state.yaw += (state.yawT - state.yaw) * 0.1;
     state.pitch += (state.pitchT - state.pitch) * 0.1;
     if (state.mode === "leaving") {
