@@ -85,8 +85,15 @@ export default function Latest() {
                   {LATEST.map((item, i) => {
                     const body = (
                       <>
-                        {/* eslint-disable-next-line @next/next/no-img-element -- small, already-sized thumbs */}
-                        <img src={item.image} alt="" className="h-[104px] w-[104px] shrink-0 rounded-[3px] object-cover" draggable={false} />
+                        {item.video ? (
+                          <video poster={item.image} muted loop playsInline autoPlay aria-hidden="true" className="h-[104px] w-[104px] shrink-0 rounded-[3px] object-cover">
+                            <source src={item.video.replace(/\.mp4$/, ".webm")} type="video/webm" />
+                            <source src={item.video} type="video/mp4" />
+                          </video>
+                        ) : (
+                          // eslint-disable-next-line @next/next/no-img-element -- small, already-sized thumbs
+                          <img src={item.image} alt="" className="h-[104px] w-[104px] shrink-0 rounded-[3px] object-cover" draggable={false} />
+                        )}
                         <span className="flex min-w-0 flex-1 flex-col justify-between py-1">
                           <span className="line-clamp-3 text-[14.5px] font-semibold leading-[1.35] tracking-[-0.02em] text-black">{item.title}</span>
                           <span className="mt-3 text-[11.5px] tracking-[-0.01em] text-black/45">

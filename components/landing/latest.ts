@@ -15,6 +15,8 @@ export type LatestItem = {
   when: string;
   href: string;
   image: string;
+  /** A silent loop played over the image (MP4 path; a .webm twin is tried first). */
+  video?: string;
   external?: boolean;
 };
 
@@ -59,7 +61,8 @@ export const LATEST: LatestItem[] = [
     date: "2026-07",
     when: "Jul 2026",
     href: "/work/jeevy-os",
-    image: "/thumbs/jeevy-os.webp",
+    image: "/thumbs/jeevy-os-tall-poster.webp",
+    video: "/thumbs/jeevy-os-tall.mp4",
   },
   {
     id: "xylem",
