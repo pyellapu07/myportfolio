@@ -24,7 +24,7 @@ const ORBIT = 30; // px between a parent card's edge and its nodes
 const PERSPECTIVE = 1100;
 const SPREAD = 0.35; // on top of the map zoom (1 + 0.9k), which the cards share
 const PASS_Z = 640;
-const GAP = 14; // px kept clear between cards
+const GAP = 30; // px kept clear between cards
 const LIFT = 46; // px a card floats above its place before relaxing
 const PARALLAX = 22; // px the nearest card shifts at the box edge
 const SETTLE = [0.2, 0.6, 0.35, 1] as const;
@@ -57,12 +57,14 @@ type Node = Project & { parent: string; angle: number };
 // overlap + gap) while a weak spring pulls each back towards its anchor and
 // the box edges hold them in.
 function layout(bw: number, bh: number): Placed[] {
+  // Cards scale with the map, so a smaller map doesn't crowd them.
+  const k = Math.min(1, Math.max(0.65, bw / 1250));
   const cards: Placed[] = PROJECTS.filter((p) => !p.parent).map((p, i) => {
     const [mx, my] = naturalEarth(p.lon, p.lat);
     const ax = (mx / WORLD_MAP.width) * bw;
     const ay = (my / WORLD_MAP.height) * bh;
     const depth = rand(i + 1);
-    const w = W_NEAR + (W_FAR - W_NEAR) * depth;
+    const w = (W_NEAR + (W_FAR - W_NEAR) * depth) * k;
     const a = rand(i + 7) * Math.PI * 2;
     return {
       ...p,
@@ -77,7 +79,12 @@ function layout(bw: number, bh: number): Placed[] {
       pad: PROJECTS.some((q) => q.parent === p.id) ? ORBIT + W_NODE : 0,
     };
   });
-  for (let it = 0; it < 240; it++) {
+  // Cards may spill past the map's sides into open ocean to get room; never
+  // past its top (the nav) or bottom (the statement).
+  const spill = bw * 0.12;
+  const spillTop = 0;
+  const ITER = 420;
+  for (let it = 0; it < ITER; it++) {
     for (let i = 0; i < cards.length; i++) {
       for (let j = i + 1; j < cards.length; j++) {
         const a = cards[i];
@@ -85,24 +92,33 @@ function layout(bw: number, bh: number): Placed[] {
         const ox = (a.w + b.w) / 2 + a.pad + b.pad + GAP - Math.abs(a.cx - b.cx);
         const oy = (a.h + b.h) / 2 + a.pad + b.pad + GAP + 14 - Math.abs(a.cy - b.cy); // +14 leaves room for a title
         if (ox > 0 && oy > 0) {
-          // Separate along the shallower axis.
-          if (ox < oy) {
-            const s = (a.cx < b.cx ? -1 : 1) * ox * 0.5;
-            a.cx += s;
-            b.cx -= s;
-          } else {
-            const s = (a.cy < b.cy ? -1 : 1) * oy * 0.5;
-            a.cy += s;
-            b.cy -= s;
+          // Push apart along the line between centres, leaning a little
+          // sideways (the oceans have room), so a cluster opens into a cloud
+          // round its place instead of a column or a row.
+          let dx = b.cx - a.cx;
+          let dy = (b.cy - a.cy) * 0.8;
+          if (Math.abs(dx) + Math.abs(dy) < 0.01) {
+            dx = rand(i * 31 + j) - 0.5;
+            dy = rand(i * 17 + j * 3) - 0.5;
           }
+          const len = Math.hypot(dx, dy);
+          const push = Math.min(ox, oy) * 0.3;
+          a.cx -= (dx / len) * push;
+          a.cy -= (dy / len) * push;
+          b.cx += (dx / len) * push;
+          b.cy += (dy / len) * push;
         }
       }
     }
     for (const c of cards) {
-      c.cx += (c.ax - c.cx) * 0.02;
-      c.cy += (c.ay - LIFT - c.cy) * 0.02;
-      c.cx = Math.min(bw - c.w / 2 - c.pad - 6, Math.max(c.w / 2 + c.pad + 6, c.cx));
-      c.cy = Math.min(bh - c.h / 2 - c.pad - 20, Math.max(c.h / 2 + c.pad + 6, c.cy));
+      // The spring towards each card's place stops for the last passes, so
+      // they end fully separated rather than pulled back into touching.
+      if (it < ITER - 80) {
+        c.cx += (c.ax - c.cx) * 0.03;
+        c.cy += (c.ay - LIFT - c.cy) * 0.03;
+      }
+      c.cx = Math.min(bw + spill - c.w / 2 - c.pad, Math.max(c.w / 2 + c.pad - spill, c.cx));
+      c.cy = Math.min(bh - c.h / 2 - c.pad - 20, Math.max(c.h / 2 + c.pad - spillTop, c.cy));
     }
   }
   return cards;
@@ -110,8 +126,8 @@ function layout(bw: number, bh: number): Placed[] {
 
 const NODES: Node[] = PROJECTS.filter((p): p is Project & { parent: string } => !!p.parent).map((p, i, all) => ({
   ...p,
-  // Spread round the lower half and sides of the parent, like satellites.
-  angle: Math.PI * (0.05 + (0.9 * (i + 0.5)) / all.length),
+  // Evenly round the parent, like satellites, so none crowd each other.
+  angle: -Math.PI / 2 + (Math.PI * 2 * (i + 0.5)) / all.length,
 }));
 
 // Film grain: an SVG turbulence tile laid over every card (above the haze,

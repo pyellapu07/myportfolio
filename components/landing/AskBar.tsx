@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { BorderBeam } from "border-beam";
 import { immersion } from "@/components/map/immersion";
 
 // The landing's AI chat: one input, centred at the foot of the screen, under
@@ -223,67 +224,77 @@ export default function AskBar({ shown, onActive }: { shown: boolean; onActive?:
           )}
         </AnimatePresence>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            ask(value);
-          }}
-          className={`flex items-end gap-3 rounded-[18px] border bg-white/90 py-2.5 pl-4 pr-2.5 backdrop-blur-xl transition-[box-shadow,border-color] duration-300 ${
-            active
-              ? "border-black/15 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.35)]"
-              : "border-black/[0.08] shadow-[0_10px_40px_-24px_rgba(0,0,0,0.3)]"
-          }`}
-        >
-          <SparkleSearch className="mb-[8px] h-5 w-5 shrink-0 text-black" />
-          <div className="relative min-w-0 flex-1">
-            <textarea
-              ref={inputRef}
-              rows={1}
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              onFocus={() => {
-                setFocused(true);
-                if (turns.length) setOpen(true);
-              }}
-              onBlur={() => setFocused(false)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  ask(value);
-                }
-              }}
-              aria-label="Ask about my work"
-              className="block w-full resize-none bg-transparent py-[7px] text-[15px] leading-[22px] tracking-[-0.015em] text-black outline-none focus-visible:outline-none"
-            />
-            {!value && (
-              <div className="pointer-events-none absolute inset-0 overflow-hidden py-[7px]">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.span
-                    key={focused ? "focused" : prompt}
-                    className="block truncate text-[15px] leading-[22px] tracking-[-0.015em] text-black/40"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.35, ease: EASE }}
-                  >
-                    {focused ? "Ask about my work, or paste a job description" : PROMPTS[prompt]}
-                  </motion.span>
-                </AnimatePresence>
-              </div>
-            )}
-          </div>
-          {isJd && <span className="mb-[9px] hidden shrink-0 text-[11px] font-semibold text-black/45 sm:block">Job fit</span>}
-          <button
-            type="submit"
-            disabled={!ready}
-            aria-label="Ask"
-            className={`grid h-9 w-9 shrink-0 place-items-center rounded-[10px] transition-colors ${ready ? "bg-black text-white" : "bg-black/[0.06] text-black/35"}`}
+        {/* Focused or answering, the border beam runs round the input. */}
+        <BorderBeam active={active} theme="light" colorVariant="colorful" size="md" borderRadius={18} brightness={1.6} strength={1} duration={3}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              ask(value);
+            }}
+            className={`flex items-end gap-3 rounded-[18px] border bg-white/90 py-2.5 pl-4 pr-2.5 backdrop-blur-xl transition-[box-shadow,border-color] duration-300 ${
+              active
+                ? "border-black/10 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.35)]"
+                : "border-black/[0.08] shadow-[0_10px_40px_-24px_rgba(0,0,0,0.3)]"
+            }`}
           >
-            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" aria-hidden="true">
-              <path d="M4 12 12 4M5.5 4H12v6.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        </form>
+            <SparkleSearch className="mb-[8px] h-5 w-5 shrink-0 text-black" />
+            <div className="relative min-w-0 flex-1">
+              <textarea
+                ref={inputRef}
+                rows={1}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onFocus={() => {
+                  setFocused(true);
+                  if (turns.length) setOpen(true);
+                }}
+                onBlur={() => setFocused(false)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    ask(value);
+                  }
+                }}
+                aria-label="Ask about my work"
+                // The global :focus-visible ring is unlayered CSS, which beats
+                // Tailwind's layered utilities: turn it off inline. The beam
+                // round the input is the focus state instead.
+                style={{ outline: "none" }}
+                data-gramm="false"
+                data-gramm_editor="false"
+                data-enable-grammarly="false"
+                className="block w-full resize-none bg-transparent py-[7px] text-[15px] leading-[22px] tracking-[-0.015em] text-black"
+              />
+              {!value && (
+                <div className="pointer-events-none absolute inset-0 overflow-hidden py-[7px]">
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.span
+                      key={focused ? "focused" : prompt}
+                      className="block truncate text-[15px] leading-[22px] tracking-[-0.015em] text-black/40"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.35, ease: EASE }}
+                    >
+                      {focused ? "Ask about my work, or paste a job description" : PROMPTS[prompt]}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
+              )}
+            </div>
+            {isJd && <span className="mb-[9px] hidden shrink-0 text-[11px] font-semibold text-black/45 sm:block">Job fit</span>}
+            <button
+              type="submit"
+              disabled={!ready}
+              aria-label="Ask"
+              className={`grid h-9 w-9 shrink-0 place-items-center rounded-[10px] transition-colors ${ready ? "bg-black text-white" : "bg-black/[0.06] text-black/35"}`}
+            >
+              <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" aria-hidden="true">
+                <path d="M4 12 12 4M5.5 4H12v6.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </form>
+        </BorderBeam>
       </div>
     </motion.div>
   );
