@@ -13,13 +13,13 @@ export default function AgentLab() {
     <main className="flex min-h-screen flex-col items-center justify-center gap-10 bg-white p-10">
       <div className="flex items-center gap-6">
         <div className="grid place-items-center rounded-[20px] bg-white p-4">
-          <AgentOrb size={300} mood={mood} core="brass" />
+          <AgentOrb size={300} mood={mood} />
         </div>
-        <div className="grid place-items-center rounded-[20px] bg-[#0b0d12] p-4">
-          <AgentOrb size={300} mood={mood} core="brass" />
+        <div className="grid place-items-center overflow-hidden rounded-[20px] bg-[#0b0d12]">
+          <AgentOrb size={332} mood={mood} bg="#0b0d12" />
         </div>
         <div className="grid place-items-center rounded-[20px] bg-white p-4">
-          <AgentOrb size={300} mood={mood} core="cyan" />
+          <AgentOrb size={300} mood={mood} core="brass" />
         </div>
       </div>
       <div className="flex gap-2">
@@ -37,8 +37,6 @@ export default function AgentLab() {
       <div className="flex items-end gap-8">
         <AgentOrb size={120} mood={mood} />
         <AgentOrb size={64} mood={mood} />
-        <AgentOrb size={120} mood={mood} core="cyan" />
-        <AgentOrb size={64} mood={mood} core="cyan" />
       </div>
     </main>
   );

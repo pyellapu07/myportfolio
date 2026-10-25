@@ -12,22 +12,29 @@ import { useEffect, useRef } from "react";
 export type AgentMood = "idle" | "listening" | "thinking" | "answered";
 export type AgentCore = "brass" | "cyan";
 
+// Core ball radius, inside a 1.32 glass bubble.
+const CORE_R = 0.82;
+
 const CORES: Record<AgentCore, { color: number; metalness: number; roughness: number }> = {
   // Matte brushed brass.
-  brass: { color: 0xb08a55, metalness: 0.8, roughness: 0.7 },
+  brass: { color: 0xb08a55, metalness: 0.75, roughness: 0.82 },
   // Satin cyan, the globe's colour.
-  cyan: { color: 0x1fc8ff, metalness: 0.15, roughness: 0.55 },
+  cyan: { color: 0x1fc8ff, metalness: 0.1, roughness: 0.78 },
 };
 
 export default function AgentOrb({
   size = 200,
   mood = "idle",
-  core = "brass",
+  core = "cyan",
+  bg,
   className = "",
 }: {
   size?: number;
   mood?: AgentMood;
   core?: AgentCore;
+  /** The colour behind the agent. The glass refracts it; without it, three.js
+   *  refracts a stand-in half-white, which reads as milky glass on dark. */
+  bg?: string;
   className?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -48,7 +55,8 @@ export default function AgentOrb({
       const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.setSize(size, size, false);
-      renderer.setClearColor(0x000000, 0);
+      if (bg) renderer.setClearColor(new THREE.Color(bg), 1);
+      else renderer.setClearColor(0x000000, 0);
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.1;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -67,7 +75,7 @@ export default function AgentOrb({
       key.position.set(-3.5, 4.5, 5);
       const rim = new THREE.PointLight(0x5fd8ff, 30, 12);
       rim.position.set(3, -1.5, -3);
-      scene.add(key, rim, new THREE.AmbientLight(0xffffff, 0.15));
+      scene.add(key, rim, new THREE.AmbientLight(0xffffff, 0.35));
 
       const agent = new THREE.Group();
       scene.add(agent);
@@ -77,15 +85,17 @@ export default function AgentOrb({
       agent.add(head);
       const c = CORES[core];
       const ball = new THREE.Mesh(
-        new THREE.SphereGeometry(0.62, 96, 64),
-        new THREE.MeshPhysicalMaterial({ color: c.color, metalness: c.metalness, roughness: c.roughness, clearcoat: 0.15, clearcoatRoughness: 0.6, envMapIntensity: 0.9 }),
+        new THREE.SphereGeometry(CORE_R, 96, 64),
+        // Low environment on the core: its room reflections are fixed in world
+        // space and read as a mouth that does not move with the eyes.
+        new THREE.MeshPhysicalMaterial({ color: c.color, metalness: c.metalness, roughness: c.roughness, envMapIntensity: 0.3 }),
       );
       head.add(ball);
-      const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.6, roughness: 0.3 });
+      // Glossy black pill eyes.
+      const eyeMat = new THREE.MeshPhysicalMaterial({ color: 0x08090c, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.05 });
       const eyes = [-1, 1].map((side) => {
-        const e = new THREE.Mesh(new THREE.CapsuleGeometry(0.042, 0.13, 8, 16), eyeMat);
-        const R = 0.62;
-        const p = new THREE.Vector3(side * 0.17, 0.07, 0).setZ(Math.sqrt(R ** 2 - 0.17 ** 2 - 0.07 ** 2) - 0.015);
+        const e = new THREE.Mesh(new THREE.CapsuleGeometry(0.06, 0.18, 8, 16), eyeMat);
+        const p = new THREE.Vector3(side * 0.24, 0.1, 0).setZ(Math.sqrt(CORE_R ** 2 - 0.24 ** 2 - 0.1 ** 2) - 0.02);
         e.position.copy(p);
         // Face outwards along the surface normal; the capsule's long axis (Y)
         // stays upright.
@@ -142,10 +152,6 @@ export default function AgentOrb({
         }),
       );
       agent.add(edge);
-      // A thin glass rim inside the bubble, tilted, like a lens element.
-      const rimRing = new THREE.Mesh(new THREE.TorusGeometry(1.08, 0.022, 24, 200), glass);
-      rimRing.rotation.set(1.15, 0.35, 0);
-      agent.add(rimRing);
 
       // Bokeh: soft out-of-focus specks drifting round the bubble.
       const dot = document.createElement("canvas");
@@ -210,7 +216,6 @@ export default function AgentOrb({
         if (!reduce) {
           agent.position.y = Math.sin(t * 1.1) * 0.05;
           bubble.rotation.y = t * 0.15; // keeps the thin-film colours moving
-          rimRing.rotation.z = t * 0.25;
           specks.forEach((s) => {
             const u = s.userData;
             const a = u.a + t * u.sp;
@@ -237,7 +242,7 @@ export default function AgentOrb({
       cancelAnimationFrame(raf);
       cleanup();
     };
-  }, [size, core]);
+  }, [size, core, bg]);
 
   return <canvas ref={ref} width={size} height={size} style={{ width: size, height: size }} className={className} aria-hidden="true" />;
 }
