@@ -21,7 +21,7 @@ const W_NODE = 62; // related-node width
 const ORBIT = 30; // px between a parent card's edge and its nodes
 // Immersive 3D: perspective, how far the flat cards spread as they lift off,
 // and where a card passes the camera.
-const PERSPECTIVE = 1100;
+const PERSPECTIVE = 800; // only matters immersed: flat, every z is 0
 const SPREAD = 0.35; // on top of the map zoom (1 + 0.9k), which the cards share
 const PASS_Z = 640;
 const GAP = 30; // px kept clear between cards
@@ -229,7 +229,9 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
       // (pitch); the camera never turns and every card stays square to it,
       // AIRLA-style, so cards revolve round in front of you. Scroll flies the
       // camera in through the globe. k blends flat → globe.
-      const R = Math.min(box.w * 0.36, box.h * 0.62);
+      // Globe size from the box's width, not its height: the map stage is
+      // short (the chat lives under it), and a shallow globe reads as flat.
+      const R = Math.max(320, Math.min(box.w * 0.42, 560));
       const zC = -R * 0.55; // globe centre, behind the screen plane
       const flyDepth = R * 1.25 + 160; // ends with the far side of the globe in view
       const cosP = Math.cos(im.pitch), sinP = Math.sin(im.pitch);
@@ -281,7 +283,10 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
         const el = cardEls.current.get(c.id);
         if (el) {
           const q = place(x, y, c.depth, c.id);
-          el.style.transform = `translate3d(${(q.x - c.w / 2).toFixed(2)}px, ${(q.y - c.h / 2).toFixed(2)}px, ${q.z.toFixed(1)}px)`;
+          // Exaggerated perspective, like AIRLA: on top of the camera's own
+          // foreshortening, near cards grow and far ones shrink with depth.
+          const depthScale = Math.max(0.55, Math.min(1.3, 1 + q.z / 900));
+          el.style.transform = `translate3d(${(q.x - c.w / 2).toFixed(2)}px, ${(q.y - c.h / 2).toFixed(2)}px, ${q.z.toFixed(1)}px) scale(${(1 + (depthScale - 1) * k).toFixed(3)})`;
           // Stack by distance: the box is not preserve-3d, so z-index decides.
           if (hoverRef.current !== c.id) el.style.zIndex = String(k > 0.01 ? Math.min(199, Math.max(1, Math.round(100 + q.z / 10))) : Math.round((1 - c.depth) * 100));
           // Cards that have flown past the camera fade away rather than fill the screen.

@@ -145,6 +145,9 @@ export const immersion = {
       state.vPitch *= SPIN_DECAY;
       if (Math.abs(state.vYaw) + Math.abs(state.vPitch) < 1e-5) state.vYaw = state.vPitch = 0;
     }
+    // Idle, the globe turns very slowly on its own, so it always reads as a
+    // globe; any drag takes over at once.
+    if (state.mode === "immersed" && !state.detail && !state.vYaw && now - state.orbitAt > 1500) state.yawT += 0.0007;
     state.flight += (state.flightTarget - state.flight) * 0.2;
     state.yaw += (state.yawT - state.yaw) * 0.1;
     state.pitch += (state.pitchT - state.pitch) * 0.1;
