@@ -22,21 +22,26 @@ from PIL import Image, ImageDraw, ImageFilter
 
 W, H = 1280, 800  # output, 16:10 like the other thumbnails
 FPS = 30
-BAR = 34  # title bar height
+# Two frames: "window", a light desktop window with a title bar and dots,
+# or "bezel", a display with an even black bezel all round and no chrome.
+FRAME = "window"
+BAR = 34  # window: title bar height
+BEZEL = 16  # bezel: black border width
 RADIUS = 14
-# The window, set by layout(): centred on the canvas, keeping the
-# recording's own shape, with room all round.
-WIN_W = WIN_X = WIN_Y = CONTENT_W = CONTENT_H = 0
+# The frame, set by layout(): centred on the canvas, keeping the
+# recording's own shape, with room all round. TOP/SIDE: content inset.
+WIN_W = WIN_X = WIN_Y = CONTENT_W = CONTENT_H = TOP = SIDE = 0
 
 
 def layout(aspect):
-    global WIN_W, WIN_X, WIN_Y, CONTENT_W, CONTENT_H
+    global WIN_W, WIN_X, WIN_Y, CONTENT_W, CONTENT_H, TOP, SIDE
+    TOP, SIDE = (BEZEL, BEZEL) if FRAME == "bezel" else (BAR, 0)
     wide = aspect > 1.75 or W / H < 1.4  # wide recording, or a squarer canvas
     WIN_W = int(W * (0.86 if W / H >= 1.4 else 0.84) if wide else W * 0.76)
     WIN_X = (W - WIN_W) // 2
-    CONTENT_W = WIN_W
+    CONTENT_W = WIN_W - 2 * SIDE
     CONTENT_H = round(CONTENT_W / aspect)
-    WIN_Y = (H - BAR - CONTENT_H) // 2
+    WIN_Y = (H - TOP - SIDE - CONTENT_H) // 2
 
 
 # Background palettes, each a project's own colours: (light top-left, mid,
@@ -52,9 +57,6 @@ PALETTES = {
     "tgi": ((248, 251, 255), (214, 232, 248), (158, 196, 232), (255, 255, 255), 100),
 }
 PALETTE = PALETTES["terracotta"]
-# Window chrome: (body/title bar, hairline under the bar).
-FRAMES = {"light": ((246, 245, 243), (226, 224, 220)), "dark": ((14, 14, 15), (38, 38, 40))}
-FRAME = FRAMES["light"]
 
 
 def gradient_bg():
@@ -81,24 +83,32 @@ def gradient_bg():
 
 
 def window_layers():
-    """Chrome (shadow, title bar) under the content, and a mask for the content."""
-    win_h = BAR + CONTENT_H
+    """The frame (shadow, body, chrome) under the content, and a content mask."""
+    win_h = TOP + CONTENT_H + SIDE
     under = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     # Shadow.
     sh = Image.new("L", (W, H), 0)
     ImageDraw.Draw(sh).rounded_rectangle((WIN_X, WIN_Y + 18, WIN_X + WIN_W, WIN_Y + win_h + 18), RADIUS, fill=110)
     sh = sh.filter(ImageFilter.GaussianBlur(28))
     under.paste((60, 20, 10, 255), (0, 0), sh)
-    # Window body and title bar.
     d = ImageDraw.Draw(under)
-    d.rounded_rectangle((WIN_X, WIN_Y, WIN_X + WIN_W, WIN_Y + win_h), RADIUS, fill=FRAME[0] + (255,))
-    d.line((WIN_X, WIN_Y + BAR, WIN_X + WIN_W, WIN_Y + BAR), fill=FRAME[1] + (255,), width=1)
+    mask = Image.new("L", (CONTENT_W, CONTENT_H), 0)
+    md = ImageDraw.Draw(mask)
+    if FRAME == "bezel":
+        # Display: even black bezel, a faint lighter rim catching the light,
+        # and a screen with slightly rounded corners.
+        outer = RADIUS + 8
+        d.rounded_rectangle((WIN_X, WIN_Y, WIN_X + WIN_W, WIN_Y + win_h), outer, fill=(18, 18, 20, 255))
+        d.rounded_rectangle((WIN_X, WIN_Y, WIN_X + WIN_W, WIN_Y + win_h), outer, outline=(70, 70, 74, 255), width=1)
+        md.rounded_rectangle((0, 0, CONTENT_W, CONTENT_H), 6, fill=255)
+        return under, mask
+    # Window body and title bar.
+    d.rounded_rectangle((WIN_X, WIN_Y, WIN_X + WIN_W, WIN_Y + win_h), RADIUS, fill=(246, 245, 243, 255))
+    d.line((WIN_X, WIN_Y + BAR, WIN_X + WIN_W, WIN_Y + BAR), fill=(226, 224, 220, 255), width=1)
     for i, col in enumerate([(255, 95, 87), (254, 188, 46), (40, 200, 64)]):
         cx, cy = WIN_X + 20 + i * 18, WIN_Y + BAR // 2
         d.ellipse((cx - 5, cy - 5, cx + 5, cy + 5), fill=col + (255,))
     # Content mask: square top (under the bar), rounded bottom corners.
-    mask = Image.new("L", (CONTENT_W, CONTENT_H), 0)
-    md = ImageDraw.Draw(mask)
     md.rounded_rectangle((0, -RADIUS, CONTENT_W, CONTENT_H), RADIUS, fill=255)
     return under, mask
 
@@ -166,14 +176,14 @@ def main():
     ap.add_argument("--loop-fade", type=float, default=0.5, help="seconds of end-to-start crossfade")
     ap.add_argument("--out", required=True)
     ap.add_argument("--poster-at", type=float, default=0.34, help="seconds into the loop for the poster frame")
-    ap.add_argument("--frame", choices=sorted(FRAMES), default="light", help="window chrome colour")
+    ap.add_argument("--frame", choices=["window", "bezel"], default="window", help="desktop window, or a black-bezel display")
     ap.add_argument("--palette", choices=sorted(PALETTES), default="terracotta")
     ap.add_argument("--size", default="1280x800", help="canvas WxH, e.g. 1100x1000 for a squarer card")
     a = ap.parse_args()
 
     global W, H, PALETTE, FRAME
     PALETTE = PALETTES[a.palette]
-    FRAME = FRAMES[a.frame]
+    FRAME = a.frame
     W, H = (int(v) for v in a.size.lower().split("x"))
     layout(probe_aspect(a.video) if a.video else 16 / 10)
     bg = gradient_bg()
@@ -186,7 +196,7 @@ def main():
         frames = video_frames(a.video, a.start, a.duration, a.speed, a.loop_fade, tmp) if a.video else slideshow(a.images)
         for n, content in enumerate(frames):
             frame = base.copy()
-            frame.paste(content, (WIN_X, WIN_Y + BAR), mask)
+            frame.paste(content, (WIN_X + SIDE, WIN_Y + TOP), mask)
             frame.save(os.path.join(tmp, f"out_{n:05d}.png"))
             if n == int(a.poster_at * FPS):  # poster: the still shown before playback
                 frame.save(f"{a.out}-poster.webp", "WEBP", quality=82)
