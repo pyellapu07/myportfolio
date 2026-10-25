@@ -29,7 +29,7 @@ const HERO = JEEVY_OS.gallery[0];
  *   28px, the title, only
  *   14px: everything else, in muted grey
  */
-export default function JeevyOSCard() {
+export default function JeevyOSCard({ video, poster }: { video?: string; poster?: string } = {}) {
   return (
     <motion.article
       initial={{ opacity: 0, y: 32 }}
@@ -51,16 +51,31 @@ export default function JeevyOSCard() {
       {/* ── Left: media cell: tight inset from the card border ── */}
       <div className="p-2 md:col-span-3 md:p-3">
         <div className="relative h-full w-full min-h-[420px] overflow-hidden rounded-lg bg-bg-alt">
-          <Image
-            src={HERO.src}
-            alt={HERO.alt}
-            fill
-            sizes="(max-width: 768px) 100vw, 60vw"
-            // object-left, not center: the Jeevy logo sits in the image's
-            // top-left corner and a centred crop would cut it off
-            className="h-full w-full object-cover object-left"
-            priority
-          />
+          {video ? (
+            // The live loop (the lab's Index view), muted so it can autoplay.
+            // Fitted, never cropped, whatever shape the cell takes: any spare
+            // room is filled by its own poster, blurred, so the gradient edge
+            // runs on seamlessly.
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element -- blurred backdrop of the poster */}
+              <img src={poster} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl" />
+              <video poster={poster} muted loop playsInline autoPlay aria-label={HERO.alt} className="absolute inset-0 h-full w-full object-contain">
+                <source src={video.replace(/\.mp4$/, ".webm")} type="video/webm" />
+                <source src={video} type="video/mp4" />
+              </video>
+            </>
+          ) : (
+            <Image
+              src={HERO.src}
+              alt={HERO.alt}
+              fill
+              sizes="(max-width: 768px) 100vw, 60vw"
+              // object-left, not center: the Jeevy logo sits in the image's
+              // top-left corner and a centred crop would cut it off
+              className="h-full w-full object-cover object-left"
+              priority
+            />
+          )}
         </div>
       </div>
 

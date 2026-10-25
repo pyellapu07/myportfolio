@@ -106,6 +106,8 @@ export type Artifact = {
   /** Width / height of the block. */
   aspect: number;
   bg?: string;
+  /** A silent loop played over the image (MP4 path; a .webm twin is tried first). */
+  video?: string;
   external?: boolean;
 };
 
@@ -136,7 +138,8 @@ export const ARTIFACTS: Artifact[] = [
     tag: "WORK",
     caption: "jeevy os",
     href: "/work/jeevy-os",
-    image: "/thumbs/jeevy-os.webp",
+    image: "/thumbs/jeevy-os-poster.webp",
+    video: "/thumbs/jeevy-os.mp4",
     aspect: 1.6,
   },
   {

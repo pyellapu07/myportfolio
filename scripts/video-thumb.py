@@ -30,8 +30,8 @@ WIN_W = WIN_X = WIN_Y = CONTENT_W = CONTENT_H = 0
 
 def layout(aspect):
     global WIN_W, WIN_X, WIN_Y, CONTENT_W, CONTENT_H
-    wide = aspect > 1.75
-    WIN_W = int(W * (0.86 if wide else 0.8))
+    wide = aspect > 1.75 or W / H < 1.4  # wide recording, or a squarer canvas
+    WIN_W = int(W * (0.86 if W / H >= 1.4 else 0.84) if wide else W * 0.8)
     WIN_X = (W - WIN_W) // 2
     CONTENT_W = WIN_W
     CONTENT_H = round(CONTENT_W / aspect)
@@ -146,8 +146,11 @@ def main():
     ap.add_argument("--speed", type=float, default=1.0, help="playback speed, e.g. 0.75 to slow a short clip")
     ap.add_argument("--loop-fade", type=float, default=0.5, help="seconds of end-to-start crossfade")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--size", default="1280x800", help="canvas WxH, e.g. 1100x1000 for a squarer card")
     a = ap.parse_args()
 
+    global W, H
+    W, H = (int(v) for v in a.size.lower().split("x"))
     layout(probe_aspect(a.video) if a.video else 16 / 10)
     bg = gradient_bg()
     under, mask = window_layers()

@@ -8,7 +8,8 @@ import ProjectSplitCard from "./ProjectSplitCard";
 import { PROJECTS } from "@/lib/constants";
 import { useState } from "react";
 
-export default function Projects() {
+/** jeevyVideo: play the Jeevy OS loop in its card (the lab sets it; `/` does not). */
+export default function Projects({ jeevyVideo, jeevyPoster }: { jeevyVideo?: string; jeevyPoster?: string } = {}) {
 
   // Floating cursor label
   const rawX = useMotionValue(-200);
@@ -47,7 +48,7 @@ export default function Projects() {
       </div>
 
       {/* ── Flagship platform card ── */}
-      <JeevyOSCard />
+      <JeevyOSCard video={jeevyVideo} poster={jeevyPoster} />
 
       <TGICard
         onMouseMove={handleMouseMove}

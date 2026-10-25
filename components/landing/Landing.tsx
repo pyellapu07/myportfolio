@@ -402,7 +402,8 @@ function IndexView() {
     <div className="relative z-20 bg-white/90 backdrop-blur-[2px]">
       {/* The home page's own case-study cards, one per row, on white. */}
       <RecruiterProvider>
-        <Projects />
+        {/* The squarer render of the Jeevy loop suits this nearly square cell. */}
+        <Projects jeevyVideo="/thumbs/jeevy-os-tall.mp4" jeevyPoster="/thumbs/jeevy-os-tall-poster.webp" />
       </RecruiterProvider>
     </div>
   );

@@ -23,9 +23,15 @@ const SPOTS = [
 function Card({ a, width }: { a: Artifact; width: number }) {
   const inner = (
     <>
-      <span className="block overflow-hidden" style={{ width, aspectRatio: a.aspect, background: a.bg ?? "#0a0a0a" }}>
+      <span className="relative block overflow-hidden" style={{ width, aspectRatio: a.aspect, background: a.bg ?? "#0a0a0a" }}>
         {/* eslint-disable-next-line @next/next/no-img-element -- small, already-sized */}
         <img src={a.image} alt="" className={`h-full w-full ${a.bg ? "object-contain p-[12%]" : "object-cover"}`} draggable={false} />
+        {a.video && (
+          <video poster={a.image} muted loop playsInline autoPlay aria-hidden="true" className="absolute inset-0 h-full w-full object-cover">
+            <source src={a.video.replace(/\.mp4$/, ".webm")} type="video/webm" />
+            <source src={a.video} type="video/mp4" />
+          </video>
+        )}
       </span>
       {/* The tag: one line, mono, in a hairline box hanging off the image. */}
       <span className="mt-1.5 inline-block max-w-full truncate border border-black/[0.12] bg-white px-1.5 py-[3px] font-mono text-[9.5px] leading-none tracking-[0.01em] text-black/55">
