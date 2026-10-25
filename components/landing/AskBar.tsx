@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BorderBeam } from "border-beam";
+import AgentOrb from "@/components/agent/AgentOrb";
 import { immersion } from "@/components/map/immersion";
 
 // The landing's AI chat: one input, centred at the foot of the screen, under
@@ -237,7 +238,10 @@ export default function AskBar({ shown, onActive }: { shown: boolean; onActive?:
                 : "border-black/[0.08] shadow-[0_10px_40px_-24px_rgba(0,0,0,0.3)]"
             }`}
           >
-            <SparkleSearch className="mb-[8px] h-5 w-5 shrink-0 text-black" />
+            {/* The agent, in place of a search icon. */}
+            <span className="-my-2 -ml-2 shrink-0 self-end">
+              <AgentOrb size={48} bg="#ffffff" mood={turns.some((t) => t.state === "loading") ? "thinking" : focused ? "listening" : "idle"} />
+            </span>
             <div className="relative min-w-0 flex-1">
               <textarea
                 ref={inputRef}

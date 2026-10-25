@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
+import AgentOrb from "@/components/agent/AgentOrb";
 import { LAND_GRID } from "@/components/map/landGrid";
 import { naturalEarth } from "@/components/map/projection";
 import { PROJECTS } from "@/components/map/projects";
@@ -22,10 +23,10 @@ export const GLOBE_DURATION = G.assemble + G.turn + G.flatten + G.dissolve;
 export const GLOBE_DISSOLVE = G.dissolve;
 export const GLOBE_FLATTEN_AT = G.assemble + G.turn;
 
-// One colour for every block: a fluorescent cyan sky blue (#1FC8FF),
-// with a slightly deeper tone mixed in so the sphere keeps some texture.
-const INK = [0.12, 0.78, 1.0];
-const ACCENT = [0.05, 0.6, 1.0];
+// One colour for every block: a pale fluorescent cyan (#6EDCFF), with a
+// slightly deeper tone mixed in so the sphere keeps some texture.
+const INK = [0.43, 0.86, 1.0];
+const ACCENT = [0.3, 0.78, 1.0];
 // The beam's colours, cycled on a scatter of blocks.
 const BEAM = [
   [1.0, 0.18, 0.33],
@@ -190,6 +191,13 @@ interface Props {
 type Stage = { draw: (t: number) => number; wave: () => number; dispose: () => void };
 
 export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
+  // The agent fills most of the globe's inside (its canvas is ~1.45 R; the
+  // bubble takes about two thirds of that).
+  const orbSize = useSyncExternalStore(
+    () => () => {},
+    () => Math.round(Math.min(window.innerHeight * 0.3, window.innerWidth * 0.4) * 1.45),
+    () => 0,
+  );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<Stage | null>(null);
   const failedRef = useRef(false);
@@ -253,7 +261,7 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
         let waveR = 0;
 
         const geo = new THREE.BoxGeometry(1, 1, 1);
-        const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35, metalness: 0.1, envMapIntensity: 0.25, emissive: 0x0a9fe0, emissiveIntensity: 0.22 });
+        const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35, metalness: 0.1, envMapIntensity: 0.25, emissive: 0x2bb8e8, emissiveIntensity: 0.18 });
         // Three focus layers: settled blocks drawn sharp, blocks still in flight
         // ahead of the globe drawn into their own buffers and Gaussian-blurred.
         const layers = [0, 1, 2].map(() => {
@@ -524,7 +532,7 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
             lm.setMatrixAt(n, m);
             const c = b.beam >= 0 ? BEAM[Math.floor(b.beam + t * 5) % BEAM.length] : null;
             // Gleams stay in the same hue: a brighter, whiter cyan flash.
-            if (c) col.setRGB(0.6, 0.95, 1.0);
+            if (c) col.setRGB(0.82, 0.98, 1.0);
             else col.setRGB(b.color[0], b.color[1], b.color[2]);
             lm.setColorAt(n, col);
           });
@@ -629,6 +637,24 @@ export default function GlobeStage({ play, speed, onFlat, onWave }: Props) {
   return (
     <>
       <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" />
+      {/* The agent sits at the globe's centre while it forms (drawn over the
+          blocks so it stays visible); it leaves as the globe flattens. */}
+      {play && orbSize > 0 && (
+        <motion.div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          initial={{ opacity: 0, scale: 0.4 }}
+          animate={{ opacity: [0, 1, 1, 0], scale: [0.4, 1, 1, 0.6] }}
+          transition={{
+            duration: (GLOBE_FLATTEN_AT + 0.35) / speed,
+            times: [0, 0.45, 0.85, 1],
+            ease: [0.2, 0.6, 0.35, 1],
+            delay: (G.assemble * 0.25) / speed,
+          }}
+        >
+          <AgentOrb size={orbSize} />
+        </motion.div>
+      )}
       {/* Lens haze round the frame edges while the blocks drift in */}
       <motion.div
         aria-hidden="true"
