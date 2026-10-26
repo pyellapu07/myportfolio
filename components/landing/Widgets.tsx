@@ -9,10 +9,12 @@ import type { Contributions } from "@/lib/contributions";
 // Figma files themselves, the research report sums the case studies.
 
 const MONO = "font-mono text-[9.5px] leading-none tracking-[0.01em]";
+// Frosted, so whatever passes behind a card (the map, a project) blurs.
+const FROST = "backdrop-blur-xl backdrop-saturate-150";
 
 function Tag({ tag, children }: { tag: string; children: React.ReactNode }) {
   return (
-    <span className={`mt-1.5 inline-block max-w-full truncate border border-black/[0.12] bg-white px-1.5 py-[3px] text-black/55 ${MONO}`}>
+    <span className={`mt-1.5 inline-block max-w-full truncate border border-black/[0.12] bg-white/70 px-1.5 py-[3px] text-black/55 ${FROST} ${MONO}`}>
       <span className="mr-1.5 text-black/35">{tag}</span>
       {children}
     </span>
@@ -50,7 +52,7 @@ export function CommitGrid({ width }: { width: number }) {
 
   return (
     <a href="https://github.com/pyellapu07" target="_blank" rel="noopener noreferrer" className="block" draggable={false} aria-label={`${data.total} GitHub contributions in the last year`}>
-      <span className="block bg-white p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] ring-1 ring-black/[0.06]" style={{ width }}>
+      <span className={`block bg-white/65 p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] ring-1 ring-black/[0.06] ${FROST}`} style={{ width }}>
         <span className="flex items-start justify-between">
           <span>
             <span className="block text-[17px] leading-tight tracking-[-0.01em] text-black">Contributions</span>
@@ -91,7 +93,7 @@ export function SystemLedger({ width }: { width: number }) {
   const variants = sum("variants");
   return (
     <div className="block" aria-label={`${SYSTEMS.length} design systems, ${sum("tokens")} tokens, ${variants} variants`}>
-      <span className="block bg-[#3651e6] p-3.5 text-white" style={{ width }}>
+      <span className={`block bg-[#3651e6]/85 p-3.5 text-white ${FROST}`} style={{ width }}>
         <span className="flex items-start justify-between text-[11px]">
           <span className="uppercase tracking-[0.04em]">Design systems</span>
           <span className="text-right leading-tight">
@@ -177,7 +179,7 @@ export function ResearchReport({ width }: { width: number }) {
   const cut = Math.round(HOURS_BEFORE - HOURS_AFTER);
   return (
     <div className="block" aria-label={`Research: ${PARTICIPANTS} participants; manual work cut from ${HOURS_BEFORE} to ${HOURS_AFTER} hours per run`}>
-      <span className="block bg-white ring-1 ring-black/[0.06]" style={{ width }}>
+      <span className={`block bg-white/65 ring-1 ring-black/[0.06] ${FROST}`} style={{ width }}>
         <span className="block border-b border-black/[0.06] px-3.5 py-2 text-[11px] text-black/55">Research report</span>
         <span className="flex justify-between gap-3 px-3.5 pb-3.5 pt-3">
           <span>
