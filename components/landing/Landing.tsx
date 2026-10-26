@@ -7,7 +7,7 @@ import { BorderBeam } from "border-beam";
 import { HEADLINE_CLASS, LINES } from "@/components/intro/HyperspaceIntro";
 import AskBar from "./AskBar";
 import Latest from "./Latest";
-import Artifacts from "./Artifacts";
+import Evidence from "./Evidence";
 import { immersion, type Mode } from "@/components/map/immersion";
 import { RecruiterProvider } from "@/lib/recruiter-context";
 import Projects from "@/components/Projects";
@@ -389,7 +389,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       </div>
       {/* First screen: the map shows through. Spatial scrolls on into the
           sections; Index into the case studies first. */}
-      <div className="pointer-events-none relative h-screen">{view === "index" && <Artifacts shown={shown && ready} />}</div>
+      <div className="pointer-events-none relative h-screen">{view === "index" && <Evidence shown={shown && ready} />}</div>
       {view === "index" && <IndexView />}
 
       {ready && <div className="relative z-20 bg-white">{children}</div>}
