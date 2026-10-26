@@ -33,7 +33,8 @@ const ALIASES: [string, RegExp][] = [
   ["tgi", /\b(tgi|crop intelligence|cropland)\b/i],
   ["hack4impact", /\bhack\s?4\s?impact\b/i],
   ["terps-esports", /\b(terps|esports)\b/i],
-  ["workflow", /\b(faculty|workload)\b/i],
+  // Only as a project, not "faculty" or "workload" on their own.
+  ["workflow", /\b(faculty (dashboard|workload)|workload (dashboard|management|tracking))\b/i],
   ["transurban", /\b(transurban|express lanes)\b/i],
   ["marketcrunch", /\bmarket\s?crunch\b/i],
 ];

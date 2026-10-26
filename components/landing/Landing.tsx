@@ -119,7 +119,8 @@ function LocalTime() {
   const time = useSyncExternalStore(subscribeMinute, () => timeFmt.format(new Date()), () => "");
   return (
     <span className="whitespace-nowrap text-[12px] font-medium tracking-[-0.02em] text-black/55 sm:text-[13px]">
-      College Park, MD<span className="ml-2 tabular-nums text-black/35">{time}</span>
+      <span className="hidden sm:inline">College Park, MD</span>
+      <span className="tabular-nums text-black/35 sm:ml-2">{time}</span>
     </span>
   );
 }
@@ -337,7 +338,8 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
           <div className="flex flex-col items-start gap-2 pt-0.5">
             <LocalTime />
             <span
-              className="flex items-center gap-2 text-[11px] tracking-[-0.01em] text-black/40"
+              // From sm up: on a phone the header stays one line.
+              className="hidden items-center gap-2 text-[11px] tracking-[-0.01em] text-black/40 sm:flex"
               style={{ opacity: "calc(var(--map-opacity, 1) * (1 - var(--immersed, 0)))" }}
             >
               <span aria-hidden="true" className="h-[3px] w-5" style={{ background: "linear-gradient(90deg, #1f40ff, #1abfff, #4de659, #ffeb26, #ff8c1a, #f22626)" }} />
@@ -348,7 +350,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
             <Link href="/" className="whitespace-nowrap text-[14px] font-bold tracking-[-0.03em] text-black sm:text-[15px]">
               Pradeep Yellapu
             </Link>
-            <p className="text-[11px] tracking-[-0.01em] text-black/45">{view === "spatial" ? HINTS[mode] : "Scroll to browse the work"}</p>
+            <p className="hidden text-[11px] tracking-[-0.01em] text-black/45 sm:block">{view === "spatial" ? HINTS[mode] : "Scroll to browse the work"}</p>
           </div>
           <nav className="flex items-center justify-end gap-3 text-[13px] font-semibold tracking-[-0.02em] text-black sm:gap-8 sm:text-[14px]">
             <Link href="/about" className="hidden sm:inline">
@@ -362,8 +364,9 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
         </div>
       </motion.header>
 
-      {/* View switcher, glass, on the right edge. */}
-      <motion.div {...frame} className={`fixed right-4 top-1/2 z-40 -translate-y-1/2 sm:right-6 ${shown ? "" : "pointer-events-none"}`}>
+      {/* View switcher, glass, on the right edge. Not on phones, where it sat
+          over the content; the sections below carry the work there. */}
+      <motion.div {...frame} className={`fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 sm:right-6 sm:block ${shown ? "" : "pointer-events-none"}`}>
         <Switch view={view} onChange={onView} />
       </motion.div>
 

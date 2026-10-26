@@ -57,10 +57,13 @@ type Node = Project & { parent: string; angle: number };
 function layout(bw: number, bh: number): { cards: Placed[]; ring: Map<string, { cx: number; cy: number }>; ellipse: { x: number; y: number; rx: number; ry: number } } {
   // Cards scale with the map, so a smaller map doesn't crowd them.
   const k = Math.min(1, Math.max(0.65, bw / 1250));
-  const w = W_RING * k;
+  // On a phone the map box is a short strip; the ring outgrows it (round,
+  // across most of the width) with smaller cards, or the 14 pile up.
+  const phone = bw < 640;
+  const w = phone ? 52 : W_RING * k;
   // Close to a circle, as AIRLA's, a touch wider than tall.
-  const rx = Math.min(bw * 0.23, 310);
-  const ry = Math.min(bh * 0.4, 245);
+  const rx = phone ? bw * 0.4 : Math.min(bw * 0.23, 310);
+  const ry = phone ? Math.min(170, bw * 0.42) : Math.min(bh * 0.4, 245);
   const top = PROJECTS.filter((p) => !p.parent)
     .map((p, i) => {
       const [mx, my] = naturalEarth(p.lon, p.lat);
