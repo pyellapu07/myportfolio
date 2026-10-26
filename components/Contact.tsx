@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, useSyncExternalStore } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { MapPin, Volume2, VolumeX } from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
@@ -130,6 +130,23 @@ function playPrinterSound(duration: number, volume: number, unlockedCtx: AudioCo
   } catch (_) { /* silently skip if Web Audio unavailable */ }
 }
 
+/* Receipt timestamp store: the clock never changes while the page is open,
+   so there is nothing to subscribe to, and the string is cached so React
+   sees one stable snapshot. */
+const noSubscribe = () => () => {};
+let receiptStamp: string | null = null;
+function readReceiptStamp() {
+  if (receiptStamp === null) {
+    const now = new Date();
+    const date = now
+      .toLocaleDateString("en-US", { weekday: "short", month: "short", day: "2-digit", year: "numeric" })
+      .toUpperCase();
+    const time = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    receiptStamp = `${date} - ${time}`;
+  }
+  return receiptStamp;
+}
+
 export default function Contact() {
   const printerTopImgRef = useRef<HTMLImageElement>(null);
   const [printerTopH, setPrinterTopH]   = useState(0);
@@ -215,12 +232,12 @@ export default function Contact() {
     printerCtrl.start({ x: 0, transition: { duration: 0.12 } });
   }, [printerCtrl, receiptCtrl]);
 
-  /* Date / time for receipt header */
-  const now     = new Date();
-  const dateStr = now.toLocaleDateString("en-US", {
-    weekday: "short", month: "short", day: "2-digit", year: "numeric",
-  }).toUpperCase();
-  const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  /* Date / time for receipt header, read only in the browser. The homepage
+     is prerendered at build time, so a render-time clock bakes the build's
+     date into the HTML, mismatches the visitor's clock on hydration (React
+     #418) and forces a full client re-render. The server snapshot is null,
+     so hydration matches and the stamp fills in straight after. */
+  const stamp = useSyncExternalStore(noSubscribe, readReceiptStamp, () => null);
 
   return (
     <SectionWrapper id="contact" alternate className="overflow-x-hidden">
@@ -337,7 +354,8 @@ export default function Contact() {
                 Product Design Studio
               </div>
               <div style={{ fontSize: 10, color: "#555", marginTop: 5, letterSpacing: "0.05em" }}>
-                {dateStr} - {timeStr}
+                {/* nbsp holds the line height until the clock is read */}
+                {stamp ?? " "}
               </div>
             </div>
 
