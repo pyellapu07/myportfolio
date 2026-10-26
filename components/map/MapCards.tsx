@@ -130,7 +130,7 @@ const NODES: Node[] = PROJECTS.filter((p): p is Project & { parent: string } => 
   angle: Math.PI * (0.05 + (0.9 * (i + 0.5)) / all.length),
 }));
 
-export default function MapCards({ delay = 0 }: { delay?: number }) {
+export default function MapCards({ delay = 0, children }: { delay?: number; children?: React.ReactNode }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
   // Which card (or card group) is open. A group stays open until the pointer
@@ -536,6 +536,9 @@ export default function MapCards({ delay = 0 }: { delay?: number }) {
           </div>
         );
       })}
+
+      {/* Other cards that share this layer (and so its depth order). */}
+      {children}
 
       <ProjectDetail open={detail} onClose={closeDetail} />
     </div>

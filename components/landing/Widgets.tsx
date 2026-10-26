@@ -1,16 +1,47 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useInView, useReducedMotion } from "framer-motion";
 import type { Contributions } from "@/lib/contributions";
 
 // Evidence cards for the Index view, in the moodboard's language: a
 // sharp-cornered block with one mono line hanging off it. Real data only:
 // the grid is the live GitHub calendar, the ledger is counted from the
-// Figma files themselves, the research report sums the case studies.
+// Figma files themselves, the research report sums the case studies. Motion
+// is quiet and mostly once: numbers count up, bars and cells fill in as a
+// card comes into view; after that, only a pulse on today and a slow sweep.
 
 const MONO = "font-mono text-[9.5px] leading-none tracking-[0.01em]";
 // Frosted, so whatever passes behind a card (the map, a project) blurs.
 const FROST = "backdrop-blur-xl backdrop-saturate-150";
+
+const EASE = "cubic-bezier(.2,.6,.35,1)";
+
+/** True once the element has been seen (a third of it in view). */
+function useSeen<T extends Element>() {
+  const ref = useRef<T>(null);
+  const seen = useInView(ref, { once: true, amount: 0.3 });
+  return [ref, seen] as const;
+}
+
+/** Counts up to target once `run` turns true; ease-out, about 1.4 s. */
+function useCount(target: number, run: boolean, ms = 1400) {
+  const reduce = useReducedMotion();
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    if (!run || reduce) return;
+    let raf = 0;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const u = Math.min(1, (now - t0) / ms);
+      setV(Math.round(target * (1 - Math.pow(1 - u, 3))));
+      if (u < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, run, ms, reduce]);
+  return reduce ? target : v;
+}
 
 function Tag({ tag, children }: { tag: string; children: React.ReactNode }) {
   return (
@@ -40,7 +71,12 @@ export function CommitGrid({ width }: { width: number }) {
     };
   }, []);
   // No data, no card: an empty grid would argue the opposite.
-  if (!data) return null;
+  return data ? <CommitCard data={data} width={width} /> : null;
+}
+
+function CommitCard({ data, width }: { data: Contributions; width: number }) {
+  const [ref, seen] = useSeen<HTMLAnchorElement>();
+  const total = useCount(data.total, seen);
 
   // Whole weeks, Sunday first, ending with the current one.
   const days = data.days;
@@ -51,20 +87,31 @@ export function CommitGrid({ width }: { width: number }) {
   const recent = days.slice(start).reduce((s, d) => s + d.count, 0);
 
   return (
-    <a href="https://github.com/pyellapu07" target="_blank" rel="noopener noreferrer" className="block" draggable={false} aria-label={`${data.total} GitHub contributions in the last year`}>
+    <a ref={ref} href="https://github.com/pyellapu07" target="_blank" rel="noopener noreferrer" className="block" draggable={false} aria-label={`${data.total} GitHub contributions in the last year`}>
       <span className={`block bg-white/65 p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] ring-1 ring-black/[0.06] ${FROST}`} style={{ width }}>
         <span className="flex items-start justify-between">
           <span>
             <span className="block text-[17px] leading-tight tracking-[-0.01em] text-black">Contributions</span>
             <span className="mt-1 block text-[11px] text-black/45">GitHub · last 12 months</span>
           </span>
-          <span className="text-[34px] font-light leading-none tracking-[-0.03em] text-black tabular-nums">{data.total.toLocaleString("en-US")}</span>
+          <span className="text-[34px] font-light leading-none tracking-[-0.03em] text-black tabular-nums">{total.toLocaleString("en-US")}</span>
         </span>
         <span className="mt-3.5 flex gap-[3px]">
           {cols.map((col, ci) => (
             <span key={ci} className="flex flex-1 flex-col gap-[3px]">
-              {col.map((d) => (
-                <span key={d.date} title={`${d.count} on ${d.date}`} className="block aspect-square w-full" style={{ background: SHADES[d.level] ?? SHADES[0] }} />
+              {col.map((d, di) => (
+                <span
+                  key={d.date}
+                  title={`${d.count} on ${d.date}`}
+                  // Today pulses; every cell fills in, oldest week first.
+                  className={`block aspect-square w-full ${d === days[days.length - 1] ? "ev-today" : ""}`}
+                  style={{
+                    background: SHADES[d.level] ?? SHADES[0],
+                    opacity: seen ? 1 : 0,
+                    transform: seen ? "none" : "scale(0.4)",
+                    transition: `opacity 420ms ${EASE} ${ci * 32 + di * 14}ms, transform 420ms ${EASE} ${ci * 32 + di * 14}ms`,
+                  }}
+                />
               ))}
             </span>
           ))}
@@ -91,25 +138,33 @@ const sum = (k: "tokens" | "components" | "variants" | "themes") => SYSTEMS.redu
 
 export function SystemLedger({ width }: { width: number }) {
   const variants = sum("variants");
+  const [ref, seen] = useSeen<HTMLDivElement>();
+  const shown = useCount(variants, seen);
   return (
-    <div className="block" aria-label={`${SYSTEMS.length} design systems, ${sum("tokens")} tokens, ${variants} variants`}>
+    <div ref={ref} className="block" aria-label={`${SYSTEMS.length} design systems, ${sum("tokens")} tokens, ${variants} variants`}>
       <span className={`block bg-[#3651e6]/85 p-3.5 text-white ${FROST}`} style={{ width }}>
         <span className="flex items-start justify-between text-[11px]">
           <span className="uppercase tracking-[0.04em]">Design systems</span>
           <span className="text-right leading-tight">
             <span className="block text-white/70">variants</span>
-            <span className="block text-[15px] tabular-nums">{variants.toLocaleString("en-US")}</span>
+            <span className="block text-[15px] tabular-nums">{shown.toLocaleString("en-US")}</span>
           </span>
         </span>
         <span className="mt-3 grid grid-cols-4 gap-1.5">
-          {SYSTEMS.map((s) => (
+          {SYSTEMS.map((s, i) => (
             <span key={s.name} className="flex flex-col border-t border-white/30 pt-1.5">
               <span className="text-[8.5px] uppercase tracking-[0.04em] text-white/70">System {s.name}</span>
               <span className="mt-0.5 text-[10.5px] tabular-nums">{s.tokens ? `${s.tokens} tokens` : "8 styles"}</span>
               <span className="text-[10.5px] tabular-nums text-white/70">{s.components} comps</span>
               {/* Bar height: this system's share of all variants. */}
               <span className="mt-2 flex h-[64px] items-end">
-                <span className="block w-full bg-[#dfe5ff]" style={{ height: `${Math.max(4, (s.variants / variants) * 100)}%` }} />
+                <span
+                  className="block w-full bg-[#dfe5ff]"
+                  style={{
+                    height: seen ? `${Math.max(4, (s.variants / variants) * 100)}%` : "0%",
+                    transition: `height 900ms ${EASE} ${200 + i * 110}ms`,
+                  }}
+                />
               </span>
               <span className="mt-1.5 text-[11px] tabular-nums">{s.variants.toLocaleString("en-US")}</span>
             </span>
@@ -177,8 +232,11 @@ function Halftone({ width, height }: { width: number; height: number }) {
 
 export function ResearchReport({ width }: { width: number }) {
   const cut = Math.round(HOURS_BEFORE - HOURS_AFTER);
+  const [ref, seen] = useSeen<HTMLDivElement>();
+  const people = useCount(PARTICIPANTS, seen);
+  const hours = useCount(cut, seen);
   return (
-    <div className="block" aria-label={`Research: ${PARTICIPANTS} participants; manual work cut from ${HOURS_BEFORE} to ${HOURS_AFTER} hours per run`}>
+    <div ref={ref} className="block" aria-label={`Research: ${PARTICIPANTS} participants; manual work cut from ${HOURS_BEFORE} to ${HOURS_AFTER} hours per run`}>
       <span className={`block bg-white/65 ring-1 ring-black/[0.06] ${FROST}`} style={{ width }}>
         <span className="block border-b border-black/[0.06] px-3.5 py-2 text-[11px] text-black/55">Research report</span>
         <span className="flex justify-between gap-3 px-3.5 pb-3.5 pt-3">
@@ -192,13 +250,18 @@ export function ResearchReport({ width }: { width: number }) {
           </span>
           <span className="shrink-0 text-[10.5px] leading-tight text-black/50">
             <span className="block">Participants</span>
-            <span className="block text-[19px] tabular-nums text-black">{PARTICIPANTS}</span>
+            <span className="block text-[19px] tabular-nums text-black">{people}</span>
             <span className="mt-1.5 block">Hours cut per run</span>
-            <span className="block text-[19px] tabular-nums text-black">{cut}</span>
+            <span className="block text-[19px] tabular-nums text-black">{hours}</span>
           </span>
         </span>
-        <span className="relative block">
-          <Halftone width={width} height={112} />
+        <span className="relative block overflow-hidden bg-[#c6ec3a]">
+          {/* Printed left to right as the card comes into view, then a slow
+              sheen passes over it now and again. */}
+          <span className="block" style={{ clipPath: seen ? "inset(0 0 0 0)" : "inset(0 100% 0 0)", transition: `clip-path 1400ms ${EASE} 250ms` }}>
+            <Halftone width={width} height={112} />
+          </span>
+          <span aria-hidden="true" className="ev-sweep pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-transparent via-white/35 to-transparent" />
           <span className="absolute left-2.5 top-1.5 font-mono text-[9px] text-[#3d5a00]">{HOURS_BEFORE} h</span>
           <span className="absolute bottom-1.5 right-2.5 font-mono text-[9px] text-[#3d5a00]">{HOURS_AFTER} h</span>
         </span>

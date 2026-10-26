@@ -516,3 +516,18 @@ body {
   color: #FFFFFF;
 }
 
+
+/* Evidence cards (components/landing/Widgets.tsx) */
+@keyframes ev-today {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(47, 79, 224, 0.5); }
+  60% { box-shadow: 0 0 0 4px rgba(47, 79, 224, 0); }
+}
+.ev-today { animation: ev-today 2.4s ease-out infinite; }
+@keyframes ev-sweep {
+  0% { transform: translateX(-120%); }
+  24%, 100% { transform: translateX(420%); }
+}
+.ev-sweep { animation: ev-sweep 7s cubic-bezier(.45, 0, .25, 1) 2s infinite; transform: translateX(-120%); }
+@media (prefers-reduced-motion: reduce) {
+  .ev-today, .ev-sweep { animation: none; }
+}
