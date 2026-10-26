@@ -28,6 +28,7 @@ uniform float u_time;
 uniform float u_wind;   // accumulated wind travel
 uniform float u_gust;   // current gust strength 0..1
 uniform float u_reveal; // 0..1 bloom-in
+uniform float u_full;   // 0 quiet single hue at rest .. 1 full thermal colour
 uniform vec4 u_src[${MAX}]; // x, y (0..1 of map), weight, radius (0..1 of width)
 uniform int u_count;
 
@@ -97,8 +98,12 @@ void main() {
   // Grain, like a printed thermal plate.
   float g = (hash(gl_FragCoord.xy + fract(u_time) * 91.0) - 0.5) * 0.09;
   float t = clamp(h + g, 0.0, 1.2);
-  vec3 col = thermal(smoothstep(0.08, 1.0, t)) * shade;
-  float a = smoothstep(0.06, 0.24, t) * land * 0.92;
+  float tt = smoothstep(0.08, 1.0, t);
+  // At rest one quiet hue, the globe's pale cyan deepening with heat; the
+  // thermal ramp comes back when asked for.
+  vec3 quiet = mix(vec3(0.62, 0.9, 1.0), vec3(0.16, 0.56, 0.96), tt);
+  vec3 col = mix(quiet, thermal(tt), u_full) * shade;
+  float a = smoothstep(0.06, 0.24, t) * land * 0.92 * mix(0.45, 1.0, u_full);
   gl_FragColor = vec4(col * a, a);
 }
 `;
@@ -226,6 +231,7 @@ export default function HeatLayer({ delay = 0 }: { delay?: number }) {
     let gustAmp = 1;
     let raf = 0;
     let drawnAt = 0;
+    let full = 0;
 
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
@@ -264,6 +270,10 @@ export default function HeatLayer({ delay = 0 }: { delay?: number }) {
         gl.uniform1f(u("u_time"), reduce ? 0 : t);
         gl.uniform1f(u("u_wind"), reduce ? 0 : wind);
         gl.uniform1f(u("u_gust"), gust);
+        // Full colour while the heat key is hovered (Landing sets the flag).
+        const want = document.documentElement.dataset.heat === "full" ? 1 : 0;
+        full += (want - full) * (reduce ? 1 : 0.12);
+        gl.uniform1f(u("u_full"), full);
         const rv = clamp01((t - delay) / 1.4);
         gl.uniform1f(u("u_reveal"), reduce ? 1 : 1 - Math.pow(1 - rv, 3));
         gl.clearColor(0, 0, 0, 0);

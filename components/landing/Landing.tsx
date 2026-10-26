@@ -336,11 +336,16 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
               fades with the map (scrolled away or flown into). */}
           <div className="flex flex-col items-start gap-2 pt-0.5">
             <LocalTime />
+            {/* Hovering the key brings the heat to full colour; at rest it's quiet. */}
             <span
-              className="flex items-center gap-2 text-[11px] tracking-[-0.01em] text-black/40"
+              className="group pointer-events-auto flex cursor-default items-center gap-2 text-[11px] tracking-[-0.01em] text-black/40 transition-colors hover:text-black/70"
               style={{ opacity: "calc(var(--map-opacity, 1) * (1 - var(--immersed, 0)))" }}
+              onPointerEnter={() => (document.documentElement.dataset.heat = "full")}
+              onPointerLeave={() => delete document.documentElement.dataset.heat}
             >
-              <span aria-hidden="true" className="h-[3px] w-5" style={{ background: "linear-gradient(90deg, #1f40ff, #1abfff, #4de659, #ffeb26, #ff8c1a, #f22626)" }} />
+              <span aria-hidden="true" className="relative h-[3px] w-5" style={{ background: "linear-gradient(90deg, #9ee6ff, #298ff5)" }}>
+                <span className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: "linear-gradient(90deg, #1f40ff, #1abfff, #4de659, #ffeb26, #ff8c1a, #f22626)" }} />
+              </span>
               Where my work has reached
             </span>
           </div>

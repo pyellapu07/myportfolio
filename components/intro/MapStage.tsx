@@ -63,7 +63,8 @@ export default function MapStage({ play, instant, speed }: Props) {
             }}
           >
             <HeatLayer delay={instant ? 0 : 0.5 / speed} />
-            <Image src={WORLD_MAP.src} alt="" fill unoptimized priority draggable={false} />
+            {/* Faint linework: a backdrop for the work, not a drawing of its own. */}
+            <Image src={WORLD_MAP.src} alt="" fill unoptimized priority draggable={false} className="opacity-[0.22]" />
           </div>
           {/* The map softens and fades as it leaves the eye line. Over the map
               but under the cards, so no card is ever blurred; gone when zoomed in. */}

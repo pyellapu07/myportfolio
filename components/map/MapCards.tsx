@@ -351,13 +351,13 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
         cursor.current.ty = 0;
       }}
     >
-      {/* Dotted threads from each card to its place */}
+      {/* Each card's place: a dot, and a dotted thread to it while hovered */}
       <svg ref={svgRef} className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
         {cards.map((c, i) => (
           <motion.g
             key={c.id}
             initial={{ opacity: 0 }}
-            animate={{ opacity: lit(c.id) ? 0.9 : 0.35 }}
+            animate={{ opacity: lit(c.id) ? 0.9 : 0.3 }}
             transition={{ opacity: { delay: hover ? 0 : delay + 0.3 + i * 0.04, duration: 0.4 } }}
           >
             <line
@@ -372,6 +372,8 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
               strokeWidth={1}
               strokeDasharray="1 4"
               strokeLinecap="round"
+              // Only a hovered card shows its thread; at rest just the dot.
+              style={{ opacity: lit(c.id) ? 1 : 0, transition: "opacity 0.3s" }}
             />
             <circle cx={c.ax} cy={c.ay} r={lit(c.id) ? 3 : 2} fill="#0a0a0a" />
           </motion.g>
