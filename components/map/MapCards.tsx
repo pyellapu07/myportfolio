@@ -55,7 +55,7 @@ type Node = Project & { parent: string; angle: number };
 // related cards straight after it. A dot still marks each place, and hovering
 // a card draws its thread to it. Returns the top-level cards, and the ring
 // spots of the related ones (MapCards moves those itself).
-function layout(bw: number, bh: number): { cards: Placed[]; ring: Map<string, { cx: number; cy: number }> } {
+function layout(bw: number, bh: number): { cards: Placed[]; ring: Map<string, { cx: number; cy: number }>; ellipse: { x: number; y: number; rx: number; ry: number } } {
   // Cards scale with the map, so a smaller map doesn't crowd them.
   const k = Math.min(1, Math.max(0.65, bw / 1250));
   const w = W_RING * k;
@@ -86,7 +86,7 @@ function layout(bw: number, bh: number): { cards: Placed[]; ring: Map<string, { 
     phase: rand(i + 13) * Math.PI * 2,
   }));
   const ring = new Map(PROJECTS.filter((p) => p.parent).map((p) => [p.id, spot(p.id)]));
-  return { cards, ring };
+  return { cards, ring, ellipse: { x: bw / 2, y: bh * 0.47, rx, ry } };
 }
 
 const NODES: Node[] = PROJECTS.filter((p): p is Project & { parent: string } => !!p.parent).map((p, i, all) => ({
@@ -140,7 +140,10 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
     return () => ro.disconnect();
   }, []);
 
-  const { cards, ring } = useMemo(() => (box.w ? layout(box.w, box.h) : { cards: [], ring: new Map() }), [box.w, box.h]);
+  const { cards, ring, ellipse } = useMemo(
+    () => (box.w ? layout(box.w, box.h) : { cards: [], ring: new Map(), ellipse: { x: 0, y: 0, rx: 1, ry: 1 } }),
+    [box.w, box.h],
+  );
 
   // Drift, parallax and node orbits run on the frame loop and write
   // transforms directly: no React renders, so motion is smooth.
@@ -149,6 +152,17 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const t0 = performance.now();
     let raf = 0;
+    // The ring turns very slowly, a full turn in about four minutes, and
+    // eases to a stop while a card is hovered so it can be read.
+    let spin = 0;
+    let spinV = 0;
+    let lastT = performance.now();
+    const turn = (x: number, y: number, k: number) => {
+      const e = ellipse;
+      const a = Math.atan2((y - e.y) / e.ry, (x - e.x) / e.rx) + spin;
+      // Flat only: in the globe each card keeps its slot.
+      return { x: x + (e.x + Math.cos(a) * e.rx - x) * (1 - k), y: y + (e.y + Math.sin(a) * e.ry - y) * (1 - k) };
+    };
     // The work clusters in a few regions, which would leave most of a
     // geographic globe bare. Immersed, cards take evenly spaced slots round
     // it instead, keeping their west → east order; latitudes are scattered
@@ -166,6 +180,10 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
       immersion.tick(now);
       const im = immersion.get();
       const k = im.k;
+      const dt = Math.min(0.25, (now - lastT) / 1000);
+      lastT = now;
+      spinV += ((reduce || hoverRef.current ? 0 : (Math.PI * 2) / 240) - spinV) * 0.06;
+      spin += spinV * dt;
       const ox = box.w / 2;
       const oy = box.h / 2;
       // Flat position → globe. Immersed, the map wraps round a sphere: x
@@ -216,8 +234,9 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
       const at = new Map<string, { x: number; y: number }>();
       for (const c of cards) {
         const near = 1 - c.depth;
-        const x = c.cx - cur.x * PARALLAX * (0.25 + near) + Math.sin(t * 0.45 + c.phase) * 3 * (0.4 + near);
-        const y = c.cy - cur.y * PARALLAX * 0.6 * (0.25 + near) + Math.cos(t * 0.38 + c.phase * 1.3) * 4 * (0.4 + near);
+        const rp = turn(c.cx, c.cy, k);
+        const x = rp.x - cur.x * PARALLAX * (0.25 + near) + Math.sin(t * 0.45 + c.phase) * 3 * (0.4 + near);
+        const y = rp.y - cur.y * PARALLAX * 0.6 * (0.25 + near) + Math.cos(t * 0.38 + c.phase * 1.3) * 4 * (0.4 + near);
         at.set(c.id, { x, y });
         const el = cardEls.current.get(c.id);
         if (el) {
@@ -254,8 +273,9 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
         // Flat: its own spot on the ring, drifting like the rest.
         const near = 1 - pc.depth;
         const phase = pc.phase + n.angle * 3;
-        const fx = rs.cx - cur.x * PARALLAX * (0.25 + near) + Math.sin(t * 0.45 + phase) * 3 * (0.4 + near);
-        const fy = rs.cy - cur.y * PARALLAX * 0.6 * (0.25 + near) + Math.cos(t * 0.38 + phase * 1.3) * 4 * (0.4 + near);
+        const rr = turn(rs.cx, rs.cy, k);
+        const fx = rr.x - cur.x * PARALLAX * (0.25 + near) + Math.sin(t * 0.45 + phase) * 3 * (0.4 + near);
+        const fy = rr.y - cur.y * PARALLAX * 0.6 * (0.25 + near) + Math.cos(t * 0.38 + phase * 1.3) * 4 * (0.4 + near);
         // Globe: clustered beside its parent in 3D (same depth and depth
         // scale), rather than through the globe mapping, which would fling it
         // across the globe as if it were a project of its own.
@@ -275,7 +295,7 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [cards, ring, box.w, box.h]);
+  }, [cards, ring, ellipse, box.w, box.h]);
 
   // A project and its related cards light up together; the rest dim.
   const family = (id: string) => PROJECTS.find((p) => p.id === id)?.parent ?? id;
