@@ -9,14 +9,15 @@ import { WORLD_MAP } from "./worldMap";
 import { immersion } from "./immersion";
 import ProjectDetail, { type DetailOpen } from "./ProjectDetail";
 
-// Project cards floating over the map, AIRLA-style: dead straight, each with
-// its own space, sized and faded by depth, drifting slowly and shifting with
-// the cursor in parallax. A faint dotted line ties every card to its place.
-// Hovering brings a card forward into focus with its title beneath.
+// Project cards floating over the map, AIRLA-style: dead straight, one size,
+// in an even pattern, drifting slowly and shifting with the cursor in
+// parallax. A dot marks every card's place; hovering a card brings it forward
+// with its title beneath and draws a dotted thread to its place.
 
 const ASPECT = 0.625; // 16:10, as the thumbnails
-const W_NEAR = 188; // card width at depth 0 (closest)
-const W_FAR = 128; // card width at depth 1 (farthest)
+const W_EVEN = 156; // card width on the flat map, every card alike
+const SPAN = [0.16, 0.82]; // first and last card centres, fractions of the box width
+const ROWS = [0.32, 0.62]; // the zig-zag's two rows, fractions of the box height
 const W_NODE = 62; // related-node width
 const ORBIT = 30; // px between a parent card's edge and its nodes
 // Immersive 3D: perspective, how far the flat cards spread as they lift off,
@@ -24,8 +25,6 @@ const ORBIT = 30; // px between a parent card's edge and its nodes
 const PERSPECTIVE = 800; // only matters immersed: flat, every z is 0
 const SPREAD = 0.35; // on top of the map zoom (1 + 0.9k), which the cards share
 const PASS_Z = 640;
-const GAP = 30; // px kept clear between cards
-const LIFT = 46; // px a card floats above its place before relaxing
 const PARALLAX = 22; // px the nearest card shifts at the box edge
 const SETTLE = [0.2, 0.6, 0.35, 1] as const;
 
@@ -53,75 +52,36 @@ function rand(seed: number) {
 
 type Node = Project & { parent: string; angle: number };
 
-// Cards start just above their place, then push each other apart (rect
-// overlap + gap) while a weak spring pulls each back towards its anchor and
-// the box edges hold them in.
+// One even pattern, AIRLA-style, rather than piled on their places (the
+// work clusters in the Americas, which weighed the map to the left): cards
+// of one size, evenly spaced west to east in a zig-zag of two rows, inside
+// the evidence cards at the screen's edges. A dot still marks each place,
+// and hovering a card draws its thread to it.
 function layout(bw: number, bh: number): Placed[] {
   // Cards scale with the map, so a smaller map doesn't crowd them.
   const k = Math.min(1, Math.max(0.65, bw / 1250));
-  const cards: Placed[] = PROJECTS.filter((p) => !p.parent).map((p, i) => {
-    const [mx, my] = naturalEarth(p.lon, p.lat);
-    const ax = (mx / WORLD_MAP.width) * bw;
-    const ay = (my / WORLD_MAP.height) * bh;
-    const depth = rand(i + 1);
-    const w = (W_NEAR + (W_FAR - W_NEAR) * depth) * k;
-    const a = rand(i + 7) * Math.PI * 2;
-    return {
-      ...p,
-      ax,
-      ay,
-      cx: ax + Math.cos(a) * 12,
-      cy: ay - LIFT + Math.sin(a) * 12,
-      w,
-      h: w * ASPECT,
-      depth,
-      phase: rand(i + 13) * Math.PI * 2,
-      pad: PROJECTS.some((q) => q.parent === p.id) ? ORBIT + W_NODE : 0,
-    };
-  });
-  // Cards may spill past the map's sides into open ocean to get room; never
-  // past its top (the nav) or bottom (the statement).
-  const spill = bw * 0.12;
-  const spillTop = 0;
-  const ITER = 420;
-  for (let it = 0; it < ITER; it++) {
-    for (let i = 0; i < cards.length; i++) {
-      for (let j = i + 1; j < cards.length; j++) {
-        const a = cards[i];
-        const b = cards[j];
-        const ox = (a.w + b.w) / 2 + a.pad + b.pad + GAP - Math.abs(a.cx - b.cx);
-        const oy = (a.h + b.h) / 2 + a.pad + b.pad + GAP + 14 - Math.abs(a.cy - b.cy); // +14 leaves room for a title
-        if (ox > 0 && oy > 0) {
-          // Push apart along the line between centres, leaning a little
-          // sideways (the oceans have room), so a cluster opens into a cloud
-          // round its place instead of a column or a row.
-          let dx = b.cx - a.cx;
-          let dy = (b.cy - a.cy) * 0.8;
-          if (Math.abs(dx) + Math.abs(dy) < 0.01) {
-            dx = rand(i * 31 + j) - 0.5;
-            dy = rand(i * 17 + j * 3) - 0.5;
-          }
-          const len = Math.hypot(dx, dy);
-          const push = Math.min(ox, oy) * 0.3;
-          a.cx -= (dx / len) * push;
-          a.cy -= (dy / len) * push;
-          b.cx += (dx / len) * push;
-          b.cy += (dy / len) * push;
-        }
-      }
-    }
-    for (const c of cards) {
-      // The spring towards each card's place stops for the last passes, so
-      // they end fully separated rather than pulled back into touching.
-      if (it < ITER - 80) {
-        c.cx += (c.ax - c.cx) * 0.03;
-        c.cy += (c.ay - LIFT - c.cy) * 0.03;
-      }
-      c.cx = Math.min(bw + spill - c.w / 2 - c.pad, Math.max(c.w / 2 + c.pad - spill, c.cx));
-      c.cy = Math.min(bh - c.h / 2 - c.pad - 20, Math.max(c.h / 2 + c.pad - spillTop, c.cy));
-    }
-  }
-  return cards;
+  const w = W_EVEN * k;
+  const top = PROJECTS.filter((p) => !p.parent)
+    .map((p, i) => {
+      const [mx, my] = naturalEarth(p.lon, p.lat);
+      return { p, i, ax: (mx / WORLD_MAP.width) * bw, ay: (my / WORLD_MAP.height) * bh };
+    })
+    .sort((a, b) => a.ax - b.ax);
+  const n = top.length;
+  return top.map(({ p, i, ax, ay }, slot) => ({
+    ...p,
+    ax,
+    ay,
+    cx: bw * (SPAN[0] + ((SPAN[1] - SPAN[0]) * slot) / Math.max(1, n - 1)),
+    // Low row first, so the top-left corner stays clear for the evidence.
+    cy: bh * (slot % 2 === 0 ? ROWS[1] : ROWS[0]),
+    w,
+    h: w * ASPECT,
+    // Depth still sets each card's place in the globe and its parallax.
+    depth: rand(i + 1),
+    phase: rand(i + 13) * Math.PI * 2,
+    pad: PROJECTS.some((q) => q.parent === p.id) ? ORBIT + W_NODE : 0,
+  }));
 }
 
 const NODES: Node[] = PROJECTS.filter((p): p is Project & { parent: string } => !!p.parent).map((p, i, all) => ({
@@ -320,6 +280,11 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
         };
         el.style.transform = `translate3d(${(q.x - W_NODE / 2).toFixed(2)}px, ${(q.y - (W_NODE * ASPECT) / 2).toFixed(2)}px, ${q.z.toFixed(1)}px) scale(${((1 + 0.3 * o) * ds).toFixed(3)})`;
         el.style.visibility = q.z > PASS_Z || detailRef.current === n.id ? "hidden" : "visible";
+        // On the flat map a parent's nodes stay folded away until it's
+        // hovered; in the globe they cluster beside it as before.
+        const show = Math.max(o, k);
+        el.style.opacity = show.toFixed(3);
+        el.style.pointerEvents = show < 0.3 ? "none" : "";
         if (goal === 0) el.style.zIndex = String(k > 0.01 ? Math.min(199, Math.max(1, Math.round(99 + q.z / 10))) : 5);
       }
       raf = requestAnimationFrame(frame);

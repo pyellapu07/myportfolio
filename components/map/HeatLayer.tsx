@@ -99,9 +99,9 @@ void main() {
   float g = (hash(gl_FragCoord.xy + fract(u_time) * 91.0) - 0.5) * 0.09;
   float t = clamp(h + g, 0.0, 1.2);
   float tt = smoothstep(0.08, 1.0, t);
-  // At rest one quiet hue, the globe's pale cyan deepening with heat; the
-  // thermal ramp comes back when asked for.
-  vec3 quiet = mix(vec3(0.62, 0.9, 1.0), vec3(0.16, 0.56, 0.96), tt);
+  // At rest one quiet hue, a soft red deepening with heat; the thermal ramp
+  // comes back when asked for.
+  vec3 quiet = mix(vec3(1.0, 0.8, 0.76), vec3(0.88, 0.2, 0.17), tt);
   vec3 col = mix(quiet, thermal(tt), u_full) * shade;
   float a = smoothstep(0.06, 0.24, t) * land * 0.92 * mix(0.45, 1.0, u_full);
   gl_FragColor = vec4(col * a, a);

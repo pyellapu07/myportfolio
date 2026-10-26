@@ -343,7 +343,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
               onPointerEnter={() => (document.documentElement.dataset.heat = "full")}
               onPointerLeave={() => delete document.documentElement.dataset.heat}
             >
-              <span aria-hidden="true" className="relative h-[3px] w-5" style={{ background: "linear-gradient(90deg, #9ee6ff, #298ff5)" }}>
+              <span aria-hidden="true" className="relative h-[3px] w-5" style={{ background: "linear-gradient(90deg, #ffccc2, #e0332b)" }}>
                 <span className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: "linear-gradient(90deg, #1f40ff, #1abfff, #4de659, #ffeb26, #ff8c1a, #f22626)" }} />
               </span>
               Where my work has reached
