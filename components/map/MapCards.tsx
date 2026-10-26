@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { PROJECTS, type Project } from "./projects";
 import { naturalEarth } from "./projection";
 import { WORLD_MAP } from "./worldMap";
 import { immersion } from "./immersion";
 import ProjectDetail, { type DetailOpen } from "./ProjectDetail";
+import { ringFocus } from "./focus";
 
 // Project cards floating over the map, AIRLA-style: dead straight, one size,
-// in a ring, drifting slowly and shifting with the cursor in
-// parallax. A dot marks every card's place; hovering a card brings it forward
+// in a ring that turns slowly, each card drifting a little. A dot marks every card's place; hovering a card brings it forward
 // with its title beneath and draws a dotted thread to its place.
 
 const ASPECT = 0.625; // 16:10, as the thumbnails
@@ -23,7 +23,6 @@ const ORBIT = 30; // px between a parent card's edge and its related cards, in t
 const PERSPECTIVE = 800; // only matters immersed: flat, every z is 0
 const SPREAD = 0.35; // on top of the map zoom (1 + 0.9k), which the cards share
 const PASS_Z = 640;
-const PARALLAX = 22; // px the nearest card shifts at the box edge
 const SETTLE = [0.2, 0.6, 0.35, 1] as const;
 
 type Placed = Project & {
@@ -106,8 +105,10 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
   const nodeEls = useRef(new Map<string, HTMLDivElement>());
   const imgEls = useRef(new Map<string, HTMLImageElement>());
   const svgRef = useRef<SVGSVGElement>(null);
-  const cursor = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
   const hoverRef = useRef<string | null>(null);
+  // The project the chat is talking about: lit, and turned to the top.
+  const focus = useSyncExternalStore(ringFocus.subscribe, ringFocus.get, () => null);
+  const focusRef = useRef<string | null>(null);
   // Clicked card, shown centred with its details; its place in the scene
   // stays empty meanwhile so it reads as the same object.
   const [detail, setDetail] = useState<DetailOpen | null>(null);
@@ -130,7 +131,8 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
   };
   useEffect(() => {
     hoverRef.current = hover;
-  }, [hover]);
+    focusRef.current = focus;
+  }, [hover, focus]);
 
   useEffect(() => {
     const el = boxRef.current;
@@ -182,8 +184,20 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
       const k = im.k;
       const dt = Math.min(0.25, (now - lastT) / 1000);
       lastT = now;
-      spinV += ((reduce || hoverRef.current ? 0 : (Math.PI * 2) / 240) - spinV) * 0.06;
-      spin += spinV * dt;
+      const f = focusRef.current;
+      const fs = f ? (cards.find((c) => c.id === f) ?? ring.get(f)) : null;
+      if (fs) {
+        // Turn the shortest way until the chat's project sits at the top,
+        // above the open answer panel.
+        const a0 = Math.atan2((fs.cy - ellipse.y) / ellipse.ry, (fs.cx - ellipse.x) / ellipse.rx);
+        let d = -Math.PI / 2 - a0 - spin;
+        d = Math.atan2(Math.sin(d), Math.cos(d));
+        spin += d * (reduce ? 1 : 0.05);
+        spinV = 0;
+      } else {
+        spinV += ((reduce || hoverRef.current ? 0 : (Math.PI * 2) / 240) - spinV) * 0.06;
+        spin += spinV * dt;
+      }
       const ox = box.w / 2;
       const oy = box.h / 2;
       // Flat position → globe. Immersed, the map wraps round a sphere: x
@@ -228,15 +242,12 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
         boxRef.current.style.opacity = hidden ? "0" : "1";
         boxRef.current.style.pointerEvents = hidden ? "none" : "";
       }
-      const cur = cursor.current;
-      cur.x += (cur.tx - cur.x) * 0.08;
-      cur.y += (cur.ty - cur.y) * 0.08;
       const at = new Map<string, { x: number; y: number }>();
       for (const c of cards) {
         const near = 1 - c.depth;
         const rp = turn(c.cx, c.cy, k);
-        const x = rp.x - cur.x * PARALLAX * (0.25 + near) + Math.sin(t * 0.45 + c.phase) * 3 * (0.4 + near);
-        const y = rp.y - cur.y * PARALLAX * 0.6 * (0.25 + near) + Math.cos(t * 0.38 + c.phase * 1.3) * 4 * (0.4 + near);
+        const x = rp.x + Math.sin(t * 0.45 + c.phase) * 3 * (0.4 + near);
+        const y = rp.y + Math.cos(t * 0.38 + c.phase * 1.3) * 4 * (0.4 + near);
         at.set(c.id, { x, y });
         const el = cardEls.current.get(c.id);
         if (el) {
@@ -274,8 +285,8 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
         const near = 1 - pc.depth;
         const phase = pc.phase + n.angle * 3;
         const rr = turn(rs.cx, rs.cy, k);
-        const fx = rr.x - cur.x * PARALLAX * (0.25 + near) + Math.sin(t * 0.45 + phase) * 3 * (0.4 + near);
-        const fy = rr.y - cur.y * PARALLAX * 0.6 * (0.25 + near) + Math.cos(t * 0.38 + phase * 1.3) * 4 * (0.4 + near);
+        const fx = rr.x + Math.sin(t * 0.45 + phase) * 3 * (0.4 + near);
+        const fy = rr.y + Math.cos(t * 0.38 + phase * 1.3) * 4 * (0.4 + near);
         // Globe: clustered beside its parent in 3D (same depth and depth
         // scale), rather than through the globe mapping, which would fling it
         // across the globe as if it were a project of its own.
@@ -299,7 +310,10 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
 
   // A project and its related cards light up together; the rest dim.
   const family = (id: string) => PROJECTS.find((p) => p.id === id)?.parent ?? id;
-  const lit = (id: string) => !!hover && family(hover) === family(id);
+  // Hover leads; otherwise the chat's project.
+  const active = hover ?? focus;
+  const lit = (id: string) => !!active && family(active) === family(id);
+  const shown = active ? PROJECTS.find((p) => p.id === active) : null;
 
   return (
     <div
@@ -310,16 +324,6 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
       // The landing's index view hides the map cards (it shows the grid instead).
       style={{
         perspective: PERSPECTIVE,
-      }}
-      onPointerMove={(e) => {
-        const r = boxRef.current?.getBoundingClientRect();
-        if (!r) return;
-        cursor.current.tx = ((e.clientX - r.left) / r.width) * 2 - 1;
-        cursor.current.ty = ((e.clientY - r.top) / r.height) * 2 - 1;
-      }}
-      onPointerLeave={() => {
-        cursor.current.tx = 0;
-        cursor.current.ty = 0;
       }}
     >
       {/* Each card's place: a dot, and a dotted thread to it while hovered */}
@@ -353,7 +357,7 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
 
       {cards.map((c, i) => {
         const on = hover === c.id;
-        const dim = hover && !lit(c.id);
+        const dim = active && !lit(c.id);
         // Every card is sharp; only cards outside the hovered family dim.
         const blur = 0;
         const haze = dim ? 0.55 : 0;
@@ -421,9 +425,9 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
                   <span className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300" style={{ opacity: `calc(${haze} * var(--haze-k, 1))` }} />
                 </span>
                 <span
-                  className={`pointer-events-none absolute left-1/2 top-full mt-2.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 ${
-                    on ? "opacity-100" : "opacity-0"
-                  }`}
+                  className={`pointer-events-none absolute left-1/2 top-full mt-2.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200`}
+                  // In the globe only; on the flat map the ring's centre names it.
+                  style={{ opacity: on ? "calc(1 - var(--haze-k, 1))" : 0 }}
                 >
                   {c.title}
                 </span>
@@ -439,7 +443,7 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
         const w = cards[0]?.w ?? W_RING;
         const h = w * ASPECT;
         const on = hover === n.id;
-        const dim = hover && !lit(n.id);
+        const dim = active && !lit(n.id);
         return (
           <div
             key={n.id}
@@ -476,9 +480,9 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
                   />
                 </span>
                 <span
-                  className={`pointer-events-none absolute left-1/2 top-full mt-2.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 ${
-                    on ? "opacity-100" : "opacity-0"
-                  }`}
+                  className={`pointer-events-none absolute left-1/2 top-full mt-2.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200`}
+                  // In the globe only; on the flat map the ring's centre names it.
+                  style={{ opacity: on ? "calc(1 - var(--haze-k, 1))" : 0 }}
                 >
                   {n.title}
                 </span>
@@ -487,6 +491,33 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
           </div>
         );
       })}
+
+      {/* The ring's centre names the hovered card (or the chat's project), as
+          AIRLA does: title and one line. Flat map only. */}
+      {cards.length > 0 && (
+        <div
+          aria-live="polite"
+          className="pointer-events-none absolute flex w-[300px] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center"
+          style={{ left: ellipse.x, top: ellipse.y, opacity: "var(--haze-k, 1)", textShadow: "0 0 14px #fff, 0 0 6px #fff, 0 0 2px #fff" }}
+        >
+          <AnimatePresence mode="wait">
+            {shown && (
+              <motion.div
+                key={shown.id}
+                initial={{ opacity: 0, y: 6, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -4, filter: "blur(4px)", transition: { duration: 0.15 } }}
+                transition={{ duration: 0.35, ease: SETTLE }}
+              >
+                <p className="text-[17px] font-bold leading-tight tracking-[-0.03em] text-black">{shown.title}</p>
+                <p className="mt-1.5 text-[12.5px] leading-snug tracking-[-0.01em] text-black/60">
+                  {shown.blurb ?? (shown.parent ? `Part of ${shown.role}` : shown.role)}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Other cards that share this layer (and so its depth order). */}
       {children}

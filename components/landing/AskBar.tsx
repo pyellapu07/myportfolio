@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { BorderBeam } from "border-beam";
 import AgentOrb from "@/components/agent/AgentOrb";
 import { immersion } from "@/components/map/immersion";
+import { projectIn, ringFocus } from "@/components/map/focus";
 
 // The landing's AI chat: one input, centred at the foot of the screen, under
 // the statement. Answers open upward in a frosted panel over the map. Same
@@ -143,6 +144,7 @@ export default function AskBar({ shown, onActive }: { shown: boolean; onActive?:
   useEffect(() => {
     if (!open) {
       if (immersion.get().detail === "chat") immersion.setDetail(null);
+      ringFocus.set(null);
       return;
     }
     immersion.setDetail("chat");
@@ -175,6 +177,10 @@ export default function AskBar({ shown, onActive }: { shown: boolean; onActive?:
     setValue("");
     setOpen(true);
     const jd = message.length >= JD_LENGTH;
+    // The ring turns to the project the question names, or failing that the
+    // one the answer is about.
+    const named = jd ? null : projectIn(message);
+    if (named) ringFocus.set(named);
     const i = turns.length;
     setTurns((t) => [...t, { q: message, state: "loading" }]);
     const settle = (turn: Turn) => setTurns((t) => t.map((x, j) => (j === i ? turn : x)));
@@ -186,6 +192,10 @@ export default function AskBar({ shown, onActive }: { shown: boolean; onActive?:
       });
       if (!res.ok) throw new Error(String(res.status));
       const d = await res.json();
+      if (!named && !jd) {
+        const about = projectIn(d.content ?? "");
+        if (about) ringFocus.set(about);
+      }
       settle(
         d.type === "job_match"
           ? { q: message, state: "done", type: "job_match", content: d.content ?? "", pct: d.matchPercentage ?? 0, level: d.matchLevel ?? "" }
