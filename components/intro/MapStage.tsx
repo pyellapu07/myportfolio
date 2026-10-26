@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { WORLD_MAP, MAP_BOX_WIDTH, MAP_RESERVE, MAP_TOP } from "@/components/map/worldMap";
 import HeatLayer from "@/components/map/HeatLayer";
 import MapCards from "@/components/map/MapCards";
-import EvidenceOrbit from "@/components/map/EvidenceOrbit";
+import EvidenceDock from "@/components/map/EvidenceDock";
 
 // The wave starts at the map's centre.
 const AX = 50;
@@ -92,7 +92,7 @@ export default function MapStage({ play, instant, speed }: Props) {
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div className="pointer-events-auto relative" style={BOX}>
               <MapCards delay={instant ? 0 : 0.55 / speed} />
-              <EvidenceOrbit delay={instant ? 0 : 0.55 / speed} />
+              <EvidenceDock delay={instant ? 0 : 0.55 / speed} />
             </div>
           </div>
         </div>

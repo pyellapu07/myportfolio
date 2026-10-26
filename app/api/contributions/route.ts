@@ -10,6 +10,8 @@ import { parseCalendar, type Contributions } from "@/lib/contributions";
 export const revalidate = 10800;
 
 const USER = "pyellapu07";
+// Locally, always fresh: a cached count survives restarts and misleads.
+const next = { revalidate: process.env.NODE_ENV === "development" ? 0 : revalidate };
 
 const LEVELS: Record<string, number> = {
   NONE: 0,
@@ -26,7 +28,7 @@ async function fromGraphQL(token: string): Promise<Contributions> {
     method: "POST",
     headers: { Authorization: `bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ query, variables: { login: USER } }),
-    next: { revalidate },
+    next,
   });
   if (!res.ok) throw new Error(`graphql ${res.status}`);
   const cal = (await res.json()).data.user.contributionsCollection.contributionCalendar;
@@ -41,7 +43,7 @@ async function fromGraphQL(token: string): Promise<Contributions> {
 async function fromProfile(): Promise<Contributions> {
   const res = await fetch(`https://github.com/users/${USER}/contributions`, {
     headers: { "User-Agent": "pradeep-portfolio" },
-    next: { revalidate },
+    next,
   });
   if (!res.ok) throw new Error(`profile ${res.status}`);
   return parseCalendar(await res.text());
