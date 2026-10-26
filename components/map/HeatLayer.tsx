@@ -192,10 +192,10 @@ export default function HeatLayer({ delay = 0 }: { delay?: number }) {
     img.src = "/maps/world-land.svg";
 
     // Backing store follows the canvas's on-screen size, transforms included,
-    // so the heat is redrawn at the zoomed resolution instead of stretched,
-    // at half resolution: it is a soft field, and the browser's upscale of
-    // it is indistinguishable while costing a quarter of the pixels.
-    const RES = 0.5;
+    // so the heat is redrawn at the zoomed resolution instead of stretched.
+    // Full resolution: at half, the edges, grain and relief turn visibly
+    // pixelated on a 1x screen. (Derivative normals and 30 fps keep it cheap.)
+    const RES = 1;
     const MAX_W = 2048;
     let lastW = 0;
     const resize = () => {

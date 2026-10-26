@@ -16,8 +16,8 @@ import ProjectDetail, { type DetailOpen } from "./ProjectDetail";
 
 const ASPECT = 0.625; // 16:10, as the thumbnails
 const W_RING = 96; // card width on the flat map: small, every card alike
-const W_NODE = 62; // related-node width
-const ORBIT = 30; // px between a parent card's edge and its nodes
+const W_NODE = 62; // related-card width in the globe, clustered beside its parent
+const ORBIT = 30; // px between a parent card's edge and its related cards, in the globe
 // Immersive 3D: perspective, how far the flat cards spread as they lift off,
 // and where a card passes the camera.
 const PERSPECTIVE = 800; // only matters immersed: flat, every z is 0
@@ -39,8 +39,6 @@ type Placed = Project & {
   depth: number;
   /** Drift phase, so cards never move in lockstep. */
   phase: number;
-  /** Extra room kept clear round the card for its related nodes. */
-  pad: number;
 };
 
 function rand(seed: number) {
@@ -51,46 +49,49 @@ function rand(seed: number) {
 type Node = Project & { parent: string; angle: number };
 
 // One ring, AIRLA-style, rather than piled on their places (the work
-// clusters in the Americas, which weighed the map to the left): cards of one
-// size, evenly spaced round an ellipse centred on the map, clockwise from the
-// top in west-to-east order. A dot still marks each place, and hovering a
-// card draws its thread to it.
-function layout(bw: number, bh: number): Placed[] {
+// clusters in the Americas, which weighed the map to the left): every card,
+// related ones included, at one size, evenly spaced round an ellipse centred
+// on the map, clockwise from the top in west-to-east order, each project's
+// related cards straight after it. A dot still marks each place, and hovering
+// a card draws its thread to it. Returns the top-level cards, and the ring
+// spots of the related ones (MapCards moves those itself).
+function layout(bw: number, bh: number): { cards: Placed[]; ring: Map<string, { cx: number; cy: number }> } {
   // Cards scale with the map, so a smaller map doesn't crowd them.
   const k = Math.min(1, Math.max(0.65, bw / 1250));
   const w = W_RING * k;
   // Close to a circle, as AIRLA's, a touch wider than tall.
-  const rx = Math.min(bw * 0.2, 265);
-  const ry = Math.min(bh * 0.37, 228);
+  const rx = Math.min(bw * 0.23, 310);
+  const ry = Math.min(bh * 0.4, 245);
   const top = PROJECTS.filter((p) => !p.parent)
     .map((p, i) => {
       const [mx, my] = naturalEarth(p.lon, p.lat);
       return { p, i, ax: (mx / WORLD_MAP.width) * bw, ay: (my / WORLD_MAP.height) * bh };
     })
     .sort((a, b) => a.ax - b.ax);
-  const n = top.length;
-  return top.map(({ p, i, ax, ay }, slot) => {
+  const order = top.flatMap((t) => [t.p.id, ...PROJECTS.filter((q) => q.parent === t.p.id).map((q) => q.id)]);
+  const spot = (id: string) => {
     // Half a step off the top, so no card sits dead on the vertical axis.
-    const a = -Math.PI / 2 + ((slot + 0.5) / n) * Math.PI * 2;
-    return {
-      ...p,
-      ax,
-      ay,
-      cx: bw / 2 + Math.cos(a) * rx,
-      cy: bh * 0.47 + Math.sin(a) * ry,
-      w,
-      h: w * ASPECT,
-      // Depth still sets each card's place in the globe and its parallax.
-      depth: rand(i + 1),
-      phase: rand(i + 13) * Math.PI * 2,
-      pad: PROJECTS.some((q) => q.parent === p.id) ? ORBIT + W_NODE : 0,
-    };
-  });
+    const a = -Math.PI / 2 + ((order.indexOf(id) + 0.5) / order.length) * Math.PI * 2;
+    return { cx: bw / 2 + Math.cos(a) * rx, cy: bh * 0.47 + Math.sin(a) * ry };
+  };
+  const cards = top.map(({ p, i, ax, ay }) => ({
+    ...p,
+    ax,
+    ay,
+    ...spot(p.id),
+    w,
+    h: w * ASPECT,
+    // Depth still sets each card's place in the globe and its parallax.
+    depth: rand(i + 1),
+    phase: rand(i + 13) * Math.PI * 2,
+  }));
+  const ring = new Map(PROJECTS.filter((p) => p.parent).map((p) => [p.id, spot(p.id)]));
+  return { cards, ring };
 }
 
 const NODES: Node[] = PROJECTS.filter((p): p is Project & { parent: string } => !!p.parent).map((p, i, all) => ({
   ...p,
-  // Spread round the lower half and sides of the parent, like satellites.
+  // In the globe they cluster round the lower half and sides of the parent.
   angle: Math.PI * (0.05 + (0.9 * (i + 0.5)) / all.length),
 }));
 
@@ -100,11 +101,9 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
   // Which card (or card group) is open. A group stays open until the pointer
   // leaves its whole hit area, so nothing moving under the cursor can flicker it.
   const [hover, setHover] = useState<string | null>(null);
-  const [nodeHover, setNodeHover] = useState<string | null>(null);
   const cardEls = useRef(new Map<string, HTMLDivElement>());
   const lineEls = useRef(new Map<string, SVGLineElement>());
   const nodeEls = useRef(new Map<string, HTMLDivElement>());
-  const hitEls = useRef(new Map<string, HTMLDivElement>());
   const imgEls = useRef(new Map<string, HTMLImageElement>());
   const svgRef = useRef<SVGSVGElement>(null);
   const cursor = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
@@ -141,7 +140,7 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
     return () => ro.disconnect();
   }, []);
 
-  const cards = useMemo(() => (box.w ? layout(box.w, box.h) : []), [box.w, box.h]);
+  const { cards, ring } = useMemo(() => (box.w ? layout(box.w, box.h) : { cards: [], ring: new Map() }), [box.w, box.h]);
 
   // Drift, parallax and node orbits run on the frame loop and write
   // transforms directly: no React renders, so motion is smooth.
@@ -149,7 +148,6 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
     if (!cards.length) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const t0 = performance.now();
-    const spread = new Map<string, number>(); // eased 0..1 open amount per parent
     let raf = 0;
     // The work clusters in a few regions, which would leave most of a
     // geographic globe bare. Immersed, cards take evenly spaced slots round
@@ -201,11 +199,6 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
           z: gz * k + k * im.flight * flyDepth,
         };
       };
-      // Screen position and scale of a 3D point (perspective origin = box centre).
-      const project = (q: { x: number; y: number; z: number }) => {
-        const f = PERSPECTIVE / Math.max(1, PERSPECTIVE - q.z);
-        return { x: ox + (q.x - ox) * f, y: oy + (q.y - oy) * f, f };
-      };
       if (svgRef.current) svgRef.current.style.opacity = (1 - k).toFixed(3);
       // Depth haze fades out as the camera goes in: immersed cards are clear.
       boxRef.current?.style.setProperty("--haze-k", (1 - k).toFixed(3));
@@ -251,53 +244,42 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
           ln.setAttribute("x2", x.toFixed(1));
           ln.setAttribute("y2", (y + c.h / 2).toFixed(1));
         }
-        const hit = hitEls.current.get(c.id);
-        if (hit) {
-          const sp = project(place(x, y, c.depth, c.id));
-          hit.style.transform = `translate3d(${sp.x.toFixed(2)}px, ${sp.y.toFixed(2)}px, 0) scale(${sp.f.toFixed(3)})`;
-        }
       }
       for (const n of NODES) {
         const pc = cards.find((c) => c.id === n.parent);
         const pp = at.get(n.parent);
+        const rs = ring.get(n.id);
         const el = nodeEls.current.get(n.id);
-        if (!pc || !pp || !el) continue;
-        const goal = hoverRef.current === n.parent ? 1 : 0;
-        const o = (spread.get(n.parent) ?? 0) + (goal - (spread.get(n.parent) ?? 0)) * 0.12;
-        spread.set(n.parent, o);
+        if (!pc || !pp || !rs || !el) continue;
+        // Flat: its own spot on the ring, drifting like the rest.
+        const near = 1 - pc.depth;
+        const phase = pc.phase + n.angle * 3;
+        const fx = rs.cx - cur.x * PARALLAX * (0.25 + near) + Math.sin(t * 0.45 + phase) * 3 * (0.4 + near);
+        const fy = rs.cy - cur.y * PARALLAX * 0.6 * (0.25 + near) + Math.cos(t * 0.38 + phase * 1.3) * 4 * (0.4 + near);
+        // Globe: clustered beside its parent in 3D (same depth and depth
+        // scale), rather than through the globe mapping, which would fling it
+        // across the globe as if it were a project of its own.
         const a = n.angle + t * 0.08;
-        const rx = (pc.w / 2 + ORBIT + W_NODE / 2) * (1 + 0.4 * o);
-        const ry = (pc.h / 2 + ORBIT + (W_NODE * ASPECT) / 2) * (1 + 0.55 * o);
-        const nx = pp.x + Math.cos(a) * rx;
-        const ny = pp.y + Math.sin(a) * ry;
-        // Flat, a node sits on its orbit. Immersed, it stays clustered beside
-        // its parent card in 3D (same depth and depth scale), rather than
-        // going through the globe mapping, which would fling it across the
-        // globe as if it were a project of its own.
-        const flat = place(nx, ny, Math.min(1, pc.depth + 0.25), pc.id);
         const pq = place(pp.x, pp.y, pc.depth, pc.id);
-        const ds = 1 + (Math.max(0.55, Math.min(1.3, 1 + pq.z / 900)) - 1) * k;
-        const q = {
-          x: flat.x + (pq.x + (nx - pp.x) * ds - flat.x) * k,
-          y: flat.y + (pq.y + (ny - pp.y) * ds - flat.y) * k,
-          z: flat.z + (pq.z - 2 - flat.z) * k,
-        };
-        el.style.transform = `translate3d(${(q.x - W_NODE / 2).toFixed(2)}px, ${(q.y - (W_NODE * ASPECT) / 2).toFixed(2)}px, ${q.z.toFixed(1)}px) scale(${((1 + 0.3 * o) * ds).toFixed(3)})`;
+        const ds = Math.max(0.55, Math.min(1.3, 1 + pq.z / 900));
+        const gx = pq.x + Math.cos(a) * (pc.w / 2 + ORBIT + W_NODE / 2) * ds;
+        const gy = pq.y + Math.sin(a) * (pc.h / 2 + ORBIT + (W_NODE * ASPECT) / 2) * ds;
+        const q = { x: fx + (gx - fx) * k, y: fy + (gy - fy) * k, z: (pq.z - 2) * k };
+        // Card-sized on the ring, shrinking to a small satellite in the globe.
+        const sc = 1 + ((W_NODE / pc.w) * ds - 1) * k;
+        el.style.transform = `translate3d(${(q.x - pc.w / 2).toFixed(2)}px, ${(q.y - pc.h / 2).toFixed(2)}px, ${q.z.toFixed(1)}px) scale(${sc.toFixed(3)})`;
         el.style.visibility = q.z > PASS_Z || detailRef.current === n.id ? "hidden" : "visible";
-        // On the flat map a parent's nodes stay folded away until it's
-        // hovered; in the globe they cluster beside it as before.
-        const show = Math.max(o, k);
-        el.style.opacity = show.toFixed(3);
-        el.style.pointerEvents = show < 0.3 ? "none" : "";
-        if (goal === 0) el.style.zIndex = String(k > 0.01 ? Math.min(199, Math.max(1, Math.round(99 + q.z / 10))) : 5);
+        if (hoverRef.current !== n.id) el.style.zIndex = String(k > 0.01 ? Math.min(199, Math.max(1, Math.round(99 + q.z / 10))) : Math.round((1 - pc.depth) * 100));
       }
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [cards, box.w, box.h]);
+  }, [cards, ring, box.w, box.h]);
 
-  const lit = (id: string) => hover === id;
+  // A project and its related cards light up together; the rest dim.
+  const family = (id: string) => PROJECTS.find((p) => p.id === id)?.parent ?? id;
+  const lit = (id: string) => !!hover && family(hover) === family(id);
 
   return (
     <div
@@ -349,31 +331,10 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
         ))}
       </svg>
 
-      {/* Steady hit areas for cards with related nodes: they cover the whole
-          open orbit, so the group holds open while the pointer is anywhere in it. */}
-      {cards
-        .filter((c) => c.pad > 0)
-        .map((c) => (
-          <div
-            key={`hit-${c.id}`}
-            ref={(el) => {
-              if (el) hitEls.current.set(c.id, el);
-            }}
-            className="absolute left-0 top-0"
-            style={{ zIndex: lit(c.id) ? 205 : 1, pointerEvents: lit(c.id) ? "auto" : "none" }}
-            onPointerLeave={() => setHover((h) => (h === c.id ? null : h))}
-          >
-            <div
-              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full"
-              style={{ width: (c.w / 2 + c.pad) * 2 * 1.5, height: (c.h / 2 + c.pad) * 2 * 1.6 }}
-            />
-          </div>
-        ))}
-
       {cards.map((c, i) => {
-        const on = lit(c.id);
-        const dim = hover && !on;
-        // Every card is sharp; only cards outside an open hover group dim.
+        const on = hover === c.id;
+        const dim = hover && !lit(c.id);
+        // Every card is sharp; only cards outside the hovered family dim.
         const blur = 0;
         const haze = dim ? 0.55 : 0;
         return (
@@ -385,9 +346,7 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
             className="absolute left-0 top-0 will-change-transform"
             style={{ width: c.w, height: c.h, zIndex: on ? 210 : Math.round((1 - c.depth) * 100) }}
             onPointerEnter={() => setHover(c.id)}
-            onPointerLeave={() => {
-              if (c.pad === 0) setHover((h) => (h === c.id ? null : h));
-            }}
+            onPointerLeave={() => setHover((h) => (h === c.id ? null : h))}
           >
             <motion.div
               className="h-full w-full"
@@ -454,12 +413,13 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
         );
       })}
 
-      {/* Related nodes: small, deep cards orbiting their parent, pulled into
-          focus while the parent group is open. They never move on their own
-          hover, so the pointer cannot chase them. */}
+      {/* Related cards: on the ring beside their project, card-sized; in the
+          globe, small satellites clustered beside it. */}
       {NODES.map((n, i) => {
-        const open = lit(n.parent);
-        const h = W_NODE * ASPECT;
+        const w = cards[0]?.w ?? W_RING;
+        const h = w * ASPECT;
+        const on = hover === n.id;
+        const dim = hover && !lit(n.id);
         return (
           <div
             key={n.id}
@@ -467,18 +427,18 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
               if (el) nodeEls.current.set(n.id, el);
             }}
             className="absolute left-0 top-0 will-change-transform"
-            style={{ width: W_NODE, height: h, zIndex: open ? 215 : 5 }}
-            onPointerEnter={() => {
-              setHover(n.parent);
-              setNodeHover(n.id);
-            }}
-            onPointerLeave={() => setNodeHover((x) => (x === n.id ? null : x))}
+            style={{ width: w, height: h, zIndex: on ? 210 : 5 }}
+            onPointerEnter={() => setHover(n.id)}
+            onPointerLeave={() => setHover((x) => (x === n.id ? null : x))}
           >
             <motion.div
               className="h-full w-full"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: delay + 0.6 + i * 0.05, duration: 0.4 }}
+              initial={{ opacity: 0, scale: 0.4 }}
+              animate={{ opacity: 1, scale: on ? 1.08 : 1 }}
+              transition={{
+                scale: { delay: hover ? 0 : delay + 0.3 + i * 0.04, duration: 0.6, ease: SETTLE },
+                opacity: { delay: delay + 0.3 + i * 0.04, duration: 0.4 },
+              }}
             >
               <Link
                 href={n.href}
@@ -489,15 +449,15 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
               >
                 <span className="relative block h-full w-full overflow-hidden bg-white">
                   {/* eslint-disable-next-line @next/next/no-img-element -- 320px thumbs, already sized */}
-                  <img src={n.thumb} alt="" width={W_NODE} height={h} className="h-full w-full object-cover" draggable={false} />
+                  <img src={n.thumb} alt="" width={w} height={h} className="h-full w-full object-cover" draggable={false} />
                   <span
                     className="pointer-events-none absolute inset-0 bg-white transition-opacity duration-300"
-                    style={{ opacity: open ? 0 : "calc(0.3 * var(--haze-k, 1))" }}
+                    style={{ opacity: `calc(${dim ? 0.55 : 0} * var(--haze-k, 1))` }}
                   />
                 </span>
                 <span
-                  className={`pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap text-[8px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 ${
-                    nodeHover === n.id ? "opacity-100" : "opacity-0"
+                  className={`pointer-events-none absolute left-1/2 top-full mt-2.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-none tracking-[-0.03em] text-black transition-opacity duration-200 ${
+                    on ? "opacity-100" : "opacity-0"
                   }`}
                 >
                   {n.title}
