@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Contributions } from "@/lib/contributions";
 
 // Evidence cards for the Index view, in the moodboard's language: a
 // sharp-cornered block with one mono line hanging off it. Real data only:
 // the grid is the live GitHub calendar, the ledger is counted from the
-// Figma files themselves.
+// Figma files themselves, the research report sums the case studies.
 
 const MONO = "font-mono text-[9.5px] leading-none tracking-[0.01em]";
 
@@ -116,6 +116,93 @@ export function SystemLedger({ width }: { width: number }) {
       </span>
       <Tag tag="SYS">
         {SYSTEMS.length} systems · {sum("tokens")} tokens · {sum("components")} components · {sum("themes")} themes
+      </Tag>
+    </div>
+  );
+}
+
+// ── Research report ────────────────────────────────────────────────────────
+
+// Summed from the case studies, unnamed. Participants: 127 survey responses
+// and 8 interviews in one study, 8 interviews in another (its co-design
+// sessions reused 5 of them). Hours: three workflows measured before and
+// after, per run: 48 h to 12 min, 4 h to 12 min, 25 h to 2 h.
+const PARTICIPANTS = 127 + 8 + 8;
+const HOURS_BEFORE = 48 + 4 + 25;
+const HOURS_AFTER = 0.2 + 0.2 + 2;
+const DROP_AT = 0.46;
+
+/** The before/after hours as a step, printed as a halftone: dots swell under
+ *  the line and stay pin-sized above it, like a screen-printed chart. */
+function Halftone({ width, height }: { width: number; height: number }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current;
+    const ctx = c?.getContext("2d");
+    if (!c || !ctx) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    c.width = width * dpr;
+    c.height = height * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.fillStyle = "#c6ec3a";
+    ctx.fillRect(0, 0, width, height);
+    const top = height * 0.14;
+    const level = (x: number) => {
+      // Ease over a short span so the drop reads as a cliff, not a wall.
+      const k = Math.min(1, Math.max(0, (x - DROP_AT) / 0.06));
+      const e = k * k * (3 - 2 * k);
+      const v = HOURS_BEFORE + (HOURS_AFTER - HOURS_BEFORE) * e;
+      return height - (v / HOURS_BEFORE) * (height - top);
+    };
+    // Seeded jitter, so the print is the same on every visit.
+    let seed = 7;
+    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const P = 4;
+    for (let y = P / 2; y < height; y += P) {
+      for (let x = P / 2; x < width; x += P) {
+        const under = y > level(x / width);
+        const depth = under ? Math.min(1, (y - level(x / width)) / 18) : 0;
+        const r = under ? 0.9 + 1.0 * depth * (0.75 + 0.25 * rand()) : 0.55;
+        ctx.fillStyle = under ? "#6f9a0e" : "#a9d12c";
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }, [width, height]);
+  return <canvas ref={ref} aria-hidden="true" className="block" style={{ width, height }} />;
+}
+
+export function ResearchReport({ width }: { width: number }) {
+  const cut = Math.round(HOURS_BEFORE - HOURS_AFTER);
+  return (
+    <div className="block" aria-label={`Research: ${PARTICIPANTS} participants; manual work cut from ${HOURS_BEFORE} to ${HOURS_AFTER} hours per run`}>
+      <span className="block bg-white ring-1 ring-black/[0.06]" style={{ width }}>
+        <span className="block border-b border-black/[0.06] px-3.5 py-2 text-[11px] text-black/55">Research report</span>
+        <span className="flex justify-between gap-3 px-3.5 pb-3.5 pt-3">
+          <span>
+            <span className="block text-[9px] uppercase tracking-[0.06em] text-black/50">Mixed methods, measured</span>
+            <span className="mt-1 block text-[21px] leading-[1.08] tracking-[-0.015em] text-black">
+              Heard, then
+              <br />
+              measured
+            </span>
+          </span>
+          <span className="shrink-0 text-[10.5px] leading-tight text-black/50">
+            <span className="block">Participants</span>
+            <span className="block text-[19px] tabular-nums text-black">{PARTICIPANTS}</span>
+            <span className="mt-1.5 block">Hours cut per run</span>
+            <span className="block text-[19px] tabular-nums text-black">{cut}</span>
+          </span>
+        </span>
+        <span className="relative block">
+          <Halftone width={width} height={112} />
+          <span className="absolute left-2.5 top-1.5 font-mono text-[9px] text-[#3d5a00]">{HOURS_BEFORE} h</span>
+          <span className="absolute bottom-1.5 right-2.5 font-mono text-[9px] text-[#3d5a00]">{HOURS_AFTER} h</span>
+        </span>
+      </span>
+      <Tag tag="RSRCH">
+        {HOURS_BEFORE} h → {HOURS_AFTER} h of manual work · {Math.round((1 - HOURS_AFTER / HOURS_BEFORE) * 100)}% cut
       </Tag>
     </div>
   );
