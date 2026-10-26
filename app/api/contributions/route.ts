@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { parseCalendar, type Contributions } from "@/lib/contributions";
 
 // The GitHub contribution calendar for the Index view's commit grid: every
-// repo, private ones included when the profile shows them. Re-read daily.
+// repo, private ones included when the profile shows them. Re-read every
+// 3 hours, so a stale count (GitHub lags a settings change) clears quickly.
 // With GITHUB_TOKEN set it uses the GraphQL API; without, it reads the same
 // public calendar fragment the profile page loads.
 
-export const revalidate = 86400;
+export const revalidate = 10800;
 
 const USER = "pyellapu07";
 
