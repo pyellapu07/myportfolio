@@ -10,14 +10,12 @@ import { immersion } from "./immersion";
 import ProjectDetail, { type DetailOpen } from "./ProjectDetail";
 
 // Project cards floating over the map, AIRLA-style: dead straight, one size,
-// in an even pattern, drifting slowly and shifting with the cursor in
+// in a ring, drifting slowly and shifting with the cursor in
 // parallax. A dot marks every card's place; hovering a card brings it forward
 // with its title beneath and draws a dotted thread to its place.
 
 const ASPECT = 0.625; // 16:10, as the thumbnails
-const W_EVEN = 156; // card width on the flat map, every card alike
-const SPAN = [0.16, 0.82]; // first and last card centres, fractions of the box width
-const ROWS = [0.32, 0.62]; // the zig-zag's two rows, fractions of the box height
+const W_RING = 96; // card width on the flat map: small, every card alike
 const W_NODE = 62; // related-node width
 const ORBIT = 30; // px between a parent card's edge and its nodes
 // Immersive 3D: perspective, how far the flat cards spread as they lift off,
@@ -52,15 +50,18 @@ function rand(seed: number) {
 
 type Node = Project & { parent: string; angle: number };
 
-// One even pattern, AIRLA-style, rather than piled on their places (the
-// work clusters in the Americas, which weighed the map to the left): cards
-// of one size, evenly spaced west to east in a zig-zag of two rows, inside
-// the evidence cards at the screen's edges. A dot still marks each place,
-// and hovering a card draws its thread to it.
+// One ring, AIRLA-style, rather than piled on their places (the work
+// clusters in the Americas, which weighed the map to the left): cards of one
+// size, evenly spaced round an ellipse centred on the map, clockwise from the
+// top in west-to-east order. A dot still marks each place, and hovering a
+// card draws its thread to it.
 function layout(bw: number, bh: number): Placed[] {
   // Cards scale with the map, so a smaller map doesn't crowd them.
   const k = Math.min(1, Math.max(0.65, bw / 1250));
-  const w = W_EVEN * k;
+  const w = W_RING * k;
+  // Close to a circle, as AIRLA's, a touch wider than tall.
+  const rx = Math.min(bw * 0.2, 265);
+  const ry = Math.min(bh * 0.37, 228);
   const top = PROJECTS.filter((p) => !p.parent)
     .map((p, i) => {
       const [mx, my] = naturalEarth(p.lon, p.lat);
@@ -68,20 +69,23 @@ function layout(bw: number, bh: number): Placed[] {
     })
     .sort((a, b) => a.ax - b.ax);
   const n = top.length;
-  return top.map(({ p, i, ax, ay }, slot) => ({
-    ...p,
-    ax,
-    ay,
-    cx: bw * (SPAN[0] + ((SPAN[1] - SPAN[0]) * slot) / Math.max(1, n - 1)),
-    // Low row first, so the top-left corner stays clear for the evidence.
-    cy: bh * (slot % 2 === 0 ? ROWS[1] : ROWS[0]),
-    w,
-    h: w * ASPECT,
-    // Depth still sets each card's place in the globe and its parallax.
-    depth: rand(i + 1),
-    phase: rand(i + 13) * Math.PI * 2,
-    pad: PROJECTS.some((q) => q.parent === p.id) ? ORBIT + W_NODE : 0,
-  }));
+  return top.map(({ p, i, ax, ay }, slot) => {
+    // Half a step off the top, so no card sits dead on the vertical axis.
+    const a = -Math.PI / 2 + ((slot + 0.5) / n) * Math.PI * 2;
+    return {
+      ...p,
+      ax,
+      ay,
+      cx: bw / 2 + Math.cos(a) * rx,
+      cy: bh * 0.47 + Math.sin(a) * ry,
+      w,
+      h: w * ASPECT,
+      // Depth still sets each card's place in the globe and its parallax.
+      depth: rand(i + 1),
+      phase: rand(i + 13) * Math.PI * 2,
+      pad: PROJECTS.some((q) => q.parent === p.id) ? ORBIT + W_NODE : 0,
+    };
+  });
 }
 
 const NODES: Node[] = PROJECTS.filter((p): p is Project & { parent: string } => !!p.parent).map((p, i, all) => ({
