@@ -25,7 +25,14 @@ const instrumentSerif = Instrument_Serif({
   display: "swap",
 });
 
+// Absolute base for share images: the site's own URL when set, else the
+// Vercel production domain, else local.
+const SITE =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000");
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE),
   title: "Pradeep's Canvas",
   description:
     "Product Designer & UX Researcher creating user-centered digital products across enterprise SaaS, AI platforms, and consumer applications.",

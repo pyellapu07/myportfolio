@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import HyperspaceIntro from "@/components/intro/HyperspaceIntro";
 import Landing, { type View } from "@/components/landing/Landing";
 import { RecruiterProvider } from "@/lib/recruiter-context";
-import ImpactMetrics from "@/components/ImpactMetrics";
+import EvidenceSection from "@/components/landing/EvidenceSection";
 import Timeline from "@/components/Timeline";
 import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
@@ -38,7 +38,8 @@ function Lab() {
       <HyperspaceIntro speed={speed} dockTo={dockTo} dockAlign="center" onDock={onDock} onDone={onDone} hideHeadline={ready} />
       <Landing view={view} onView={changeView} shown={shown} ready={ready} statementRef={statementRef}>
         <RecruiterProvider>
-          <ImpactMetrics />
+          {/* The old 40% / 167% band is gone: the evidence cards carry the numbers. */}
+          <EvidenceSection />
           <Timeline />
           <Testimonials />
           <div id="contact">

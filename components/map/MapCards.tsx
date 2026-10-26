@@ -388,7 +388,10 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
                 href={c.href}
                 draggable={false}
                 onClick={openDetail(c)}
-                className="block h-full w-full"
+                // Keyboard: focus stops the ring and names the card, as hover does.
+                onFocus={() => setHover(c.id)}
+                onBlur={() => setHover((h) => (h === c.id ? null : h))}
+                className="block h-full w-full outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
                 aria-label={`${c.title}, ${c.place}`}
               >
                 {/* Square, flat frame; blur and haze stay inside it. */}
@@ -471,7 +474,9 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
                 href={n.href}
                 draggable={false}
                 onClick={openDetail(n)}
-                className="block h-full w-full"
+                onFocus={() => setHover(n.id)}
+                onBlur={() => setHover((h) => (h === n.id ? null : h))}
+                className="block h-full w-full outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
                 aria-label={`${n.title}, ${n.role}`}
               >
                 <span className="relative block h-full w-full overflow-hidden bg-white">

@@ -22,7 +22,7 @@ export const HEAT_SOURCES: HeatSource[] = [
   { name: "Sudan", lon: 30.2, lat: 15.5, weight: 0.9, radius: 9 },
   // TGI partners
   { name: "Tempe, AZ (ASU)", lon: -111.9, lat: 33.4, weight: 0.55, radius: 7 },
-  { name: "Seattle, WA (UW)", lon: -122.3, lat: 47.6, weight: 0.5, radius: 6 },
+  { name: "St. Louis, MO (WashU)", lon: -90.3, lat: 38.6, weight: 0.5, radius: 6 },
   // MarketCrunch AI
   { name: "San Francisco, CA", lon: -122.4, lat: 37.8, weight: 0.6, radius: 6 },
   // My Equation: market research and UI/UX

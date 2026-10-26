@@ -22,7 +22,7 @@ export type Project = {
 // Index-grid details for the top-level projects.
 const INDEX: Record<string, { cover: string; blurb: string }> = {
   xylem: { cover: "/xylem-autopilot/01-nairobi-live-demo.webp", blurb: "A 3-day satellite workflow turned into 30-minute food-security bulletins for analysts in 9 countries." },
-  tgi: { cover: "/tgi/01-hero-full-platform.webp", blurb: "Crop intelligence for conflict-affected regions, built across ASU, UMD and the University of Washington." },
+  tgi: { cover: "/tgi/01-hero-full-platform.webp", blurb: "Crop intelligence for conflict-affected regions, built across ASU, UMD and WashU." },
   "jeevy-os": { cover: "/jeevy/cpm-overview-workstreams.webp", blurb: "An operating system for aerospace fabrication: scheduling, materials, CAD and the shop floor." },
   hack4impact: { cover: "/hack4impactpreview.gif", blurb: "A recruitment portal for 750+ applicants a semester, as sole product designer." },
   "terps-esports": { cover: "/Esports/TerpsEsportsGraphic.jpeg", blurb: "Two years of creative direction: brand, motion and events for UMD's esports org." },

@@ -15,7 +15,7 @@ POSITIONING (lead with this):
 - Current: leading design at Jeevy Fabrication (industrial OS for aerospace fabrication) and at the Xylem Lab, University of Maryland, on NASA Harvest food-security work.
 - When asked about seniority, answer with scope and ownership (what I led, who I worked with, what shipped), not years.
 
-CONTACT: pyellapu@terpmail.umd.edu | 240.610.7815 | linkedin.com/in/pradeepyellapu
+CONTACT: pyellapu@terpmail.umd.edu | linkedin.com/in/pradeepyellapu
 EDUCATION: MS in Data Science, University of Maryland (minor in UX Research Methods).
 Open to full-time roles and to relocation.
 
