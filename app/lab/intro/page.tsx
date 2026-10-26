@@ -1,56 +1,14 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import HyperspaceIntro from "@/components/intro/HyperspaceIntro";
-import Landing, { type View } from "@/components/landing/Landing";
-import { RecruiterProvider } from "@/lib/recruiter-context";
-import EvidenceSection from "@/components/landing/EvidenceSection";
-import Timeline from "@/components/Timeline";
-import Testimonials from "@/components/Testimonials";
-import Contact from "@/components/Contact";
-import Footer from "@/components/Footer";
+import Home from "@/components/landing/Home";
 
+// Review copy of the homepage: the intro always plays, and ?speed=0.05 slows
+// it for frame-by-frame review and recording.
 function Lab() {
-  // ?speed=0.05 slows the intro, for frame-by-frame review and recording.
   const speed = Number(useSearchParams().get("speed")) || 1;
-  const [view, setView] = useState<View>("spatial");
-  const [shown, setShown] = useState(false);
-  const [ready, setReady] = useState(false);
-  const statementRef = useRef<HTMLDivElement>(null);
-  const dockTo = useCallback(() => statementRef.current?.getBoundingClientRect() ?? null, []);
-  const onDock = useCallback(() => setShown(true), []);
-  const onDone = useCallback(() => setReady(true), []);
-
-  // No scrolling until the intro has handed over.
-  useEffect(() => {
-    document.documentElement.style.overflow = ready ? "" : "hidden";
-    if (!ready) window.scrollTo(0, 0);
-  }, [ready]);
-
-  const changeView = (v: View) => {
-    window.scrollTo({ top: 0 });
-    setView(v);
-  };
-
-  return (
-    <main>
-      <HyperspaceIntro speed={speed} dockTo={dockTo} dockAlign="center" onDock={onDock} onDone={onDone} hideHeadline={ready} />
-      <Landing view={view} onView={changeView} shown={shown} ready={ready} statementRef={statementRef}>
-        <RecruiterProvider>
-          {/* The old 40% / 167% band is gone: the evidence cards carry the numbers. */}
-          <EvidenceSection />
-          <Timeline />
-          <Testimonials />
-          <div id="contact">
-            <Contact />
-          </div>
-          <Footer />
-        </RecruiterProvider>
-      </Landing>
-
-    </main>
-  );
+  return <Home speed={speed} review />;
 }
 
 export default function IntroLab() {

@@ -382,9 +382,11 @@ interface Props {
   hideHeadline?: boolean;
   /** The headline starts docking (or the intro was skipped). */
   onDock?: () => void;
+  /** Skip straight to the docked end state (e.g. already seen this session). */
+  instant?: boolean;
 }
 
-export default function HyperspaceIntro({ speed = 1, onDone, dockTo, dockAlign = "left", hideHeadline = false, onDock }: Props) {
+export default function HyperspaceIntro({ speed = 1, onDone, dockTo, dockAlign = "left", hideHeadline = false, onDock, instant: skipIntro = false }: Props) {
   const [layout, setLayout] = useState<Layout | null>(null);
   const [stage, setStage] = useState<"run" | "dock" | "final">("run");
   // Held on the blank white beat until the globe is built and compiled, so
@@ -465,7 +467,7 @@ export default function HyperspaceIntro({ speed = 1, onDone, dockTo, dockAlign =
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = skipIntro || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const ms = WORDS.map((_, i) => {
       const el = wordRefs.current[i];
