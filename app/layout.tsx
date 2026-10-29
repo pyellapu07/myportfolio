@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Manrope, DM_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
-import LoadingScreen from "@/components/LoadingScreen";
 import ScrollToTop from "@/components/ScrollToTop";
 
 const manrope = Manrope({
@@ -90,7 +89,6 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Analytics />
-        <LoadingScreen />
         <ScrollToTop />
         <a href="#main" className="skip-link">
           Skip to main content

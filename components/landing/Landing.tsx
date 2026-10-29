@@ -80,6 +80,28 @@ const VIEWS: { v: View; label: string; icon: ReactNode }[] = [
   },
 ];
 
+// Phones: the same switch as a small horizontal pill under the name, with
+// words (AIRLA's Index / Spatial), since the glass rail on the edge sat over
+// the content there.
+function PhoneSwitch({ view, onChange }: { view: View; onChange: (v: View) => void }) {
+  return (
+    <div className="flex rounded-full border border-black/[0.08] bg-white/70 p-0.5 backdrop-blur-xl">
+      {VIEWS.map(({ v, label }) => (
+        <button
+          key={v}
+          type="button"
+          onClick={() => onChange(v)}
+          aria-pressed={view === v}
+          className={`relative rounded-full px-3 py-1 text-[11.5px] font-semibold tracking-[-0.01em] transition-colors ${view === v ? "text-black" : "text-black/45"}`}
+        >
+          {view === v && <motion.span layoutId="view-pill-phone" className="absolute inset-0 rounded-full bg-white shadow-[0_1px_4px_rgba(0,0,0,0.14)]" />}
+          <span className="relative">{label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function Switch({ view, onChange }: { view: View; onChange: (v: View) => void }) {
   return (
     <div className="flex flex-col gap-1 rounded-[14px] border border-white/80 bg-white/45 p-1 shadow-[0_10px_30px_-14px_rgba(0,0,0,0.3)] backdrop-blur-xl">
@@ -350,6 +372,9 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
             <Link href="/" className="whitespace-nowrap text-[14px] font-bold tracking-[-0.03em] text-black sm:text-[15px]">
               Pradeep Yellapu
             </Link>
+            <div className="mt-1 sm:hidden">
+              <PhoneSwitch view={view} onChange={onView} />
+            </div>
             <p className="hidden text-[11px] tracking-[-0.01em] text-black/45 sm:block">{view === "spatial" ? HINTS[mode] : "Scroll to browse the work"}</p>
           </div>
           <nav className="flex items-center justify-end gap-3 text-[13px] font-semibold tracking-[-0.02em] text-black sm:gap-8 sm:text-[14px]">
@@ -364,8 +389,8 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
         </div>
       </motion.header>
 
-      {/* View switcher, glass, on the right edge. Not on phones, where it sat
-          over the content; the sections below carry the work there. */}
+      {/* View switcher, glass, on the right edge. Phones get PhoneSwitch in the
+          header instead: this one sat over the content there. */}
       <motion.div {...frame} className={`fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 sm:right-6 sm:block ${shown ? "" : "pointer-events-none"}`}>
         <Switch view={view} onChange={onView} />
       </motion.div>
