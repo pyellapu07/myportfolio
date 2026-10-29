@@ -76,7 +76,7 @@ export default function EvidenceField({ delay = 0 }: { delay?: number }) {
       // The globe as MapCards builds it; the ring turns at 60% of its spin
       // and is squashed in depth, so its near side passes in front without
       // coming up close.
-      const R = Math.max(320, Math.min(bw * 0.42, 560));
+      const R = bw < 640 ? bw * 0.5 : Math.max(320, Math.min(bw * 0.42, 560));
       const zC = -R * 0.55;
       const flyDepth = R * 1.25 + 160;
       const r = R * 0.9;

@@ -54,6 +54,20 @@ const HINTS: Record<Mode, string> = {
   leaving: "Scroll to enter · drag to explore",
   past: "Scroll up to fly back",
 };
+// The same, for touch screens.
+const TOUCH_HINTS: Record<Mode, string> = {
+  map: "Swipe up to enter",
+  entering: "Swipe to fly through · drag sideways to spin",
+  immersed: "Swipe to fly through · drag sideways to spin",
+  leaving: "Swipe up to enter",
+  past: "Swipe down to fly back",
+};
+const coarseQuery = "(pointer: coarse)";
+const subscribeCoarse = (cb: () => void) => {
+  const m = window.matchMedia(coarseQuery);
+  m.addEventListener("change", cb);
+  return () => m.removeEventListener("change", cb);
+};
 
 // View switcher: a vertical glass pill on the right edge, icons only, the
 // label showing on hover (Air-style).
@@ -166,6 +180,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
   const [mode, setMode] = useState<Mode>(immersion.get().mode);
   // The chat input is focused or its answers are open: the statement steps back.
   const [asking, setAsking] = useState(false);
+  const coarse = useSyncExternalStore(subscribeCoarse, () => window.matchMedia(coarseQuery).matches, () => false);
   useEffect(() => immersion.onMode(setMode), []);
 
   // Immersive Spatial view, AIRLA-style. From the top of the page a scroll
@@ -174,8 +189,6 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
   // start returns to the map; past the end, on into the page sections.
   useEffect(() => {
     if (view !== "spatial" || !ready) return;
-    const fine = window.matchMedia("(pointer: fine)").matches;
-    if (!fine) return;
     const root = document.documentElement;
     let over = 0; // wheel pushed past either end of the flight
     let drag: { x: number; y: number; moved: number } | null = null;
@@ -187,11 +200,14 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
     const SPEED = 1 / 520; // flight per wheel px
     const PAST_END = 90; // wheel px past the end before leaving
 
-    const onWheel = (e: WheelEvent) => {
+    // One step of scroll input, from the wheel or a touch swipe (deltaY > 0
+    // goes forward: wheel down, finger up).
+    const step = (deltaY: number, prevent: () => void, target: EventTarget | null) => {
+      const e = { deltaY, preventDefault: prevent };
       // A project or the chat is open: the scene holds still, but the chat
       // panel keeps its own scroll.
       if (immersion.get().detail) {
-        if (!(e.target as HTMLElement).closest?.("[data-own-scroll]")) e.preventDefault();
+        if (!(target as HTMLElement | null)?.closest?.("[data-own-scroll]")) e.preventDefault();
         return;
       }
       const m = immersion.get().mode;
@@ -246,7 +262,51 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
         immersion.fly(e.deltaY * SPEED);
       }
     };
+    const onWheel = (e: WheelEvent) => step(e.deltaY, () => e.preventDefault(), e.target);
+
+    // Touch: a swipe is the wheel, and inside the globe a sideways drag spins
+    // it. Momentum comes from the flight's own glide once the finger lifts.
+    // Leaving either end takes a fresh swipe that starts there, so one long
+    // swipe never flies through and out in one go.
+    const TOUCH = 0.75;
+    let touch: { x: number; y: number; axis: "x" | "y" | null; atStart: boolean; atEnd: boolean } | null = null;
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return (touch = null);
+      const f = immersion.get().flight;
+      touch = { x: e.touches[0].clientX, y: e.touches[0].clientY, axis: null, atStart: f < 0.03, atEnd: f > 0.97 };
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!touch || e.touches.length !== 1) return;
+      const t = e.touches[0];
+      const dx = t.clientX - touch.x;
+      const dy = touch.y - t.clientY;
+      // Lock to the first clear direction, so a swipe never both spins and flies.
+      if (!touch.axis) {
+        if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+        touch.axis = Math.abs(dx) > Math.abs(dy) * 1.2 ? "x" : "y";
+      }
+      touch.x = t.clientX;
+      touch.y = t.clientY;
+      const m = immersion.get().mode;
+      if (touch.axis === "x") {
+        if (m === "immersed" && !immersion.get().detail) {
+          e.preventDefault();
+          immersion.orbit(dx, 0);
+        }
+        return;
+      }
+      const s = immersion.get();
+      if (m === "immersed" && ((dy > 0 && s.flightTarget >= 1 && !touch.atEnd) || (dy < 0 && s.flightTarget <= 0 && !touch.atStart))) {
+        e.preventDefault();
+        return;
+      }
+      step(dy * TOUCH, () => e.cancelable && e.preventDefault(), e.target);
+    };
+    const onTouchEnd = () => (touch = null);
+
     const onDown = (e: PointerEvent) => {
+      // Touch spins through onTouchMove.
+      if (e.pointerType === "touch") return;
       if (immersion.get().mode !== "immersed" || immersion.get().detail || e.button !== 0) return;
       if ((e.target as HTMLElement).closest("header, button, form, [data-own-scroll]")) return;
       drag = { x: e.clientX, y: e.clientY, moved: 0 };
@@ -278,12 +338,20 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       lastDragMoved = 0;
     };
     window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd);
+    window.addEventListener("touchcancel", onTouchEnd);
     window.addEventListener("pointerdown", onDown);
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
     window.addEventListener("click", onClick, true);
     return () => {
       window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
       window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
@@ -318,7 +386,8 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       const im = immersion.get();
       set("--map-ox", "50%");
       set("--map-oy", "50%");
-      set("--map-zoom", (1 + 0.9 * k).toFixed(4));
+      // Phones zoom less: the stage is already about as wide as the screen.
+      set("--map-zoom", (1 + (window.innerWidth < 640 ? 0.25 : 0.9) * k).toFixed(4));
       // The camera is fixed: the map never tilts, it only slides a touch
       // with the globe's spin so the backdrop feels attached to it.
       const slide = Math.sin(im.yaw) * 40 * k;
@@ -375,7 +444,10 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
             <div className="mt-1 sm:hidden">
               <PhoneSwitch view={view} onChange={onView} />
             </div>
-            <p className="hidden text-[11px] tracking-[-0.01em] text-black/45 sm:block">{view === "spatial" ? HINTS[mode] : "Scroll to browse the work"}</p>
+            {/* On phones only the spatial hint, under the switch. */}
+            <p className={`text-[11px] tracking-[-0.01em] text-black/45 ${view === "spatial" ? "" : "hidden sm:block"}`}>
+              {view === "spatial" ? (coarse ? TOUCH_HINTS : HINTS)[mode] : "Scroll to browse the work"}
+            </p>
           </div>
           <nav className="flex items-center justify-end gap-3 text-[13px] font-semibold tracking-[-0.02em] text-black sm:gap-8 sm:text-[14px]">
             <Link href="/about" className="hidden sm:inline">

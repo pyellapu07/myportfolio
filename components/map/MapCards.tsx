@@ -210,7 +210,8 @@ export default function MapCards({ delay = 0, children }: { delay?: number; chil
       // camera in through the globe. k blends flat → globe.
       // Globe size from the box's width, not its height: the map stage is
       // short (the chat lives under it), and a shallow globe reads as flat.
-      const R = Math.max(320, Math.min(box.w * 0.42, 560));
+      // On a phone the globe fits the screen's width; elsewhere it fills the stage.
+      const R = box.w < 640 ? box.w * 0.5 : Math.max(320, Math.min(box.w * 0.42, 560));
       const zC = -R * 0.55; // globe centre, behind the screen plane
       const flyDepth = R * 1.25 + 160; // ends with the far side of the globe in view
       const cosP = Math.cos(im.pitch), sinP = Math.sin(im.pitch);
