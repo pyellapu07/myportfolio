@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 export default function ScrollToTop() {
   const [visible, setVisible] = useState(false);
+  // The homepage signs off with its own Back to top, and its chat bar sits here.
+  const path = usePathname() ?? "";
+  const home = path === "/" || path.startsWith("/lab");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,7 +28,7 @@ export default function ScrollToTop() {
 
   return (
     <AnimatePresence>
-      {visible && (
+      {visible && !home && (
         <motion.div
           key="scroll-to-top"
           initial={{ opacity: 0, y: 20 }}

@@ -4,11 +4,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import HyperspaceIntro from "@/components/intro/HyperspaceIntro";
 import Landing, { type View } from "@/components/landing/Landing";
 import EvidenceSection from "@/components/landing/EvidenceSection";
-import { RecruiterProvider } from "@/lib/recruiter-context";
-import Timeline from "@/components/Timeline";
-import Testimonials from "@/components/Testimonials";
-import Contact from "@/components/Contact";
-import Footer from "@/components/Footer";
+import { Closing, Journey, KindWords } from "@/components/landing/Sections";
 
 const SEEN = "intro-seen";
 
@@ -64,14 +60,11 @@ export default function Home({ speed = 1, review = false }: { speed?: number; re
     <main id="main">
       <HyperspaceIntro speed={speed} dockTo={dockTo} dockAlign="center" onDock={onDock} onDone={onDone} hideHeadline={ready} instant={skip} />
       <Landing view={view} onView={changeView} shown={shown} ready={ready} statementRef={statementRef}>
-        <RecruiterProvider>
           {/* The old 40% / 167% band is gone: the evidence cards carry the numbers. */}
           <EvidenceSection />
-          <Timeline />
-          <Testimonials />
-          <Contact />
-          <Footer />
-        </RecruiterProvider>
+          <Journey />
+          <KindWords />
+          <Closing />
       </Landing>
     </main>
   );
