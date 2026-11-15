@@ -5,6 +5,8 @@ import HyperspaceIntro from "@/components/intro/HyperspaceIntro";
 import Landing, { type View } from "@/components/landing/Landing";
 import EvidenceSection from "@/components/landing/EvidenceSection";
 import { Closing, Journey, KindWords, Method } from "@/components/landing/Sections";
+import { ReelStage } from "@/components/landing/Motion";
+import { REELS } from "@/components/landing/content";
 
 const SEEN = "intro-seen";
 
@@ -63,6 +65,7 @@ export default function Home({ speed = 1, review = false }: { speed?: number; re
           {/* The old 40% / 167% band is gone: the evidence cards carry the numbers. */}
           <EvidenceSection />
           <Journey />
+          <ReelStage reels={REELS} />
           <Method />
           <KindWords />
           <Closing />

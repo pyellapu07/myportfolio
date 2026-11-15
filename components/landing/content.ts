@@ -119,3 +119,10 @@ export const METHOD = [
     stat: "97% less manual work",
   },
 ];
+
+/** The reel between Journey and Method: the work itself, playing. */
+export const REELS = [
+  { video: "/thumbs/jeevy-os.mp4", poster: "/thumbs/jeevy-os-poster.webp", label: "Jeevy OS", caption: "An operating system for aerospace fabrication, from scheduling to the shop floor." },
+  { video: "/thumbs/xylem.mp4", poster: "/thumbs/xylem-poster.webp", label: "Xylem AutoPilot", caption: "Satellite data to food-security bulletins in thirty minutes, for analysts in nine countries." },
+  { video: "/thumbs/tgi.mp4", poster: "/thumbs/tgi-poster.webp", label: "TGI Crop Intelligence", caption: "Cropland estimates for conflict-affected regions, where no one can survey the ground." },
+];

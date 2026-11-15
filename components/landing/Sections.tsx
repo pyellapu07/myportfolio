@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useReducedMotion } from "framer-motion";
 import { CONTACT, METHOD, QUOTES, ROLES } from "./content";
+import { ScrubText } from "./Motion";
 
 // The page under the hero, maximalist: each section is a full-bleed block of
 // its own colour with oversized type, and each carries a line-drawn figure
@@ -70,16 +71,16 @@ export function Journey() {
   const reduce = !!useReducedMotion();
   const [active, setActive] = useState<number | null>(null);
   return (
-    <section id="journey" className="relative overflow-hidden py-24 text-white sm:py-32" style={{ background: INK }}>
+    <section id="journey" className="relative overflow-hidden py-24 text-white sm:py-32" style={{ background: INK, ["--sig" as string]: SIGNAL }}>
       <div className={WRAP}>
         <div className="flex items-end justify-between gap-6 border-b border-white/15 pb-6">
           <p className={`${MONO} text-white/50`}>Journey · 2022 — now</p>
           <p className={`${MONO} text-white/50`}>{String(ROLES.length).padStart(2, "0")} roles</p>
         </div>
         <h2 className="mt-10 text-[clamp(2.8rem,8.6vw,8.8rem)] font-extrabold leading-[0.88] tracking-[-0.055em]">
-          Six orbits,
+          <ScrubText text="Six orbits," />
           <br />
-          <span style={{ color: SIGNAL }}>one practice.</span>
+          <ScrubText text="one practice." className="text-[color:var(--sig)]" />
         </h2>
 
         <div className="mt-16 grid items-center gap-10 lg:grid-cols-[1.05fr_1fr]">
@@ -182,14 +183,14 @@ export function Method() {
   }, [held, reduce]);
   const m = METHOD[step];
   return (
-    <section id="method" className="py-24 sm:py-32" style={{ background: PAPER, color: INK }}>
+    <section id="method" className="py-24 sm:py-32" style={{ background: PAPER, color: INK, ["--blue" as string]: BLUE }}>
       <div className={WRAP}>
         <div className="flex items-end justify-between gap-6 border-b border-black/15 pb-6">
           <p className={`${MONO} text-black/50`}>Method</p>
           <p className={`${MONO} text-black/50`}>Designer · Researcher · Engineer</p>
         </div>
         <h2 className="mt-10 max-w-[14ch] text-[clamp(2.8rem,8.6vw,8.8rem)] font-extrabold leading-[0.88] tracking-[-0.055em]">
-          Heard, modelled, <span style={{ color: BLUE }}>shipped.</span>
+          <ScrubText text="Heard, modelled," /> <ScrubText text="shipped." className="text-[color:var(--blue)]" />
         </h2>
 
         <div className="mt-14 border border-black/10 bg-white/40 px-4 py-10 sm:px-10">
@@ -256,7 +257,7 @@ export function KindWords() {
           </div>
         </div>
         <blockquote className="mt-12 text-[clamp(2rem,5.4vw,5.4rem)] font-extrabold leading-[0.98] tracking-[-0.045em]">
-          &ldquo;{q.short}&rdquo;
+          <ScrubText key={q.name} text={`“${q.short}”`} dim={0.22} />
         </blockquote>
         {open && <p className="mt-8 max-w-[760px] text-[17px] leading-relaxed text-black/80">{q.full}</p>}
         <div className="mt-12 flex flex-wrap items-center justify-between gap-6 border-t border-black/25 pt-6">
