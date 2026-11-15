@@ -97,3 +97,25 @@ export const CONTACT = {
     { label: "Résumé", href: SITE.resumeUrl },
   ],
 };
+
+/** How the work runs, as a loop: hearing people, modelling the system, shipping it. */
+export const METHOD = [
+  {
+    n: "01",
+    title: "Hear it",
+    body: "Interviews, contextual inquiry and surveys before any pixels: 143 participants across the studies on this site.",
+    stat: "143 participants",
+  },
+  {
+    n: "02",
+    title: "Model it",
+    body: "Turn what was heard into a system: tokens, components and the rules between them. Four design systems, 2,233 variants.",
+    stat: "4 systems",
+  },
+  {
+    n: "03",
+    title: "Ship it",
+    body: "Build it in code and measure what changed, then go back and listen again. 1,315 contributions in the last year.",
+    stat: "97% less manual work",
+  },
+];

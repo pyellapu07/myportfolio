@@ -417,10 +417,28 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
 
   const frame = { initial: { opacity: 0 }, animate: { opacity: shown ? 1 : 0 }, transition: { duration: 0.6, ease: EASE } };
 
+  // Past the first screen the sections below bring their own colour; the
+  // header tucks away while scrolling down and returns on the way up.
+  const [tucked, setTucked] = useState(false);
+  useEffect(() => {
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setTucked(y > window.innerHeight * 0.85 && y > last);
+      last = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <>
       {/* Frame: name, switch, nav */}
-      <motion.header {...frame} className={`fixed inset-x-0 top-0 z-40 ${shown ? "" : "pointer-events-none"}`}>
+      <motion.header
+        {...frame}
+        className={`fixed inset-x-0 top-0 z-40 transition-transform duration-500 ${shown ? "" : "pointer-events-none"}`}
+        style={{ transform: tucked ? "translateY(-110%)" : "none" }}
+      >
         {/* Soft white backing so content scrolling underneath never collides with the nav */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white via-white/85 to-transparent" />
         <div className={`relative grid grid-cols-[1fr_auto_1fr] items-start pt-6 sm:pt-9 ${GUTTER}`}>
