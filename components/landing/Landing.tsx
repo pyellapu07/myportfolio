@@ -197,6 +197,27 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
     // Trackpads keep sending wheel events after a flick; ignore input for a
     // moment after any change of mode so momentum can't bounce it back.
     const COOLDOWN = 300;
+    // Our own eased scroll for the hand-off into the sections: native smooth
+    // scrolling is cancelled by the next wheel event, which a trackpad's
+    // momentum always sends.
+    let handing = false;
+    let glide = 0;
+    const glideTo = (to: number) => {
+      cancelAnimationFrame(glide);
+      const from = window.scrollY;
+      const t0 = performance.now();
+      const dur = 750;
+      handing = true;
+      const step = (now: number) => {
+        const u = Math.min(1, (now - t0) / dur);
+        const e = 1 - Math.pow(1 - u, 3);
+        window.scrollTo({ top: from + (to - from) * e, behavior: "instant" });
+        if (u < 1) glide = requestAnimationFrame(step);
+        // Let the momentum tail die out before handing scrolling back.
+        else setTimeout(() => (handing = false), 350);
+      };
+      glide = requestAnimationFrame(step);
+    };
     const SPEED = 1 / 520; // flight per wheel px
     const PAST_END = 90; // wheel px past the end before leaving
 
@@ -228,12 +249,18 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
         return;
       }
       if (m === "past") {
+        // The hand-off scroll is running: hold the page still, or a
+        // trackpad's momentum interrupts it and the page stops halfway.
+        if (handing) {
+          e.preventDefault();
+          return;
+        }
         // Back up from the sections: the scene is parked at its end frame, so
         // reaching the top drops straight into it, and the scroll keeps going
         // as a fly-back. Further up flies out to the flat map.
         if (e.deltaY < 0 && window.scrollY <= vh * 0.04) {
           e.preventDefault();
-          window.scrollTo({ top: 0 });
+          window.scrollTo({ top: 0, behavior: "instant" });
           lock(true);
           over = 0;
           immersion.resume();
@@ -253,7 +280,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
         over = 0;
         immersion.leave(true);
         lock(false);
-        window.scrollTo({ top: vh, behavior: "smooth" });
+        glideTo(vh);
       } else if (over < -PAST_END) {
         over = 0;
         immersion.leave();
@@ -347,6 +374,7 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
     window.addEventListener("pointerup", onUp);
     window.addEventListener("click", onClick, true);
     return () => {
+      cancelAnimationFrame(glide);
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchmove", onTouchMove);
