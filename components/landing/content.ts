@@ -10,6 +10,9 @@ export type Role = {
   years: string;
   /** One line: what came of it. */
   outcome: string;
+  /** Where it was, for the career globe. */
+  lon: number;
+  lat: number;
 };
 
 export const ROLES: Role[] = [
@@ -17,6 +20,8 @@ export const ROLES: Role[] = [
     role: "Lead Product Designer",
     org: "Jeevy Fabrication",
     place: "Cleburne, TX",
+    lon: -97.39,
+    lat: 32.35,
     years: "2026",
     outcome: "An operating system for aerospace fabrication: scheduling, materials, CAD and the shop floor.",
   },
@@ -24,6 +29,8 @@ export const ROLES: Role[] = [
     role: "Product Research & Designer",
     org: "Xylem Lab · NASA Harvest, UMD",
     place: "College Park, MD",
+    lon: -76.94,
+    lat: 38.99,
     years: "2025–",
     outcome: "A 3-day satellite workflow turned into 30-minute food-security bulletins.",
   },
@@ -31,6 +38,8 @@ export const ROLES: Role[] = [
     role: "Product Design & UX Research Intern",
     org: "MarketCrunch AI",
     place: "San Francisco, CA",
+    lon: -122.42,
+    lat: 37.77,
     years: "2025",
     outcome: "UX audit of 20+ screens and testing with 12 enterprise users; 15% fewer reporting errors.",
   },
@@ -38,6 +47,8 @@ export const ROLES: Role[] = [
     role: "UX Designer",
     org: "Hack4Impact, UMD",
     place: "College Park, MD",
+    lon: -76.94,
+    lat: 38.99,
     years: "2024–25",
     outcome: "A 33-page application cut to a 4-step flow for 750+ applicants a year.",
   },
@@ -45,6 +56,8 @@ export const ROLES: Role[] = [
     role: "Technical UX Analyst",
     org: "Computacenter",
     place: "Bengaluru, India",
+    lon: 77.59,
+    lat: 12.97,
     years: "2023–24",
     outcome: "Diagnostic dashboards that cut mean time to resolve by 40%.",
   },
@@ -52,6 +65,8 @@ export const ROLES: Role[] = [
     role: "Market Research Analyst, UI/UX",
     org: "My Equation",
     place: "Ahmedabad, India",
+    lon: 72.57,
+    lat: 23.02,
     years: "2022–23",
     outcome: "Interviews and competitive analysis behind 35% revenue growth.",
   },

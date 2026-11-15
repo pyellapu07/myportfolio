@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CONTACT, METHOD, QUOTES, ROLES } from "./content";
 import { LineRise } from "./Motion";
+import CareerGlobe from "./CareerGlobe";
+import AgentOrb from "@/components/agent/AgentOrb";
 
 // The page under the hero: full-bleed blocks of colour with oversized type,
 // each carrying a line-drawn figure that says something. One typeface
@@ -81,98 +83,9 @@ function AutoTabs({
   );
 }
 
-// ── Journey: every role an orbit, widening with the work ────────────────────
-
-/** An ellipse as a path starting at its left end. */
-const ellipse = (rx: number, ry: number) => `M ${-rx} 0 A ${rx} ${ry} 0 1 0 ${rx} 0 A ${rx} ${ry} 0 1 0 ${-rx} 0`;
-
-function Orbits({ active, reduce }: { active: number; reduce: boolean }) {
-  // Oldest role innermost: each orbit wider and tipped a little further.
-  const orbits = [...ROLES].reverse().map((r, i) => ({
-    key: r.org + r.years,
-    idx: ROLES.length - 1 - i,
-    rx: 100 + i * 42,
-    ry: 36 + i * 17,
-    tilt: -26 + i * 8,
-    dur: 10 + i * 3.5,
-  }));
-  const R = 64;
-  return (
-    <svg viewBox="-340 -340 680 680" className="h-full w-full overflow-visible" aria-hidden="true">
-      <defs>
-        <radialGradient id="planet" cx="35%" cy="30%" r="75%">
-          <stop offset="0%" stopColor="#3a3a40" />
-          <stop offset="70%" stopColor="#111113" />
-          <stop offset="100%" stopColor="#0a0a0b" />
-        </radialGradient>
-      </defs>
-      {/* Back halves of the orbits pass behind the planet: draw orbits, then the planet, then the front halves. */}
-      {orbits.map((o, n) => {
-        const on = active === o.idx;
-        return (
-          <g key={o.key} transform={`rotate(${o.tilt})`}>
-            <motion.path
-              d={ellipse(o.rx, o.ry)}
-              fill="none"
-              stroke={on ? SIGNAL : "#fff"}
-              strokeOpacity={on ? 0.9 : 0.22}
-              strokeWidth={on ? 1.6 : 1}
-              initial={reduce ? false : { pathLength: 0 }}
-              whileInView={{ pathLength: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.6, ease: EASE, delay: 0.15 + n * 0.12 }}
-              style={{ transition: "stroke .5s, stroke-opacity .5s" }}
-            />
-            {/* The satellite: a short comet riding the orbit, head bright, tail fading. */}
-            {!reduce && (
-              <>
-                <path
-                  d={ellipse(o.rx, o.ry)}
-                  pathLength={1}
-                  fill="none"
-                  stroke={on ? SIGNAL : "#fff"}
-                  strokeOpacity={on ? 0.55 : 0.18}
-                  strokeWidth={on ? 3 : 2}
-                  strokeLinecap="round"
-                  strokeDasharray="0.14 0.86"
-                  className="orbit-comet"
-                  style={{ animationDuration: `${o.dur}s` }}
-                />
-                <path
-                  d={ellipse(o.rx, o.ry)}
-                  pathLength={1}
-                  fill="none"
-                  stroke={on ? SIGNAL : "#fff"}
-                  strokeOpacity={on ? 1 : 0.7}
-                  strokeWidth={on ? 7 : 4.5}
-                  strokeLinecap="round"
-                  strokeDasharray="0 0.139 0.001 0.86"
-                  className="orbit-comet"
-                  style={{ animationDuration: `${o.dur}s` }}
-                />
-              </>
-            )}
-          </g>
-        );
-      })}
-      {/* The planet, turning: meridians widen and narrow as they come round. */}
-      <circle r={R} fill="url(#planet)" stroke="#fff" strokeOpacity="0.55" />
-      <g clipPath="circle(64px at 0 0)">
-        {[0, 1, 2, 3].map((k) => (
-          <ellipse key={k} rx={R} ry={R} fill="none" stroke="#fff" strokeOpacity="0.16">
-            {!reduce && <animate attributeName="rx" values={`${R};0;${R}`} dur="12s" begin={`${-k * 3}s`} repeatCount="indefinite" />}
-          </ellipse>
-        ))}
-        {[-36, 0, 36].map((y) => (
-          <ellipse key={y} cy={y} rx={Math.sqrt(R * R - y * y)} ry={4} fill="none" stroke="#fff" strokeOpacity="0.12" />
-        ))}
-      </g>
-    </svg>
-  );
-}
+// ── Journey: the career as a path across a dot globe ────────────────────────
 
 export function Journey() {
-  const reduce = !!useReducedMotion();
   const [active, setActive] = useState(0);
   const rows = useRef<(HTMLLIElement | null)[]>([]);
   // The role in the middle of the screen is the one lit, so scrolling walks
@@ -194,13 +107,13 @@ export function Journey() {
           <p className={`${KICKER} text-white/60`}>2022 to now</p>
         </div>
         <h2 className={`mt-10 ${HEADLINE}`}>
-          <LineRise lines={[{ text: "Six teams," }, { text: "one way of working.", className: "text-[color:var(--sig)]" }]} />
+          <LineRise lines={[{ text: "Six teams," }, { text: "five cities," }, { text: "one way of working.", className: "text-[color:var(--sig)]" }]} />
         </h2>
 
         <div className="mt-20 grid gap-12 lg:grid-cols-[1.05fr_1fr]" style={{ ["--sig" as string]: SIGNAL }}>
-          <figure className="relative mx-auto aspect-square w-full max-w-[620px] self-start lg:sticky lg:top-[12vh]">
-            <Orbits active={active} reduce={reduce} />
-            <figcaption className="absolute -bottom-2 left-0 text-[14px] text-white/50">Each role is an orbit. They get wider as the work does.</figcaption>
+          <figure className="relative mx-auto aspect-square w-full max-w-[640px] self-start lg:sticky lg:top-[10vh]">
+            <CareerGlobe roles={ROLES} active={active} />
+            <figcaption className="absolute bottom-0 left-0 text-[15px] text-white/55">Ahmedabad to Cleburne, the way it actually went.</figcaption>
           </figure>
 
           <ol className="lg:py-[18vh]">
@@ -458,44 +371,51 @@ const subscribeMinute = (cb: () => void) => {
   return () => clearInterval(id);
 };
 
-function Uplink({ reduce }: { reduce: boolean }) {
-  const label = { fontSize: 15, fontWeight: 600, fontFamily: "var(--font-manrope), sans-serif", fill: "#fff" } as const;
+/** The agent, big and awake: the other way to reach me, straight into the chat. */
+function AgentCard() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [near, setNear] = useState(false);
+  const [inView, setInView] = useState(false);
+  const [hover, setHover] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Built a screen early, rendered only while on screen.
+    const pre = new IntersectionObserver(([e]) => e.isIntersecting && setNear(true), { rootMargin: "100% 0px" });
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting));
+    pre.observe(el);
+    io.observe(el);
+    return () => {
+      pre.disconnect();
+      io.disconnect();
+    };
+  }, []);
+  const ask = () => {
+    const input = document.querySelector<HTMLTextAreaElement>("form textarea, textarea");
+    input?.focus();
+  };
   return (
-    <svg viewBox="0 0 420 420" className="h-full w-full overflow-visible" aria-hidden="true">
-      {/* Satellite: body and panels. */}
-      <g transform="translate(320 70) rotate(-25)">
-        <rect x="-14" y="-10" width="28" height="20" rx="3" fill="none" stroke="#fff" strokeWidth="1.4" />
-        <rect x="-62" y="-7" width="40" height="14" rx="2" fill="none" stroke="#fff" strokeWidth="1.2" />
-        <rect x="22" y="-7" width="40" height="14" rx="2" fill="none" stroke="#fff" strokeWidth="1.2" />
-        {[-52, -42, -32, 32, 42, 52].map((x) => (
-          <line key={x} x1={x} y1="-7" x2={x} y2="7" stroke="#fff" strokeOpacity="0.5" />
-        ))}
-      </g>
-      {[30, 60, 90].map((r, i) => (
-        <circle key={r} cx="320" cy="70" r={r} fill="none" stroke="#fff" strokeOpacity={0.28 - i * 0.08}>
-          {!reduce && <animate attributeName="r" values={`${r};${r + 30};${r}`} dur="5s" begin={`${-i * 1.6}s`} repeatCount="indefinite" />}
-        </circle>
-      ))}
-      {/* The beam, and a packet travelling up it. */}
-      <path id="beam" d="M 110 290 Q 190 130 312 82" fill="none" stroke="#fff" strokeDasharray="3 7" strokeOpacity="0.7" />
-      {!reduce && (
-        <g>
-          <Node color="#fff" r={4} />
-          <animateMotion dur="2.6s" repeatCount="indefinite" path="M 110 290 Q 190 130 312 82" />
-        </g>
-      )}
-      {/* Dish on its mount. */}
-      <path d="M 58 312 Q 106 222 166 290" fill="none" stroke="#fff" strokeWidth="1.6" />
-      <line x1="112" y1="275" x2="110" y2="292" stroke="#fff" strokeWidth="1.4" />
-      <path d="M 106 294 L 92 352 M 114 294 L 128 352 M 80 352 L 140 352" stroke="#fff" strokeWidth="1.4" fill="none" />
-      <text x="40" y="388" {...label} opacity="0.75">College Park, Maryland</text>
-      <text x="236" y="150" {...label} opacity="0.75">Your inbox</text>
-    </svg>
+    <div ref={ref} className="flex flex-col items-center text-center">
+      <button
+        type="button"
+        onClick={ask}
+        onPointerEnter={() => setHover(true)}
+        onPointerLeave={() => setHover(false)}
+        aria-label="Ask my agent about my work"
+        className="grid aspect-square w-full max-w-[380px] place-items-center [mask-image:radial-gradient(circle,#000_58%,transparent_71%)]"
+      >
+        {near ? <AgentOrb size={360} bg={BLUE} mood={hover ? "listening" : "idle"} active={inView} /> : <span className="h-[220px] w-[220px] rounded-full bg-white/10" />}
+      </button>
+      <p className="mt-2 text-[20px] font-bold tracking-[-0.02em]">Or ask my agent.</p>
+      <p className="mt-1 max-w-[300px] text-[15px] leading-snug text-white/75">It knows my work. Ask it anything, or paste a job description to see the fit.</p>
+      <button type="button" onClick={ask} className="mt-5 rounded-full bg-white px-5 py-2.5 text-[15px] font-semibold text-[color:var(--blue)] transition-transform hover:scale-[1.03]">
+        Ask it now
+      </button>
+    </div>
   );
 }
 
 export function Closing() {
-  const reduce = !!useReducedMotion();
   const time = useSyncExternalStore(subscribeMinute, () => timeFmt.format(new Date()), () => "");
   const [copied, setCopied] = useState(false);
   const copy = async () => {
@@ -539,11 +459,7 @@ export function Closing() {
               </a>
             </div>
           </div>
-          <figure className="mx-auto w-full max-w-[420px]">
-            <div className="aspect-square">
-              <Uplink reduce={reduce} />
-            </div>
-          </figure>
+          <AgentCard />
         </div>
 
         <div className="mt-20 grid gap-8 border-t border-white/25 pt-8 sm:grid-cols-3">
