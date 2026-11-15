@@ -41,7 +41,7 @@ export default function Latest() {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex items-center gap-2 rounded-full border border-black/10 bg-white/60 py-1.5 pl-2.5 pr-3 backdrop-blur-xl transition-colors hover:border-black/25"
+        className="flex items-center gap-2 rounded-full border border-black/10 bg-white/80 text-black py-1.5 pl-2.5 pr-3 backdrop-blur-xl transition-colors hover:border-black/25"
       >
         <span className="relative flex h-1.5 w-1.5">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ff6b3d] opacity-60" />

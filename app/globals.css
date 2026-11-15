@@ -531,3 +531,13 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .ev-today, .ev-sweep { animation: none; }
 }
+
+/* A comet riding a closed path (pathLength=1): the dash pattern slides forward. */
+@keyframes orbit-comet {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -1; }
+}
+.orbit-comet { animation: orbit-comet 10s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .orbit-comet { animation: none; }
+}

@@ -98,31 +98,28 @@ export const CONTACT = {
   ],
 };
 
-/** How the work runs, as a loop: hearing people, modelling the system, shipping it. */
+/** How the work runs, as a loop, in plain words. */
 export const METHOD = [
   {
-    n: "01",
-    title: "Hear it",
-    body: "Interviews, contextual inquiry and surveys before any pixels: 143 participants across the studies on this site.",
-    stat: "143 participants",
+    key: "listen",
+    title: "Talk to people first",
+    body: "Before I open Figma I sit with the people doing the work. Shop floor leads, analysts, faculty. 143 of them so far.",
   },
   {
-    n: "02",
-    title: "Model it",
-    body: "Turn what was heard into a system: tokens, components and the rules between them. Four design systems, 2,233 variants.",
-    stat: "4 systems",
+    key: "system",
+    title: "Turn it into a system",
+    body: "What I hear becomes tokens, components and the rules between them, so the next screen is easier than the last. Four design systems so far.",
   },
   {
-    n: "03",
-    title: "Ship it",
-    body: "Build it in code and measure what changed, then go back and listen again. 1,315 contributions in the last year.",
-    stat: "97% less manual work",
+    key: "ship",
+    title: "Ship it, then check",
+    body: "I build it in code, put it in front of the same people and see what actually changed. Then I go back and listen again.",
   },
 ];
 
 /** The reel between Journey and Method: the work itself, playing. */
 export const REELS = [
-  { video: "/thumbs/jeevy-os.mp4", poster: "/thumbs/jeevy-os-poster.webp", label: "Jeevy OS", caption: "An operating system for aerospace fabrication, from scheduling to the shop floor." },
-  { video: "/thumbs/xylem.mp4", poster: "/thumbs/xylem-poster.webp", label: "Xylem AutoPilot", caption: "Satellite data to food-security bulletins in thirty minutes, for analysts in nine countries." },
-  { video: "/thumbs/tgi.mp4", poster: "/thumbs/tgi-poster.webp", label: "TGI Crop Intelligence", caption: "Cropland estimates for conflict-affected regions, where no one can survey the ground." },
+  { video: "/thumbs/jeevy-os.mp4", poster: "/thumbs/jeevy-os-poster.webp", label: "Jeevy OS", caption: "The OS we built for an aerospace fab shop. Scheduling, materials, CAD and the floor, in one place." },
+  { video: "/thumbs/xylem.mp4", poster: "/thumbs/xylem-poster.webp", label: "Xylem AutoPilot", caption: "Satellite data to food security bulletins in 30 minutes, not 3 days. Analysts use it across 9 countries." },
+  { video: "/thumbs/tgi.mp4", poster: "/thumbs/tgi-poster.webp", label: "TGI Crop Intelligence", caption: "Cropland estimates for places like Sudan, where nobody can go out and survey the fields." },
 ];

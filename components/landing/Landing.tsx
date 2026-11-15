@@ -154,9 +154,9 @@ const subscribeMinute = (cb: () => void) => {
 function LocalTime() {
   const time = useSyncExternalStore(subscribeMinute, () => timeFmt.format(new Date()), () => "");
   return (
-    <span className="whitespace-nowrap text-[12px] font-medium tracking-[-0.02em] text-black/55 sm:text-[13px]">
+    <span className="whitespace-nowrap text-[12px] font-medium tracking-[-0.02em] opacity-60 sm:text-[13px]">
       <span className="hidden sm:inline">College Park, MD</span>
-      <span className="tabular-nums text-black/35 sm:ml-2">{time}</span>
+      <span className="tabular-nums opacity-60 sm:ml-2">{time}</span>
     </span>
   );
 }
@@ -420,12 +420,21 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
   // Past the first screen the sections below bring their own colour; the
   // header tucks away while scrolling down and returns on the way up.
   const [tucked, setTucked] = useState(false);
+  // Over a section with its own colour the header drops its white backing
+  // and takes that section's ink (data-header="dark" for white type).
+  const [tone, setTone] = useState<"plain" | "dark" | "light">("plain");
   useEffect(() => {
     let last = window.scrollY;
     const onScroll = () => {
       const y = window.scrollY;
       setTucked(y > window.innerHeight * 0.85 && y > last);
       last = y;
+      let t: "plain" | "dark" | "light" = "plain";
+      for (const el of document.querySelectorAll<HTMLElement>("[data-header]")) {
+        const r = el.getBoundingClientRect();
+        if (r.top <= 48 && r.bottom > 48) t = el.dataset.header === "dark" ? "dark" : "light";
+      }
+      setTone(t);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -437,10 +446,14 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
       <motion.header
         {...frame}
         className={`fixed inset-x-0 top-0 z-40 transition-transform duration-500 ${shown ? "" : "pointer-events-none"}`}
-        style={{ transform: tucked ? "translateY(-110%)" : "none" }}
+        style={{ transform: tucked ? "translateY(-110%)" : "none", ["--hd-ink" as string]: tone === "dark" ? "#ffffff" : "#0a0a0a", color: "var(--hd-ink)" }}
       >
-        {/* Soft white backing so content scrolling underneath never collides with the nav */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white via-white/85 to-transparent" />
+        {/* Soft white backing over the hero, so the map never collides with the nav; gone over the coloured sections. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white via-white/85 to-transparent transition-opacity duration-300"
+          style={{ opacity: tone === "plain" ? 1 : 0 }}
+        />
         <div className={`relative grid grid-cols-[1fr_auto_1fr] items-start pt-6 sm:pt-9 ${GUTTER}`}>
           {/* Where I am, and under it a tiny key for the map's heat. The key
               fades with the map (scrolled away or flown into). */}
@@ -456,18 +469,18 @@ export default function Landing({ view, onView, shown, ready, statementRef, chil
             </span>
           </div>
           <div className="flex flex-col items-center gap-1.5">
-            <Link href="/" className="whitespace-nowrap text-[14px] font-bold tracking-[-0.03em] text-black sm:text-[15px]">
+            <Link href="/" className="whitespace-nowrap text-[14px] font-bold tracking-[-0.03em] transition-colors sm:text-[15px]">
               Pradeep Yellapu
             </Link>
             <div className="mt-1 sm:hidden">
               <PhoneSwitch view={view} onChange={onView} />
             </div>
             {/* On phones only the spatial hint, under the switch. */}
-            <p className={`text-[11px] tracking-[-0.01em] text-black/45 ${view === "spatial" ? "" : "hidden sm:block"}`}>
+            <p className={`text-[11px] tracking-[-0.01em] opacity-50 ${view === "spatial" ? "" : "hidden sm:block"}`}>
               {view === "spatial" ? (coarse ? TOUCH_HINTS : HINTS)[mode] : "Scroll to browse the work"}
             </p>
           </div>
-          <nav className="flex items-center justify-end gap-3 text-[13px] font-semibold tracking-[-0.02em] text-black sm:gap-8 sm:text-[14px]">
+          <nav className="flex items-center justify-end gap-3 text-[13px] font-semibold tracking-[-0.02em] sm:gap-8 sm:text-[14px]">
             <Link href="/about" className="hidden sm:inline">
               Info
             </Link>
