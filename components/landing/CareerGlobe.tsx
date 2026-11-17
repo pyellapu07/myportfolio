@@ -58,8 +58,8 @@ export default function CareerGlobe({ roles, active, className = "" }: { roles: 
     if (!canvas || !ctx) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const dots = landDots();
-    // Oldest first: the path runs the way the career did.
-    const stops = [...roles].reverse().map((r) => ({ v: toVec(r.lon, r.lat), city: r.place.split(",")[0] }));
+    // Home first, then each role oldest first: the path runs the way the life did.
+    const stops = [{ v: toVec(83.22, 17.69), city: "Visakhapatnam" }, ...[...roles].reverse().map((r) => ({ v: toVec(r.lon, r.lat), city: r.place.split(",")[0] }))];
     const n = stops.length;
 
     let w = 0;

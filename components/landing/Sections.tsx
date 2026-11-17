@@ -100,20 +100,20 @@ export function Journey() {
   }, []);
 
   return (
-    <section id="journey" data-header="dark" className="relative py-28 text-white sm:py-36" style={{ background: INK }}>
+    <section id="journey" data-header="dark" className="relative py-28 text-white sm:py-36" style={{ background: INK, ["--sig" as string]: SIGNAL }}>
       <div className={WRAP}>
         <div className="flex items-end justify-between gap-6 border-b border-white/15 pb-6">
           <p className={`${KICKER} text-white/60`}>Where I&rsquo;ve worked</p>
           <p className={`${KICKER} text-white/60`}>2022 to now</p>
         </div>
         <h2 className={`mt-10 ${HEADLINE}`}>
-          <LineRise lines={[{ text: "Six teams," }, { text: "five cities," }, { text: "one way of working.", className: "text-[color:var(--sig)]" }]} />
+          <LineRise lines={[{ text: "I\u2019ve built with" }, { text: "six teams" }, { text: "in five cities.", className: "text-[color:var(--sig)]" }]} />
         </h2>
 
-        <div className="mt-20 grid gap-12 lg:grid-cols-[1.05fr_1fr]" style={{ ["--sig" as string]: SIGNAL }}>
+        <div className="mt-20 grid gap-12 lg:grid-cols-[1.05fr_1fr]">
           <figure className="relative mx-auto aspect-square w-full max-w-[640px] self-start lg:sticky lg:top-[10vh]">
             <CareerGlobe roles={ROLES} active={active} />
-            <figcaption className="absolute bottom-0 left-0 text-[15px] text-white/55">Ahmedabad to Cleburne, the way it actually went.</figcaption>
+            <figcaption className="absolute bottom-0 left-0 text-[15px] text-white/55">From home in Visakhapatnam to Cleburne, as it actually went.</figcaption>
           </figure>
 
           <ol className="lg:py-[18vh]">
@@ -225,7 +225,7 @@ export function Method() {
           <p className={`${KICKER} text-black/55`}>Designer, researcher, engineer</p>
         </div>
         <h2 className={`mt-10 ${HEADLINE}`}>
-          <LineRise lines={[{ text: "Listen first," }, { text: "then ship it.", className: "text-[color:var(--blue)]" }]} />
+          <LineRise lines={[{ text: "I listen first," }, { text: "then I ship.", className: "text-[color:var(--blue)]" }]} />
         </h2>
 
         <div className="mt-16 rounded-[28px] border border-black/[0.07] bg-white/50 px-4 py-12 sm:px-10" onPointerEnter={() => setHeld(true)} onPointerLeave={() => setHeld(false)}>
@@ -247,7 +247,7 @@ export function Method() {
             </AnimatePresence>
           </div>
           <div className="mt-8 flex justify-center">
-            <AutoTabs items={METHOD.map((s) => s.title)} active={step} onPick={(i) => setStep(i)} paused={held} duration={5} tone="light" />
+            <AutoTabs items={METHOD.map((s) => s.title)} active={step} onPick={(i) => setStep(i)} paused={held} duration={4} tone="light" />
           </div>
         </div>
       </div>
@@ -302,7 +302,7 @@ export function KindWords() {
               if (byUser || j !== i) setOpen(false);
             }}
             paused={hover || open}
-            duration={9}
+            duration={6}
             tone="light"
           />
         </div>

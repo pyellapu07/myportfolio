@@ -23,7 +23,7 @@ export const ROLES: Role[] = [
     lon: -97.39,
     lat: 32.35,
     years: "2026",
-    outcome: "An operating system for aerospace fabrication: scheduling, materials, CAD and the shop floor.",
+    outcome: "I lead design on the OS that runs an aerospace fab shop: scheduling, materials, CAD and the floor, with the design system behind it.",
   },
   {
     role: "Product Research & Designer",
@@ -32,7 +32,7 @@ export const ROLES: Role[] = [
     lon: -76.94,
     lat: 38.99,
     years: "2025–",
-    outcome: "A 3-day satellite workflow turned into 30-minute food-security bulletins.",
+    outcome: "I took a 3-day manual QGIS workflow down to a 30-minute food security bulletin for ministries in 9 countries.",
   },
   {
     role: "Product Design & UX Research Intern",
@@ -41,7 +41,7 @@ export const ROLES: Role[] = [
     lon: -122.42,
     lat: 37.77,
     years: "2025",
-    outcome: "UX audit of 20+ screens and testing with 12 enterprise users; 15% fewer reporting errors.",
+    outcome: "I ran a heuristic audit of 20+ screens and usability tests with 12 enterprise users, and cut reporting errors by 15%.",
   },
   {
     role: "UX Designer",
@@ -50,7 +50,7 @@ export const ROLES: Role[] = [
     lon: -76.94,
     lat: 38.99,
     years: "2024–25",
-    outcome: "A 33-page application cut to a 4-step flow for 750+ applicants a year.",
+    outcome: "I turned a 33-page application into a 4-step flow that 750+ applicants a year now get through.",
   },
   {
     role: "Technical UX Analyst",
@@ -59,7 +59,7 @@ export const ROLES: Role[] = [
     lon: 77.59,
     lat: 12.97,
     years: "2023–24",
-    outcome: "Diagnostic dashboards that cut mean time to resolve by 40%.",
+    outcome: "I designed diagnostic dashboards for support teams that cut mean time to resolve by 40%.",
   },
   {
     role: "Market Research Analyst, UI/UX",
@@ -68,7 +68,7 @@ export const ROLES: Role[] = [
     lon: 72.57,
     lat: 23.02,
     years: "2022–23",
-    outcome: "Interviews and competitive analysis behind 35% revenue growth.",
+    outcome: "I ran user interviews and competitive analysis that fed a 35% jump in revenue.",
   },
 ];
 
@@ -113,28 +113,28 @@ export const CONTACT = {
   ],
 };
 
-/** How the work runs, as a loop, in plain words. */
+/** How the work runs, as a loop, in first person, from the real work. */
 export const METHOD = [
   {
     key: "listen",
-    title: "Talk to people first",
-    body: "Before I open Figma I sit with the people doing the work. Shop floor leads, analysts, faculty. 143 of them so far.",
+    title: "I listen first",
+    body: "I start with contextual inquiry: I sit with the people doing the job and watch them do it. At Jeevy I surveyed our estimators and learned they lose 3 to 10 minutes per quote just picking files, and that they want to know why a shop is suggested before they trust it.",
   },
   {
     key: "system",
-    title: "Turn it into a system",
-    body: "What I hear becomes tokens, components and the rules between them, so the next screen is easier than the last. Four design systems so far.",
+    title: "I turn it into a system",
+    body: "I map what I heard into the information architecture, then into design tokens and components. The Jeevy design system ships in Figma and code together, with automated checks in CI so contrast and spacing can\u2019t quietly drift.",
   },
   {
     key: "ship",
-    title: "Ship it, then check",
-    body: "I build it in code, put it in front of the same people and see what actually changed. Then I go back and listen again.",
+    title: "I ship it, then I measure",
+    body: "I prototype in code and put it in front of the same people. On TGI that meant filters that let analysts jump straight to the high-uncertainty fields. On AutoPilot it meant a 3-day workflow that now runs in under 30 minutes.",
   },
 ];
 
 /** The reel between Journey and Method: the work itself, playing. */
 export const REELS = [
-  { video: "/thumbs/jeevy-os.mp4", poster: "/thumbs/jeevy-os-poster.webp", label: "Jeevy OS", caption: "The OS we built for an aerospace fab shop. Scheduling, materials, CAD and the floor, in one place." },
-  { video: "/thumbs/xylem.mp4", poster: "/thumbs/xylem-poster.webp", label: "Xylem AutoPilot", caption: "Satellite data to food security bulletins in 30 minutes, not 3 days. Analysts use it across 9 countries." },
-  { video: "/thumbs/tgi.mp4", poster: "/thumbs/tgi-poster.webp", label: "TGI Crop Intelligence", caption: "Cropland estimates for places like Sudan, where nobody can go out and survey the fields." },
+  { video: "/thumbs/jeevy-os.mp4", poster: "/thumbs/jeevy-os-poster.webp", label: "Jeevy OS", caption: "I designed it on the shop floor, with the people who run it. Scheduling, materials, CAD and the floor, in one place." },
+  { video: "/thumbs/xylem.mp4", poster: "/thumbs/xylem-poster.webp", label: "Xylem AutoPilot", caption: "I automated satellite data into food security bulletins. 30 minutes instead of 3 days, across 9 countries." },
+  { video: "/thumbs/tgi.mp4", poster: "/thumbs/tgi-poster.webp", label: "TGI Crop Intelligence", caption: "I designed the workbench analysts use to check cropland estimates in Sudan, where nobody can survey the fields." },
 ];
